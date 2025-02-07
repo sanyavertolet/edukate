@@ -1,9 +1,22 @@
 services:
-  database:
+  postgres:
     image: 'postgres:latest'
+    container_name: 'edukate-postgres'
     environment:
-      - 'POSTGRES_DB=database'
-      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_DB=edukate-postgres'
       - 'POSTGRES_USER=admin'
+      - 'POSTGRES_PASSWORD=secret'
     ports:
-      - '5432'
+      - '5432:5432'
+
+  mongo:
+    image: 'mongo:latest'
+    container_name: 'edukate-mongo'
+    environment:
+      - 'MONGO_INITDB_ROOT_USERNAME=admin'
+      - 'MONGO_INITDB_ROOT_PASSWORD=secret'
+      - 'MONGO_INITDB_DATABASE=edukate'
+    ports:
+      - '27017:27017'
+    volumes:
+      - './mongo-data:/data/db'
