@@ -2,6 +2,7 @@ import { ProblemMetadata } from '../types/ProblemMetadata';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Skeleton, Box, Typography } from '@mui/material';
 import { useQuery } from "@tanstack/react-query";
 import {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
 
 function useProblemListRequest() {
     const problemsUrl = `${window.location.origin}/api/v1/problems`;
@@ -21,6 +22,9 @@ function useProblemListRequest() {
 export default function ProblemListComponent() {
     const [ problemList, setProblemList ] = useState<ProblemMetadata[]>()
     const { data, isLoading, error } = useProblemListRequest()
+    const navigate = useNavigate();
+
+    const navigateToProblem = (problemName: string) => {navigate(`/problems/${problemName}`)}
 
     useEffect(() => {
         if (data && !isLoading && !error) {
@@ -29,7 +33,12 @@ export default function ProblemListComponent() {
     }, [data, isLoading, error]);
     
     const tableRows = problemList?.map((item) => (
-        <TableRow key={item.name}>
+        <TableRow
+            key={item.name}
+            hover
+            onClick={navigateToProblem.bind(null, item.name)}
+            sx={{ cursor: 'pointer' }}
+        >
             <TableCell>{item.name}</TableCell>
         </TableRow>
     ));
