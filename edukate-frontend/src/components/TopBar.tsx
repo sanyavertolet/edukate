@@ -15,7 +15,7 @@ export default function TopBar() {
             <Container maxWidth={"xl"}>
                 <Toolbar>
                     <Link href={"/"}>
-                        <Avatar alt={"Home"} src={"../../public/logo.png"} sx={{ mr: 2 }} />
+                        <Avatar alt={"Home"} src={"logo.png"} sx={{ mr: 2 }} />
                     </Link>
 
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
