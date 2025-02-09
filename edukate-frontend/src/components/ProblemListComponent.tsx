@@ -3,10 +3,6 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import { useQuery } from "@tanstack/react-query";
 import {useEffect, useState} from "react";
 
-// interface ProblemListComponentProps {
-//     problemList: ProblemMetadata[] | undefined;
-// }
-
 function useProblemListRequest() {
     const problemsUrl = `${window.location.origin}/api/v1/problems`;
     console.log(problemsUrl);
@@ -38,23 +34,27 @@ export default function ProblemListComponent() {
         </TableRow>
     ));
 
+    const tableRowsPlaceholder = Array(5).fill(0).map((_, i) => (
+       <TableRow key={i}>
+            <TableCell>
+                <Skeleton variant="text" />
+            </TableCell>
+       </TableRow>
+    ));
+
     return (
         <Box>
             <Typography fontSize={20}>Problem List</Typography>
-            {!isLoading && !error ? (
                 <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }} aria-label="problem table">
+                    <Table sx={{ minWidth: 650 }} size="small" aria-label="problem table">
                         <TableHead>
                             <TableRow>
                                 <TableCell>Name</TableCell>
                             </TableRow>
                         </TableHead>
-                        <TableBody>{tableRows}</TableBody>
+                        <TableBody>{!isLoading && !error ? tableRows : tableRowsPlaceholder}</TableBody>
                     </Table>
                 </TableContainer>
-            ) : (
-                <Skeleton variant="rectangular" height={"10vh"} sx={{padding: 10}}/>
-            )}
         </Box>
     );
 }
