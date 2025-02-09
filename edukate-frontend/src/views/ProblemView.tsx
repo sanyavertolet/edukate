@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 
-function ProblemView() {
+export default function ProblemView() {
     const { id } = useParams();
 
     return (
@@ -9,5 +9,3 @@ function ProblemView() {
         </>
     )
 }
-
-export default ProblemView

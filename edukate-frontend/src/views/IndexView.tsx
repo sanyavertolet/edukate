@@ -1,19 +1,17 @@
 import { Box, Button, Container, Typography } from '@mui/material';
 import {useNavigate} from "react-router-dom";
 
-function IndexView() {
+export default function IndexView() {
 
     const navigate = useNavigate()
     const handleClick = () => { navigate('/problems') }
 
     return (
         <Container>
-            <Box
-                sx={{
-                    textAlign: 'center',
-                    marginTop: '2rem',
-                }}
-            >
+            <Box sx={{
+                textAlign: 'center',
+                marginTop: '2rem',
+            }}>
                 <Typography variant="h4" gutterBottom>
                     Welcome to Edukate
                 </Typography>
@@ -29,5 +27,3 @@ function IndexView() {
         </Container>
     );
 }
-
-export default IndexView;

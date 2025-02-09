@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.entities;
 
+import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -18,4 +19,8 @@ public class Problem {
     private List<String> images;
     private String result;
     private List<String> resultImages;
+
+    public ProblemMetadata toProblemMetadata() {
+        return new ProblemMetadata(id);
+    }
 }

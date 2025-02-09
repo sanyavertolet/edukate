@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.controllers;
 
+import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +18,8 @@ public class ProblemController {
     }
 
     @GetMapping
-    public Flux<String> getProblemList() {
-        return problemService.getAllProblems().map(Problem::getId);
+    public Flux<ProblemMetadata> getProblemList() {
+        return problemService.getAllProblems().map(Problem::toProblemMetadata);
     }
 
     @GetMapping("/{id}")
