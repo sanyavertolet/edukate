@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.entities;
 
+import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,5 +23,9 @@ public class Problem {
 
     public ProblemMetadata toProblemMetadata() {
         return new ProblemMetadata(id);
+    }
+
+    public ProblemDto toProblemDto() {
+        return new ProblemDto(id, text, images);
     }
 }

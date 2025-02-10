@@ -1,6 +1,6 @@
-import {Box, Typography} from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import Grid from "@mui/material/Grid2"
-import ProblemListComponent from '../components/ProblemListComponent.tsx';
+import ProblemListComponent from '../components/ProblemListComponent';
 
 export default function ProblemListView() {
     return (

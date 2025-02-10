@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import ProblemView from "./views/ProblemView.tsx";
-import ProblemListView from "./views/ProblemListView.tsx";
-import IndexView from "./views/IndexView.tsx";
-import PageSkeleton from "./components/PageSkeleton.tsx";
+import ProblemView from "./views/ProblemView";
+import ProblemListView from "./views/ProblemListView";
+import IndexView from "./views/IndexView";
+import PageSkeleton from "./components/PageSkeleton";
 
 const router = createBrowserRouter([
     {

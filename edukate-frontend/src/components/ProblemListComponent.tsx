@@ -1,12 +1,11 @@
 import { ProblemMetadata } from '../types/ProblemMetadata';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Skeleton, Box, Typography } from '@mui/material';
 import { useQuery } from "@tanstack/react-query";
-import {useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function useProblemListRequest() {
     const problemsUrl = `${window.location.origin}/api/v1/problems`;
-    console.log(problemsUrl);
     return useQuery({
         queryKey: ['problemList'],
         queryFn: async () => {
