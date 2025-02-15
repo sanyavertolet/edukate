@@ -44,3 +44,29 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.bootBuildImage {
+    builder.set("paketobuildpacks/builder-jammy-base:latest")
+    runImage.set("paketobuildpacks/run-jammy-base:latest")
+    imageName.set("registry.digitalocean.com/edukate-container-registry/edukate-backend")
+    imagePlatform.set("linux/amd64")
+    pullPolicy.set(org.springframework.boot.buildpack.platform.build.PullPolicy.IF_NOT_PRESENT)
+    tags.set(setOf("latest"))
+    verboseLogging.set(true)
+    publish.set(true)
+    docker {
+        publishRegistry {
+            url.set("registry.digitalocean.com")
+            username.set(providers
+                .gradleProperty("do.docker.username")
+                .orElse(providers.environmentVariable("DO_DOCKER_USERNAME"))
+                .orNull
+            )
+            password.set(providers
+                .gradleProperty("do.docker.password")
+                .orElse(providers.environmentVariable("DO_DOCKER_PASSWORD"))
+                .orNull
+            )
+        }
+    }
+}
