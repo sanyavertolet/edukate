@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "common.labels" (merge (dict "service" .Values.frontend) .) | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      io.kompose.service: {{ .Values.frontend.name }}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "pod.common.labels" (merge (dict "service" .Values.frontend ) .) | nindent 8 }}
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ .Values.frontend.name }}
+          {{- include "spring-boot.common" (merge (dict "service" .Values.frontend) .) | nindent 10 }}
+          env:
+            - name: PORT
+              value: '{{ .Values.frontend.containerPort | toString }}'
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+{{- include "service.common.metadata" (dict "service" .Values.frontend) | nindent 2 }}
+spec:
+  ports:
+    {{- include "service.common.ports" (dict "service" .Values.frontend) | nindent 4 }}
+  selector:
+    {{- include "service.common.selectors" (dict "service" .Values.frontend) | nindent 4 }}

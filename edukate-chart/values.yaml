@@ -1,0 +1,61 @@
+namespace: default
+imageRegistry: registry.digitalocean.com/edukate-container-registry
+replicaCount: 1
+
+imagePullSecrets: []
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+env: staging
+initCerts:
+  enabled: false
+profile: dev
+pullPolicy: IfNotPresent
+
+backend:
+  name: backend
+  profile: prod
+  pullPolicy: Always
+  imageName: edukate-backend
+  containerPort: 5800
+  managementPort: 5801
+  clusterIP: null
+  applicationProperties:
+
+
+frontend:
+  name: frontend
+  pullPolicy: Always
+  imageName: edukate-frontend
+  containerPort: 80
+
+gateway:
+  name: gateway
+  profile: prod,kubernetes
+  imageName: api-gateway
+  containerPort: 5820
+  managementPort: 5821
+  applicationProperties:
+  svc:
+    annotations: {}
+    spec: {}
+
+ingress:
+  tls:
+    enabled: false
+
+storage:
+  size: 24Gi
+  annotations: {}
+
+s3:
+  secretFile: /home/cnb/secrets/s3_secrets
+
+mongodb:
+  enabled: true
+  secretName: mongodb-secrets
+  secretKey: connectionString

@@ -1,14 +1,4 @@
 services:
-  postgres:
-    image: 'postgres:latest'
-    container_name: 'edukate-postgres'
-    environment:
-      - 'POSTGRES_DB=edukate-postgres'
-      - 'POSTGRES_USER=admin'
-      - 'POSTGRES_PASSWORD=secret'
-    ports:
-      - '5432:5432'
-
   mongo:
     image: 'mongo:latest'
     container_name: 'edukate-mongo'
