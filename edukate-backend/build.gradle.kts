@@ -25,6 +25,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    implementation("software.amazon.awssdk:s3:2.25.6")
+    implementation("software.amazon.awssdk:s3-transfer-manager:2.25.6")
+
     compileOnly("org.projectlombok:lombok")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")

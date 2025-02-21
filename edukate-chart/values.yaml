@@ -53,7 +53,8 @@ storage:
   annotations: {}
 
 s3:
-  secretFile: /home/cnb/secrets/s3_secrets
+  enabled: true
+  secretName: s3-secrets
 
 mongodb:
   enabled: true
