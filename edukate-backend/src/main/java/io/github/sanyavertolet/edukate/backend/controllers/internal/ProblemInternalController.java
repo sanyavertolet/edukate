@@ -13,7 +13,7 @@ public class ProblemInternalController {
     private final ProblemService problemService;
 
     @PostMapping
-    public Mono<Problem> getProblem(@RequestBody Problem problem) {
+    public Mono<Problem> postProblem(@RequestBody Problem problem) {
         return problemService.updateProblem(problem);
     }
 

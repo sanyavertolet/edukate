@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 @RequiredArgsConstructor
 public class FileService {
     private final Storage<String> storage;
+    private final static String PROBLEM_IMAGE_PATH = "problems/";
 
     public Flux<ByteBuffer> getFile(String key) {
         return storage.download(key);
@@ -19,6 +20,10 @@ public class FileService {
 
     public Mono<String> uploadFile(String key, Flux<ByteBuffer> content) {
         return storage.upload(key, content);
+    }
+
+    public Mono<String> uploadProblemImage(String key, Flux<ByteBuffer> content) {
+        return uploadFile(PROBLEM_IMAGE_PATH + key, content);
     }
 
     public Mono<Boolean> deleteFile(String key) {

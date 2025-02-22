@@ -15,7 +15,7 @@ public class FileInternalController {
     private final FileService fileService;
 
     @PostMapping("/upload/{key}")
-    public Mono<String> uploadFile(@PathVariable String key, @RequestBody Flux<ByteBuffer> content) {
+    private Mono<String> uploadFile(@PathVariable String key, @RequestBody Flux<ByteBuffer> content) {
         return fileService.uploadFile(key, content);
     }
 
