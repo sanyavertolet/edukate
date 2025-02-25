@@ -39,4 +39,6 @@ public interface Storage<Key> {
     Flux<ByteBuffer> download(Key key);
 
     Mono<Boolean> move(Key source, Key target);
+
+    Mono<String> getDownloadUrl(Key key);
 }

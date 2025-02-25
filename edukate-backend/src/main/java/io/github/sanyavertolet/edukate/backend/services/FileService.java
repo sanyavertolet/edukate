@@ -18,6 +18,10 @@ public class FileService {
         return storage.download(key);
     }
 
+    public Mono<String> getDownloadUrl(String key) {
+        return storage.doesExist(key).filter(it -> it).flatMap(_ -> storage.getDownloadUrl(key));
+    }
+
     public Mono<String> uploadFile(String key, Flux<ByteBuffer> content) {
         return storage.upload(key, content);
     }

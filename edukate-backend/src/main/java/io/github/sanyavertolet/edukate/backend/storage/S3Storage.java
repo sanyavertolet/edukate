@@ -143,4 +143,15 @@ public class S3Storage implements Storage<String> {
         return Mono.fromFuture(s3AsyncClient.copyObject(copyRequest))
                 .flatMap(_ -> delete(source));
     }
+
+    @Override
+    public Mono<String> getDownloadUrl(String key) {
+        return Mono.fromCallable(() -> {
+            GetUrlRequest getUrlRequest = GetUrlRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+            return s3AsyncClient.utilities().getUrl(getUrlRequest).toString();
+        });
+    }
 }
