@@ -1,0 +1,29 @@
+namespace: default
+imageRegistry: registry.digitalocean.com/edukate-container-registry
+replicaCount: 1
+
+profile: prod
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+env: staging
+initCerts:
+  enabled: false
+pullPolicy: IfNotPresent
+
+ingress:
+  tls:
+    enabled: false
+
+s3:
+  enabled: true
+  secretName: s3-secrets
+
+mongodb:
+  enabled: true
+  secretName: mongodb-secrets
+  secretKey: connectionString
