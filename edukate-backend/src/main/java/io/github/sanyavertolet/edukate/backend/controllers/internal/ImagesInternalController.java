@@ -37,15 +37,15 @@ public class ImagesInternalController {
     }
 
     @PutMapping("/link/{id}")
-    public Mono<String> addImageKey(@PathVariable String id, @RequestParam String filename) {
+    public Mono<String> addImageKey(@PathVariable String id, @RequestParam String key) {
         return problemService.getProblemById(id)
                 .switchIfEmpty(
                         Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem with id " + id + " not found"))
                 )
                 .flatMap(problem -> {
-                    problem.addImageIfNotPresent(filename);
+                    problem.addImageIfNotPresent(key);
                     return problemService.updateProblem(problem);
                 })
-                .map(_ -> "Successfully added " + filename + " to problem " + id);
+                .map(_ -> "Successfully added " + key + " to problem " + id);
     }
 }
