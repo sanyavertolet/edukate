@@ -5,8 +5,8 @@ import ProblemListComponent from '../components/ProblemListComponent';
 export default function ProblemListView() {
     return (
             <Box>
-                <Typography variant={"h3"}>Problems</Typography>
-                <Grid container spacing={2}>
+                <Typography marginTop={"2rem"} variant={"h5"} >Problems</Typography>
+                <Grid container spacing={2} marginTop={"0.5rem"}>
                     <Grid size={"grow"}/>
                     <Grid size={7}  display={"flex"} flexDirection={"column"} height={"75vh"}>
                         <ProblemListComponent />

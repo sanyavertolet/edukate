@@ -12,10 +12,10 @@ export default function IndexView() {
                 textAlign: 'center',
                 marginTop: '2rem',
             }}>
-                <Typography variant="h4" gutterBottom>
+                <Typography variant="h5" gutterBottom>
                     Welcome to Edukate
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4 }}>
+                <Typography variant="body1" color={"textSecondary"} marginBottom={4}>
                     Edukate is a platform designed to bring engaging and interactive educational
                     experiences straight to your fingertips. Explore a variety of problems and challenges,
                     track your progress, and grow your knowledge!

@@ -27,7 +27,7 @@ public class ProblemController {
     }
 
     @GetMapping("/{id}")
-    public Mono<ProblemDto> getProblem(@PathVariable(name = "id") String id) {
+    public Mono<ProblemDto> getProblem(@PathVariable String id) {
         return problemService.getProblemById(id).map(Problem::toProblemDto)
                 .zipWhen((problemDto) -> Flux.fromIterable(problemDto.getImages())
                         .flatMap(fileService::getDownloadUrl)

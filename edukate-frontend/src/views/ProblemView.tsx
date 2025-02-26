@@ -2,10 +2,9 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Problem } from "../types/Problem";
 import { useEffect, useState } from "react";
-import { Alert, Box, CircularProgress, Container, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import ProblemCardComponent from "../components/ProblemCardComponent";
-import SolutionCardComponent from "../components/SolutionCardComponent";
+import { Alert, Box, CircularProgress, Container, Stack, Typography } from "@mui/material";
+import ProblemCardComponent from "../components/ProblemView/ProblemCardComponent";
+import SolutionCardComponent from "../components/ProblemView/SolutionCardComponent";
 
 function useProblemRequest(name: string) {
     const problemUrl = `${window.location.origin}/api/v1/problems/${name}`;
@@ -35,25 +34,21 @@ export default function ProblemView() {
 
     return (
         <Container sx={{ my: 4 }}>
+            <Typography variant="h5" gutterBottom>
+                Problem {id}
+            </Typography>
+
             {isLoading && (
                 <Box display="flex" justifyContent="center">
                     <CircularProgress />
                 </Box>
             )}
 
-            <Typography variant="h5" gutterBottom>
-                Problem {id}
-            </Typography>
-
             {!isLoading && !error && problem && (
-                <Grid container spacing={2} alignItems={"stretch"}>
-                    <Grid size={6}>
-                        <ProblemCardComponent problem={problem}/>
-                    </Grid>
-                    <Grid size={6}>
-                        <SolutionCardComponent problem={problem}/>
-                    </Grid>
-                </Grid>
+                <Stack display={"flex"} justifyContent={"center"} spacing={2} padding={2}>
+                    <ProblemCardComponent problem={problem}/>
+                    <SolutionCardComponent problem={problem}/>
+                </Stack>
             )}
 
             {!isLoading && !error && !problem && (

@@ -1,5 +1,5 @@
 import { ProblemMetadata } from '../types/ProblemMetadata';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Skeleton, Box, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Skeleton, Box } from '@mui/material';
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -52,17 +52,16 @@ export default function ProblemListComponent() {
 
     return (
         <Box>
-            <Typography fontSize={20}>Problem List</Typography>
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }} size="small" aria-label="problem table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Name</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>{!isLoading && !error ? tableRows : tableRowsPlaceholder}</TableBody>
-                    </Table>
-                </TableContainer>
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} size="small" aria-label="problem table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Name</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>{!isLoading && !error ? tableRows : tableRowsPlaceholder}</TableBody>
+                </Table>
+            </TableContainer>
         </Box>
     );
 }
