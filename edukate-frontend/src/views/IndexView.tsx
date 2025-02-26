@@ -1,4 +1,4 @@
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Button, Card, Container, Typography } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 
 export default function IndexView() {
@@ -8,11 +8,12 @@ export default function IndexView() {
 
     return (
         <Container>
-            <Box sx={{
+            <Card sx={{
                 textAlign: 'center',
                 marginTop: '2rem',
+                padding: '2rem',
             }}>
-                <Typography variant="h5" gutterBottom>
+                <Typography color={"primary"} variant="h5" gutterBottom>
                     Welcome to Edukate
                 </Typography>
                 <Typography variant="body1" color={"textSecondary"} marginBottom={4}>
@@ -23,7 +24,7 @@ export default function IndexView() {
                 <Button variant="contained" color="primary" onClick={handleClick}>
                     Explore Problems
                 </Button>
-            </Box>
+            </Card>
         </Container>
     );
 }

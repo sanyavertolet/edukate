@@ -1,4 +1,4 @@
-import { AppBar, Avatar, Box, Button, Container, Link, Toolbar } from "@mui/material";
+import { AppBar, Avatar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 export default function TopBar() {
@@ -8,25 +8,32 @@ export default function TopBar() {
         { text: "Problems", href: "/problems" }
     ];
 
-    const buttonStyles = { my: 2, color: 'white', display: 'block' };
+    const onHomeClick=() => navigate("/");
 
     return (
-        <AppBar position={"static"}>
-            <Container maxWidth={"xl"}>
+        <AppBar sx={{
+            position: "static",
+            background: "transparent",
+            backdropFilter: "blur(8px)",
+        }}>
+            <Box maxWidth={"xl"}>
                 <Toolbar>
-                    <Link href={"/"}>
+                    <Button color={"primary"} onClick={onHomeClick}>
                         <Avatar alt={"Home"} src={"logo.png"} sx={{ mr: 2 }} />
-                    </Link>
+                        <Typography>
+                            Edukate
+                        </Typography>
+                    </Button>
 
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                    <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'flex' }, paddingLeft: "2rem" }}>
                         {topBarElements.map(({ text, href }) => (
-                            <Button key={text} onClick={() => navigate(href)} sx={buttonStyles}>
+                            <Button key={text} onClick={() => navigate(href)}>
                                 {text}
                             </Button>
                         ))}
                     </Box>
                 </Toolbar>
-            </Container>
+            </Box>
         </AppBar>
     )
 }

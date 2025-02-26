@@ -34,7 +34,7 @@ export default function ProblemView() {
 
     return (
         <Container sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" color={"primary"} gutterBottom>
                 Problem {id}
             </Typography>
 

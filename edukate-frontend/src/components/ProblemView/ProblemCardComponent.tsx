@@ -35,7 +35,7 @@ export default function ProblemCardComponent({problem}: ProblemCardComponentProp
                 }
             </Backdrop>
             <CardContent>
-                <Typography variant="h6">
+                <Typography color={"secondary"} variant="h6">
                     Terms
                 </Typography>
 

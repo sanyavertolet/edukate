@@ -36,7 +36,7 @@ export default function ProblemListComponent() {
             key={item.name}
             hover
             onClick={navigateToProblem.bind(null, item.name)}
-            sx={{ cursor: 'pointer' }}
+            sx={{ cursor: 'pointer', textcolor: '#ffffff' }}
         >
             <TableCell>{item.name}</TableCell>
         </TableRow>
