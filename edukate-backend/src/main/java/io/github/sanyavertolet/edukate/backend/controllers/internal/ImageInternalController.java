@@ -15,37 +15,39 @@ import java.nio.ByteBuffer;
 @RestController
 @RequestMapping("/internal/images")
 @AllArgsConstructor
-public class ImagesInternalController {
+public class ImageInternalController {
     private final FileService fileService;
     private final ProblemService problemService;
 
-    @PostMapping("/upload/{id}")
-    public Mono<String> uploadImage(@PathVariable String id, @RequestParam String filename, @RequestBody Flux<ByteBuffer> content) {
-        return problemService.getProblemById(id)
+    @PostMapping("/upload/{problemId}")
+    public Mono<String> uploadImage(@PathVariable String problemId, @RequestParam String fileKey, @RequestBody Flux<ByteBuffer> content) {
+        return problemService.getProblemById(problemId)
                 .switchIfEmpty(
-                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem with id " + id + " not found"))
+                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem with id " + problemId + " not found"))
                 )
-                .doOnNext(_ -> fileService.uploadProblemImage(filename, content).subscribeOn(Schedulers.boundedElastic()).subscribe())
+                .doOnNext(_ ->
+                        fileService.uploadFile(fileKey, content).subscribeOn(Schedulers.boundedElastic()).subscribe()
+                )
                 .switchIfEmpty(
                         Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not upload file"))
                 )
                 .flatMap(problem -> {
-                    problem.addImageIfNotPresent(filename);
+                    problem.addImageIfNotPresent(fileKey);
                     return problemService.updateProblem(problem);
                 })
-                .map(_ -> "Successfully added " + filename + " to problem " + id);
+                .map(_ -> "Successfully uploaded \"" + fileKey + "\" and linked to problem " + problemId);
     }
 
-    @PutMapping("/link/{id}")
-    public Mono<String> addImageKey(@PathVariable String id, @RequestParam String key) {
-        return problemService.getProblemById(id)
+    @PutMapping("/link/{problemId}")
+    public Mono<String> addImageKey(@PathVariable String problemId, @RequestParam String fileKey) {
+        return problemService.getProblemById(problemId)
                 .switchIfEmpty(
-                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem with id " + id + " not found"))
+                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem with id " + problemId + " not found"))
                 )
                 .flatMap(problem -> {
-                    problem.addImageIfNotPresent(key);
+                    problem.addImageIfNotPresent(fileKey);
                     return problemService.updateProblem(problem);
                 })
-                .map(_ -> "Successfully added " + key + " to problem " + id);
+                .map(_ -> "Successfully added [" + fileKey + "] to problem " + problemId);
     }
 }
