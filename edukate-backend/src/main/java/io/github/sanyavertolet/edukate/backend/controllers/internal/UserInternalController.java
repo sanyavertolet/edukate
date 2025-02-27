@@ -1,0 +1,34 @@
+package io.github.sanyavertolet.edukate.backend.controllers.internal;
+
+import io.github.sanyavertolet.edukate.backend.services.UserService;
+import io.github.sanyavertolet.edukate.common.entities.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+@RestController
+@RequestMapping("/internal/users")
+@RequiredArgsConstructor
+public class UserInternalController {
+    private final UserService userService;
+
+    @PostMapping
+    public Mono<User> saveUser(@RequestBody User user) {
+        return userService.saveUser(user);
+    }
+
+    @GetMapping("/by-name/{name}")
+    public Mono<User> getUserByName(@PathVariable String name) {
+        return userService.getUserByName(name);
+    }
+
+    @GetMapping("/by-id/{id}")
+    public Mono<User> getUserById(@PathVariable String id) {
+        return userService.getUserById(id);
+    }
+
+    @DeleteMapping("/by-id/{id}")
+    public Mono<Boolean> deleteUserById(@PathVariable String id) {
+        return userService.deleteUserById(id);
+    }
+}
