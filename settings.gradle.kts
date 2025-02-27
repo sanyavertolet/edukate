@@ -17,3 +17,4 @@ extensions.configure<ReckonExtension> {
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include("edukate-backend")
+include("edukate-common")
