@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Problem } from "../types/Problem";
 import { useEffect, useState } from "react";
 import { Alert, Box, CircularProgress, Container, Stack, Typography } from "@mui/material";
-import ProblemCardComponent from "../components/ProblemView/ProblemCardComponent";
-import SolutionCardComponent from "../components/ProblemView/SolutionCardComponent";
+import ProblemCardComponent from "../components/problem/ProblemCardComponent";
+import SolutionCardComponent from "../components/problem/SolutionCardComponent";
 
 function useProblemRequest(name: string) {
     const problemUrl = `${window.location.origin}/api/v1/problems/${name}`;

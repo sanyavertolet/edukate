@@ -1,5 +1,6 @@
 import { AppBar, Avatar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggleButton } from "./themes/ThemeToggleButton";
 
 export default function TopBar() {
     const navigate = useNavigate();
@@ -31,6 +32,25 @@ export default function TopBar() {
                                 {text}
                             </Button>
                         ))}
+                    </Box>
+
+                    <Box >
+                        <ThemeToggleButton/>
+                        {/*<Menu*/}
+                        {/*    id="menu-appbar"*/}
+                        {/*    anchorEl={anchorEl}*/}
+                        {/*    anchorOrigin={{*/}
+                        {/*        vertical: 'top',*/}
+                        {/*        horizontal: 'right',*/}
+                        {/*    }}*/}
+                        {/*    keepMounted*/}
+                        {/*    transformOrigin={{*/}
+                        {/*        vertical: 'top',*/}
+                        {/*        horizontal: 'right',*/}
+                        {/*    }}*/}
+                        {/*    open={Boolean(anchorEl)}*/}
+                        {/*    onClose={handleClose}*/}
+                        {/*/>*/}
                     </Box>
                 </Toolbar>
             </Box>

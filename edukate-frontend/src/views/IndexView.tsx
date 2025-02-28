@@ -8,15 +8,15 @@ export default function IndexView() {
 
     return (
         <Container>
+            <Typography color={"primary"} variant="h5" gutterBottom sx={{marginY: '2rem'}}>
+                Welcome to Edukate
+            </Typography>
             <Card sx={{
                 textAlign: 'center',
                 marginTop: '2rem',
                 padding: '2rem',
             }}>
-                <Typography color={"primary"} variant="h5" gutterBottom>
-                    Welcome to Edukate
-                </Typography>
-                <Typography variant="body1" color={"textSecondary"} marginBottom={4}>
+                <Typography variant="body1" marginBottom={4}>
                     Edukate is a platform designed to bring engaging and interactive educational
                     experiences straight to your fingertips. Explore a variety of problems and challenges,
                     track your progress, and grow your knowledge!

@@ -1,7 +1,7 @@
 import { Problem } from "../../types/Problem";
 import { Stack } from "@mui/material";
-import { ProblemInputFormComponent } from "./ProblemInputFormComponent.tsx";
-import DragAndDropComponent from "./DragAndDropComponent.tsx";
+import { ProblemInputFormComponent } from "./ProblemInputFormComponent";
+import DragAndDropComponent from "./DragAndDropComponent";
 
 interface SolutionCardComponentProps {
     problem: Problem;

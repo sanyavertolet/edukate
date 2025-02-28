@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
-import {
-    type Container,
-    type ISourceOptions,
-    MoveDirection,
-    OutMode,
-} from "@tsparticles/engine";
+import { type ISourceOptions, MoveDirection, OutMode } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
+import { useTheme } from "./themes/ThemeContextProvider";
+import themes from "./themes/themes";
 
 export const ParticlesComponent = () => {
     const [init, setInit] = useState(false);
+
+    const { theme } = useTheme();
 
     useEffect(() => {
         initParticlesEngine(async (engine) => {
@@ -19,16 +18,10 @@ export const ParticlesComponent = () => {
         });
     }, []);
 
-    const particlesLoaded = async (container?: Container): Promise<void> => {
-        console.log(container);
-    };
-
     const options: ISourceOptions = useMemo(
         () => ({
             background: {
-                color: {
-                    value: "#f9ebd9",
-                },
+                color: { value: themes[theme].palette.background.default },
             },
             fullScreen: {
                 zIndex: -1,
@@ -37,10 +30,6 @@ export const ParticlesComponent = () => {
             fpsLimit: 144,
             interactivity: {
                 events: {
-                    onClick: {
-                        enable: false,
-                        mode: "push",
-                    },
                     onHover: {
                         enable: true,
                         mode: "repulse",
@@ -78,30 +67,33 @@ export const ParticlesComponent = () => {
                     density: {
                         enable: true,
                     },
-                    value: 200,
+                    value: 100,
                 },
                 opacity: {
-                    value: 0.5,
+                    value: 0.7,
                 },
                 shape: {
                     type: "circle",
                 },
                 size: {
-                    value: { min: 1, max: 7 },
+                    value: { min: 3, max: 7 },
                 },
+                collisions: {
+                    enable: true,
+                    mode: "bounce",
+                    absorb: {
+                        speed: 0
+                    }
+                }
             },
             detectRetina: true,
         }),
-        [],
+        [theme],
     );
 
     if (init) {
         return (
-            <Particles
-                id="tsparticles"
-                particlesLoaded={particlesLoaded}
-                options={options}
-            />
+            <Particles id="tsparticles" options={options}/>
         );
     }
 
