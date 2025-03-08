@@ -1,0 +1,62 @@
+gateway:
+  backend:
+    url: http://backend
+
+jwt:
+  expiration: 1800000
+  secret: ${JWT_SECRET}
+
+spring:
+  application:
+    name: gateway
+  liquibase:
+    enabled: false
+  profiles:
+    default: dev
+  cloud:
+    gateway:
+      routes:
+        - id: api_route
+          uri: ${gateway.backend.url}
+          predicates:
+            - Path=/api/**
+          filters:
+            - RemoveRequestHeader=Cookie
+
+---
+server:
+  servlet:
+    session:
+      timeout: 30m
+  error:
+    include-message: always
+    path: /error
+  port: 5810
+management:
+  server:
+    port: 5811
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+
+---
+logging:
+  level:
+    org:
+      springframework: DEBUG
+    io:
+      github:
+        sanyavertolet: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: kubernetes
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod

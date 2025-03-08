@@ -18,3 +18,5 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include("edukate-backend")
 include("edukate-common")
+include("edukate-gateway")
+include("edukate-auth")

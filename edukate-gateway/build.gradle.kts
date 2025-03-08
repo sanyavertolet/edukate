@@ -26,11 +26,8 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-
-    implementation("software.amazon.awssdk:s3:2.25.6")
-    implementation("software.amazon.awssdk:s3-transfer-manager:2.25.6")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.2.0")
 
     compileOnly("org.projectlombok:lombok")
 
@@ -40,9 +37,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.projectreactor:reactor-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("org.yaml:snakeyaml")
 }
 
 tasks.withType<Test> {
@@ -52,7 +47,7 @@ tasks.withType<Test> {
 tasks.bootBuildImage {
     builder.set("paketobuildpacks/builder-jammy-base:latest")
     runImage.set("paketobuildpacks/run-jammy-base:latest")
-    imageName.set("registry.digitalocean.com/edukate-container-registry/edukate-backend")
+    imageName.set("registry.digitalocean.com/edukate-container-registry/edukate-gateway")
     imagePlatform.set("linux/amd64")
     pullPolicy.set(org.springframework.boot.buildpack.platform.build.PullPolicy.IF_NOT_PRESENT)
     tags.set(setOf("latest"))

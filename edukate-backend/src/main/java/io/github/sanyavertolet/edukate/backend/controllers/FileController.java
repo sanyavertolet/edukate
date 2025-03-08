@@ -17,8 +17,11 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping("/get/{key}")
-    public Flux<ByteBuffer> getFile(@PathVariable String key) {
-        return fileService.getFile(key)
+    public Flux<ByteBuffer> getFile(@PathVariable String key, @RequestParam(required = false) String keyPrefix) {
+        return Mono.justOrEmpty(keyPrefix)
+                .map(prefix -> prefix + "/" + key)
+                .defaultIfEmpty(key)
+                .flatMapMany(fileService::getFile)
                 .onErrorResume(Exception.class, e ->
                         Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found", e))
                 );
