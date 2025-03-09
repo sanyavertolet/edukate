@@ -17,8 +17,6 @@ import java.util.Set;
 @Document(collection = "users")
 public class User {
     @Id
-    private final String id;
-
     @NonNull
     @Indexed(unique = true)
     private final String name;

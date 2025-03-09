@@ -13,8 +13,8 @@ pullPolicy: IfNotPresent
 
 backend:
   name: backend
-  pullPolicy: Always
   imageName: edukate-backend
+  pullPolicy: Always
   containerPort: 5800
   managementPort: 5801
   clusterIP: null
@@ -22,19 +22,18 @@ backend:
 
 frontend:
   name: frontend
-  pullPolicy: Always
   imageName: edukate-frontend
+  pullPolicy: Always
   containerPort: 80
 
 gateway:
   name: gateway
   imageName: edukate-gateway
+  pullPolicy: Always
   containerPort: 5810
   managementPort: 5811
   applicationProperties:
-  svc:
-    annotations: {}
-    spec: {}
+
 
 ingress:
   tls:
@@ -48,3 +47,7 @@ mongodb:
   enabled: true
   secretName: mongodb-secrets
   secretKey: connectionString
+
+jwt:
+  secretName: jwt
+  secretKey: key

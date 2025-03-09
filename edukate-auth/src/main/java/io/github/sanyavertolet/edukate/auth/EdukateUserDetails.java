@@ -15,11 +15,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.github.sanyavertolet.edukate.common.AuthHeaders.*;
+import static io.github.sanyavertolet.edukate.auth.utils.AuthHeaders.*;
 
 @AllArgsConstructor
 public class EdukateUserDetails implements UserDetails, CredentialsContainer {
-    private final String id;
     private final String name;
     private final Set<Role> roles;
     private final UserStatus status;
@@ -27,7 +26,6 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
 
     public EdukateUserDetails(User user) {
         this(
-                Objects.requireNonNull(user.getId(), "User ID must not be null"),
                 Objects.requireNonNull(user.getName(), "User name must not be null"),
                 Objects.requireNonNull(user.getRoles(), "User role must not be null"),
                 Objects.requireNonNull(user.getStatus(), "User status must not be null"),
@@ -41,7 +39,6 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
 
     public void populateHeaders(HttpHeaders httpHeaders) {
         Objects.requireNonNull(httpHeaders, "HttpHeaders must not be null");
-        httpHeaders.set(AUTHORIZATION_ID.headerName, id);
         httpHeaders.set(AUTHORIZATION_NAME.headerName, name);
         httpHeaders.set(AUTHORIZATION_STATUS.headerName, status.name());
         String rolesString = Role.toString(roles);
@@ -86,8 +83,7 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
     @Override
     public String toString() {
         return "EdukateUserDetails{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", roles='" + roles + '\'' +
                 ", status='" + status + '\'' +
                 '}';

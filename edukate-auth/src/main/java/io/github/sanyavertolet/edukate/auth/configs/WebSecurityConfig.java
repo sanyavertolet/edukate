@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -19,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Mono;
 
@@ -33,12 +33,13 @@ public class WebSecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers(PublicEndpoints.asList().toArray(new String[0])).permitAll()
-                        .anyExchange().authenticated())
+                        .pathMatchers(PublicEndpoints.asArray()).permitAll()
+                        .pathMatchers("/api/**").authenticated())
                 .addFilterAt(edukateUserPreAuthenticatedProcessingWebFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
                 .exceptionHandling(exceptionHandlingSpec ->
                         exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(ServerHttpSecurity.CorsSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .build();
@@ -49,12 +50,13 @@ public class WebSecurityConfig {
         ReactiveAuthenticationManager authenticationManager = Mono::just;
         AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(authenticationManager);
 
-        authenticationWebFilter.setServerAuthenticationConverter(exchange -> {
-            HttpHeaders headers = exchange.getRequest().getHeaders();
-            EdukateUserDetails edukateUserDetails = AuthUtils.toEdukateUserDetails(headers);
-            return Mono.just(edukateUserDetails.toPreAuthenticatedAuthenticationToken());
-        });
-
+        authenticationWebFilter.setServerAuthenticationConverter(exchange -> PublicEndpoints.asMatcher()
+                .matches(exchange)
+                .map(ServerWebExchangeMatcher.MatchResult::isMatch)
+                .filter(match -> !match)
+                .map(_ -> exchange.getRequest().getHeaders())
+                .mapNotNull(AuthUtils::toEdukateUserDetails)
+                .map(EdukateUserDetails::toPreAuthenticatedAuthenticationToken));
         return authenticationWebFilter;
     }
 

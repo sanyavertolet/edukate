@@ -12,12 +12,17 @@ public class PublicEndpoints {
     }
 
     private static final List<String> publicEndpoints = List.of(
+            "/actuator/health/liveness",
             "/api/v1/problems/**",
-            "/actuator/health",
-            "/actuator/info",
+            "/actuator/**",
             "/auth/**"
     );
 
+    public static String[] asArray() {
+        return publicEndpoints.toArray(new String[0]);
+    }
+
+    @SuppressWarnings("unused")
     public static List<String> asList() {
         return publicEndpoints;
     }

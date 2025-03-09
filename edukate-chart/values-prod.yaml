@@ -2,7 +2,7 @@ namespace: default
 imageRegistry: registry.digitalocean.com/edukate-container-registry
 replicaCount: 1
 
-profile: prod
+profile: prod,secure
 
 autoscaling:
   enabled: false
