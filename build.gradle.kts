@@ -70,5 +70,9 @@ tasks.register("buildAndPushFrontendImage") {
 tasks.register("buildAllImages") {
     group = "docker"
     description = "Builds and pushes both frontend and backend Docker images"
-    dependsOn("edukate-backend:bootBuildImage", "buildAndPushFrontendImage")
+    dependsOn(
+        "edukate-backend:bootBuildImage",
+        "edukate-gateway:bootBuildImage",
+        "buildAndPushFrontendImage",
+    )
 }
