@@ -17,11 +17,15 @@ public class UserDetailsService implements ReactiveUserDetailsService {
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
+        return findEdukateUserDetailsByUsername(username).cast(UserDetails.class);
+    }
+
+    public Mono<EdukateUserDetails> findEdukateUserDetailsByUsername(String username) {
         return backendService.getUserByName(username).map(EdukateUserDetails::new);
     }
 
     public Mono<EdukateUserDetails> create(String username, String encodedPassword) {
-        User user = new User("", username, encodedPassword, RoleUtils.getDefaultRole(), UserStatus.PENDING);
+        User user = new User(username, encodedPassword, RoleUtils.getDefaultRole(), UserStatus.PENDING);
         return backendService.saveUser(user).map(EdukateUserDetails::new)
                 .doOnNext(EdukateUserDetails::eraseCredentials);
     }

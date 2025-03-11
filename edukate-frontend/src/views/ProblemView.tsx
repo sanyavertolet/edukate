@@ -1,41 +1,22 @@
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { Problem } from "../types/Problem";
 import { useEffect, useState } from "react";
 import { Alert, Box, CircularProgress, Container, Stack, Typography } from "@mui/material";
 import ProblemCardComponent from "../components/problem/ProblemCardComponent";
 import SolutionCardComponent from "../components/problem/SolutionCardComponent";
-
-function useProblemRequest(name: string) {
-    const problemUrl = `${window.location.origin}/api/v1/problems/${name}`;
-    return useQuery({
-        queryKey: ['problem'],
-        queryFn: async () => {
-            const response = await fetch(problemUrl);
-            if (!response.ok) {
-                throw new Error(`Error fetching data: ${response.status}`)
-            }
-            return await response.json() as Problem;
-        },
-    });
-}
+import { useProblemRequest } from "../http/requests";
 
 export default function ProblemView() {
     const { id } = useParams();
-
     const { data, isLoading, error } = useProblemRequest(id!);
-    const [ problem, setProblem ] = useState<Problem>()
+    const [ problem, setProblem ] = useState<Problem>();
 
-    useEffect(() => {
-        if (data && !isLoading && !error) {
-            setProblem(data);
-        }
-    }, [data, isLoading, error]);
+    useEffect(() => { if (data && !isLoading && !error) { setProblem(data); }}, [data, isLoading, error]);
 
     return (
         <Container sx={{ my: 4 }}>
-            <Typography variant="h5" color={"primary"} gutterBottom>
-                Problem {id}
+            <Typography variant="h5" color="primary" gutterBottom>
+                Problem { id }
             </Typography>
 
             {isLoading && (
@@ -45,9 +26,9 @@ export default function ProblemView() {
             )}
 
             {!isLoading && !error && problem && (
-                <Stack display={"flex"} justifyContent={"center"} spacing={2} padding={2}>
-                    <ProblemCardComponent problem={problem}/>
-                    <SolutionCardComponent problem={problem}/>
+                <Stack display="flex" justifyContent="center" spacing={ 2 } padding={ 2 }>
+                    <ProblemCardComponent problem={ problem }/>
+                    <SolutionCardComponent problem={ problem }/>
                 </Stack>
             )}
 
@@ -60,4 +41,4 @@ export default function ProblemView() {
             )}
         </Container>
     );
-}
+};

@@ -7,12 +7,11 @@ interface SolutionCardComponentProps {
     problem: Problem;
 }
 
-export default function SolutionCardComponent({problem}: SolutionCardComponentProps) {
+export default function SolutionCardComponent({ problem }: SolutionCardComponentProps) {
     return (
-        <Stack direction={'column'} spacing={2} alignItems={'center'} >
-            <ProblemInputFormComponent problem={problem}/>
-
-            <DragAndDropComponent hidden={true}/>
+        <Stack direction="column" spacing={ 2 } alignItems="center">
+            <ProblemInputFormComponent problem={ problem }/>
+            <DragAndDropComponent hidden={ true }/>
         </Stack>
-    )
+    );
 }

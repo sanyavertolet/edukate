@@ -2,12 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { type ISourceOptions, MoveDirection, OutMode } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
-import { useTheme } from "./themes/ThemeContextProvider";
-import themes from "./themes/themes";
+import { useTheme } from "../themes/ThemeContextProvider";
+import themes from "../themes/themes";
 
 export const ParticlesComponent = () => {
     const [init, setInit] = useState(false);
-
     const { theme } = useTheme();
 
     useEffect(() => {
@@ -83,8 +82,8 @@ export const ParticlesComponent = () => {
                     mode: "bounce",
                     absorb: {
                         speed: 0
-                    }
-                }
+                    },
+                },
             },
             detectRetina: true,
         }),
@@ -92,10 +91,7 @@ export const ParticlesComponent = () => {
     );
 
     if (init) {
-        return (
-            <Particles id="tsparticles" options={options}/>
-        );
+        return ( <Particles id="tsparticles" options={ options }/> );
     }
-
     return <></>;
 };

@@ -1,6 +1,8 @@
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
-import themes from "./themes"
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
+import themes from "./themes";
+
+const THEME_STORAGE_KEY = "edukate-theme";
 
 type Theme = "light" | "dark";
 
@@ -10,8 +12,8 @@ type ThemeContextType = {
 };
 
 const ThemeContext = createContext<ThemeContextType>({
-        theme: "light",
-        toggleTheme: () => {},
+    theme: "light",
+    toggleTheme: () => {},
 });
 
 interface ThemeProviderProps {
@@ -20,28 +22,22 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: FC<ThemeProviderProps> = ({children}) => {
     const [selectedTheme, setSelectedTheme] = useState<Theme>(() => {
-        return (localStorage.getItem("edukate-theme") || "light") as Theme;
+        return (localStorage.getItem(THEME_STORAGE_KEY) || "light") as Theme;
     });
 
-    useEffect(() => { localStorage.setItem('edukate-theme', selectedTheme); }, [selectedTheme]);
+    useEffect(() => { localStorage.setItem(THEME_STORAGE_KEY, selectedTheme); }, [selectedTheme]);
 
     const toggleTheme = () => {
-        setSelectedTheme((currentTheme) => {
-            if (currentTheme == "light") {
-                return "dark";
-            } else {
-                return "light";
-            }
-        })
+        setSelectedTheme((currentTheme) => currentTheme == "light" ? "dark" : "light");
     };
 
     return (
         <ThemeContext.Provider value={{theme: selectedTheme, toggleTheme: toggleTheme}}>
             <MuiThemeProvider theme={themes[selectedTheme]}>
-                {children}
+                { children }
             </MuiThemeProvider>
         </ThemeContext.Provider>
-    )
+    );
 }
 
 export const useTheme = () => useContext(ThemeContext);

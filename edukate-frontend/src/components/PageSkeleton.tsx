@@ -1,7 +1,7 @@
 import { Container } from "@mui/material";
-import TopBar from "./TopBar";
+import { TopBar } from "./topbar/TopBar";
 import { Outlet } from "react-router-dom";
-import { ParticlesComponent } from "./Particles";
+import { ParticlesComponent } from "./animation/Particles";
 
 export default function PageSkeleton() {
     return (

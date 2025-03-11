@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.common.Role;
 import io.github.sanyavertolet.edukate.common.UserStatus;
 import io.github.sanyavertolet.edukate.common.entities.User;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,6 +22,7 @@ import static io.github.sanyavertolet.edukate.auth.utils.AuthHeaders.*;
 public class EdukateUserDetails implements UserDetails, CredentialsContainer {
     private final String name;
     private final Set<Role> roles;
+    @Getter
     private final UserStatus status;
     private String token;
 

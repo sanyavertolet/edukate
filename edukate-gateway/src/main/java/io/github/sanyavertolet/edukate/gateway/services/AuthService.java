@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.gateway.services;
 
+import io.github.sanyavertolet.edukate.auth.EdukateUserDetails;
 import io.github.sanyavertolet.edukate.auth.services.JwtTokenService;
 import io.github.sanyavertolet.edukate.gateway.dtos.AuthenticationDetails;
 import io.github.sanyavertolet.edukate.gateway.dtos.SignInRequest;
@@ -18,10 +19,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
 
+    private AuthenticationDetails intoAuthenticationDetails(EdukateUserDetails userDetails) {
+        return new AuthenticationDetails(userDetails, jwtTokenService.generateToken(userDetails));
+    }
+
     public Mono<AuthenticationDetails> signIn(SignInRequest signInRequest) {
-        return userDetailsService.findByUsername(signInRequest.getUsername())
+        return userDetailsService.findEdukateUserDetailsByUsername(signInRequest.getUsername())
                 .filter(userDetails -> passwordEncoder.matches(signInRequest.getPassword(), userDetails.getPassword()))
-                .map(userDetails -> new AuthenticationDetails(userDetails.getUsername(), jwtTokenService.generateToken(userDetails)))
+                .map(this::intoAuthenticationDetails)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN)));
     }
 
@@ -34,7 +39,6 @@ public class AuthService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.CONFLICT)))
                 .flatMap(request ->
                         userDetailsService.create(request.getUsername(), passwordEncoder.encode(request.getPassword())))
-                .map(userDetails ->
-                        new AuthenticationDetails(userDetails.getUsername(), jwtTokenService.generateToken(userDetails)));
+                .map(this::intoAuthenticationDetails);
     }
 }

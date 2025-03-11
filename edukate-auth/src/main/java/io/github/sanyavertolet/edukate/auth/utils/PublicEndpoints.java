@@ -12,9 +12,10 @@ public class PublicEndpoints {
     }
 
     private static final List<String> publicEndpoints = List.of(
-            "/actuator/health/liveness",
-            "/api/v1/problems/**",
             "/actuator/**",
+            "/actuator/health/liveness",
+            "/internal/**",
+            "/api/v1/problems/**",
             "/auth/**"
     );
 

@@ -12,39 +12,35 @@ export default function ProblemCardComponent({problem}: ProblemCardComponentProp
     return (
         <Card>
             <Backdrop
-                transitionDuration={400}
+                transitionDuration={ 400 }
                 open={ selectedImage != undefined }
-                onClick={() => setSelectedImage(undefined)}
+                onClick={ () => setSelectedImage(undefined) }
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
             >
                 { selectedImage?
-                    <img srcSet={selectedImage} alt={`Problem Image ${problem.id}`} loading="eager"
+                    <img srcSet={ selectedImage } alt={ `Problem Image ${problem.id}` } loading="eager"
                          style={{ maxWidth: "50rem" }}
                     /> : undefined
                 }
             </Backdrop>
             <CardContent>
-                <Typography color={"secondary"} variant="h6">
+                <Typography color="secondary" variant="h6">
                     Terms
                 </Typography>
 
                 <Typography variant="body1">
-                    {problem.text}
+                    { problem.text }
                 </Typography>
 
                 <Divider sx={{ my: 2 }} />
 
-                {problem.images?.length > 0 && (
-                    <Container sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <ImageList cols={problem.images?.length} gap={8}>
-                            {problem.images.map((imageUrl, index) => (
-                                <ImageListItem key={index} onClick={() => setSelectedImage(imageUrl)} sx={{ justifyItems: "center" }}>
+                { problem.images?.length > 0 && (
+                    <Container sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <ImageList cols={ problem.images?.length } gap={ 8 }>
+                            { problem.images.map((imageUrl, index) => (
+                                <ImageListItem key={index} onClick={ () => setSelectedImage(imageUrl) } sx={{ justifyItems: "center" }}>
                                     <img style={{ maxWidth: "25rem" }}
-                                         srcSet={imageUrl}
+                                         srcSet={ imageUrl }
                                          alt={`Problem Image ${index}`}
                                          loading="lazy"
                                     />
