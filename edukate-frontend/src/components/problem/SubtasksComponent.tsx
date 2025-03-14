@@ -1,5 +1,6 @@
 import { Box, Container, Tab, Tabs } from "@mui/material";
 import React, { useState } from "react";
+import { LatexComponent } from "../LatexComponent";
 
 interface SubtasksComponentProps {
     subtasks: { id: string, text: string }[] | null
@@ -15,7 +16,7 @@ export function SubtasksComponent({subtasks}: SubtasksComponentProps) {
         setCurrentTabIndex(newValue);
     };
 
-    return ( subtaskIds ?
+    return ( subtaskIds &&
         <Container>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={currentTabIndex}
@@ -25,11 +26,17 @@ export function SubtasksComponent({subtasks}: SubtasksComponentProps) {
                       indicatorColor="secondary"
                       centered
                 >
-                    { subtaskIds.map((subtaskId, index) => <Tab key={subtaskId} value={index} label={subtaskId}/>) }
+                    { subtaskIds.map((subtaskId, index) =>
+                        <Tab key={subtaskId} value={index} label={subtaskId}/>
+                    )}
                 </Tabs>
             </Box>
 
-            { subtaskMap && <Box sx={{ padding: "2rem" }}>{ subtaskMap[subtaskIds[currentTabIndex]] }</Box>}
-        </Container> : undefined
+            { subtaskMap &&
+                <Box sx={{ padding: "2rem" }}>
+                    <LatexComponent text={subtaskMap[subtaskIds[currentTabIndex]]}/>
+                </Box>
+            }
+        </Container>
     );
 }

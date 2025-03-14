@@ -2,6 +2,7 @@ import { Backdrop, Card, CardContent, Container, ImageList, ImageListItem, Typog
 import { Problem } from "../../types/Problem";
 import { useState } from "react";
 import { SubtasksComponent } from "./SubtasksComponent";
+import { LatexComponent } from "../LatexComponent";
 
 interface ProblemCardComponentProps {
     problem: Problem;
@@ -28,7 +29,7 @@ export default function ProblemCardComponent({problem}: ProblemCardComponentProp
                     Terms
                 </Typography>
 
-                { problem.text && (<Typography variant="body1"> { problem.text } </Typography>)}
+                { problem.text && (<LatexComponent text={problem.text}/>)}
 
                 <SubtasksComponent subtasks={ problem.subtasks }/>
                 { problem.images?.length > 0 && (

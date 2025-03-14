@@ -3,7 +3,7 @@ import { TopBar } from "./topbar/TopBar";
 import { Outlet } from "react-router-dom";
 import { ParticlesComponent } from "./animation/Particles";
 import { useAuthContext } from "./auth/AuthContextProvider";
-import { PendingStatusSnackbar } from "./snackbars/PendingStatusSnackbar.tsx";
+import { PendingStatusSnackbar } from "./snackbars/PendingStatusSnackbar";
 
 export default function PageSkeleton() {
     const { user } = useAuthContext();
