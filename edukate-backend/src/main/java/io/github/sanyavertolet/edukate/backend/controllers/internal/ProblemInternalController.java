@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -15,6 +16,11 @@ public class ProblemInternalController {
     @PostMapping
     public Mono<Problem> postProblem(@RequestBody Problem problem) {
         return problemService.updateProblem(problem);
+    }
+
+    @PostMapping("/batch")
+    public Flux<String> postProblemBatch(@RequestBody Flux<Problem> problems) {
+        return problemService.updateProblemBatch(problems).map(Problem::getId);
     }
 
     @DeleteMapping("/{id}")

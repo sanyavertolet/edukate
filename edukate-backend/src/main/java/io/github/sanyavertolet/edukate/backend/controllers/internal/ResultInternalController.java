@@ -14,12 +14,12 @@ public class ResultInternalController {
     private final ResultService resultService;
 
     @PostMapping
-    public Mono<String> updateResult(@RequestBody Result result) {
+    public Mono<String> postResult(@RequestBody Result result) {
         return resultService.updateResult(result);
     }
 
     @PostMapping("/batch")
-    public Flux<String> updateResultsBatch(@RequestBody Flux<Result> results) {
+    public Flux<String> postResultsBatch(@RequestBody Flux<Result> results) {
         return resultService.updateResultBatch(results);
     }
 }

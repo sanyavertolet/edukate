@@ -25,6 +25,10 @@ public class ProblemService {
         return problemRepository.save(problem);
     }
 
+    public Flux<Problem> updateProblemBatch(Flux<Problem> problems) {
+        return problems.flatMap(problemRepository::save);
+    }
+
     public Mono<Boolean> deleteProblemById(String id) {
         return problemRepository.deleteById(id).thenReturn(true).onErrorReturn(false);
     }
