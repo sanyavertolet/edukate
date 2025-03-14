@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.backend.services;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -13,7 +14,7 @@ public class ProblemService {
     private final ProblemRepository problemRepository;
 
     public Flux<Problem> getAllProblems() {
-        return problemRepository.findAll();
+        return problemRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     public Mono<Problem> getProblemById(String id) {
