@@ -6,6 +6,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.services.FileService;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,8 +23,18 @@ public class ProblemController {
     private final FileService fileService;
 
     @GetMapping
-    public Flux<ProblemMetadata> getProblemList() {
-        return problemService.getAllProblems().map(Problem::toProblemMetadata);
+    public Flux<ProblemMetadata> getProblemList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return Mono.just(PageRequest.of(page, size))
+                .flatMapMany(problemService::getFilteredProblems)
+                .map(Problem::toProblemMetadata);
+    }
+
+    @GetMapping("/count")
+    public Mono<Long> count() {
+        return problemService.countProblems();
     }
 
     @GetMapping("/{id}")
