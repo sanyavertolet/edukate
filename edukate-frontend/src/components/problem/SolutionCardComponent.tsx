@@ -1,5 +1,5 @@
 import { Problem } from "../../types/Problem";
-import { Button, Paper, Stack, Typography } from "@mui/material";
+import { Button, Card, CardContent, Link, Stack, Typography } from "@mui/material";
 import DragAndDropComponent from "./DragAndDropComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import { useSubmitMutation, useMySubmissionsRequest } from "../../http/requests";
@@ -29,15 +29,32 @@ export default function SolutionCardComponent({ problem }: SolutionCardComponent
 
     const handleClick = () => { submitMutation.mutate() };
     const { user } = useAuthContext();
-    return ( user?.status == "ACTIVE" &&
-        <Stack component={ Paper } direction="column" spacing={ 2 } alignItems="center" p={ 2 }>
-            <Typography variant="h6" color="primary">The answer will be provided soon.</Typography>
-            { submissions.length == 0 && (
-                <Button variant="outlined" color="primary" onClick={ handleClick }>Mark as done</Button>
-            )}
-            {/* todo: will be removed later */}
-            {/*<ProblemInputFormComponent problem={ problem }/>*/}
-            <DragAndDropComponent hidden={ true }/>
-        </Stack>
+    return (
+        <Card>
+            <CardContent>
+                <Typography color="secondary" variant="h6">
+                    Solution
+                </Typography>
+                { user?.status == "ACTIVE" && (
+                    <Stack direction="column" spacing={2} alignItems="center">
+                        <Typography variant="body1" color="primary">The answer will be provided soon.</Typography>
+                        {submissions.length == 0 && (
+                            <Button variant="outlined" color="primary" onClick={handleClick}>Mark as done</Button>
+                        )}
+                        {/* todo: will be removed later */}
+                        {/*<ProblemInputFormComponent problem={ problem }/>*/}
+                        <DragAndDropComponent hidden={true}/>
+                    </Stack>
+                )}
+                { user?.status == "PENDING" && (
+                    <Typography variant="body1" color="primary">Account pending approval.</Typography>
+                )}
+                { user == null && (
+                    <Typography variant="body1" color="primary">
+                        <Link href={"/sign-in"}>Sign in</Link>/<Link href={"/sign-up"}>sign up</Link> to solve.
+                    </Typography>
+                )}
+            </CardContent>
+        </Card>
     );
 }
