@@ -35,7 +35,7 @@ export default function SolutionCardComponent({ problem }: SolutionCardComponent
             { submissions.length == 0 && (
                 <Button variant="outlined" color="primary" onClick={ handleClick }>Mark as done</Button>
             )}
-            // todo: will be removed later
+            {/* todo: will be removed later */}
             {/*<ProblemInputFormComponent problem={ problem }/>*/}
             <DragAndDropComponent hidden={ true }/>
         </Stack>
