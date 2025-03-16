@@ -43,7 +43,6 @@ public class SubmissionService {
         return Flux.concat(
                 problemMetadataList.stream()
                         .map(problemMetadata -> updateStatusInMetadata(authentication, problemMetadata))
-                        .map(it -> it.doOnNext(System.out::println))
                         .toList()
         );
     }
