@@ -1,4 +1,4 @@
-import { ProblemMetadata } from '../types/ProblemMetadata';
+import { ProblemMetadata, ProblemStatus } from '../types/ProblemMetadata';
 import {
     Table,
     TableBody,
@@ -15,6 +15,23 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProblemCountRequest, useProblemListRequest } from "../http/requests";
 import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
+import CloseIcon from '@mui/icons-material/CloseOutlined';
+import DoneIcon from '@mui/icons-material/DoneOutlined';
+import PendingIcon from '@mui/icons-material/PendingOutlined';
+
+interface StatusIconProps {
+    status: ProblemStatus | null;
+}
+
+function StatusIcon({ status }: StatusIconProps) {
+    return (
+        <Box>
+            { status == "SOLVED" && <DoneIcon color="success"/> }
+            { status == "FAILED" && <CloseIcon color="error"/> }
+            { status == "SOLVING" && <PendingIcon color="warning"/> }
+        </Box>
+    );
+}
 
 export default function ProblemListComponent() {
     const [ problemList, setProblemList ] = useState<ProblemMetadata[]>([]);
@@ -38,7 +55,7 @@ export default function ProblemListComponent() {
             setProblemLength(problemCountQuery.data)
         }
     }, [problemCountQuery.data, problemCountQuery.isLoading, problemCountQuery.error]);
-    
+
     const tableRows = problemList?.map((item) => (
         <TableRow
             key={ item.name }
@@ -46,20 +63,24 @@ export default function ProblemListComponent() {
             onClick={navigateToProblem.bind(null, item.name)}
             hover
         >
-            <TableCell>{ item.name } { item.isHard && "*" } </TableCell>
-            <TableCell>{ item.tags.map(tag =>
-                <Chip label={tag} size="small" sx={{ mx: 1 }} variant="outlined"/>
+            <TableCell key={`${item.name}-status`}>{ <StatusIcon status={item.status}/> }</TableCell>
+            <TableCell key={`${item.name}-id`}>{ item.name } { item.isHard && "*" } </TableCell>
+            <TableCell key={`${item.name}-tags`}>{ item.tags.map(tag =>
+                <Chip key={`${item.name}-tag-${tag}`} label={tag} size="small" sx={{ mx: 1 }} variant="outlined"/>
             )}</TableCell>
         </TableRow>
     ));
 
     const tableRowsPlaceholder = Array(5).fill(0).map((_, i) => (
        <TableRow key={ i }>
-            <TableCell>
-                <Skeleton variant="text" />
+           <TableCell key={`${i}-status-placeholder`}>
+               <Skeleton variant="rounded" />
+           </TableCell>
+            <TableCell key={`${i}-name-placeholder`}>
+                <Skeleton variant="rounded" />
             </TableCell>
-           <TableCell>
-               <Skeleton variant="text" />
+           <TableCell key={`${i}-tags-placeholder`}>
+               <Skeleton variant="rounded" />
            </TableCell>
        </TableRow>
     ));
@@ -75,14 +96,15 @@ export default function ProblemListComponent() {
     return (
         <Box paddingY="2rem">
             <TableContainer component={ Paper }>
-                <Table size="small" aria-label="problem table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Tags</TableCell>
+                <Table size="medium" aria-label="problem table">
+                    <TableHead key={"table-headers"}>
+                        <TableRow key={"table-headers-row"}>
+                            <TableCell key={"table-headers-status"}>Status</TableCell>
+                            <TableCell key={"table-headers-id"}>Name</TableCell>
+                            <TableCell key={"table-headers-tags"}>Tags</TableCell>
                         </TableRow>
                     </TableHead>
-                    <TableBody>
+                    <TableBody key={"table-body"}>
                         { !problemListQuery.isLoading && !problemListQuery.error
                         && !problemCountQuery.isLoading && !problemCountQuery.error
                             ?
@@ -90,9 +112,10 @@ export default function ProblemListComponent() {
                             tableRowsPlaceholder
                         }
                     </TableBody>
-                    <TableFooter>
-                        <TableRow>
+                    <TableFooter key={"table-footer"}>
+                        <TableRow key={"table-footer-row"}>
                             <TablePagination
+                                key={"table-pagination"}
                                 rowsPerPageOptions={[10, 25, 50, 100]}
                                 colSpan={3}
                                 count={ problemLength }

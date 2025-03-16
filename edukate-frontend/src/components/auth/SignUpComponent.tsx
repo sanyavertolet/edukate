@@ -60,11 +60,7 @@ export const SignUpComponent = () => {
         }
     };
 
-    useEffect(() => {
-        if (signUpMutation.isSuccess) {
-            navigate("/");
-        }
-    }, [signUpMutation.isSuccess]);
+    useEffect(() => { if (signUpMutation.isSuccess) { navigate("/"); }}, [signUpMutation.isSuccess]);
 
     return (
         <Box component="form" onSubmit={handleSubmit}>

@@ -1,5 +1,8 @@
 export interface User {
     name: string;
-    roles: ("ADMIN" | "USER" | "MODERATOR")[];
-    status: "ACTIVE" | "PENDING" | "DELETED";
+    roles: UserRole[];
+    status: UserStatus;
 }
+
+export type UserStatus = "ACTIVE" | "PENDING" | "DELETED";
+export type UserRole = "ADMIN" | "USER" | "MODERATOR";

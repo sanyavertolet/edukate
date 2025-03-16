@@ -1,9 +1,10 @@
 import { Box, Container, Tab, Tabs } from "@mui/material";
 import React, { useState } from "react";
 import { LatexComponent } from "../LatexComponent";
+import { Subtask } from "../../types/Problem";
 
 interface SubtasksComponentProps {
-    subtasks: { id: string, text: string }[] | null
+    subtasks: Subtask[] | null
 }
 
 export function SubtasksComponent({subtasks}: SubtasksComponentProps) {

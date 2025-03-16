@@ -21,7 +21,7 @@ public class UserController {
     public Mono<UserDto> whoami(Authentication authentication) {
         return Mono.justOrEmpty(authentication)
                 .map(Principal::getName)
-                .flatMap(userService::getUserByName)
+                .flatMap(userService::findUserByName)
                 .map(UserDto::of)
                 .switchIfEmpty(Mono.empty());
     }

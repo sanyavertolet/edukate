@@ -23,7 +23,7 @@ public class ProblemService {
         );
     }
 
-    public Mono<Problem> getProblemById(String id) {
+    public Mono<Problem> findProblemById(String id) {
         return problemRepository.findById(id);
     }
 

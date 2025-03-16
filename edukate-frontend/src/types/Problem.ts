@@ -5,5 +5,10 @@ export interface Problem {
   tags: string[];
   text: string | null;
   images: string[];
-  subtasks: ({id: string, text: string})[]
+  subtasks: Subtask[]
+}
+
+export interface Subtask {
+  id: string;
+  text: string;
 }

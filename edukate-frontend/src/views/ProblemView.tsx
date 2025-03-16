@@ -28,7 +28,7 @@ export default function ProblemView() {
             {!isLoading && !error && problem && (
                 <Stack display="flex" justifyContent="center" spacing={ 2 } padding={ 2 }>
                     <ProblemCardComponent problem={ problem }/>
-                    { problem.hasResult && <SolutionCardComponent problem={ problem }/>}
+                    <SolutionCardComponent problem={ problem }/>
                 </Stack>
             )}
 

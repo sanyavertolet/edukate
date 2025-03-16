@@ -19,12 +19,12 @@ public class UserInternalController {
 
     @GetMapping("/by-name/{name}")
     public Mono<User> getUserByName(@PathVariable String name) {
-        return userService.getUserByName(name);
+        return userService.findUserByName(name);
     }
 
     @GetMapping("/by-id/{id}")
     public Mono<User> getUserById(@PathVariable String id) {
-        return userService.getUserById(id);
+        return userService.findUserById(id);
     }
 
     @DeleteMapping("/by-id/{id}")

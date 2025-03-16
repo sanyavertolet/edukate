@@ -21,7 +21,7 @@ public class ImageInternalController {
 
     @PostMapping("/upload/{problemId}")
     public Mono<String> uploadImage(@PathVariable String problemId, @RequestParam String fileKey, @RequestBody Flux<ByteBuffer> content) {
-        return problemService.getProblemById(problemId)
+        return problemService.findProblemById(problemId)
                 .switchIfEmpty(
                         Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem with id " + problemId + " not found"))
                 )
@@ -40,7 +40,7 @@ public class ImageInternalController {
 
     @PutMapping("/link/{problemId}")
     public Mono<String> addImageKey(@PathVariable String problemId, @RequestParam String fileKey) {
-        return problemService.getProblemById(problemId)
+        return problemService.findProblemById(problemId)
                 .switchIfEmpty(
                         Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem with id " + problemId + " not found"))
                 )

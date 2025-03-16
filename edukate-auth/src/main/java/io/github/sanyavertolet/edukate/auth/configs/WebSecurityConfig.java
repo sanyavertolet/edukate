@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
-import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Mono;
 
@@ -50,13 +49,10 @@ public class WebSecurityConfig {
         ReactiveAuthenticationManager authenticationManager = Mono::just;
         AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(authenticationManager);
 
-        authenticationWebFilter.setServerAuthenticationConverter(exchange -> PublicEndpoints.asMatcher()
-                .matches(exchange)
-                .map(ServerWebExchangeMatcher.MatchResult::isMatch)
-                .filter(match -> !match)
-                .map(_ -> exchange.getRequest().getHeaders())
-                .mapNotNull(AuthUtils::toEdukateUserDetails)
-                .map(EdukateUserDetails::toPreAuthenticatedAuthenticationToken));
+        authenticationWebFilter.setServerAuthenticationConverter(exchange ->
+                Mono.just(exchange.getRequest().getHeaders())
+                        .mapNotNull(AuthUtils::toEdukateUserDetails)
+                        .map(EdukateUserDetails::toPreAuthenticatedAuthenticationToken));
         return authenticationWebFilter;
     }
 

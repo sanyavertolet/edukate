@@ -40,6 +40,10 @@ public class Problem {
         FORMULA, TEXT, NUMERIC
     }
 
+    public enum Status {
+        SOLVED, SOLVING, FAILED, NOT_SOLVED
+    }
+
     public void addImageIfNotPresent(String imageName) {
         if (images == null) {
             images = new ArrayList<>();
@@ -58,7 +62,7 @@ public class Problem {
     }
 
     public ProblemMetadata toProblemMetadata() {
-        return new ProblemMetadata(id, isHard, tags);
+        return new ProblemMetadata(id, isHard, tags, null);
     }
 
     public ProblemDto toProblemDto() {

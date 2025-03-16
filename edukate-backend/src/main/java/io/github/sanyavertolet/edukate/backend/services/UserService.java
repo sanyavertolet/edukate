@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.repositories.UserRepository;
+import io.github.sanyavertolet.edukate.common.UserStatus;
 import io.github.sanyavertolet.edukate.common.entities.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,15 +16,19 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Mono<User> getUserById(String name) {
+    public Mono<User> findUserById(String name) {
         return userRepository.findById(name);
     }
 
-    public Mono<User> getUserByName(String name) {
+    public Mono<User> findUserByName(String name) {
         return userRepository.findByName(name);
     }
 
     public Mono<Boolean> deleteUserById(String id) {
         return userRepository.deleteById(id).thenReturn(true).onErrorReturn(false);
+    }
+
+    public Mono<Boolean> hasUserPermissionToSubmit(User user) {
+        return Mono.just(user).filter(usr -> usr.getStatus() == UserStatus.ACTIVE).hasElement();
     }
 }

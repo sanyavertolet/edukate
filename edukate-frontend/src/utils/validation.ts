@@ -1,6 +1,8 @@
 type Validation<Type> = (value: Type) => string | null;
 
-export const validate = (field: "email" | "username" | "password", value: string) => {
+type ValidationTarget = "email" | "username" | "password";
+
+export const validate = (field: ValidationTarget, value: string) => {
     switch (field) {
         case 'username': return validateUsername(value);
         case 'email': return  validateEmail(value);
