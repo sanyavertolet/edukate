@@ -7,9 +7,13 @@ import { useCookies } from "react-cookie";
 import { defaultCookieOptions, TOKEN_COOKIE } from "../utils/cookies";
 
 export function useWhoamiQuery() {
+    const [ cookies ] = useCookies([TOKEN_COOKIE]);
     return useQuery({
-        queryKey: ['whoami'],
+        queryKey: ['whoami', cookies[TOKEN_COOKIE]],
         queryFn: async () => {
+            if (!cookies[TOKEN_COOKIE]) {
+                return null;
+            }
             try {
                 const response = await client.get('/api/v1/users/whoami');
                 return response.data as User;
