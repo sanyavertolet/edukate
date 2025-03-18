@@ -14,7 +14,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
     return (
         <Card>
             <CardContent>
-                <Typography color="secondary" variant="h6">
+                <Typography color="secondary" variant="h6" paddingBottom={1}>
                     Solution
                 </Typography>
                 { user?.status == "PENDING" && (
@@ -26,7 +26,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                     </Typography>
                 )}
                 { user?.status == "ACTIVE" && (
-                    <Stack direction="column" spacing={2} alignItems="center" paddingTop={2}>
+                    <Stack direction="column" spacing={2} alignItems="center">
                         {/* todo: will be removed later */}
                         {/*<ProblemInputFormComponent problem={ problem }/>*/}
                         <DragAndDropComponent hidden={true}/>
