@@ -3,7 +3,6 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
-import io.github.sanyavertolet.edukate.backend.services.FileService;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class ProblemController {
     private final ProblemService problemService;
-    private final FileService fileService;
     private final SubmissionService submissionService;
 
     @GetMapping
@@ -51,7 +49,7 @@ public class ProblemController {
         return problemService.findProblemById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found")))
                 .map(Problem::toProblemDto)
-                .flatMap(fileService::updateImagesInDto)
+                .flatMap(problemService::updateImagesInDto)
                 .flatMap(problemDto -> submissionService.updateStatusInDto(authentication, problemDto));
     }
 }

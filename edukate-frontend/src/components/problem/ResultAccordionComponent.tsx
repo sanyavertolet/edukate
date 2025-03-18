@@ -6,6 +6,7 @@ import { Result } from "../../types/Result";
 import { LatexComponent } from "../LatexComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import { Problem } from "../../types/Problem";
+import { ImageListComponent } from "../images/ImageListComponent";
 
 interface ResultComponentProps {
     problem: Problem;
@@ -40,6 +41,7 @@ export function ResultAccordionComponent({ problem, refreshProblem }: ResultComp
                 </AccordionSummary>
                 <AccordionDetails>
                     { result?.text && <LatexComponent text={result?.text}/>}
+                    { result?.images && <ImageListComponent images={result?.images}/> }
                 </AccordionDetails>
                 { problem.status != "SOLVED" && (
                     <AccordionActions>

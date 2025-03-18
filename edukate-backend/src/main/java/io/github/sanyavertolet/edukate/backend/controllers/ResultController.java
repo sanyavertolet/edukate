@@ -19,6 +19,8 @@ public class ResultController {
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
     public Mono<Result> getResultById(@PathVariable String id) {
-        return resultService.findResultById(id);
+        return resultService.findResultById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Result not found")))
+                .flatMap(resultService::updateImagesInResult);
     }
 }

@@ -16,4 +16,8 @@ public record Result(
             images = List.of();
         }
     }
+
+    public Result withImages(List<String> images) {
+        return new Result(id, text, notes, type, images);
+    }
 }

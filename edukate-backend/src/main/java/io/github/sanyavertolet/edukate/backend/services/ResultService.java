@@ -8,10 +8,13 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class ResultService {
     private final ProblemRepository problemRepository;
+    private final FileService fileService;
 
     public Mono<String> updateResult(Result result) {
         return problemRepository.findById(result.id())
@@ -27,6 +30,17 @@ public class ResultService {
                     .map(problem -> problem.applyResult(result))
                     .flatMap(problemRepository::save)
                     .map(Problem::getId));
+    }
+
+    public Mono<Result> updateImagesInResult(Result result) {
+        return Flux.fromIterable(result.images())
+                .flatMap(fileService::getDownloadUrlOrEmpty)
+                .collectList()
+                .zipWith(Mono.justOrEmpty(result))
+                .map(tuple -> {
+                    List<String> urls = tuple.getT1();
+                    return tuple.getT2().withImages(urls);
+                });
     }
 
     public Mono<Result> findResultById(String id) {
