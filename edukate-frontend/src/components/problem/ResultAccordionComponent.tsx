@@ -1,20 +1,20 @@
-import {useMySubmissionsRequest, useResultRequest, useSubmitMutation} from "../../http/requests";
+import { useResultRequest, useSubmitMutation } from "../../http/requests";
 import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Button, Container, Typography } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from "react";
 import { Result } from "../../types/Result";
 import { LatexComponent } from "../LatexComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
-import { Submission } from "../../types/Submission";
+import { Problem } from "../../types/Problem";
 
 interface ResultComponentProps {
-    problemId: string;
+    problem: Problem;
     refreshProblem: () => void;
 }
 
-export function ResultAccordionComponent({ problemId, refreshProblem }: ResultComponentProps) {
+export function ResultAccordionComponent({ problem, refreshProblem }: ResultComponentProps) {
     const [result, setResult] = useState<Result>();
-    const resultRequest = useResultRequest(problemId);
+    const resultRequest = useResultRequest(problem.id);
     useEffect(
         () => {
             resultRequest.data && !resultRequest.isLoading && !resultRequest.error && setResult(resultRequest.data);
@@ -22,19 +22,9 @@ export function ResultAccordionComponent({ problemId, refreshProblem }: ResultCo
         [resultRequest.data, resultRequest.isLoading, resultRequest.error]
     );
 
-    const [submissions, setSubmissions] = useState<Submission[]>([]);
-
-    const mySubmissionsRequest = useMySubmissionsRequest(problemId);
-    useEffect(() => {
-        if (mySubmissionsRequest.data && !mySubmissionsRequest.isLoading && !mySubmissionsRequest.error) {
-            setSubmissions(mySubmissionsRequest.data);
-        }
-    }, [mySubmissionsRequest.data, mySubmissionsRequest.isLoading, mySubmissionsRequest.error]);
-
-    const submitMutation = useSubmitMutation(problemId);
+    const submitMutation = useSubmitMutation(problem.id);
     useEffect(() => {
         if (submitMutation.isSuccess && submitMutation.data) {
-            setSubmissions(old => [...(old || []), submitMutation.data]);
             refreshProblem();
         }
     }, [submitMutation.isSuccess, submitMutation.data]);
@@ -51,7 +41,7 @@ export function ResultAccordionComponent({ problemId, refreshProblem }: ResultCo
                 <AccordionDetails>
                     { result?.text && <LatexComponent text={result?.text}/>}
                 </AccordionDetails>
-                { submissions.length == 0 && (
+                { problem.status != "SOLVED" && (
                     <AccordionActions>
                         <Button onClick={handleClick}>Mark as done</Button>
                     </AccordionActions>

@@ -30,7 +30,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                         {/* todo: will be removed later */}
                         {/*<ProblemInputFormComponent problem={ problem }/>*/}
                         <DragAndDropComponent hidden={true}/>
-                        <ResultAccordionComponent problemId={problem.id} refreshProblem={refreshProblem}/>
+                        <ResultAccordionComponent problem={problem} refreshProblem={refreshProblem}/>
                     </Stack>
                 )}
             </CardContent>
