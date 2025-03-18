@@ -37,10 +37,10 @@ export function useProblemCountRequest() {
     });
 }
 
-export function useProblemRequest(id: string) {
+export function useProblemRequest(id: string, shouldRefresh?: boolean) {
     const { user } = useAuthContext();
     return useQuery({
-        queryKey: ['problem', id, user],
+        queryKey: ['problem', id, user, shouldRefresh],
         queryFn: async () => {
             try {
                 const response = await client.get<Problem>(`/api/v1/problems/${id}`);

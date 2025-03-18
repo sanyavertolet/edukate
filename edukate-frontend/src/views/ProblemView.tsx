@@ -9,10 +9,13 @@ import { useProblemRequest } from "../http/requests";
 
 export default function ProblemView() {
     const { id } = useParams();
-    const { data, isLoading, error } = useProblemRequest(id!);
+    const [ shouldRefresh, setShouldRefresh ] = useState(false);
+    const { data, isLoading, error } = useProblemRequest(id!, shouldRefresh);
     const [ problem, setProblem ] = useState<Problem>();
 
     useEffect(() => { if (data && !isLoading && !error) { setProblem(data); }}, [data, isLoading, error]);
+
+    const refreshProblem = () => { setShouldRefresh((flag) => !flag); };
 
     return (
         <Box>
@@ -28,7 +31,7 @@ export default function ProblemView() {
             {!isLoading && !error && problem && (
                 <Stack display="flex" justifyContent="center" spacing={ 2 }>
                     <ProblemCardComponent problem={ problem }/>
-                    <SolutionCardComponent problem={ problem }/>
+                    <SolutionCardComponent problem={ problem } refreshProblem={refreshProblem}/>
                 </Stack>
             )}
 

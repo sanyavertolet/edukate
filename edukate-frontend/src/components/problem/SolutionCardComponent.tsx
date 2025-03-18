@@ -1,33 +1,15 @@
 import { Problem } from "../../types/Problem";
-import { Button, Card, CardContent, Link, Stack, Typography } from "@mui/material";
+import { Card, CardContent, Link, Stack, Typography } from "@mui/material";
 import DragAndDropComponent from "./DragAndDropComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
-import { useSubmitMutation, useMySubmissionsRequest } from "../../http/requests";
-import { useEffect, useState } from "react";
-import { Submission } from "../../types/Submission";
+import { ResultAccordionComponent } from "./ResultAccordionComponent";
 
 interface SolutionCardComponentProps {
     problem: Problem;
+    refreshProblem: () => void;
 }
 
-export default function SolutionCardComponent({ problem }: SolutionCardComponentProps) {
-    const [submissions, setSubmissions] = useState<Submission[]>([]);
-
-    const { data, isLoading, error } = useMySubmissionsRequest(problem.id);
-    useEffect(() => {
-        if (data && !isLoading && !error) {
-            setSubmissions(data);
-        }
-    }, [data, isLoading, error]);
-
-    const submitMutation = useSubmitMutation(problem.id);
-    useEffect(() => {
-        if (submitMutation.isSuccess && submitMutation.data) {
-            setSubmissions(old => [...(old || []), submitMutation.data]);
-        }
-    }, [submitMutation.isSuccess, submitMutation.data]);
-
-    const handleClick = () => { submitMutation.mutate() };
+export default function SolutionCardComponent({ problem, refreshProblem }: SolutionCardComponentProps) {
     const { user } = useAuthContext();
     return (
         <Card>
@@ -44,15 +26,11 @@ export default function SolutionCardComponent({ problem }: SolutionCardComponent
                     </Typography>
                 )}
                 { user?.status == "ACTIVE" && (
-                    <Stack direction="column" spacing={2} alignItems="center">
-                        <Typography variant="body1" color="primary">The answer will be provided soon.</Typography>
-
-                        { submissions.length == 0 && (
-                            <Button variant="outlined" color="primary" onClick={handleClick}>Mark as done</Button>
-                        )}
+                    <Stack direction="column" spacing={2} alignItems="center" paddingTop={2}>
                         {/* todo: will be removed later */}
                         {/*<ProblemInputFormComponent problem={ problem }/>*/}
                         <DragAndDropComponent hidden={true}/>
+                        <ResultAccordionComponent problemId={problem.id} refreshProblem={refreshProblem}/>
                     </Stack>
                 )}
             </CardContent>

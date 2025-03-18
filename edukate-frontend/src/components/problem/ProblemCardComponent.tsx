@@ -12,7 +12,7 @@ export default function ProblemCardComponent({problem}: ProblemCardComponentProp
     return (
         <Card>
             <CardContent>
-                <Typography color="secondary" variant="h6">
+                <Typography color="secondary" variant="h6" paddingBottom={2}>
                     Terms
                 </Typography>
 
