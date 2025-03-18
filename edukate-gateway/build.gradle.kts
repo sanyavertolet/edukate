@@ -51,8 +51,8 @@ tasks.bootBuildImage {
     imagePlatform.set("linux/amd64")
     pullPolicy.set(org.springframework.boot.buildpack.platform.build.PullPolicy.IF_NOT_PRESENT)
     tags.set(setOf(
-        "registry.digitalocean.com/edukate-container-registry/edukate-backend:latest",
-        "registry.digitalocean.com/edukate-container-registry/edukate-backend:${project.version}"
+        "registry.digitalocean.com/edukate-container-registry/edukate-gateway:latest",
+        "registry.digitalocean.com/edukate-container-registry/edukate-gateway:${project.version}"
     ))
     verboseLogging.set(true)
     publish.set(true)
