@@ -78,7 +78,7 @@ export default function ProblemListComponent() {
     };
 
     return (
-        <Box paddingY="2rem">
+        <Box paddingTop="2rem">
             <TableContainer component={ Paper }>
                 <Table size="medium" aria-label="problem table">
                     <TableHead key={"table-headers"}>

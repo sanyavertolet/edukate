@@ -5,10 +5,13 @@ import ProblemListComponent from '../components/ProblemListComponent';
 export default function ProblemListView() {
     return (
         <Box>
-            <Typography marginTop="2rem" color="primary" variant="h5">Problems</Typography>
-            <Grid container spacing={ 2 } marginTop="0.5rem">
+            <Typography color="primary" variant="h5">
+                Problems
+            </Typography>
+
+            <Grid container spacing={ 2 }>
                 <Grid key={"left-grid"} size="grow"/>
-                <Grid key={"central-grid"} size={ 10 }  display="flex" flexDirection="column" height="75vh">
+                <Grid key={"central-grid"} size={ 10 } display="flex" flexDirection="column">
                     <ProblemListComponent/>
                 </Grid>
                 <Grid key={"right-grid"} size="grow"/>

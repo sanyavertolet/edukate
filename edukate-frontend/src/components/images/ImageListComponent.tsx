@@ -16,11 +16,13 @@ export function ImageListComponent({ images }: ImageListComponentProps) {
         '&:hover': { opacity: 0.8, transition: 'opacity 0.3s ease-in-out' }
     };
 
+    const containerSx = { display: "flex", justifyContent: "center", alignItems: "center", mt: 2 };
+
     const handleImageClick = (imageUrl: string) => { setSelectedImage(imageUrl); };
     const handleClose = () => { setSelectedImage(null); };
 
     return (
-        <Container sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
+        <Container sx={containerSx}>
             <ImageList gap={3} cols={images.length} variant="woven">
                 {images.map((imageUrl, index) => (
                     <ImageListItem key={index} onClick={() => handleImageClick(imageUrl)} sx={imageListItemSx}>

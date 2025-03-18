@@ -1,11 +1,11 @@
 import { useParams } from "react-router-dom";
 import { Problem } from "../types/Problem";
 import { useEffect, useState } from "react";
-import { Alert, Box, CircularProgress, Container, Stack, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, Stack, Typography } from "@mui/material";
 import ProblemCardComponent from "../components/problem/ProblemCardComponent";
 import SolutionCardComponent from "../components/problem/SolutionCardComponent";
-import { useProblemRequest } from "../http/requests";
 import { ProblemStatusIcon } from "../components/problem/ProblemStatusIcon";
+import { useProblemRequest } from "../http/requests";
 
 export default function ProblemView() {
     const { id } = useParams();
@@ -15,9 +15,9 @@ export default function ProblemView() {
     useEffect(() => { if (data && !isLoading && !error) { setProblem(data); }}, [data, isLoading, error]);
 
     return (
-        <Container sx={{ my: 4 }}>
-            <Stack direction="row" justifyContent="center" spacing={ 2 } alignItems="center">
-                <Typography variant="h5" color="primary" gutterBottom>
+        <Box>
+            <Stack direction="row" justifyContent="center" spacing={ 2 } alignItems="center" paddingBottom={"2rem"}>
+                <Typography variant="h5" color="primary">
                     Problem { id }
                 </Typography>
                 <ProblemStatusIcon status={ problem?.status || null }/>
@@ -26,7 +26,7 @@ export default function ProblemView() {
             {isLoading && (<Box display="flex" justifyContent="center"><CircularProgress/></Box>)}
 
             {!isLoading && !error && problem && (
-                <Stack display="flex" justifyContent="center" spacing={ 2 } padding={ 2 }>
+                <Stack display="flex" justifyContent="center" spacing={ 2 }>
                     <ProblemCardComponent problem={ problem }/>
                     <SolutionCardComponent problem={ problem }/>
                 </Stack>
@@ -35,6 +35,6 @@ export default function ProblemView() {
             {!isLoading && !error && !problem && ( <Alert severity="info">Problem not found.</Alert> )}
 
             {error && ( <Alert severity="error">{(error as Error).message}</Alert> )}
-        </Container>
+        </Box>
     );
 };

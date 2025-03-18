@@ -1,4 +1,4 @@
-import { Box, Container, Tab, Tabs } from "@mui/material";
+import { Box, Tab, Tabs } from "@mui/material";
 import React, { useState } from "react";
 import { LatexComponent } from "../LatexComponent";
 import { Subtask } from "../../types/Problem";
@@ -18,7 +18,7 @@ export function SubtasksComponent({subtasks}: SubtasksComponentProps) {
     };
 
     return ( subtaskIds &&
-        <Container>
+        <Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={currentTabIndex}
                       onChange={handleTabChange}
@@ -38,6 +38,6 @@ export function SubtasksComponent({subtasks}: SubtasksComponentProps) {
                     <LatexComponent text={subtaskMap[subtaskIds[currentTabIndex]]}/>
                 </Box>
             }
-        </Container>
+        </Box>
     );
 }
