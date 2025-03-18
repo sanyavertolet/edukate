@@ -5,6 +5,7 @@ import { Alert, Box, CircularProgress, Container, Stack, Typography } from "@mui
 import ProblemCardComponent from "../components/problem/ProblemCardComponent";
 import SolutionCardComponent from "../components/problem/SolutionCardComponent";
 import { useProblemRequest } from "../http/requests";
+import { ProblemStatusIcon } from "../components/problem/ProblemStatusIcon";
 
 export default function ProblemView() {
     const { id } = useParams();
@@ -15,15 +16,14 @@ export default function ProblemView() {
 
     return (
         <Container sx={{ my: 4 }}>
-            <Typography variant="h5" color="primary" gutterBottom>
-                Problem { id }
-            </Typography>
+            <Stack direction="row" justifyContent="center" spacing={ 2 } alignItems="center">
+                <Typography variant="h5" color="primary" gutterBottom>
+                    Problem { id }
+                </Typography>
+                <ProblemStatusIcon status={ problem?.status || null }/>
+            </Stack>
 
-            {isLoading && (
-                <Box display="flex" justifyContent="center">
-                    <CircularProgress />
-                </Box>
-            )}
+            {isLoading && (<Box display="flex" justifyContent="center"><CircularProgress/></Box>)}
 
             {!isLoading && !error && problem && (
                 <Stack display="flex" justifyContent="center" spacing={ 2 } padding={ 2 }>
@@ -32,13 +32,9 @@ export default function ProblemView() {
                 </Stack>
             )}
 
-            {!isLoading && !error && !problem && (
-                <Alert severity="info">Problem not found.</Alert>
-            )}
+            {!isLoading && !error && !problem && ( <Alert severity="info">Problem not found.</Alert> )}
 
-            {error && (
-                <Alert severity="error">{(error as Error).message}</Alert>
-            )}
+            {error && ( <Alert severity="error">{(error as Error).message}</Alert> )}
         </Container>
     );
 };

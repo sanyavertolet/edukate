@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
+import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
@@ -57,6 +58,18 @@ public class SubmissionService {
                     return metadata;
                 })
                 .defaultIfEmpty(problemMetadata);
+    }
+
+    public Mono<ProblemDto> updateStatusInDto(Authentication authentication, ProblemDto problemDto) {
+        return Mono.justOrEmpty(problemDto)
+                .zipWhen(dto -> collectProblemStatus(authentication, dto.getId()))
+                .map(tuple -> {
+                    ProblemDto dto = tuple.getT1();
+                    Problem.Status status = tuple.getT2();
+                    dto.setStatus(status);
+                    return dto;
+                })
+                .defaultIfEmpty(problemDto);
     }
 
     public Mono<Problem.Status> collectProblemStatus(Authentication authentication, String problemId) {

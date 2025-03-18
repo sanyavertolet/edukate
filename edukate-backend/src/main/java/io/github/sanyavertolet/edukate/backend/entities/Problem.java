@@ -66,6 +66,6 @@ public class Problem {
     }
 
     public ProblemDto toProblemDto() {
-        return new ProblemDto(id, isHard, tags, text, subtasks, images, result != null);
+        return new ProblemDto(id, isHard, tags, text, subtasks, images, null, result != null);
     }
 }

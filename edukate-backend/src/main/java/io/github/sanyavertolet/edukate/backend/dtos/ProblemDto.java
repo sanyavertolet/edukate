@@ -19,5 +19,6 @@ public class ProblemDto {
     private String text;
     private List<Problem.Subtask> subtasks = new ArrayList<>();
     private List<String> images;
+    private Problem.Status status;
     private Boolean hasResult;
 }

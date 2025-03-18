@@ -15,8 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/problems")
 @RequiredArgsConstructor
@@ -46,17 +44,14 @@ public class ProblemController {
     }
 
     @GetMapping("/{id}")
-    public Mono<ProblemDto> getProblem(@PathVariable String id) {
-        return problemService.findProblemById(id).map(Problem::toProblemDto)
-                .zipWhen((problemDto) -> Flux.fromIterable(problemDto.getImages())
-                        .flatMap(fileService::getDownloadUrl)
-                        .collectList())
-                .map(tuple -> {
-                    ProblemDto dto = tuple.getT1();
-                    List<String> imageUrls = tuple.getT2();
-                    dto.setImages(imageUrls);
-                    return dto;
-                })
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found")));
+    public Mono<ProblemDto> getProblem(
+            @PathVariable String id,
+            Authentication authentication
+    ) {
+        return problemService.findProblemById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found")))
+                .map(Problem::toProblemDto)
+                .flatMap(fileService::updateImagesInDto)
+                .flatMap(problemDto -> submissionService.updateStatusInDto(authentication, problemDto));
     }
 }

@@ -1,3 +1,5 @@
+import { ProblemStatus } from "./ProblemMetadata";
+
 export interface Problem {
   id: string;
   isHard: boolean;
@@ -5,6 +7,7 @@ export interface Problem {
   tags: string[];
   text: string | null;
   images: string[];
+  status: ProblemStatus | null;
   subtasks: Subtask[]
 }
 

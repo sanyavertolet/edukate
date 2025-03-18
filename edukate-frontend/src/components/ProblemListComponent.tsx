@@ -1,4 +1,4 @@
-import { ProblemMetadata, ProblemStatus } from '../types/ProblemMetadata';
+import { ProblemMetadata } from '../types/ProblemMetadata';
 import {
     Table,
     TableBody,
@@ -15,23 +15,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProblemCountRequest, useProblemListRequest } from "../http/requests";
 import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
-import CloseIcon from '@mui/icons-material/CloseOutlined';
-import DoneIcon from '@mui/icons-material/DoneOutlined';
-import PendingIcon from '@mui/icons-material/PendingOutlined';
-
-interface StatusIconProps {
-    status: ProblemStatus | null;
-}
-
-function StatusIcon({ status }: StatusIconProps) {
-    return (
-        <Box>
-            { status == "SOLVED" && <DoneIcon color="success"/> }
-            { status == "FAILED" && <CloseIcon color="error"/> }
-            { status == "SOLVING" && <PendingIcon color="warning"/> }
-        </Box>
-    );
-}
+import { ProblemStatusIcon } from "./problem/ProblemStatusIcon";
 
 export default function ProblemListComponent() {
     const [ problemList, setProblemList ] = useState<ProblemMetadata[]>([]);
@@ -63,7 +47,7 @@ export default function ProblemListComponent() {
             onClick={navigateToProblem.bind(null, item.name)}
             hover
         >
-            <TableCell key={`${item.name}-status`}>{ <StatusIcon status={item.status}/> }</TableCell>
+            <TableCell key={`${item.name}-status`}>{ <ProblemStatusIcon status={item.status}/> }</TableCell>
             <TableCell key={`${item.name}-id`}>{ item.name } { item.isHard && "*" } </TableCell>
             <TableCell key={`${item.name}-tags`}>{ item.tags.map(tag =>
                 <Chip key={`${item.name}-tag-${tag}`} label={tag} size="small" sx={{ mx: 1 }} variant="outlined"/>
