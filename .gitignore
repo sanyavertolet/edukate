@@ -35,5 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
 /mongo-data/
+/minio-data/
 /pdf-cracker/data/
