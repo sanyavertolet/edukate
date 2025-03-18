@@ -4,12 +4,12 @@ import org.ajoberstar.reckon.gradle.ReckonExtension
 rootProject.name = "edukate"
 
 plugins {
-    id("org.ajoberstar.reckon.settings") version "0.18.2"
+    id("org.ajoberstar.reckon.settings") version "0.19.1"
 }
 
 extensions.configure<ReckonExtension> {
     setDefaultInferredScope(Scope.MINOR.name)
-    snapshots()
+    stages("rc", "final")
     setScopeCalc(calcScopeFromProp())
     setStageCalc(calcStageFromProp())
 }
