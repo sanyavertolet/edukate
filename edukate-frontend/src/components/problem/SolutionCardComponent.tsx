@@ -35,17 +35,6 @@ export default function SolutionCardComponent({ problem }: SolutionCardComponent
                 <Typography color="secondary" variant="h6">
                     Solution
                 </Typography>
-                { user?.status == "ACTIVE" && (
-                    <Stack direction="column" spacing={2} alignItems="center">
-                        <Typography variant="body1" color="primary">The answer will be provided soon.</Typography>
-                        {submissions.length == 0 && (
-                            <Button variant="outlined" color="primary" onClick={handleClick}>Mark as done</Button>
-                        )}
-                        {/* todo: will be removed later */}
-                        {/*<ProblemInputFormComponent problem={ problem }/>*/}
-                        <DragAndDropComponent hidden={true}/>
-                    </Stack>
-                )}
                 { user?.status == "PENDING" && (
                     <Typography variant="body1" color="primary">Account pending approval.</Typography>
                 )}
@@ -53,6 +42,18 @@ export default function SolutionCardComponent({ problem }: SolutionCardComponent
                     <Typography variant="body1" color="primary">
                         <Link href={"/sign-in"}>Sign in</Link>/<Link href={"/sign-up"}>sign up</Link> to solve.
                     </Typography>
+                )}
+                { user?.status == "ACTIVE" && (
+                    <Stack direction="column" spacing={2} alignItems="center">
+                        <Typography variant="body1" color="primary">The answer will be provided soon.</Typography>
+
+                        { submissions.length == 0 && (
+                            <Button variant="outlined" color="primary" onClick={handleClick}>Mark as done</Button>
+                        )}
+                        {/* todo: will be removed later */}
+                        {/*<ProblemInputFormComponent problem={ problem }/>*/}
+                        <DragAndDropComponent hidden={true}/>
+                    </Stack>
                 )}
             </CardContent>
         </Card>
