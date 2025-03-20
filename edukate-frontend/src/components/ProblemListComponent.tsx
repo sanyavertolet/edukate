@@ -21,13 +21,15 @@ function getSearchParamAsInt(searchParams: URLSearchParams, key: string, default
     return searchParams.get(key) ? parseInt(searchParams.get(key)!) : defaultValue;
 }
 
+const DEFAULT_PAGE_SIZE = 10;
+
 export default function ProblemListComponent() {
     const navigate = useNavigate();
     const navigateToProblem = (problemName: string) => { navigate(`/problems/${problemName}`) };
 
     const [ searchParams, setSearchParams ] = useSearchParams()
     const [ page, setPage ] = useState(getSearchParamAsInt(searchParams, 'page', 0));
-    const [ rowsPerPage, setRowsPerPage ] = useState(getSearchParamAsInt(searchParams, 'pageSize', 10));
+    const [ rowsPerPage, setRowsPerPage ] = useState(getSearchParamAsInt(searchParams, 'pageSize', DEFAULT_PAGE_SIZE));
 
     const [ problemList, setProblemList ] = useState<ProblemMetadata[]>([]);
     const problemListQuery = useProblemListRequest(page, rowsPerPage);
@@ -49,11 +51,11 @@ export default function ProblemListComponent() {
         <TableRow
             key={ item.name }
             sx={{ cursor: 'pointer', textcolor: '#ffffff' }}
-            onClick={navigateToProblem.bind(null, item.name)}
+            onClick={ navigateToProblem.bind(null, item.name) }
             hover
         >
             <TableCell key={`${item.name}-status`}>{ <ProblemStatusIcon status={item.status}/> }</TableCell>
-            <TableCell key={`${item.name}-id`}>{ item.name } { item.isHard && "*" } </TableCell>
+            <TableCell key={`${item.name}-id`}>{ item.name + (item.isHard ? "*" : "") } </TableCell>
             <TableCell key={`${item.name}-tags`}>{ item.tags.map(tag =>
                 <Chip key={`${item.name}-tag-${tag}`} label={tag} size="small" sx={{ mx: 1 }} variant="outlined"/>
             )}</TableCell>
@@ -74,14 +76,32 @@ export default function ProblemListComponent() {
        </TableRow>
     ));
 
+    const updateSearchParams = (pageNumber?: string, pageSize?: string) => {
+        const isPageNumber = pageNumber && pageNumber != "0"
+        const isPageSize = pageSize && pageSize != DEFAULT_PAGE_SIZE.toString();
+        if (isPageNumber && isPageSize) {
+            setSearchParams({ page: pageNumber, pageSize: pageSize });
+        } else if (isPageNumber) {
+            setSearchParams({ page: pageNumber });
+        } else if (isPageSize) {
+            setSearchParams({ pageSize: pageSize });
+        } else {
+            setSearchParams();
+        }
+    };
+
+    useEffect(() => {
+        const pageNumber = searchParams.get("page");
+        const pageSize = searchParams.get("pageSize");
+        setPage(_ => pageNumber ? parseInt(pageNumber) : 0);
+        setRowsPerPage(_ => pageSize ? parseInt(pageSize) : DEFAULT_PAGE_SIZE);
+    }, [searchParams.get("page"), searchParams.get("pageSize")]);
+
     const handleChangePage = (_: unknown, newPage: number) => {
-        setPage(newPage);
-        setSearchParams({ page: newPage.toString() });
+        updateSearchParams(newPage.toString())
     };
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0)
-        setSearchParams({ page: "0", pageSize: event.target.value });
+        updateSearchParams("0", event.target.value);
     };
 
     return (
@@ -107,20 +127,17 @@ export default function ProblemListComponent() {
                         <TableRow key={"table-footer-row"}>
                             <TablePagination
                                 key={"table-pagination"}
-                                rowsPerPageOptions={[10, 25, 50, 100]}
-                                colSpan={3}
+                                rowsPerPageOptions={[DEFAULT_PAGE_SIZE, 25, 50, 100]}
+                                colSpan={ 3 }
                                 count={ problemLength }
                                 rowsPerPage={ rowsPerPage }
                                 page={ page }
                                 slotProps={{
-                                    select: {
-                                        inputProps: { 'aria-label': 'rows per page' },
-                                        native: true,
-                                    },
+                                    select: { inputProps: { 'aria-label': 'rows per page' }, native: true },
                                 }}
-                                onPageChange={handleChangePage}
-                                onRowsPerPageChange={handleChangeRowsPerPage}
-                                ActionsComponent={TablePaginationActions}
+                                onPageChange={ handleChangePage }
+                                onRowsPerPageChange={ handleChangeRowsPerPage }
+                                ActionsComponent={ TablePaginationActions }
                             />
                         </TableRow>
                     </TableFooter>
