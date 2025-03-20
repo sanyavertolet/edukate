@@ -4,7 +4,7 @@ import { Box } from "@mui/material";
 
 export const ToolbarRightComponent = () => {
     return (
-        <Box sx={{ display: { xs: "flex", md: "flex" } }}>
+        <Box sx={{ display: { xs: "flex", md: "flex" }}}>
             <ThemeToggleButton/>
             <UserMenu/>
         </Box>

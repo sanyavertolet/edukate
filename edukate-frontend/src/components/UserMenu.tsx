@@ -1,4 +1,4 @@
-import { Box, Button, Menu, MenuItem } from "@mui/material";
+import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "./auth/AuthContextProvider";
@@ -28,7 +28,7 @@ export function UserMenu() {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>();
     const isMenuOpen = Boolean(anchorEl);
     return (
-        <Box alignContent="center" paddingLeft="0.5rem">
+        <Box alignContent="center">
             <Menu
                 id="edukate-menu"
                 anchorEl={ anchorEl }
@@ -46,8 +46,10 @@ export function UserMenu() {
                 color="primary"
                 onClick={ handleOpen }
             >
-                { user ? user.name : "Sign" }
-                <AccountCircle sx={{ paddingLeft: "0.5rem" }} />
+                <Typography variant={"body2"} sx={{ display: { xs: "none", md: "flex" }, paddingRight: "0.5rem"}}>
+                    { user ? user.name : "Sign" }
+                </Typography>
+                <AccountCircle/>
             </Button>
         </Box>
     );

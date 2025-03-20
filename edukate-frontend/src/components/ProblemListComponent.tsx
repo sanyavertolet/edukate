@@ -12,28 +12,33 @@ import {
     Chip, TableFooter, TablePagination
 } from '@mui/material';
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useProblemCountRequest, useProblemListRequest } from "../http/requests";
 import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
 import { ProblemStatusIcon } from "./problem/ProblemStatusIcon";
 
-export default function ProblemListComponent() {
-    const [ problemList, setProblemList ] = useState<ProblemMetadata[]>([]);
-    const [ page, setPage ] = useState(0);
-    const [ rowsPerPage, setRowsPerPage ] = useState(10);
-    const [ problemLength, setProblemLength ] = useState(0);
-    const problemListQuery = useProblemListRequest(page, rowsPerPage);
-    const problemCountQuery = useProblemCountRequest();
-    const navigate = useNavigate();
+function getSearchParamAsInt(searchParams: URLSearchParams, key: string, defaultValue: number) {
+    return searchParams.get(key) ? parseInt(searchParams.get(key)!) : defaultValue;
+}
 
+export default function ProblemListComponent() {
+    const navigate = useNavigate();
     const navigateToProblem = (problemName: string) => { navigate(`/problems/${problemName}`) };
 
+    const [ searchParams, setSearchParams ] = useSearchParams()
+    const [ page, setPage ] = useState(getSearchParamAsInt(searchParams, 'page', 0));
+    const [ rowsPerPage, setRowsPerPage ] = useState(getSearchParamAsInt(searchParams, 'pageSize', 10));
+
+    const [ problemList, setProblemList ] = useState<ProblemMetadata[]>([]);
+    const problemListQuery = useProblemListRequest(page, rowsPerPage);
     useEffect(() => {
         if (problemListQuery.data && !problemListQuery.isLoading && !problemListQuery.error) {
             setProblemList(problemListQuery.data)
         }}, [problemListQuery.data, problemListQuery.isLoading, problemListQuery.error]
     );
 
+    const [ problemLength, setProblemLength ] = useState(0);
+    const problemCountQuery = useProblemCountRequest();
     useEffect(() => {
         if (problemCountQuery.data && !problemCountQuery.isLoading && !problemCountQuery.error) {
             setProblemLength(problemCountQuery.data)
@@ -71,16 +76,18 @@ export default function ProblemListComponent() {
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage);
+        setSearchParams({ page: newPage.toString() });
     };
     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0)
+        setSearchParams({ page: "0", pageSize: event.target.value });
     };
 
     return (
-        <Box paddingTop="2rem">
+        <Box>
             <TableContainer component={ Paper }>
-                <Table size="medium" aria-label="problem table">
+                <Table aria-label="problem table">
                     <TableHead key={"table-headers"}>
                         <TableRow key={"table-headers-row"}>
                             <TableCell key={"table-headers-status"}>Status</TableCell>

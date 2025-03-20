@@ -10,7 +10,7 @@ plugins {
 extensions.configure<ReckonExtension> {
     setDefaultInferredScope(Scope.MINOR.name)
     stages("rc", "final")
-    setScopeCalc(calcScopeFromProp())
+    setScopeCalc(calcScopeFromProp().or(calcScopeFromCommitMessages()))
     setStageCalc(calcStageFromProp())
 }
 

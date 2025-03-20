@@ -6,7 +6,7 @@ import { ToolbarRightComponent } from "./ToolbarRightComponent";
 export function TopBar(){
     return (
         <AppBar sx={{ position: "static", background: "transparent", backdropFilter: "blur(8px)" }}>
-            <Box maxWidth="xl">
+            <Box>
                 <Toolbar>
                     <ToolbarHomeComponent/>
                     <ToolbarLeftComponent/>

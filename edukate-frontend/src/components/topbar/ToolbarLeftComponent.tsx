@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 
 const topBarElements = [
     { text: "Problems", href: "/problems" },
@@ -8,10 +8,12 @@ const topBarElements = [
 export const ToolbarLeftComponent = () => {
     const navigate = useNavigate();
     return (
-        <Box sx={{ display: { xs: 'flex', md: 'flex' }, paddingLeft: "2rem" }}>
+        <Box sx={{ display: { md: 'flex' }, paddingLeft: { md: "1rem" } }}>
             { topBarElements.map(({ text, href }) => (
                 <Button key={ text } onClick={ () => navigate(href) }>
-                    { text }
+                    <Typography variant={"body2"}>
+                        { text }
+                    </Typography>
                 </Button>
             ))}
         </Box>

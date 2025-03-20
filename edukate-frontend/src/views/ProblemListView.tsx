@@ -9,12 +9,12 @@ export default function ProblemListView() {
                 Problems
             </Typography>
 
-            <Grid container spacing={ 2 }>
-                <Grid key={"left-grid"} size="grow"/>
-                <Grid key={"central-grid"} size={ 10 } display="flex" flexDirection="column">
+            <Grid container spacing={ 2 } paddingTop={"1rem"}>
+                <Grid key={"left-grid"} size="grow" sx={{ display: { xs: "none", md: "flex" }}}/>
+                <Grid key={"central-grid"} size={ 12 } display="flex" flexDirection="column">
                     <ProblemListComponent/>
                 </Grid>
-                <Grid key={"right-grid"} size="grow"/>
+                <Grid key={"right-grid"} size="grow" sx={{ display: { xs: "none", md: "flex" }}}/>
             </Grid>
         </Box>
     );
