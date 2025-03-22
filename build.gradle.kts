@@ -32,11 +32,8 @@ tasks.register<DockerBuildImage>("buildFrontendImage") {
 
     inputDir.set(file("${project.projectDir}/edukate-frontend"))
     images.add("registry.digitalocean.com/edukate-container-registry/edukate-frontend:latest")
-    images.add("registry.digitalocean.com/edukate-container-registry/edukate-frontend:${project.version}")
     platform.set("linux/amd64")
-    buildArgs.set(mapOf(
-        "NODE_ENV" to "production"
-    ))
+    buildArgs.set(mapOf("NODE_ENV" to "production"))
 }
 
 tasks.register<DockerPushImage>("pushFrontendImage") {
@@ -44,7 +41,6 @@ tasks.register<DockerPushImage>("pushFrontendImage") {
     description = "Pushes the frontend Docker image to DigitalOcean registry"
 
     images.add("registry.digitalocean.com/edukate-container-registry/edukate-frontend:latest")
-    images.add("registry.digitalocean.com/edukate-container-registry/edukate-frontend:${project.version}")
     registryCredentials {
         url.set("registry.digitalocean.com")
         username.set(providers

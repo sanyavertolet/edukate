@@ -57,7 +57,6 @@ tasks.bootBuildImage {
     pullPolicy.set(org.springframework.boot.buildpack.platform.build.PullPolicy.IF_NOT_PRESENT)
     tags.set(setOf(
         "registry.digitalocean.com/edukate-container-registry/edukate-backend:latest",
-        "registry.digitalocean.com/edukate-container-registry/edukate-backend:${project.version}"
     ))
 
     verboseLogging.set(true)
