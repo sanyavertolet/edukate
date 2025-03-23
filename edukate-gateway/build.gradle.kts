@@ -1,7 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 java {
@@ -24,20 +24,19 @@ dependencies {
     implementation(projects.edukateCommon)
     implementation(projects.edukateAuth)
 
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.2.0")
+    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.cloud.starter.gateway)
 
-    compileOnly("org.projectlombok:lombok")
+    implementation(libs.snakeyaml)
 
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+    developmentOnly(libs.spring.boot.devtools)
+    developmentOnly(libs.spring.boot.docker.compose)
 
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    annotationProcessor("org.projectlombok:lombok")
-
-    implementation("org.yaml:snakeyaml")
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.spring.boot.configuration.processor)
 }
 
 tasks.withType<Test> {

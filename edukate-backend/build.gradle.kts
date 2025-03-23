@@ -1,7 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 java {
@@ -24,25 +24,20 @@ dependencies {
     implementation(projects.edukateCommon)
     implementation(projects.edukateAuth)
 
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.data.mongodb.reactive)
 
-    implementation("software.amazon.awssdk:s3:2.25.6")
-    implementation("software.amazon.awssdk:s3-transfer-manager:2.25.6")
+    implementation(libs.awssdk.s3)
+    implementation(libs.awssdk.s3.transfer.manager)
 
-    compileOnly("org.projectlombok:lombok")
+    developmentOnly(libs.spring.boot.devtools)
+    developmentOnly(libs.spring.boot.docker.compose)
 
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
-
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    annotationProcessor("org.projectlombok:lombok")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.projectreactor:reactor-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.spring.boot.configuration.processor)
 }
 
 tasks.withType<Test> {

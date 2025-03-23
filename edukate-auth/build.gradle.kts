@@ -1,7 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 java {
@@ -23,15 +23,13 @@ repositories {
 dependencies {
     implementation(projects.edukateCommon)
 
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("io.projectreactor:reactor-core:3.7.3")
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.jjwt.api)
+    implementation(libs.jjwt.impl)
+    implementation(libs.jjwt.jackson)
+    implementation(libs.reactor.core)
 
-    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
-    implementation("io.jsonwebtoken:jjwt-impl:0.12.6")
-    implementation("io.jsonwebtoken:jjwt-jackson:0.12.6")
-
-    compileOnly("org.projectlombok:lombok")
-
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    annotationProcessor("org.projectlombok:lombok")
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.spring.boot.configuration.processor)
 }

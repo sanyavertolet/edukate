@@ -1,7 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 java {
@@ -21,12 +21,11 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.spring.boot.starter.data.mongodb.reactive)
 
-    compileOnly("org.projectlombok:lombok")
-
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    annotationProcessor("org.projectlombok:lombok")
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.spring.boot.configuration.processor)
 }
