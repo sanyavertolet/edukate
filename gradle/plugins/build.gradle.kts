@@ -15,6 +15,7 @@ dependencies {
 
     implementation(libs.spring.boot.gradle.plugin)
     implementation(libs.kotlin.gradle.plugin)
+    implementation(libs.docker.remote.api.gradle.plugin)
 }
 
 tasks.withType<KotlinCompile> {

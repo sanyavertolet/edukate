@@ -5,6 +5,7 @@ spring-dependency = "1.1.7"
 aws = "2.25.6"
 jjwt = "0.12.6"
 kotlin = "2.1.20"
+docker-remote = "9.4.0"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
@@ -38,3 +39,4 @@ lombok = { module = "org.projectlombok:lombok" }
 snakeyaml = { module = "org.yaml:snakeyaml" }
 
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+docker-remote-api-gradle-plugin = { module = "com.bmuschko.docker-remote-api:com.bmuschko.docker-remote-api.gradle.plugin", version.ref = "docker-remote" }
