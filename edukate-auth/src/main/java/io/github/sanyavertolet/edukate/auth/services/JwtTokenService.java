@@ -21,7 +21,7 @@ public class JwtTokenService {
     private String secretKey;
 
     @Value("${jwt.expiration}")
-    private long validityInMilliseconds;
+    private long expirationTimeMillis;
 
     private SecretKey key;
 
@@ -31,7 +31,7 @@ public class JwtTokenService {
     }
 
     private Date getExpirationDate(Date now) {
-        return new Date(now.getTime() + validityInMilliseconds);
+        return new Date(now.getTime() + expirationTimeMillis);
     }
 
     public String generateToken(UserDetails userDetails) {
