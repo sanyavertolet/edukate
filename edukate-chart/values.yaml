@@ -1,5 +1,6 @@
 namespace: default
 imageRegistry: registry.digitalocean.com/edukate-container-registry
+dockerTag: latest
 replicaCount: 1
 
 autoscaling:
