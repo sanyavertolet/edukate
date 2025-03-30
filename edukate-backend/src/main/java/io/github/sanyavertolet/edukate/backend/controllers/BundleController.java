@@ -73,7 +73,7 @@ public class BundleController {
                         "Bundle " + shareCode + " not found"
                 )))
                 .filter(bundle ->
-                        bundle.isUserInBundle(authentication.getName()) || bundle.isOwner(authentication.getName())
+                        bundle.isUserInBundle(authentication.getName()) || bundle.isAdmin(authentication.getName())
                 )
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
                 .map(Bundle::toDto);
@@ -82,14 +82,8 @@ public class BundleController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
     public Mono<BundleDto> createBundle(@RequestBody BundleDto bundleDto, Authentication authentication) {
-        return Mono.justOrEmpty(authentication)
-                .map(auth -> bundleDto.withOwnerName(auth.getName()))
-                .filterWhen(dto -> bundleService.existsBundle(dto.getOwnerName(), dto.getName())
-                        .map(Boolean.FALSE::equals))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Bundle with name " + bundleDto.getName() + " already exists"
-                )))
+        return Mono.justOrEmpty(authentication).map(Authentication::getName)
+                .map(bundleDto::withAdmin)
                 .flatMap(bundleService::createBundle)
                 .map(Bundle::toDto);
     }

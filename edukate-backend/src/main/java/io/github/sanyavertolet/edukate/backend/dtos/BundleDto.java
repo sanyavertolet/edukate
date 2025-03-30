@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.backend.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.With;
 
 import java.util.List;
 
@@ -10,18 +11,14 @@ import java.util.List;
 public class BundleDto {
     private String name;
     private String description;
-    private String ownerName;
+    @With
+    private List<String> admins;
     private Boolean isPublic;
     private List<String> problemIds;
+    @With
     private String shareCode;
 
-    public BundleDto withOwnerName(String ownerName) {
-        this.ownerName = ownerName;
-        return this;
-    }
-
-    public BundleDto withShareCode(String shareCode) {
-        this.shareCode = shareCode;
-        return this;
+    public BundleDto withAdmin(String adminName) {
+        return withAdmins(List.of(adminName));
     }
 }

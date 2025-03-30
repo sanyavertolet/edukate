@@ -2,33 +2,33 @@ package io.github.sanyavertolet.edukate.backend.entities;
 
 import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
 import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata;
+import io.github.sanyavertolet.edukate.common.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
 @RequiredArgsConstructor
 @Document(value = "bundles")
-@CompoundIndex(name = "bundle_owner_id_name_idx", def = "{'ownerId': 1, 'name': 1}", unique = true)
 public class Bundle {
     @Id
     private String id;
     private String name;
     private String description;
-    private String ownerId;
     private Boolean isPublic;
 
     private List<String> problemIds;
-    private List<String> userIds;
+    private Map<String, Role> userRoles;
 
     @Indexed(unique = true)
     private String shareCode = null;
@@ -38,37 +38,39 @@ public class Bundle {
         return this;
     }
 
-    public int addUser(String userId) {
-        if (userIds == null) {
-            userIds = new ArrayList<>();
-        }
-        if (!userIds.contains(userId)) {
-            userIds.add(userId);
+    public int addUser(String userId, Role role) {
+        if (!userRoles.containsKey(userId)) {
+            userRoles.put(userId, role);
             return 1;
         }
         return 0;
     }
 
-    public int addUsers(List<String> userIds) {
-        return userIds.stream().map(this::addUser).reduce(0, Integer::sum);
+    public int addUsers(Map<String, Role> usersWithRoles) {
+        return usersWithRoles.entrySet().stream().map(entry -> addUser(entry.getKey(), entry.getValue())).reduce(0, Integer::sum);
+    }
+
+    public int changeUserRole(String userId, Role newRole) {
+        if (userRoles.containsKey(userId)) {
+            userRoles.put(userId, newRole);
+            return 1;
+        }
+        return 0;
     }
 
     public boolean isUserInBundle(String userId) {
-        return userIds != null && userIds.contains(userId);
+        return userRoles.containsKey(userId);
     }
 
-    public boolean isOwner(String userId) {
-        return ownerId != null && ownerId.equals(userId);
+    public boolean isAdmin(String userId) {
+        return userRoles.getOrDefault(userId, null).equals(Role.ADMIN);
     }
 
     public int removeUser(String userId) {
-        return userIds != null && userIds.remove(userId) ? 1 : 0;
+        return userRoles.remove(userId) != null ? 1 : 0;
     }
 
     public int removeUsers(List<String> userIds) {
-        if (this.userIds == null) {
-            return 0;
-        }
         return userIds.stream().map(this::removeUser).reduce(0, Integer::sum);
     }
 
@@ -99,24 +101,32 @@ public class Bundle {
         return problemIds.stream().map(this::removeProblem).reduce(0, Integer::sum);
     }
 
+    public List<String> getAdmins() {
+        return userRoles.entrySet().stream().filter(entry -> entry.getValue().equals(Role.ADMIN)).map(Map.Entry::getKey).toList();
+    }
+
     public static Bundle fromDto(BundleDto dto) {
+        Map<String, Role> users = dto.getAdmins().stream().collect(
+                HashMap::new,
+                (map, admin) -> map.put(admin, Role.ADMIN),
+                HashMap::putAll
+        );
         return new Bundle(
                 null,
                 dto.getName(),
                 dto.getDescription(),
-                dto.getOwnerName(),
                 dto.getIsPublic(),
                 dto.getProblemIds(),
-                new ArrayList<>(),
+                users,
                 null
         );
     }
 
     public BundleDto toDto() {
-        return new BundleDto(name, description, ownerId, isPublic, problemIds, shareCode);
+        return new BundleDto(name, description, getAdmins(), isPublic, problemIds, shareCode);
     }
 
     public BundleMetadata toBundleMetadata() {
-        return new BundleMetadata(name, description, ownerId, shareCode, isPublic, (long) problemIds.size());
+        return new BundleMetadata(name, description, getAdmins(), shareCode, isPublic, (long) problemIds.size());
     }
 }

@@ -39,4 +39,8 @@ public enum Role {
                 .map(Role::name)
                 .collect(Collectors.joining(","));
     }
+
+    public static Collection<Role> anyRole() {
+        return EnumSet.allOf(Role.class);
+    }
 }
