@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -29,7 +30,13 @@ public class Bundle {
     private List<String> problemIds;
     private List<String> userIds;
 
+    @Indexed(unique = true)
     private String shareCode = null;
+
+    public Bundle updateShareCode(String shareCode) {
+        this.shareCode = shareCode;
+        return this;
+    }
 
     public int addUser(String userId) {
         if (userIds == null) {
@@ -110,6 +117,6 @@ public class Bundle {
     }
 
     public BundleMetadata toBundleMetadata() {
-        return new BundleMetadata(name, description, ownerId, isPublic, (long) problemIds.size());
+        return new BundleMetadata(name, description, ownerId, shareCode, isPublic, (long) problemIds.size());
     }
 }

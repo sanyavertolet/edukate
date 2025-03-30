@@ -5,4 +5,4 @@ export interface User {
 }
 
 export type UserStatus = "ACTIVE" | "PENDING" | "DELETED";
-export type UserRole = "ADMIN" | "USER" | "MODERATOR";
+export type UserRole = "ROLE_ADMIN" | "ROLE_USER" | "ROLE_MODERATOR";

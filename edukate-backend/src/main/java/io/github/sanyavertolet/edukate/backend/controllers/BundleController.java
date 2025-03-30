@@ -54,28 +54,27 @@ public class BundleController {
                 .map(Bundle::toBundleMetadata);
     }
 
-    @GetMapping("/join/{shareCode}")
+    @PostMapping("/join/{shareCode}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public Mono<BundleMetadata> joinBundle(@PathVariable String shareCode) {
-        // todo: finish this
-        return Mono.error(new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented yet"));
+    public Mono<BundleMetadata> joinBundle(@PathVariable String shareCode, Authentication authentication) {
+        return Mono.just(authentication).map(Authentication::getName)
+                .flatMap(userName -> bundleService.joinUser(userName, shareCode))
+                .map(Bundle::toBundleMetadata);
     }
 
-    // todo: should be fixed as bundleName is something human-readable, while shareCode might be more suitable here
-    @GetMapping("/{ownerName}/{bundleName}")
+    @GetMapping("/{shareCode}")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public Mono<BundleDto> getBundleByOwnerAndName(
-            @PathVariable String ownerName,
-            @PathVariable String bundleName,
+    public Mono<BundleDto> getBundleByShareCode(
+            @PathVariable String shareCode,
             Authentication authentication) {
-        return bundleService.findBundleByOwnerIdAndName(ownerName, bundleName)
+        return bundleService.findBundleByShareCode(shareCode)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Bundle " + bundleName + " not found"
+                        "Bundle " + shareCode + " not found"
                 )))
-                .filterWhen(bundle -> Mono.fromCallable(() ->
+                .filter(bundle ->
                         bundle.isUserInBundle(authentication.getName()) || bundle.isOwner(authentication.getName())
-                ))
+                )
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
                 .map(Bundle::toDto);
     }
