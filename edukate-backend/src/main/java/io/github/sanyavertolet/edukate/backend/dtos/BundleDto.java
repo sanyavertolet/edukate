@@ -11,14 +11,9 @@ import java.util.List;
 public class BundleDto {
     private String name;
     private String description;
-    @With
     private List<String> admins;
     private Boolean isPublic;
-    private List<String> problemIds;
     @With
+    private List<ProblemMetadata> problems;
     private String shareCode;
-
-    public BundleDto withAdmin(String adminName) {
-        return withAdmins(List.of(adminName));
-    }
 }

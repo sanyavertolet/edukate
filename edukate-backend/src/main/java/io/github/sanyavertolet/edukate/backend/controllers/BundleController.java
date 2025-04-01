@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 
 import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
 import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata;
+import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.services.BundleService;
 import lombok.RequiredArgsConstructor;
@@ -76,15 +77,14 @@ public class BundleController {
                         bundle.isUserInBundle(authentication.getName()) || bundle.isAdmin(authentication.getName())
                 )
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
-                .map(Bundle::toDto);
+                .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
-    public Mono<BundleDto> createBundle(@RequestBody BundleDto bundleDto, Authentication authentication) {
-        return Mono.justOrEmpty(authentication).map(Authentication::getName)
-                .map(bundleDto::withAdmin)
-                .flatMap(bundleService::createBundle)
-                .map(Bundle::toDto);
+    public Mono<BundleDto> createBundle(@RequestBody CreateBundleRequest request, Authentication authentication) {
+        return Mono.justOrEmpty(authentication)
+                .flatMap(auth -> bundleService.createBundle(request, auth))
+                .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
     }
 }

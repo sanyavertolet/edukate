@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.backend.entities;
 
 import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
 import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata;
+import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
 import io.github.sanyavertolet.edukate.common.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,10 +12,7 @@ import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
@@ -105,25 +103,20 @@ public class Bundle {
         return userRoles.entrySet().stream().filter(entry -> entry.getValue().equals(Role.ADMIN)).map(Map.Entry::getKey).toList();
     }
 
-    public static Bundle fromDto(BundleDto dto) {
-        Map<String, Role> users = dto.getAdmins().stream().collect(
-                HashMap::new,
-                (map, admin) -> map.put(admin, Role.ADMIN),
-                HashMap::putAll
-        );
+    public static Bundle fromCreateRequest(CreateBundleRequest bundleRequest, String adminId) {
         return new Bundle(
                 null,
-                dto.getName(),
-                dto.getDescription(),
-                dto.getIsPublic(),
-                dto.getProblemIds(),
-                users,
+                bundleRequest.getName(),
+                bundleRequest.getDescription(),
+                bundleRequest.getIsPublic(),
+                bundleRequest.getProblemIds(),
+                Map.of(adminId, Role.ADMIN),
                 null
         );
     }
 
     public BundleDto toDto() {
-        return new BundleDto(name, description, getAdmins(), isPublic, problemIds, shareCode);
+        return new BundleDto(name, description, getAdmins(), isPublic, Collections.emptyList(), shareCode);
     }
 
     public BundleMetadata toBundleMetadata() {

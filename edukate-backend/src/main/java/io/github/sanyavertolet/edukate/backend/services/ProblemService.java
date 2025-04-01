@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
+import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,12 @@ public class ProblemService {
 
     public Mono<Problem> findProblemById(String id) {
         return problemRepository.findById(id);
+    }
+
+    public Mono<List<ProblemMetadata>> findProblemListByIds(List<String> problemIds) {
+        return problemRepository.findProblemsByIdIn(problemIds)
+                .map(Problem::toProblemMetadata)
+                .collectList();
     }
 
     public Mono<Problem> updateProblem(Problem problem) {

@@ -1,6 +1,8 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
+import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
+import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.repositories.BundleRepository;
 import io.github.sanyavertolet.edukate.common.Role;
@@ -20,6 +22,8 @@ import java.util.List;
 public class BundleService {
     private final BundleRepository bundleRepository;
     private final ShareCodeGenerator shareCodeGenerator;
+    private final SubmissionService submissionService;
+    private final ProblemService problemService;
 
     public Mono<Bundle> findBundleByShareCode(String shareCode) {
         return bundleRepository.findBundleByShareCode(shareCode);
@@ -53,9 +57,26 @@ public class BundleService {
         return bundleRepository.findBundlesByIsPublic(true, pageable);
     }
 
-    public Mono<Bundle> createBundle(BundleDto bundleDto) {
-        return Mono.just(bundleDto)
-                .map(Bundle::fromDto)
+    public Mono<BundleDto> prepareDto(Bundle bundle, Authentication authentication) {
+        return Mono.justOrEmpty(bundle)
+                .map(Bundle::toDto)
+                .zipWhen(_ ->
+                        problemService.findProblemListByIds(bundle.getProblemIds())
+                                .flatMapMany(problemMetadataList ->
+                                        submissionService.updateStatusInMetadataMany(authentication, problemMetadataList))
+                                .collectList()
+                )
+                .map(tuple -> {
+                    BundleDto dto = tuple.getT1();
+                    List<ProblemMetadata> metadataList = tuple.getT2();
+
+                    return dto.withProblems(metadataList);
+                });
+    }
+
+    public Mono<Bundle> createBundle(CreateBundleRequest createBundleRequest, Authentication authentication) {
+        return Mono.just(createBundleRequest)
+                .map(request -> Bundle.fromCreateRequest(request, authentication.getName()))
                 .map(bundle -> bundle.updateShareCode(shareCodeGenerator.generateShareCode()))
                 .flatMap(bundleRepository::save);
     }

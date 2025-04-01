@@ -11,4 +11,6 @@ import java.util.Collection;
 @Repository
 public interface ProblemRepository extends ReactiveMongoRepository<Problem, String> {
     Flux<Problem> findAllByIsHardIn(Collection<Boolean> isHard, Pageable pageable);
+
+    Flux<Problem> findProblemsByIdIn(Collection<String> ids);
 }
