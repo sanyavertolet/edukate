@@ -5,7 +5,7 @@ import CloseIcon from "@mui/icons-material/CloseOutlined";
 import PendingIcon from "@mui/icons-material/PendingOutlined";
 
 interface ProblemStatusIconProps {
-    status: ProblemStatus | null;
+    status?: ProblemStatus;
 }
 
 export function ProblemStatusIcon({ status }: ProblemStatusIconProps) {

@@ -7,6 +7,7 @@ import { Submission } from "../types/Submission";
 import { useAuthContext } from "../components/auth/AuthContextProvider";
 import { Result } from "../types/Result";
 import { fullStatus } from "../utils/utils";
+import { Bundle } from "../types/Bundle";
 
 export function useProblemListRequest(page: number, size: number) {
     const { user } = useAuthContext();
@@ -37,11 +38,14 @@ export function useProblemCountRequest() {
     });
 }
 
-export function useProblemRequest(id: string, shouldRefresh?: boolean) {
+export function useProblemRequest(id: string | undefined, shouldRefresh?: boolean) {
     const { user } = useAuthContext();
     return useQuery({
         queryKey: ['problem', id, user, shouldRefresh],
         queryFn: async () => {
+            if (id === undefined) {
+                return undefined;
+            }
             try {
                 const response = await client.get<Problem>(`/api/v1/problems/${id}`);
                 return response.data;
@@ -97,6 +101,51 @@ export function useResultRequest(problemId: string) {
             }
         }
     })
+}
+
+export function useCreateBundleMutation(bundle: Bundle) {
+    return useMutation({
+        mutationKey: ['bundle', bundle],
+        mutationFn: async () => {
+            try {
+                const response = await client.post<Bundle>(`/api/v1/bundles`, bundle);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    });
+}
+
+export function useBundleRequest(bundleCode: string | undefined) {
+    return useQuery({
+        queryKey: ['bundle', bundleCode],
+        queryFn: async () => {
+            if (!bundleCode) {
+                return undefined;
+            }
+            try {
+                const response = await client.get<Bundle>(`/api/v1/bundles/${bundleCode}`);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    });
+}
+
+export function useBundlesRequest(mode: "owned" | "public" | "joined") {
+    return useQuery({
+        queryKey: ['bundles'],
+        queryFn: async () => {
+            try {
+                const response = await client.get<Bundle>(`/api/v1/bundles/${mode}`);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    });
 }
 
 function defaultErrorHandler(error: any) {

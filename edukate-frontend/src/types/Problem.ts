@@ -5,9 +5,9 @@ export interface Problem {
   isHard: boolean;
   hasResult: boolean;
   tags: string[];
-  text: string | null;
+  text?: string;
   images: string[];
-  status: ProblemStatus | null;
+  status?: ProblemStatus;
   subtasks: Subtask[]
 }
 

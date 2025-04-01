@@ -1,4 +1,4 @@
-import { Box, Container } from "@mui/material";
+import { Box } from "@mui/material";
 import { TopBar } from "./topbar/TopBar";
 import { Outlet } from "react-router-dom";
 import { ParticlesComponent } from "./animation/Particles";
@@ -12,10 +12,10 @@ export default function PageSkeleton() {
         <Box>
             <PendingStatusSnackbar open={user != undefined && user.status == "PENDING"}/>
             <TopBar/>
-            <Container sx={{ paddingY: "2rem" }}>
+            <Box sx={{ paddingY: "2rem" }}>
                 <Outlet/>
                 <ParticlesComponent/>
-            </Container>
+            </Box>
         </Box>
     );
 }

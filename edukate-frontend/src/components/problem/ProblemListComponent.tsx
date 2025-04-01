@@ -1,4 +1,4 @@
-import { ProblemMetadata } from '../types/ProblemMetadata';
+import { ProblemMetadata } from '../../types/ProblemMetadata';
 import {
     Table,
     TableBody,
@@ -13,9 +13,9 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useProblemCountRequest, useProblemListRequest } from "../http/requests";
+import { useProblemCountRequest, useProblemListRequest } from "../../http/requests";
 import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
-import { ProblemStatusIcon } from "./problem/ProblemStatusIcon";
+import { ProblemStatusIcon } from "./ProblemStatusIcon";
 
 function getSearchParamAsInt(searchParams: URLSearchParams, key: string, defaultValue: number) {
     return searchParams.get(key) ? parseInt(searchParams.get(key)!) : defaultValue;

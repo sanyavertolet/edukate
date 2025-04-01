@@ -1,21 +1,21 @@
-import { Container, Typography } from '@mui/material';
+import { Box, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import ProblemListComponent from '../components/problem/ProblemListComponent';
+import { BundleListComponent } from "../components/bundle/BundleListComponent";
 
-export default function ProblemListView() {
+export default function BundleListView() {
     return (
-        <Container>
+        <Box>
             <Typography color="primary" variant="h5">
-                Problems
+                Problem bundles
             </Typography>
 
             <Grid container spacing={ 2 } paddingTop={"1rem"}>
                 <Grid key={"left-grid"} size="grow" sx={{ display: { xs: "none", md: "flex" }}}/>
                 <Grid key={"central-grid"} size={ 12 } display="flex" flexDirection="column">
-                    <ProblemListComponent/>
+                    <BundleListComponent/>
                 </Grid>
                 <Grid key={"right-grid"} size="grow" sx={{ display: { xs: "none", md: "flex" }}}/>
             </Grid>
-        </Container>
+        </Box>
     );
-};
+}

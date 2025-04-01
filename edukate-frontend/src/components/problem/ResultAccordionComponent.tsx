@@ -41,7 +41,7 @@ export function ResultAccordionComponent({ problem, refreshProblem }: ResultComp
                 </AccordionSummary>
                 <AccordionDetails>
                     { result?.text && <LatexComponent text={result?.text}/>}
-                    { result?.images && <ImageListComponent images={result?.images}/> }
+                    { !!result?.images && <ImageListComponent images={result?.images}/> }
                 </AccordionDetails>
                 { problem.status != "SOLVED" && (
                     <AccordionActions>
