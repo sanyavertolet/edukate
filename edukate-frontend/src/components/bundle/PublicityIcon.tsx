@@ -1,6 +1,7 @@
 import PublicIcon from "@mui/icons-material/Public";
 import LockIcon from "@mui/icons-material/Lock";
 import Tooltip from "@mui/material/Tooltip";
+import { defaultTooltipSlotProps } from "../../utils/utils";
 
 interface PublicityIconProps {
     isPublic: boolean;
@@ -13,7 +14,7 @@ export function PublicityIcon({isPublic, disableTooltip}: PublicityIconProps) {
         return icon;
     }
     return (
-        <Tooltip title={isPublic ? "Public bundle" : "Private bundle"}>
+        <Tooltip slotProps={defaultTooltipSlotProps} title={isPublic ? "Public bundle" : "Private bundle"}>
             { icon }
         </Tooltip>
     );

@@ -1,4 +1,5 @@
 import { AxiosResponse } from "axios";
+import { SlotProps } from "@mui/material";
 
 export const fullStatus = (response: AxiosResponse | undefined) => {
     const statusCode = response?.status
@@ -9,5 +10,13 @@ export const fullStatus = (response: AxiosResponse | undefined) => {
         return `${statusCode}`;
     } else {
         return "Unknown Status"
+    }
+};
+
+export const defaultTooltipSlotProps: SlotProps<any, any, any> = {
+    popper: {
+        modifiers: [
+            { name: 'offset', options: { offset: [0, -14] } },
+        ],
     }
 };

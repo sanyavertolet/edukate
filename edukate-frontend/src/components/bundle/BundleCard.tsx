@@ -15,6 +15,7 @@ import StorageIcon from "@mui/icons-material/Storage";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useNavigate } from "react-router-dom";
 import { PublicityIcon } from "./PublicityIcon";
+import { defaultTooltipSlotProps } from "../../utils/utils"
 
 interface BundleCardProps {
     bundleMetadata: BundleMetadata;
@@ -54,6 +55,7 @@ export const BundleCard: FC<BundleCardProps> = ({bundleMetadata, onCopy}) => {
     const getInitials = (username: string) => username.substring(0, 2);
 
     const navigate = useNavigate();
+    const navigateTo = (bundleMetadata: BundleMetadata) => navigate(`/bundles/${bundleMetadata.shareCode}`);
 
     return (
         <Card sx={{
@@ -78,43 +80,41 @@ export const BundleCard: FC<BundleCardProps> = ({bundleMetadata, onCopy}) => {
                 <Divider sx={{ my: 1 }} />
 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                    <Tooltip title="Bundle size">
+                    <Tooltip slotProps={defaultTooltipSlotProps} title="Bundle size">
                         {/*sx={{ display: 'flex', alignItems: 'center', mr: 2 }}*/}
                         <Chip variant={"outlined"} icon={<StorageIcon fontSize="small" />} label={`${bundleMetadata.size} problems`}/>
                     </Tooltip>
 
-                    <Tooltip title="Share code">
+                    <Tooltip slotProps={defaultTooltipSlotProps} title="Share code">
                         <Chip variant={"outlined"} icon={<ContentCopyIcon fontSize="small" />} label={bundleMetadata.shareCode} onClick={copyShareCode}/>
                     </Tooltip>
                 </Box>
 
                 <Divider sx={{ my: 1 }} />
 
-                <Typography variant="subtitle2" component="div">
-                    Administrators:
-                </Typography>
+                <Tooltip slotProps={defaultTooltipSlotProps} title={"Administrators"}>
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <AvatarGroup>
+                            {bundleMetadata.admins.map((admin) => (
+                                <Tooltip slotProps={defaultTooltipSlotProps} key={`${admin}-tooltip`} title={admin}>
+                                    <Avatar key={`${admin}-avatar`} sx={{ backgroundColor: getAvatarColor(admin) }}>
+                                        {getInitials(admin)}
+                                    </Avatar>
+                                </Tooltip>
+                            ))}
+                        </AvatarGroup>
 
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <AvatarGroup>
-                        {bundleMetadata.admins.map((admin) => (
-                            <Tooltip key={`${admin}-tooltip`} title={admin}>
-                                <Avatar key={`${admin}-avatar`} sx={{ backgroundColor: getAvatarColor(admin) }}>
-                                    {getInitials(admin)}
-                                </Avatar>
-                            </Tooltip>
-                        ))}
-                    </AvatarGroup>
-
-                    {bundleMetadata.admins.length > 4 && (
-                        <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                            +{bundleMetadata.admins.length - 4} more
-                        </Typography>
-                    )}
-                </Box>
+                        {bundleMetadata.admins.length > 4 && (
+                            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                +{bundleMetadata.admins.length - 4} more
+                            </Typography>
+                        )}
+                    </Box>
+                </Tooltip>
             </CardContent>
 
             <CardActions disableSpacing>
-                <Button sx={{marginLeft: "auto"}} size="small" onClick={() => navigate(`/bundles/${bundleMetadata.shareCode}`)}>
+                <Button sx={{marginLeft: "auto"}} size="small" onClick={() => navigateTo(bundleMetadata)}>
                     View
                 </Button>
             </CardActions>
