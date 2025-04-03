@@ -9,7 +9,7 @@ export default function BundleListView() {
                 Problem bundles
             </Typography>
 
-            <Grid container spacing={ 2 } paddingTop={"1rem"}>
+            <Grid container spacing={ 2 } >
                 <Grid key={"left-grid"} size="grow" sx={{ display: { xs: "none", md: "flex" }}}/>
                 <Grid key={"central-grid"} size={ 12 } display="flex" flexDirection="column">
                     <BundleListComponent/>

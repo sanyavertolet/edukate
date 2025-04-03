@@ -16,7 +16,6 @@ export function PendingStatusSnackbar({open}: PendingStatusSnackbarProps) {
             autoHideDuration={5000}
             onClose={handleClose}
             message={"Your account is pending approval. Some features are temporarily restricted."}
-        >
-        </Snackbar>
+        />
     )
 }

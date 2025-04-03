@@ -8,6 +8,7 @@ import { useAuthContext } from "../components/auth/AuthContextProvider";
 import { Result } from "../types/Result";
 import { fullStatus } from "../utils/utils";
 import { Bundle } from "../types/Bundle";
+import { BundleMetadata } from "../types/BundleMetadata";
 
 export function useProblemListRequest(page: number, size: number) {
     const { user } = useAuthContext();
@@ -136,10 +137,10 @@ export function useBundleRequest(bundleCode: string | undefined) {
 
 export function useBundlesRequest(mode: "owned" | "public" | "joined") {
     return useQuery({
-        queryKey: ['bundles'],
+        queryKey: ['bundles', mode],
         queryFn: async () => {
             try {
-                const response = await client.get<Bundle>(`/api/v1/bundles/${mode}`);
+                const response = await client.get<BundleMetadata[]>(`/api/v1/bundles/${mode}`);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
