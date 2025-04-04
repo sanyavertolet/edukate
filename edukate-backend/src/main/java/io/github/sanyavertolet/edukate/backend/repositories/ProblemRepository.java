@@ -13,4 +13,6 @@ public interface ProblemRepository extends ReactiveMongoRepository<Problem, Stri
     Flux<Problem> findAllByIsHardIn(Collection<Boolean> isHard, Pageable pageable);
 
     Flux<Problem> findProblemsByIdIn(Collection<String> ids);
+
+    Flux<Problem> findProblemsByIdStartingWith(String prefix, Pageable pageable);
 }

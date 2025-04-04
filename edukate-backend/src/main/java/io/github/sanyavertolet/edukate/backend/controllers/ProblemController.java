@@ -41,6 +41,11 @@ public class ProblemController {
         return problemService.countProblems();
     }
 
+    @GetMapping("/by-prefix")
+    public Flux<String> getProblemIdsByPrefix(@RequestParam String prefix, @RequestParam(required = false, defaultValue = "5") int limit) {
+        return problemService.getProblemIdsByPrefix(prefix, limit);
+    }
+
     @GetMapping("/{id}")
     public Mono<ProblemDto> getProblem(
             @PathVariable String id,

@@ -6,6 +6,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -63,5 +64,10 @@ public class ProblemService {
                     dto.setImages(urls);
                     return dto;
                 });
+    }
+
+    public Flux<String> getProblemIdsByPrefix(String prefix, int limit) {
+        return problemRepository.findProblemsByIdStartingWith(prefix, Pageable.ofSize(limit))
+                .map(Problem::getId);
     }
 }
