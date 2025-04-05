@@ -3,6 +3,7 @@ import { Box, Button, Typography } from "@mui/material";
 
 const topBarElements = [
     { text: "Problems", href: "/problems" },
+    { text: "Bundles", href: "/bundles" },
 ];
 
 export const ToolbarLeftComponent = () => {

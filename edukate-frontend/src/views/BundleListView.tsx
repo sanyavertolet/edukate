@@ -9,21 +9,17 @@ export default function BundleListView() {
     return (
         <Box>
             <Container>
-                <Box sx={{
-                    display: "flex", justifyContent: "center", alignItems: "center", position: "relative"
-                }}>
+                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", position: "relative" }}>
                     <Typography color="primary" variant="h5">
                         Problem bundles
                     </Typography>
-                    <Button
-                        variant={"outlined"}
-                        size={"small"}
-                        color={"secondary"}
-                        onClick={() => navigate("/bundles/new")}
-                        sx={{ position: "absolute", right: 0 }}
-                    >
+                    <Button variant={"outlined"} size={"small"} color={"secondary"}
+                            onClick={() => navigate("/bundles/new")}
+                            sx={{ position: "absolute", right: 0 }}>
                         <AddIcon/>
-                        <Typography variant={"button"} sx={{ display: { xs: "none", sm: "flex" } }}>Create bundle</Typography>
+                        <Typography variant={"button"} sx={{ display: { xs: "none", sm: "flex" } }}>
+                            Create bundle
+                        </Typography>
                     </Button>
                 </Box>
             </Container>
