@@ -14,6 +14,8 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/problems")
 @RequiredArgsConstructor
@@ -42,8 +44,8 @@ public class ProblemController {
     }
 
     @GetMapping("/by-prefix")
-    public Flux<String> getProblemIdsByPrefix(@RequestParam String prefix, @RequestParam(required = false, defaultValue = "5") int limit) {
-        return problemService.getProblemIdsByPrefix(prefix, limit);
+    public Mono<List<String>> getProblemIdsByPrefix(@RequestParam String prefix, @RequestParam(required = false, defaultValue = "5") int limit) {
+        return problemService.getProblemIdsByPrefix(prefix, limit).collectList();
     }
 
     @GetMapping("/{id}")

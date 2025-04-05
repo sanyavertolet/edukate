@@ -9,6 +9,7 @@ import { Result } from "../types/Result";
 import { fullStatus } from "../utils/utils";
 import { Bundle } from "../types/Bundle";
 import { BundleMetadata } from "../types/BundleMetadata";
+import { CreateBundleRequest } from "../types/CreateBundleRequest";
 
 export function useProblemListRequest(page: number, size: number) {
     const { user } = useAuthContext();
@@ -104,12 +105,15 @@ export function useResultRequest(problemId: string) {
     })
 }
 
-export function useCreateBundleMutation(bundle: Bundle) {
+export function useCreateBundleMutation(createBundleRequest: CreateBundleRequest) {
     return useMutation({
-        mutationKey: ['bundle', bundle],
+        mutationKey: ['create-bundle', createBundleRequest],
         mutationFn: async () => {
+            if (!createBundleRequest.name || createBundleRequest.problemIds.length == 0 || !createBundleRequest.description) {
+                throw new Error("Invalid bundle request");
+            }
             try {
-                const response = await client.post<Bundle>(`/api/v1/bundles`, bundle);
+                const response = await client.post<Bundle>(`/api/v1/bundles`, createBundleRequest);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
@@ -147,6 +151,22 @@ export function useBundlesRequest(mode: "owned" | "public" | "joined") {
             }
         }
     });
+}
+
+export function useOptionsRequest<T = string>(urlPath: string, prefix: string, size: number = 5) {
+    return useQuery({
+        queryKey: [urlPath, prefix, size],
+        queryFn: async () => {
+            try {
+                const response = await client.get<T[]>(urlPath, {
+                    params: { prefix: prefix, size: size, }
+                });
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
 }
 
 function defaultErrorHandler(error: any) {

@@ -8,6 +8,7 @@ import SignInView from "./views/SignInView";
 import SignUpView from "./views/SignUpView";
 import BundleListView from "./views/BundleListView";
 import BundleView from "./views/BundleView";
+import BundleCreationView from "./views/BundleCreationView";
 
 export const router = createBrowserRouter([
     {
@@ -20,7 +21,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/problems",
-                element: <ProblemListView />
+                element: <ProblemListView/>
             },
             {
                 path: "/problems/:id",
@@ -39,9 +40,13 @@ export const router = createBrowserRouter([
                 element: <BundleListView/>
             },
             {
+                path: "/bundles/new",
+                element: <BundleCreationView/>
+            },
+            {
                 path: "/bundles/:code",
                 element: <BundleView/>
-            }
+            },
         ],
     },
 ]);
