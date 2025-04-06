@@ -21,7 +21,11 @@ const initialFormData: SignUpFormData = {
     password: { value: '', error: null },
 };
 
-export const SignUpComponent = () => {
+interface SignUpComponentProps {
+    shouldRefreshInsteadOfNavigate?: boolean;
+}
+
+export const SignUpComponent = ({shouldRefreshInsteadOfNavigate = false}: SignUpComponentProps) => {
     const [formData, setFormData] = useState<SignUpFormData>(initialFormData);
     const navigate = useNavigate();
     const signUpMutation = useSignUpMutation();
@@ -56,11 +60,16 @@ export const SignUpComponent = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            signUpMutation.mutate({ username: formData.username.value, email: formData.email.value, password: formData.password.value });
+            signUpMutation.mutate({
+                username: formData.username.value,
+                email: formData.email.value,
+                password: formData.password.value
+            });
         }
     };
 
-    useEffect(() => { if (signUpMutation.isSuccess) { navigate("/"); }}, [signUpMutation.isSuccess]);
+    const onSuccess = () => { shouldRefreshInsteadOfNavigate ? window.location.reload() : navigate("/"); };
+    useEffect(() => { if (signUpMutation.isSuccess) { onSuccess(); }}, [signUpMutation.isSuccess]);
 
     return (
         <Box component="form" onSubmit={handleSubmit}>

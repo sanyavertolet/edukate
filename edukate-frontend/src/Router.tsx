@@ -9,6 +9,7 @@ import SignUpView from "./views/SignUpView";
 import BundleListView from "./views/BundleListView";
 import BundleView from "./views/BundleView";
 import BundleCreationView from "./views/BundleCreationView";
+import {AuthRequired} from "./components/auth/AuthRequired";
 
 export const router = createBrowserRouter([
     {
@@ -17,35 +18,47 @@ export const router = createBrowserRouter([
         children: [
             {
                 path: "/",
-                element: <IndexView/>
+                element: <IndexView/>,
             },
             {
                 path: "/problems",
-                element: <ProblemListView/>
+                element: <ProblemListView/>,
             },
             {
                 path: "/problems/:id",
-                element: <ProblemView/>
+                element: <ProblemView/>,
             },
             {
                 path: "/sign-in",
-                element: <SignInView/>
+                element: <SignInView/>,
             },
             {
                 path: "/sign-up",
-                element: <SignUpView/>
+                element: <SignUpView/>,
             },
             {
                 path: "/bundles",
-                element: <BundleListView/>
+                element: (
+                    <AuthRequired>
+                        <BundleListView/>
+                    </AuthRequired>
+                ),
             },
             {
                 path: "/bundles/new",
-                element: <BundleCreationView/>
+                element: (
+                    <AuthRequired>
+                        <BundleCreationView/>
+                    </AuthRequired>
+                ),
             },
             {
                 path: "/bundles/:code",
-                element: <BundleView/>
+                element: (
+                    <AuthRequired>
+                        <BundleView/>
+                    </AuthRequired>
+                ),
             },
         ],
     },

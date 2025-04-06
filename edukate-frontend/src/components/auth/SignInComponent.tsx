@@ -3,20 +3,23 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { useSignInMutation } from "../../http/auth";
 import { useNavigate } from "react-router-dom";
 
-export const SignInComponent = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const navigate = useNavigate();
+interface SignInComponentProps {
+    shouldRefreshInsteadOfNavigate?: boolean;
+}
 
+export const SignInComponent = ({shouldRefreshInsteadOfNavigate = false}: SignInComponentProps) => {
+    const navigate = useNavigate();
     const signInMutation = useSignInMutation();
 
-    useEffect(() => { if (signInMutation.isSuccess) { navigate("/"); } }, [signInMutation.isSuccess]);
-
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         signInMutation.mutate({ username, password });
     };
 
+    const onSuccess = () => { shouldRefreshInsteadOfNavigate ? window.location.reload() : navigate("/"); };
+    useEffect(() => { if (signInMutation.isSuccess) { onSuccess(); } }, [signInMutation.isSuccess]);
     return (
         <Box component="form" onSubmit={ handleSubmit }>
             <TextField
