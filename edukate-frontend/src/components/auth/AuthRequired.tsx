@@ -22,11 +22,14 @@ export function AuthRequired({children}: AuthRequiredProps) {
                 <Typography variant={"h5"} align={"center"}>Authentication Required</Typography>
                 <Typography variant={"body1"}>You need to log in to access this page.</Typography>
                 { isSignUp ?
-                    <SignUpComponent shouldRefreshInsteadOfNavigate={true}/> :
-                    <SignInComponent shouldRefreshInsteadOfNavigate={true}/>}
+                    <SignUpComponent shouldRefreshInsteadOfNavigate/> :
+                    <SignInComponent shouldRefreshInsteadOfNavigate/>}
                 { isSignUp ?
-                    <Link onClick={() => setIsSignUp(false)} color={"secondary"}>I already have an account.</Link> :
-                    <Link onClick={() => setIsSignUp(true)} color={"secondary"}>I don't have an account.</Link>}
+                    <Link sx={{ cursor: "pointer" }} onClick={() => setIsSignUp(false)} color={"secondary"}>
+                        I already have an account.
+                    </Link> : <Link sx={{ cursor: "pointer" }} onClick={() => setIsSignUp(true)} color={"secondary"}>
+                        I don't have an account.
+                    </Link>}
             </Paper>
         </Box>
     )
