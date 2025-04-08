@@ -7,6 +7,7 @@ import { CookiesProvider } from "react-cookie";
 import { queryClient } from "./http/queryClient";
 import { router } from "./Router";
 import { CssBaseline } from "@mui/material";
+import { DeviceProvider } from "./components/topbar/DeviceContextProvider";
 
 export default function App() {
     return (
@@ -15,7 +16,9 @@ export default function App() {
             <ThemeProvider>
                 <AuthProvider>
                     <CookiesProvider defaultSetOptions={{ path: '/' }}>
-                        <RouterProvider router={router}/>
+                        <DeviceProvider>
+                            <RouterProvider router={router}/>
+                        </DeviceProvider>
                     </CookiesProvider>
                 </AuthProvider>
             </ThemeProvider>

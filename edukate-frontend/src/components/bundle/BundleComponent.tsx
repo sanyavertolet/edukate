@@ -7,6 +7,7 @@ import { ProblemMetadata } from "../../types/ProblemMetadata";
 import { ProblemComponent } from "../problem/ProblemComponent";
 import { BundleInfoCardComponent } from "./BundleInfoCardComponent";
 import Grid from "@mui/material/Grid2";
+import { useDeviceContext } from "../topbar/DeviceContextProvider";
 
 interface BundleComponentProps {
     bundleCode?: string;
@@ -16,6 +17,7 @@ interface BundleComponentProps {
 export function BundleComponent({ bundleCode, onLoaded }: BundleComponentProps) {
     const [bundle, setBundle] = useState<Bundle>();
     const { data, isLoading, error } = useBundleRequest(bundleCode);
+    const { isMobile } = useDeviceContext();
 
     useEffect(() => {
         if (data && !isLoading && !error) {
@@ -33,7 +35,7 @@ export function BundleComponent({ bundleCode, onLoaded }: BundleComponentProps) 
     return (
         <Box>
             <Grid container spacing={ 1 } paddingTop={"1rem"}>
-                <Grid key={"left-grid"} size={ "grow" }>
+                <Grid sx={{sm: "none", md: "block"}} key={"left-grid"} size={ "grow" }>
                     <Card>
                         <BundleProblemSelectorComponent bundleName={ bundle ? bundle.name : "Index" }
                                                         problems={ bundle ? bundle.problems : [] }
@@ -41,7 +43,7 @@ export function BundleComponent({ bundleCode, onLoaded }: BundleComponentProps) 
                                                         selectedProblem={selectedProblemMetadata}/>
                     </Card>
                 </Grid>
-                <Grid key={"central-grid"} size={ 10 }>
+                <Grid key={"central-grid"} size={ isMobile ? 12 : 10 }>
                     { selectedProblemMetadata
                         ? <ProblemComponent problemId={selectedProblemMetadata.name}/>
                         : <BundleInfoCardComponent bundle={bundle}/>

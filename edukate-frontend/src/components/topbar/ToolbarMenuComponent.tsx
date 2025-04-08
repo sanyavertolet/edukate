@@ -2,9 +2,9 @@ import { ThemeToggleButton } from "../themes/ThemeToggleButton";
 import { UserMenu } from "../UserMenu";
 import { Box } from "@mui/material";
 
-export const ToolbarRightComponent = () => {
+export const ToolbarMenuComponent = () => {
     return (
-        <Box sx={{ display: { xs: "flex", md: "flex" }}}>
+        <Box sx={{ display: "flex" }}>
             <ThemeToggleButton/>
             <UserMenu/>
         </Box>
