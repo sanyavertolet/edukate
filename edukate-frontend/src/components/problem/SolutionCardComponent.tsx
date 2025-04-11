@@ -1,6 +1,6 @@
 import { Problem } from "../../types/Problem";
 import { Card, CardContent, Link, Stack, Typography } from "@mui/material";
-import DragAndDropComponent from "./DragAndDropComponent";
+import { DragAndDropComponent } from "../files/DragAndDropComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import { ResultAccordionComponent } from "./ResultAccordionComponent";
 
@@ -27,9 +27,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                 )}
                 { user?.status == "ACTIVE" && (
                     <Stack direction="column" spacing={2} alignItems="center">
-                        {/* todo: will be removed later */}
-                        {/*<ProblemInputFormComponent problem={ problem }/>*/}
-                        <DragAndDropComponent hidden={true}/>
+                        <DragAndDropComponent/>
                         <ResultAccordionComponent problem={problem} refreshProblem={refreshProblem}/>
                     </Stack>
                 )}
