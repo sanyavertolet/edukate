@@ -1,63 +1,32 @@
-import { Box, Button, Paper, CircularProgress } from "@mui/material";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { Box, Button, Paper } from "@mui/material";
+import { useState } from "react";
 import { SelectedFilesComponent } from "./SelectedFilesComponent";
 
 interface DragAndDropComponentProps {
-    onFilesSelected?: (files: File[]) => void;
     accept?: string;
-    isLoading?: boolean;
     maxSize?: number;
     maxFiles?: number;
-    onSubmit?: (files: File[]) => void;
-    onUploadButtonClick?: () => void;
+    onSubmit?: (fileKeys: string[]) => void;
 }
 
 export function DragAndDropComponent(
-    {
-        onFilesSelected,
-        accept = "*",
-        maxSize = 50 * 1024 * 1024,
-        maxFiles = 5,
-        isLoading = false,
-        onSubmit,
-    }: DragAndDropComponentProps
+    { accept = "*", maxSize = 50 * 1024 * 1024, maxFiles = 5, onSubmit }: DragAndDropComponentProps
 ) {
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => { onFilesSelected && onFilesSelected(selectedFiles); }, [selectedFiles]);
-
-    const handleAddFiles = (event: ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files) return;
-        const updatedFiles = [...selectedFiles, ...Array.from(event.target.files)];
-        setSelectedFiles(updatedFiles);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
+    const [uploadedFileKeys, setUploadedFileKeys] = useState<string[]>([]);
+    const addFileKey = (fileKey: string) => {
+        setUploadedFileKeys(prevState => [...prevState, fileKey]);
     };
-
-    const handleBrowseClick = () => { fileInputRef.current?.click(); };
-    const handleRemoveFile = (index: number) => {
-        setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+    const deleteFileKey = (fileKey: string) => {
+        setUploadedFileKeys(prevState => prevState.filter(key => key !== fileKey));
     };
-
     return (
         <Paper elevation={2} sx={{p: 1, borderRadius: 2, width: "50%"}}>
-            <input type={"file"} multiple accept={accept} ref={fileInputRef} style={{ display: "none" }} onChange={handleAddFiles}/>
-
             <Box gap={2}>
-                <SelectedFilesComponent onUploadButtonClick={handleBrowseClick} files={selectedFiles}
-                                        isLoading={isLoading} handleRemoveFile={handleRemoveFile}
+                <SelectedFilesComponent onTempFileUploaded={addFileKey} onTempFileDeleted={deleteFileKey} accept={accept}
                                         maxFiles={maxFiles} maxSize={maxSize}/>
-
-                { isLoading && (
-                    <Box display="flex" justifyContent="center" my={2}><CircularProgress size={24}/></Box>
-                )}
-
-                { onSubmit && (
-                    <Button variant={"outlined"} color={"secondary"} onClick={()=>onSubmit(selectedFiles)}>
-                        Submit
-                    </Button>
+                { onSubmit && uploadedFileKeys.length > 0 && (
+                    <Button variant={"outlined"} color={"secondary"} sx={{ mt: 2 }}
+                        onClick={() => onSubmit(uploadedFileKeys)}>Submit</Button>
                 )}
             </Box>
         </Paper>

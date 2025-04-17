@@ -2,9 +2,10 @@ import { FC, useMemo } from "react";
 import { defaultTooltipSlotProps, formatFileSize, sizeOf } from "../../utils/utils";
 import { IconButton, ListItem, ListItemText, Tooltip } from "@mui/material";
 import UploadIcon from "@mui/icons-material/Upload";
+import { ExtendedFile } from "./ExtendedFile";
 
 type SelectedFilesHeaderComponentProps = {
-    files: File[];
+    files: ExtendedFile[];
     maxFiles?: number;
     maxSize?: number;
     onUploadButtonClick?: () => void;
@@ -13,10 +14,10 @@ type SelectedFilesHeaderComponentProps = {
 export const SelectedFilesHeaderComponent: FC<SelectedFilesHeaderComponentProps> = (
     {files, maxFiles, maxSize, onUploadButtonClick}
 ) => {
-    const currentSize = useMemo(() => sizeOf(files), [files]);
+    const currentSize = useMemo(() => sizeOf(files.map(it => it.content)), [files]);
     const uploadSecondaryAction = onUploadButtonClick ? (
         <Tooltip title={"Upload files"} slotProps={defaultTooltipSlotProps}>
-            <IconButton disabled color={"primary"} edge="end" aria-label="delete" onClick={onUploadButtonClick}>
+            <IconButton color={"primary"} edge="end" aria-label="delete" onClick={onUploadButtonClick}>
                 <UploadIcon/>
             </IconButton>
         </Tooltip>

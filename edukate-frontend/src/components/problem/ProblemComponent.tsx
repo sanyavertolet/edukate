@@ -17,9 +17,12 @@ export function ProblemComponent({ problemId, onLoaded }: ProblemComponentProps)
 
     useEffect(() => { if (data && !isLoading && !error) {
         setProblem(data);
-        onLoaded && onLoaded(data);
+        if (onLoaded) {
+            onLoaded(data);
+        }
     }}, [data, isLoading, error]);
 
+    // todo: page is being reloaded after successful submission, needs to be fixed
     const refreshProblem = () => { setShouldRefresh((flag) => !flag); };
 
     return (

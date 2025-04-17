@@ -1,4 +1,4 @@
-import { useResultRequest, useSubmitMutation } from "../../http/requests";
+import { useResultRequest } from "../../http/requests";
 import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Button, Container, Typography } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from "react";
@@ -13,24 +13,27 @@ interface ResultComponentProps {
     refreshProblem: () => void;
 }
 
-export function ResultAccordionComponent({ problem, refreshProblem }: ResultComponentProps) {
+// todo: fix Mark as done button when submissions are finished
+export function ResultAccordionComponent({ problem /*, refreshProblem */ }: ResultComponentProps) {
     const [result, setResult] = useState<Result>();
     const resultRequest = useResultRequest(problem.id);
     useEffect(
         () => {
-            resultRequest.data && !resultRequest.isLoading && !resultRequest.error && setResult(resultRequest.data);
+            if (resultRequest.data && !resultRequest.isLoading && !resultRequest.error) {
+                setResult(resultRequest.data);
+            }
         },
         [resultRequest.data, resultRequest.isLoading, resultRequest.error]
     );
 
-    const submitMutation = useSubmitMutation(problem.id);
-    useEffect(() => {
-        if (submitMutation.isSuccess && submitMutation.data) {
-            refreshProblem();
-        }
-    }, [submitMutation.isSuccess, submitMutation.data]);
+    // const submitMutation = useSubmitMutation(problem.id);
+    // useEffect(() => {
+    //     if (submitMutation.isSuccess && submitMutation.data) {
+    //         refreshProblem();
+    //     }
+    // }, [submitMutation.isSuccess, submitMutation.data, refreshProblem]);
 
-    const handleClick = () => { submitMutation.mutate() };
+    const handleClick = () => { /* submitMutation.mutate() */ };
 
     const { user } = useAuthContext();
     return (
@@ -45,7 +48,7 @@ export function ResultAccordionComponent({ problem, refreshProblem }: ResultComp
                 </AccordionDetails>
                 { problem.status != "SOLVED" && (
                     <AccordionActions>
-                        <Button onClick={handleClick}>Mark as done</Button>
+                        <Button disabled onClick={handleClick}>Mark as done</Button>
                     </AccordionActions>
                 )}
             </Accordion>

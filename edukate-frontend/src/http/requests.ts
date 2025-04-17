@@ -1,15 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ProblemMetadata } from "../types/ProblemMetadata";
 import { client } from "./client";
-import axios from "axios";
 import { Problem } from "../types/Problem";
 import { Submission } from "../types/Submission";
 import { useAuthContext } from "../components/auth/AuthContextProvider";
 import { Result } from "../types/Result";
-import { fullStatus } from "../utils/utils";
 import { Bundle } from "../types/Bundle";
 import { BundleMetadata } from "../types/BundleMetadata";
 import { CreateBundleRequest } from "../types/CreateBundleRequest";
+import { defaultErrorHandler } from "./utils";
+import { CreateSubmissionRequest } from "../types/CreateSubmissionRequest";
 
 export function useProblemListRequest(page: number, size: number) {
     const { user } = useAuthContext();
@@ -58,13 +58,16 @@ export function useProblemRequest(id: string | undefined, shouldRefresh?: boolea
     });
 }
 
-export function useSubmitMutation(problemId: string) {
+export function useSubmitProblemMutation() {
     const { user } = useAuthContext();
     return useMutation({
-        mutationKey: ['submit', problemId, user],
-        mutationFn: async () => {
+        mutationKey: ['submission', user],
+        mutationFn: async (request: CreateSubmissionRequest) => {
+            if (!user) {
+                throw new Error("User not signed in");
+            }
             try {
-                const response = await client.post<Submission>(`/api/v1/submissions/${problemId}`);
+                const response = await client.post<Submission>('/api/v1/submissions', request);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
@@ -73,13 +76,14 @@ export function useSubmitMutation(problemId: string) {
     });
 }
 
+// todo: remove me
 export function useMySubmissionsRequest(problemId: string) {
     const { user } = useAuthContext();
     return useQuery({
         queryKey: ['submission', problemId, user?.name],
         queryFn: async () => {
             if (!user) {
-                throw new Error("User not logged in");
+                throw new Error("User not signed in");
             }
             try {
                 const response = await client.get<Submission[]>(`/api/v1/submissions/${problemId}/${user.name}`);
@@ -167,12 +171,4 @@ export function useOptionsRequest<T = string>(urlPath: string, prefix: string, s
             }
         }
     })
-}
-
-function defaultErrorHandler(error: any) {
-    if (axios.isAxiosError(error)) {
-        const status = fullStatus(error.response);
-        return new Error(`Error fetching data: ${status}`);
-    }
-    return new Error(`An unknown error occurred. Please try again later.`);
 }

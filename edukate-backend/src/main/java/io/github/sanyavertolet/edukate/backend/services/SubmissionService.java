@@ -1,10 +1,13 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
+import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
+import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
+import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
 import io.github.sanyavertolet.edukate.backend.utils.StatusCount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -20,11 +23,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SubmissionService {
     private final SubmissionRepository submissionRepository;
+    private final FileService fileService;
 
-    public Mono<Submission> saveSubmission(String problemId, String userId, String fileKey) {
-        return Mono.just(Submission.of(problemId, userId, fileKey))
-                // TODO: remove me when file submission mechanism is implemented
-                .map(submission -> submission.markAs(Submission.Status.SUCCESS))
+    public Mono<Submission> saveSubmission(String userName, CreateSubmissionRequest submissionRequest) {
+        return Mono.just(submissionRequest)
+                .map(request -> Submission.of(request.getProblemId(), userName, request.getFileKeys()))
+                .zipWhen(submission ->
+                        Flux.fromIterable(submission.getFileKeys())
+                                .flatMap(fileKey ->
+                                        fileService.moveFile(
+                                                FileKeys.temp(userName, fileKey),
+                                                FileKeys.submission(submission, fileKey)))
+                                .collectList()
+                                .filter(list -> list.size() == submissionRequest.getFileKeys().size())
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException("Some files were not found"))))
+                .map(tuple -> {
+                    Submission submission = tuple.getT1();
+                    List<String> fileKeys = tuple.getT2();
+                    submission.setFileKeys(fileKeys);
+                    return submission;
+                })
                 .flatMap(submissionRepository::save);
     }
 
@@ -46,6 +64,18 @@ public class SubmissionService {
                         .map(problemMetadata -> updateStatusInMetadata(authentication, problemMetadata))
                         .toList()
         );
+    }
+
+    public Mono<SubmissionDto> updateFileUrlsInDto(SubmissionDto submissionDto) {
+        return Flux.fromIterable(submissionDto.getFileUrls())
+                .flatMap(fileService::getDownloadUrlOrEmpty)
+                .collectList()
+                .zipWith(Mono.justOrEmpty(submissionDto))
+                .map(tuple -> {
+                    List<String> urls = tuple.getT1();
+                    SubmissionDto dto = tuple.getT2();
+                    return dto.withFileUrls(urls);
+                });
     }
 
     public Mono<ProblemMetadata> updateStatusInMetadata(Authentication authentication, ProblemMetadata problemMetadata) {

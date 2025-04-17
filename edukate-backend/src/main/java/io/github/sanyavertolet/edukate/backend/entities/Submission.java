@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
@@ -19,7 +20,7 @@ public class Submission {
     private String problemId;
     private String userId;
     private Status status;
-    private String fileKey;
+    private List<String> fileKeys;
     private Instant createdAt;
 
     public enum Status {
@@ -29,11 +30,11 @@ public class Submission {
     }
 
     public SubmissionDto toDto() {
-        return new SubmissionDto(id, problemId, userId, status, createdAt);
+        return new SubmissionDto(id, problemId, userId, status, createdAt, fileKeys);
     }
 
-    public static Submission of(String problemId, String userId, String fileKey) {
-        return new Submission(null, problemId, userId, Status.PENDING, fileKey, Instant.now(Clock.systemUTC()));
+    public static Submission of(String problemId, String userId, List<String> fileKeys) {
+        return new Submission(null, problemId, userId, Status.PENDING, fileKeys, Instant.now(Clock.systemUTC()));
     }
 
     public Submission markAs(Status status) {

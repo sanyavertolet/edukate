@@ -20,13 +20,8 @@ export function SubtasksComponent({subtasks}: SubtasksComponentProps) {
     return ( subtaskIds &&
         <Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={currentTabIndex}
-                      onChange={handleTabChange}
-                      aria-label="subtask tabs"
-                      textColor="secondary"
-                      indicatorColor="secondary"
-                      centered
-                >
+                <Tabs value={currentTabIndex} onChange={handleTabChange} aria-label="subtask tabs"
+                      textColor="secondary" indicatorColor="secondary" centered>
                     { subtaskIds.map((subtaskId, index) =>
                         <Tab key={subtaskId} value={index} label={subtaskId}/>
                     )}
