@@ -1,6 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { client } from "./client";
 import { defaultErrorHandler } from "./utils";
+import { FileMetadata } from "../types/FileMetadata";
 
 export function useDeleteTempFileMutation() {
     return useMutation({
@@ -38,5 +39,37 @@ export function usePostTempFileMutation() {
                 throw defaultErrorHandler(error);
             }
         }
+    })
+}
+
+export function useGetTempFiles() {
+    return useQuery({
+        queryKey: ['get-temp-files'],
+        queryFn: async () => {
+            try {
+                const response = await client.get<FileMetadata[]>('/api/v1/files/temp');
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useGetTempFile(fileName: string) {
+    return useQuery({
+        queryKey: ['get-temp-file', fileName],
+        queryFn: async () => {
+            try {
+                const response = await client.get<Blob>(`/api/v1/files/temp`, {
+                    responseType: 'blob',
+                    params: { fileName }
+                });
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        },
+        enabled: !!fileName
     })
 }

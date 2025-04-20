@@ -47,4 +47,9 @@ public class FileKeys {
     public static String prefixed(String prefix, String fileName) {
         return prefix != null ? prefix + "/" + fileName : fileName;
     }
+
+    public static String fileName(String key) {
+        int index = key.lastIndexOf('/');
+        return index != -1 ? key.substring(index + 1) : key;
+    }
 }

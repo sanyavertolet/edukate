@@ -1,6 +1,6 @@
 import { Problem } from "../../types/Problem";
 import { Alert, Card, CardContent, Link, Snackbar, Stack, Typography } from "@mui/material";
-import { DragAndDropComponent } from "../files/DragAndDropComponent";
+import { FileUploadComponent } from "../files/FileUploadComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import { ResultAccordionComponent } from "./ResultAccordionComponent";
 import { useEffect, useState } from "react";
@@ -65,11 +65,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                             Take photos of your handwritten solution and upload them here. You can upload up to 5 images.
                         </Typography>
 
-                        <DragAndDropComponent
-                            accept="image/*"
-                            maxFiles={5}
-                            onSubmit={handleSubmit}
-                        />
+                        <FileUploadComponent accept="image/*" maxFiles={5} onSubmit={handleSubmit}/>
 
                         <ResultAccordionComponent problem={problem} refreshProblem={refreshProblem}/>
 

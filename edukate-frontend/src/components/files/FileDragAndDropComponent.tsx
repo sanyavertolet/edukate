@@ -1,20 +1,23 @@
 import { FC, useMemo } from "react";
-import { defaultTooltipSlotProps, formatFileSize, sizeOf } from "../../utils/utils";
+import { defaultTooltipSlotProps, formatFileSize } from "../../utils/utils";
 import { IconButton, ListItem, ListItemText, Tooltip } from "@mui/material";
 import UploadIcon from "@mui/icons-material/Upload";
-import { ExtendedFile } from "./ExtendedFile";
+import { FileMetadata } from "../../types/FileMetadata";
 
-type SelectedFilesHeaderComponentProps = {
-    files: ExtendedFile[];
+type FileDragAndDropComponentProps = {
+    files: FileMetadata[];
     maxFiles?: number;
     maxSize?: number;
     onUploadButtonClick?: () => void;
 };
 
-export const SelectedFilesHeaderComponent: FC<SelectedFilesHeaderComponentProps> = (
+export const FileDragAndDropComponent: FC<FileDragAndDropComponentProps> = (
     {files, maxFiles, maxSize, onUploadButtonClick}
 ) => {
-    const currentSize = useMemo(() => sizeOf(files.map(it => it.content)), [files]);
+    const currentSize = useMemo(
+        () => files.reduce((total, file) => total + file.size, 0),
+        [files]
+    );
     const uploadSecondaryAction = onUploadButtonClick ? (
         <Tooltip title={"Upload files"} slotProps={defaultTooltipSlotProps}>
             <IconButton color={"primary"} edge="end" aria-label="delete" onClick={onUploadButtonClick}>

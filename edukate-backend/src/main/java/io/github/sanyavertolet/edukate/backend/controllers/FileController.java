@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.controllers;
 
+import io.github.sanyavertolet.edukate.backend.dtos.FileMetadata;
 import io.github.sanyavertolet.edukate.backend.services.FileService;
 import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,9 @@ import java.util.UUID;
 public class FileController {
     private final FileService fileService;
 
-    @GetMapping("/get/{key}")
-    public Flux<ByteBuffer> getFile(@PathVariable String key, @RequestParam(required = false) String keyPrefix) {
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    @GetMapping("/get")
+    public Flux<ByteBuffer> getFile(@RequestParam String key, @RequestParam(required = false) String keyPrefix) {
         return Mono.fromCallable(() -> FileKeys.prefixed(keyPrefix, key))
                 .flatMapMany(fileService::getFile)
                 .onErrorResume(Exception.class, e ->
@@ -29,8 +31,9 @@ public class FileController {
                 );
     }
 
-    @GetMapping("/exists/{key}")
-    public Mono<Boolean> doesFileExist(@PathVariable String key) {
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    @GetMapping("/exists")
+    public Mono<Boolean> doesFileExist(@RequestParam String key) {
         return fileService.doesFileExist(key);
     }
 
@@ -57,6 +60,26 @@ public class FileController {
     }
 
     @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/temp/get")
+    public Flux<ByteBuffer> downloadTempFile(@RequestParam String fileName, Authentication authentication) {
+        return Mono.just(fileName)
+                .map(filename -> FileKeys.temp(authentication.getName(), filename))
+                .flatMapMany(fileService::getFile);
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/temp")
+    public Flux<FileMetadata> getTempFiles(Authentication authentication) {
+        return Mono.fromCallable(authentication::getName)
+                .flatMap(userName -> Mono.zip(
+                        Mono.just(userName),
+                        Mono.just(FileKeys.tempDir(userName))
+                ))
+                .flatMapMany(tuple -> fileService.listFileMetadataWithPrefix(tuple.getT2(), tuple.getT1()))
+                .flatMap(fileService::updateKeyInFileMetadata);
+    }
+
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     @PostMapping("/upload")
     public Mono<String> uploadFile(@RequestParam String key, @RequestBody Flux<ByteBuffer> content) {
         return fileService.uploadFile(key, content);

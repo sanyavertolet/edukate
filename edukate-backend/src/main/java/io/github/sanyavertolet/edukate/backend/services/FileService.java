@@ -1,5 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
+import io.github.sanyavertolet.edukate.backend.dtos.FileMetadata;
+import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
 import io.github.sanyavertolet.edukate.backend.storage.Storage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,6 +9,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -44,5 +48,28 @@ public class FileService {
 
     public Mono<String> moveFile(String oldKey, String newKey) {
         return Mono.justOrEmpty(oldKey).flatMap(key -> storage.move(key, newKey)).map(_ -> newKey);
+    }
+
+    public Flux<String> listFilesWithPrefix(String prefix) {
+        return Mono.justOrEmpty(prefix).flatMapMany(storage::prefixedList);
+    }
+
+    public Flux<FileMetadata> listFileMetadataWithPrefix(String prefix, String authorName) {
+        return listFilesWithPrefix(prefix)
+                .flatMap(key -> Mono.zip(
+                        Mono.just(key),
+                        storage.lastModified(key),
+                        storage.contentLength(key)
+                ))
+                .map(tuple -> FileMetadata.of(
+                        tuple.getT1(),
+                        authorName,
+                        LocalDateTime.ofInstant(tuple.getT2(), ZoneId.systemDefault()),
+                        tuple.getT3()
+                ));
+    }
+
+    public Mono<FileMetadata> updateKeyInFileMetadata(FileMetadata fileMetadata) {
+        return Mono.fromCallable(fileMetadata::getKey).map(FileKeys::fileName).map(fileMetadata::withKey);
     }
 }

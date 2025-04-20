@@ -31,6 +31,18 @@ public class S3Storage implements Storage<String> {
     }
 
     @Override
+    public Flux<String> prefixedList(String prefix) {
+        ListObjectsV2Request request = ListObjectsV2Request.builder()
+                .bucket(bucket)
+                .prefix(prefix)
+                .build();
+
+        return Flux.from(s3AsyncClient.listObjectsV2Paginator(request))
+                .flatMap(response -> Flux.fromIterable(response.contents()))
+                .map(S3Object::key);
+    }
+
+    @Override
     public Mono<Boolean> doesExist(String key) {
         HeadObjectRequest request = HeadObjectRequest.builder()
                 .bucket(bucket)

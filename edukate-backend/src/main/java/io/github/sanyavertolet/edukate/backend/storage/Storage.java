@@ -22,6 +22,8 @@ public interface Storage<Key> {
 
     Flux<Key> list();
 
+    Flux<Key> prefixedList(String prefix);
+
     Mono<Boolean> doesExist(Key key);
 
     Mono<Long> contentLength(Key key);
