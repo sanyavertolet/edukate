@@ -1,14 +1,17 @@
 import { FC, useRef } from "react";
-import { IconButton, List, ListItem, ListItemIcon, ListItemText, Tooltip, Box, Typography, Input } from "@mui/material";
+import {
+    IconButton, List, ListItem, ListItemIcon, ListItemText, Box, Typography, Input, Tooltip
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { defaultTooltipSlotProps, formatFileSize } from "../../utils/utils";
-import { FileDragAndDropComponent } from "./FileDragAndDropComponent";
+import {defaultTooltipSlotProps, formatFileSize} from "../../utils/utils";
 import { FileStatusIcon } from "./FileStatusIcon";
 import { ErrorSnackbar } from "../snackbars/ErrorSnackbar";
 import { useFileUpload } from "../../hooks/useFileUpload";
+import { useFileStatsDisplayValues } from "../../hooks/useFileStatsDisplayValues";
+import UploadIcon from "@mui/icons-material/Upload";
 import { FilePreviewDialog } from "./FilePreviewDialog";
 
-type FileInputComponentProps = {
+type MobileFileInputComponentProps = {
     onTempFileUploaded: (fileKey: string) => void;
     onTempFileDeleted: (fileKey: string) => void;
     maxFiles?: number;
@@ -16,7 +19,7 @@ type FileInputComponentProps = {
     accept?: string;
 };
 
-export const FileInputComponent: FC<FileInputComponentProps> = (
+export const MobileFileInputComponent: FC<MobileFileInputComponentProps> = (
     { onTempFileUploaded, onTempFileDeleted, maxFiles = 5, maxSize = 50 * 1024 * 1024, accept = "*" }
 ) => {
     const {
@@ -26,15 +29,31 @@ export const FileInputComponent: FC<FileInputComponentProps> = (
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const onUploadButtonClick = () => { fileInputRef.current?.click(); };
+
     const listItemSx = {
         backgroundColor: 'background.paper', mb: 1, borderRadius: 1, border: '1px solid', borderColor: 'divider',
     };
+
+    const { primaryText, secondaryText } = useFileStatsDisplayValues({ files: fileMetadataList, maxFiles, maxSize });
     return (
-        <List>
+        <List sx={{ width: '100%', p: 0 }}>
             <Input type="file" style={{ display: "none" }} onChange={handleAddFiles} inputRef={fileInputRef}
-                   inputProps={{ multiple: true, accept: accept }}/>
-            <FileDragAndDropComponent files={fileMetadataList} onUploadButtonClick={onUploadButtonClick}
-                                      maxFiles={maxFiles} maxSize={maxSize}/>
+                   inputProps={{ multiple: true, accept: accept }}
+            />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="subtitle1" textAlign={"start"}>{ primaryText }</Typography>
+                    <Typography variant="caption" textAlign={"start"} color="text.secondary">{ secondaryText }</Typography>
+                </Box>
+                <Tooltip title={"Upload files"} slotProps={defaultTooltipSlotProps}>
+                    <IconButton color={"primary"} edge="end" aria-label="delete" onClick={onUploadButtonClick}
+                                disabled={fileMetadataList.length == maxFiles}>
+                        <UploadIcon/>
+                    </IconButton>
+                </Tooltip>
+            </Box>
+
             { fileMetadataList.map((file) => {
                 return (
                     <ListItem
@@ -42,14 +61,14 @@ export const FileInputComponent: FC<FileInputComponentProps> = (
                         sx={{ ...listItemSx, cursor: file.status === 'success' ? 'pointer' : 'default' }}
                         onClick={() => file.status === 'success' && handleFileClick(file.key)}
                         secondaryAction={
-                            <IconButton edge="end" aria-label="delete" onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveFile(file.key);
-                            }}
-                                        disabled={file.status === 'uploading'}>
-                                <Tooltip title={"Remove file"} slotProps={defaultTooltipSlotProps}>
-                                    <DeleteIcon/>
-                                </Tooltip>
+                            <IconButton
+                                edge="end" aria-label="delete" disabled={file.status === 'uploading'}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveFile(file.key);
+                                }}
+                            >
+                                <DeleteIcon />
                             </IconButton>
                         }
                     >

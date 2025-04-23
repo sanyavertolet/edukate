@@ -25,7 +25,7 @@ export function FileUploadComponent(
                 <FileInputComponent onTempFileUploaded={addFileKey} onTempFileDeleted={deleteFileKey} accept={accept}
                                     maxFiles={maxFiles} maxSize={maxSize}/>
                 { onSubmit && uploadedFileKeys.length > 0 && (
-                    <Button variant={"outlined"} color={"secondary"} sx={{ mt: 2 }}
+                    <Button variant={"text"} color={"secondary"} sx={{ mb: 1 }}
                         onClick={() => onSubmit(uploadedFileKeys)}>Submit</Button>
                 )}
             </Box>

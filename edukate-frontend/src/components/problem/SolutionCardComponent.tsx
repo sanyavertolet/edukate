@@ -5,6 +5,8 @@ import { useAuthContext } from "../auth/AuthContextProvider";
 import { ResultAccordionComponent } from "./ResultAccordionComponent";
 import { useEffect, useState } from "react";
 import { useSubmitProblemMutation } from "../../http/requests";
+import { useDeviceContext } from "../topbar/DeviceContextProvider";
+import { MobileFileUploadComponent } from "../files/MobileFileUploadComponent";
 
 interface SolutionCardComponentProps {
     problem: Problem;
@@ -13,6 +15,7 @@ interface SolutionCardComponentProps {
 
 export default function SolutionCardComponent({ problem, refreshProblem }: SolutionCardComponentProps) {
     const { user } = useAuthContext();
+    const { isMobile } = useDeviceContext();
 
     const [error, setError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState<boolean>(false);
@@ -65,7 +68,11 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                             Take photos of your handwritten solution and upload them here. You can upload up to 5 images.
                         </Typography>
 
-                        <FileUploadComponent accept="image/*" maxFiles={5} onSubmit={handleSubmit}/>
+                        { isMobile
+                            ? <MobileFileUploadComponent accept="image/*" maxFiles={5} onSubmit={handleSubmit}/>
+                            : <FileUploadComponent accept="image/*" maxFiles={5} onSubmit={handleSubmit}/>
+                        }
+
 
                         <ResultAccordionComponent problem={problem} refreshProblem={refreshProblem}/>
 

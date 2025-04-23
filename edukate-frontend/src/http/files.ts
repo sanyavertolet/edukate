@@ -56,10 +56,13 @@ export function useGetTempFiles() {
     })
 }
 
-export function useGetTempFile(fileName: string) {
+export function useGetTempFile(fileName: string | undefined) {
     return useQuery({
         queryKey: ['get-temp-file', fileName],
         queryFn: async () => {
+            if (!fileName) {
+                return undefined;
+            }
             try {
                 const response = await client.get<Blob>(`/api/v1/files/temp`, {
                     responseType: 'blob',
