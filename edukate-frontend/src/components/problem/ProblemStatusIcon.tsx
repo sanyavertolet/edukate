@@ -23,7 +23,7 @@ export function ProblemStatusIcon({ status }: ProblemStatusIconProps) {
                 </Tooltip>
             }
             { status == "SOLVING" &&
-                <Tooltip title={"Attempted"} slotProps={defaultTooltipSlotProps}>
+                <Tooltip title={"Pending review"} slotProps={defaultTooltipSlotProps}>
                     <PendingIcon color="warning"/>
                 </Tooltip>
             }
