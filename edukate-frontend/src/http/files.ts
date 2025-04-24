@@ -64,7 +64,7 @@ export function useGetTempFile(fileName: string | undefined) {
                 return undefined;
             }
             try {
-                const response = await client.get<Blob>(`/api/v1/files/temp`, {
+                const response = await client.get<Blob>(`/api/v1/files/temp/get`, {
                     responseType: 'blob',
                     params: { fileName }
                 });

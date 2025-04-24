@@ -1,6 +1,7 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import { useDeviceContext } from "../topbar/DeviceContextProvider";
 import { useGetTempFile } from "../../http/files";
+import { useEffect, useState } from "react";
 
 interface FilePreviewDialogProps {
     open: boolean;
@@ -10,23 +11,24 @@ interface FilePreviewDialogProps {
 
 export function FilePreviewDialog({ open, fileKey, onClose }: FilePreviewDialogProps) {
     const { isMobile } = useDeviceContext();
-
     const { data: fileBlob } = useGetTempFile(fileKey);
+    const [objectUrl, setObjectUrl] = useState<string>();
+
+    useEffect(() => {
+        if (fileBlob) {
+            const url = URL.createObjectURL(fileBlob);
+            setObjectUrl(url);
+            return () => { URL.revokeObjectURL(url); setObjectUrl(undefined); };
+        }
+    }, [fileBlob]);
+
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth fullScreen={isMobile}>
             <DialogTitle>File Preview</DialogTitle>
             <DialogContent>
-                { fileBlob && (
+                { objectUrl && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                        <img
-                            src={ URL.createObjectURL(fileBlob) }
-                            alt="File Preview"
-                            style={{ maxWidth: '100%', maxHeight: '70vh' }}
-                            onLoad={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                return () => URL.revokeObjectURL(target.src);
-                            }}
-                        />
+                        <img src={objectUrl} alt="File Preview" style={{ maxWidth: '100%', maxHeight: '70vh' }}/>
                     </Box>
                 )}
             </DialogContent>
