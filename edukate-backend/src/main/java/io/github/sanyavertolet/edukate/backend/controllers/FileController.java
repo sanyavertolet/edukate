@@ -39,7 +39,7 @@ public class FileController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/temp")
-    public Mono<String> uploadTempFile(@RequestBody Flux<ByteBuffer> content, Authentication authentication) {
+    public Mono<String> uploadTempFile(@RequestPart Flux<ByteBuffer> content, Authentication authentication) {
         return Mono.fromCallable(UUID::randomUUID)
                 .flatMap(uuid ->
                         fileService.uploadFile(FileKeys.temp(authentication.getName(), uuid.toString()), content)
