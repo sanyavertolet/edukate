@@ -8,6 +8,7 @@ import { queryClient } from "./http/queryClient";
 import { router } from "./Router";
 import { CssBaseline } from "@mui/material";
 import { DeviceProvider } from "./components/topbar/DeviceContextProvider";
+import { NotificationProvider } from "./components/snackbars/NotificationContextProvider";
 
 export default function App() {
     return (
@@ -17,7 +18,9 @@ export default function App() {
                 <AuthProvider>
                     <CookiesProvider defaultSetOptions={{ path: '/' }}>
                         <DeviceProvider>
-                            <RouterProvider router={router}/>
+                            <NotificationProvider>
+                                <RouterProvider router={router}/>
+                            </NotificationProvider>
                         </DeviceProvider>
                     </CookiesProvider>
                 </AuthProvider>
