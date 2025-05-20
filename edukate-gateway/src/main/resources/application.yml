@@ -1,6 +1,8 @@
 gateway:
   backend:
     url: http://backend
+  notifier:
+    url: http://notifier
 
 jwt:
   expiration: 1800000
@@ -16,6 +18,12 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: notifier_route
+          uri: ${gateway.notifier.url}
+          predicates:
+            - Path=/api/*/notifications/**
+          filters:
+            - RemoveRequestHeader=Cookie
         - id: api_route
           uri: ${gateway.backend.url}
           predicates:

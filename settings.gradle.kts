@@ -20,5 +20,6 @@ include("edukate-backend")
 include("edukate-common")
 include("edukate-gateway")
 include("edukate-auth")
+include("edukate-notifier")
 
 includeBuild("gradle/plugins")
