@@ -18,7 +18,7 @@ public class ResultService {
 
     public Mono<String> updateResult(Result result) {
         return problemRepository.findById(result.id())
-                .map(problem -> problem.applyResult(result))
+                .map(problem -> problem.withResult(result))
                 .flatMap(problemRepository::save)
                 .map(Problem::getId);
     }
@@ -27,7 +27,7 @@ public class ResultService {
         return results.flatMap(result ->
             problemRepository
                     .findById(result.id())
-                    .map(problem -> problem.applyResult(result))
+                    .map(problem -> problem.withResult(result))
                     .flatMap(problemRepository::save)
                     .map(Problem::getId));
     }

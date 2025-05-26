@@ -4,10 +4,10 @@ import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
+import io.github.sanyavertolet.edukate.backend.utils.Sorts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,11 +20,8 @@ public class ProblemService {
     private final ProblemRepository problemRepository;
     private final FileService fileService;
 
-    public Flux<Problem> getFilteredProblems(PageRequest pageable) {
-        return problemRepository.findAllByIsHardIn(
-                List.of(true, false),
-                pageable.withSort(Sort.Direction.ASC, "id")
-        );
+    public Flux<Problem> getFilteredProblems(PageRequest pageRequest) {
+        return problemRepository.findAll(pageRequest.withSort(Sorts.semVerSort()));
     }
 
     public Mono<Problem> findProblemById(String id) {
@@ -69,5 +66,11 @@ public class ProblemService {
     public Flux<String> getProblemIdsByPrefix(String prefix, int limit) {
         return problemRepository.findProblemsByIdStartingWith(prefix, Pageable.ofSize(limit))
                 .map(Problem::getId);
+    }
+
+    public Mono<Long> updateMissingInternalIndices() {
+        return problemRepository.findProblemsWithMissingIndices()
+                .flatMap(problemRepository::save)
+                .count();
     }
 }

@@ -27,4 +27,9 @@ public class ProblemInternalController {
     public Mono<Boolean> deleteProblem(@PathVariable String id) {
         return problemService.deleteProblemById(id);
     }
+
+    @PatchMapping("/missing-internal-indices")
+    public Mono<Long> updateMissingInternalIndices() {
+        return problemService.updateMissingInternalIndices();
+    }
 }

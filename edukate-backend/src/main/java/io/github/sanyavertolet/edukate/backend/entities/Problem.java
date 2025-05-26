@@ -6,6 +6,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.Result;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -27,6 +28,7 @@ public class Problem {
     private List<Subtask> subtasks;
     private List<String> images;
 
+    @With
     private Result result;
 
     @Data
@@ -34,10 +36,6 @@ public class Problem {
     public static class Subtask {
         private String id;
         private String text;
-    }
-
-    public enum ResultType {
-        FORMULA, TEXT, NUMERIC
     }
 
     public enum Status {
@@ -54,11 +52,6 @@ public class Problem {
         if (!contains) {
             images.add(imageName);
         }
-    }
-
-    public Problem applyResult(Result result) {
-        this.result = result;
-        return this;
     }
 
     public ProblemMetadata toProblemMetadata() {
