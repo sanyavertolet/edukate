@@ -26,4 +26,6 @@ s3:
 mongodb:
   enabled: true
   secretName: mongodb-secrets
-  secretKey: connectionString
+  secretKey:
+    backend: connectionString
+    notifier: notifierConnectionString

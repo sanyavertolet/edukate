@@ -35,6 +35,14 @@ gateway:
   managementPort: 5811
   applicationProperties:
 
+notifier:
+  name: notifier
+  imageName: edukate-notifier
+  pullPolicy: Always
+  containerPort: 5820
+  managementPort: 5821
+  clusterIP: null
+  applicationProperties:
 
 ingress:
   tls:

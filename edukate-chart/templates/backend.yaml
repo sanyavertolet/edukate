@@ -29,7 +29,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.mongodb.secretName }}
-                  key: {{ .Values.mongodb.secretKey }}
+                  key: {{ .Values.mongodb.secretKey.backend }}
             {{ end }}
             {{ if .Values.s3.enabled }}
             - name: S3_REGION
