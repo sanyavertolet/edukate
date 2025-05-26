@@ -30,6 +30,7 @@ tasks.register("buildAllImages") {
     dependsOn(
         "edukate-backend:bootBuildImage",
         "edukate-gateway:bootBuildImage",
+        "edukate-notifier:bootBuildImage",
         buildAndPushTask,
     )
 }
