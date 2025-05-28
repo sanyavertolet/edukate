@@ -18,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+
     public Mono<BaseNotification> saveIfAbsent(BaseNotification notification) {
         return notificationRepository.findNotificationByUuid(notification.getUuid())
                 .doOnNext(existingNotification -> log.debug(
@@ -29,21 +30,25 @@ public class NotificationService {
                 ));
     }
 
-    public Flux<BaseNotification> getAllUserNotifications(Authentication authentication, Boolean isRead, Pageable pageable) {
+    public Flux<BaseNotification> getUserNotifications(
+            Boolean isRead, Pageable pageable, Authentication authentication
+    ) {
         return notificationRepository.findAllByUserIdAndIsRead(authentication.getName(), isRead, pageable);
     }
 
-    public Mono<Long> countAllUserNotifications(Authentication authentication, Boolean isRead) {
-        return notificationRepository.countAllByUserIdAndIsRead(authentication.getName(), isRead).defaultIfEmpty(0L);
+    public Mono<Long> countAllUserNotifications(Boolean isRead, Authentication authentication) {
+        return notificationRepository.countAllByUserIdAndIsRead(authentication.getName(), isRead)
+                .defaultIfEmpty(0L);
     }
 
     @Transactional
     public Mono<Long> markAsRead(List<String> uuids, Authentication authentication) {
         return notificationRepository.findByUuidInAndUserId(uuids, authentication.getName())
-                .doOnNext(notification -> notification.setIsRead(Boolean.TRUE))
+                .map(notification -> {
+                    notification.setIsRead(Boolean.TRUE);
+                    return notification;
+                })
                 .flatMap(notificationRepository::save)
-                .map(BaseNotification::getIsRead)
-                .map(read -> read == Boolean.TRUE)
                 .count();
     }
 }

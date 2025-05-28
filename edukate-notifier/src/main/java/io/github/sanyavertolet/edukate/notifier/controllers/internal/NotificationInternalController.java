@@ -19,6 +19,8 @@ public class NotificationInternalController {
     /**
      * Endpoint for other services to post notifications.
      * Accepts any subclass of BaseNotificationDto and converts it to the appropriate entity.
+     * <p>
+     * <b>Field `_type` is required for deserialization.</b>
      *
      * @param notificationDto The notification DTO to process
      * @return A Mono with the saved notification entity
@@ -34,7 +36,12 @@ public class NotificationInternalController {
     }
 
     @PostMapping("/simple")
-    public Mono<BaseNotification> postSimpleNotification(@RequestParam String userId, @RequestParam String title, @RequestParam String message, @RequestParam String source) {
+    public Mono<BaseNotification> postSimpleNotification(
+            @RequestParam String userId,
+            @RequestParam String title,
+            @RequestParam String message,
+            @RequestParam String source
+    ) {
         return Mono.fromCallable(() -> new SimpleNotification(userId, title, message, source))
                 .flatMap(notificationService::saveIfAbsent);
     }

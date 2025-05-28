@@ -22,7 +22,11 @@ public final class SimpleNotification extends BaseNotification {
 
     @PersistenceCreator
     public SimpleNotification(ObjectId _id, String uuid, String userId, LocalDateTime createdAt, String title, String message, String source) {
-        super(_id, uuid, false, userId, createdAt != null ? createdAt : LocalDateTime.now());
+        this(_id, uuid, false, userId, createdAt, title, message, source);
+    }
+
+    public SimpleNotification(ObjectId _id, String uuid, Boolean isRead, String userId, LocalDateTime createdAt, String title, String message, String source) {
+        super(_id, uuid, isRead, userId, createdAt != null ? createdAt : LocalDateTime.now());
         this.title = title;
         this.message = message;
         this.source = source;
@@ -43,8 +47,12 @@ public final class SimpleNotification extends BaseNotification {
 
     public static SimpleNotification fromDto(SimpleNotificationDto notificationDto) {
         return new SimpleNotification(
-                notificationDto.getUuid(), notificationDto.getUserId(), notificationDto.getCreatedAt(),
-                notificationDto.getTitle(), notificationDto.getMessage(), notificationDto.getSource()
+                notificationDto.getUuid(),
+                notificationDto.getUserId(),
+                notificationDto.getCreatedAt() != null ? notificationDto.getCreatedAt() : LocalDateTime.now(),
+                notificationDto.getTitle(),
+                notificationDto.getMessage(),
+                notificationDto.getSource()
         );
     }
 }

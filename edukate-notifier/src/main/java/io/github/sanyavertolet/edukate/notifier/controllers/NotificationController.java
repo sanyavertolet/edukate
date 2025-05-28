@@ -31,17 +31,21 @@ public class NotificationController {
     public Flux<BaseNotificationDto> getNotifications(
             @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "false") Boolean isRead,
             Authentication authentication
     ) {
         return Mono.justOrEmpty(authentication).flatMapMany(auth ->
-                notificationService.getAllUserNotifications(auth, false, Pageable.ofSize(size).withPage(page))
+                notificationService.getUserNotifications(isRead, Pageable.ofSize(size).withPage(page), auth)
         )
                 .map(BaseNotification::toDto);
     }
 
     @GetMapping("/count")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public Mono<Long> getNotificationsCount(Authentication authentication) {
-        return notificationService.countAllUserNotifications(authentication, false);
+    public Mono<Long> getNotificationsCount(
+            @RequestParam(required = false, defaultValue = "false") Boolean isRead,
+            Authentication authentication
+    ) {
+        return notificationService.countAllUserNotifications(isRead, authentication);
     }
 }

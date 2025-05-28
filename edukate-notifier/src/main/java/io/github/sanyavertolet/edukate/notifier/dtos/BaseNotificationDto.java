@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
-        property = "_class",
+        property = "_type",
         visible = true
 )
 @JsonSubTypes({
