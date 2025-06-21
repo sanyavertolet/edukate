@@ -12,13 +12,13 @@ export function useWhoamiQuery() {
         queryKey: ['whoami', cookies[TOKEN_COOKIE]],
         queryFn: async () => {
             if (!cookies[TOKEN_COOKIE]) {
-                return undefined;
+                return null;
             }
             try {
                 const response = await client.get('/api/v1/users/whoami');
                 return response.data as User;
             } catch {
-                return undefined;
+                return null;
             }
         },
         retry: false,

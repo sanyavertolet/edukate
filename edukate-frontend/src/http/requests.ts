@@ -10,6 +10,7 @@ import { BundleMetadata } from "../types/BundleMetadata";
 import { CreateBundleRequest } from "../types/CreateBundleRequest";
 import { defaultErrorHandler } from "./utils";
 import { CreateSubmissionRequest } from "../types/CreateSubmissionRequest";
+import { BaseNotification } from "../types/notifications/BaseNotification";
 
 export function useProblemListRequest(page: number, size: number) {
     const { user } = useAuthContext();
@@ -165,6 +166,60 @@ export function useOptionsRequest<T = string>(urlPath: string, prefix: string, s
                 const response = await client.get<T[]>(urlPath, {
                     params: { prefix: prefix, size: size, }
                 });
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useNotificationsCountRequest(isRead: boolean = false) {
+    const { isAuthorized } = useAuthContext();
+    return useQuery({
+        queryKey: ['notifications', 'count', isRead, isAuthorized],
+        queryFn: async () => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.get<number>('/api/v1/notifications/count', {
+                    params: { isRead }
+                });
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useGetNotificationsRequest(isRead: boolean = false, size: number = 10, page: number = 0) {
+    const { isAuthorized } = useAuthContext();
+    return useQuery({
+        queryKey: ['notifications', 'get', isRead, size, page, isAuthorized],
+        queryFn: async () => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.get<BaseNotification[]>('/api/v1/notifications', {
+                    params: {isRead, size, page}
+                });
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useMarkNotificationsAsReadMutation() {
+    return useMutation({
+        mutationKey: ['notifications', 'mark-as-read'],
+        mutationFn: async (uuids: string[]) => {
+            try {
+                const response = await client.post('/api/v1/notifications/mark-as-read', uuids);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);

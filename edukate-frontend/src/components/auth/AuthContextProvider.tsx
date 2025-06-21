@@ -7,6 +7,7 @@ import { User } from "../../types/User";
  */
 interface AuthContextType {
     user: User | undefined;
+    isAuthorized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +22,7 @@ interface AuthProviderProps {
 export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
     const { data: user } = useWhoamiQuery();
 
-    const authContextValue = { user };
+    const authContextValue = { user: user || undefined, isAuthorized: user != undefined };
 
     return (
         <AuthContext.Provider value={authContextValue}>

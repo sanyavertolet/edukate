@@ -1,8 +1,8 @@
 import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "./auth/AuthContextProvider";
-import { useSignOut } from "../http/auth";
+import { useAuthContext } from "../auth/AuthContextProvider";
+import { useSignOut } from "../../http/auth";
 import { AccountCircle } from "@mui/icons-material";
 
 export function UserMenu() {
@@ -29,14 +29,9 @@ export function UserMenu() {
     const isMenuOpen = Boolean(anchorEl);
     return (
         <Box alignContent="center">
-            <Menu
-                id="edukate-menu"
-                anchorEl={ anchorEl }
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                open={ isMenuOpen }
-                onClose={ handleClose }
-                MenuListProps={{ 'aria-labelledby': 'basic-button' }}
-                keepMounted
+            <Menu id="edukate-menu" anchorEl={ anchorEl } anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                  open={ isMenuOpen } onClose={ handleClose } MenuListProps={{ 'aria-labelledby': 'basic-button' }}
+                  keepMounted
             >
                 { user ? signedInMenuItems : signedOutMenuItems }
             </Menu>
@@ -46,7 +41,7 @@ export function UserMenu() {
                 color="primary"
                 onClick={ handleOpen }
             >
-                <Typography variant={"body2"} sx={{ display: { xs: "none", md: "flex" }, paddingRight: "0.5rem"}}>
+                <Typography variant={"body2"} sx={{ display: { xs: "none", md: "flex" }, pr: "0.5rem"}}>
                     { user ? user.name : "Sign" }
                 </Typography>
                 <AccountCircle/>

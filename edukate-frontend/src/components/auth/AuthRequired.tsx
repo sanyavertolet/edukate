@@ -9,9 +9,9 @@ type AuthRequiredProps = {
 };
 
 export function AuthRequired({children}: AuthRequiredProps) {
-    const { user } = useAuthContext();
-    if (user) { return <>{children}</>; }
+    const { isAuthorized } = useAuthContext();
     const [isSignUp, setIsSignUp] = useState(false);
+    if (isAuthorized) { return <>{children}</>; }
     return (
         <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
             <Paper elevation={3} sx={{maxWidth: "500px", p: 3, display: "flex", flexDirection: "column", gap: 2}}>

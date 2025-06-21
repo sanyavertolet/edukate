@@ -26,6 +26,7 @@ export function ResultAccordionComponent({ problem /*, refreshProblem */ }: Resu
         [resultRequest.data, resultRequest.isLoading, resultRequest.error]
     );
 
+    // fixme
     // const submitMutation = useSubmitMutation(problem.id);
     // useEffect(() => {
     //     if (submitMutation.isSuccess && submitMutation.data) {
@@ -35,10 +36,10 @@ export function ResultAccordionComponent({ problem /*, refreshProblem */ }: Resu
 
     const handleClick = () => { /* submitMutation.mutate() */ };
 
-    const { user } = useAuthContext();
+    const { isAuthorized } = useAuthContext();
     return (
         <Container>
-            <Accordion disabled={!user}>
+            <Accordion disabled={!isAuthorized}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon/>} aria-controls="result-content" id="result-header">
                     <Typography component="span">Show the result</Typography>
                 </AccordionSummary>
