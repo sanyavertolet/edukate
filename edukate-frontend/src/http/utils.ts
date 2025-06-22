@@ -16,6 +16,6 @@ const fullStatus = (response: AxiosResponse | undefined) => {
     } else if (statusCode) {
         return `${statusCode}`;
     } else {
-        return "Unknown Status"
+        return "Unknown Status";
     }
 };

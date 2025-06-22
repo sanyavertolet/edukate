@@ -51,4 +51,15 @@ public class NotificationService {
                 .flatMap(notificationRepository::save)
                 .count();
     }
+
+    @Transactional
+    public Mono<Long> markAllAsRead(Authentication authentication) {
+        return notificationRepository.findAllByUserIdAndIsRead(authentication.getName(), Boolean.FALSE, Pageable.unpaged())
+                .map(notification -> {
+                    notification.setIsRead(Boolean.TRUE);
+                    return notification;
+                })
+                .flatMap(notificationRepository::save)
+                .count();
+    }
 }

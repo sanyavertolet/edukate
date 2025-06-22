@@ -26,6 +26,11 @@ public class NotificationController {
         return notificationService.markAsRead(uuids, authentication);
     }
 
+    @PostMapping("/mark-all-as-read")
+    public Mono<Long> markAsRead(Authentication authentication) {
+        return notificationService.markAllAsRead(authentication);
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ROLE_USER')")
     public Flux<BaseNotificationDto> getNotifications(

@@ -1,5 +1,9 @@
 import { FC } from "react";
-import { useGetNotificationsRequest, useMarkNotificationsAsReadMutation } from "../../http/requests";
+import {
+    useGetNotificationsRequest,
+    useMarkAllNotificationsAsReadMutation,
+    useMarkNotificationsAsReadMutation
+} from "../../http/requests";
 import { Box, Button, Divider, Menu, Typography } from "@mui/material";
 import { NotificationComponent } from "./NotificationComponent";
 import { MarkEmailRead } from "@mui/icons-material";
@@ -10,17 +14,21 @@ interface NotificationListComponentProps {
 }
 
 export const NotificationMenuComponent: FC<NotificationListComponentProps> = ({anchorEl, onClose}) => {
-    const isMenuOpen = Boolean(anchorEl);
+    const { data: notifications, refetch: refetchNotifications } = useGetNotificationsRequest();
+
+    const markAllAsReadMutation = useMarkAllNotificationsAsReadMutation();
+    const handleMarkAllAsRead = () => {
+        markAllAsReadMutation.mutate();
+        refetchNotifications().then();
+    };
 
     const markAsReadMutation = useMarkNotificationsAsReadMutation();
-    const handleMarkAllAsRead = () => { console.log("wip;stub") };
-
-    const { data: notifications, refetch: refetchNotifications } = useGetNotificationsRequest();
     const onNotificationClick = (uuid: string) => {
         markAsReadMutation.mutate([uuid]);
         refetchNotifications().then();
     };
 
+    const isMenuOpen = Boolean(anchorEl);
     return (
         <Menu
             id="notifications-menu"

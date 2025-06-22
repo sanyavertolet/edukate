@@ -215,12 +215,34 @@ export function useGetNotificationsRequest(isRead: boolean = false, size: number
 }
 
 export function useMarkNotificationsAsReadMutation() {
+    const { isAuthorized } = useAuthContext();
     return useMutation({
         mutationKey: ['notifications', 'mark-as-read'],
         mutationFn: async (uuids: string[]) => {
+            if (!isAuthorized) {
+                return null;
+            }
             try {
                 const response = await client.post('/api/v1/notifications/mark-as-read', uuids);
-                return response.data;
+                return response.data as number;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useMarkAllNotificationsAsReadMutation() {
+    const { isAuthorized } = useAuthContext();
+    return useMutation({
+        mutationKey: ['notifications', 'mark-all-as-read'],
+        mutationFn: async () => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.post('/api/v1/notifications/mark-all-as-read');
+                return response.data as number;
             } catch (error) {
                 throw defaultErrorHandler(error);
             }
