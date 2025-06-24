@@ -15,54 +15,20 @@ import StorageIcon from "@mui/icons-material/Storage";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useNavigate } from "react-router-dom";
 import { PublicityIcon } from "./PublicityIcon";
-import { defaultTooltipSlotProps } from "../../utils/utils"
+import { defaultTooltipSlotProps, getColorByStringHash } from "../../utils/utils"
 
 interface BundleCardProps {
     bundleMetadata: BundleMetadata;
     onCopy?: () => void;
 }
 
-const getAvatarColor = (name: string) => {
-    const colors = [
-        "#F44336",
-        "#E91E63",
-        "#9C27B0",
-        "#673AB7",
-        "#3F51B5",
-        "#2196F3",
-        "#03A9F4",
-        "#00BCD4",
-        "#009688",
-        "#4CAF50",
-        "#8BC34A",
-        "#CDDC39",
-    ]
-
-    let hash = 0
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash)
-    }
-
-    return colors[Math.abs(hash) % colors.length]
-}
-
 export const BundleCard: FC<BundleCardProps> = ({bundleMetadata, onCopy}) => {
-
-    const copyShareCode = () => {
-        navigator.clipboard.writeText(bundleMetadata.shareCode).finally(onCopy);
-    };
-
+    const copyShareCode = () => { navigator.clipboard.writeText(bundleMetadata.shareCode).finally(onCopy); };
     const getInitials = (username: string) => username.substring(0, 2);
-
     const navigate = useNavigate();
     const navigateTo = (bundleMetadata: BundleMetadata) => navigate(`/bundles/${bundleMetadata.shareCode}`);
-
     return (
-        <Card sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            m: "1rem",
-        }}>
+        <Card sx={{ display: 'flex', flexDirection: 'column', m: "1rem" }} key={ bundleMetadata.shareCode }>
             <CardContent sx={{ pb: 0 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                     <Typography variant="h5" component="div">{ bundleMetadata.name }</Typography>
@@ -97,7 +63,7 @@ export const BundleCard: FC<BundleCardProps> = ({bundleMetadata, onCopy}) => {
                         <AvatarGroup>
                             {bundleMetadata.admins.map((admin) => (
                                 <Tooltip slotProps={defaultTooltipSlotProps} key={`${admin}-tooltip`} title={admin}>
-                                    <Avatar key={`${admin}-avatar`} sx={{ backgroundColor: getAvatarColor(admin) }}>
+                                    <Avatar key={`${admin}-avatar`} sx={{ backgroundColor: getColorByStringHash(admin) }}>
                                         {getInitials(admin)}
                                     </Avatar>
                                 </Tooltip>

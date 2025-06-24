@@ -25,15 +25,15 @@ export function BundleListComponent() {
             </Box>
             <Container>
                 <Tabs value={tab} onChange={onTabChange} centered>
-                    <Tab value={"joined"} label="Joined" />
-                    <Tab value={"owned"} label="Owned" />
-                    <Tab value={"public"} label="Public"/>
+                    <Tab key={"joined"} value={"joined"} label="Joined" />
+                    <Tab key={"owned"} value={"owned"} label="Owned" />
+                    <Tab key={"public"} value={"public"} label="Public"/>
                 </Tabs>
             </Container>
 
             <Grid sx={{ paddingTop: "1rem" }} container rowSpacing={ 1 } spacing={ 2 }>
-                {bundles.map((bundle) => (
-                    <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3}}>
+                { bundles.map((bundle, index) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3}} key={`grid-${index}`}>
                         <BundleCard bundleMetadata={bundle} onCopy={() => setOpen(true)}/>
                     </Grid>
                 ))}
