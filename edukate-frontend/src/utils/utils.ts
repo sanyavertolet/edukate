@@ -1,13 +1,29 @@
 import { SlotProps } from "@mui/material";
 import { AdditionalNavigationElement } from "../components/topbar/AdditionalNavigationElement";
+import { tooltipClasses } from "@mui/material/Tooltip";
 
 // eslint-disable-next-line
 export const defaultTooltipSlotProps: SlotProps<any, any, any> = {
     popper: {
-        modifiers: [
-            { name: 'offset', options: { offset: [0, -14] } },
-        ],
-    }
+        sx: {
+            [`&.${tooltipClasses.popper}[data-popper-placement*="bottom"] .${tooltipClasses.tooltip}`]:
+                {
+                    marginTop: '0px',
+                },
+            [`&.${tooltipClasses.popper}[data-popper-placement*="top"] .${tooltipClasses.tooltip}`]:
+                {
+                    marginBottom: '0px',
+                },
+            [`&.${tooltipClasses.popper}[data-popper-placement*="right"] .${tooltipClasses.tooltip}`]:
+                {
+                    marginLeft: '0px',
+                },
+            [`&.${tooltipClasses.popper}[data-popper-placement*="left"] .${tooltipClasses.tooltip}`]:
+                {
+                    marginRight: '0px',
+                },
+        },
+    },
 };
 
 export const areNavigationsEqual = (nav1: AdditionalNavigationElement[], nav2: AdditionalNavigationElement[]) => {

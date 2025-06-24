@@ -158,6 +158,24 @@ export function useBundlesRequest(mode: "owned" | "public" | "joined") {
     });
 }
 
+export function useJoinBundleMutation() {
+    const { isAuthorized } = useAuthContext();
+    return useMutation({
+        mutationKey: ['join-bundle'],
+        mutationFn: async (bundleCode: string) => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.post<BundleMetadata>(`/api/v1/bundles/join/${bundleCode}`);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
 export function useOptionsRequest<T = string>(urlPath: string, prefix: string, size: number = 5) {
     return useQuery({
         queryKey: [urlPath, prefix, size],

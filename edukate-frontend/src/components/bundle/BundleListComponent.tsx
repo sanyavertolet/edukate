@@ -4,6 +4,7 @@ import { BundleCard } from "./BundleCard";
 import { useBundlesRequest } from "../../http/requests";
 import { SyntheticEvent, useEffect, useState } from "react";
 import { BundleMetadata } from "../../types/BundleMetadata";
+import { BundleJoinForm } from "./BundleJoinForm";
 
 type TabType = "owned" | "public" | "joined";
 
@@ -19,6 +20,9 @@ export function BundleListComponent() {
     const [open, setOpen] = useState(false);
     return (
         <Box>
+            <Box sx={{ position: "absolute", right: "1rem" }}>
+                <BundleJoinForm/>
+            </Box>
             <Container>
                 <Tabs value={tab} onChange={onTabChange} centered>
                     <Tab value={"joined"} label="Joined" />
