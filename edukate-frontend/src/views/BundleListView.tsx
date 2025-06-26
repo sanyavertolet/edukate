@@ -1,8 +1,15 @@
-import { Box, Container, Typography } from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import { BundleListComponent } from "../components/bundle/BundleListComponent";
+import { Box, Container, Tab, Tabs, Typography } from "@mui/material";
+import { BundleCategoryListComponent } from "../components/bundle/BundleCategoryListComponent";
+import { BundleJoinForm } from "../components/bundle/BundleJoinForm";
+import { BundleInfoCards } from "../components/bundle/BundleInfoCards";
+import { SyntheticEvent, useState } from "react";
+import { BundleCategory } from "../types/Bundle";
+
+type ExtendedBundleCategory = BundleCategory | "info";
 
 export default function BundleListView() {
+    const [tab, setTab] = useState<ExtendedBundleCategory>("info");
+    const onTabChange = (_: SyntheticEvent, newValue: ExtendedBundleCategory) => { setTab(newValue); }
     return (
         <Box>
             <Container>
@@ -11,13 +18,22 @@ export default function BundleListView() {
                 </Typography>
             </Container>
 
-            <Grid container spacing={ 2 } >
-                <Grid key={"left-grid"} size="grow" sx={{ display: { xs: "none", md: "flex" }}}/>
-                <Grid key={"central-grid"} size={ 12 } display="flex" flexDirection="column">
-                    <BundleListComponent/>
-                </Grid>
-                <Grid key={"right-grid"} size="grow" sx={{ display: { xs: "none", md: "flex" }}}/>
-            </Grid>
+            <Box>
+                <Container>
+                    <Box pt={2} width={"100%"} justifySelf={"center"}>
+                        <BundleJoinForm/>
+                    </Box>
+                    <Tabs value={tab} onChange={onTabChange} centered>
+                        <Tab key={"info"} value={"info"} label="Info" />
+                        <Tab key={"joined"} value={"joined"} label="Joined" />
+                        <Tab key={"owned"} value={"owned"} label="Owned" />
+                        <Tab key={"public"} value={"public"} label="Public"/>
+                    </Tabs>
+                </Container>
+
+                { tab == "info" && <BundleInfoCards/>}
+                { tab != "info" && <BundleCategoryListComponent tab={tab}/>}
+            </Box>
         </Box>
     );
 }

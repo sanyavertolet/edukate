@@ -28,7 +28,7 @@ export const BundleCard: FC<BundleCardProps> = ({bundleMetadata, onCopy}) => {
     const navigate = useNavigate();
     const navigateTo = (bundleMetadata: BundleMetadata) => navigate(`/bundles/${bundleMetadata.shareCode}`);
     return (
-        <Card sx={{ display: 'flex', flexDirection: 'column', m: "1rem" }} key={ bundleMetadata.shareCode }>
+        <Card sx={{ display: 'flex', flexDirection: 'column' }} key={ bundleMetadata.shareCode }>
             <CardContent sx={{ pb: 0 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                     <Typography variant="h5" component="div">{ bundleMetadata.name }</Typography>

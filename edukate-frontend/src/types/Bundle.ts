@@ -8,3 +8,5 @@ export interface Bundle {
     problems: ProblemMetadata[];
     shareCode: string;
 }
+
+export type BundleCategory = "owned" | "public" | "joined";

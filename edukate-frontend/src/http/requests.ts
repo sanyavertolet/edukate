@@ -5,7 +5,7 @@ import { Problem } from "../types/Problem";
 import { Submission } from "../types/Submission";
 import { useAuthContext } from "../components/auth/AuthContextProvider";
 import { Result } from "../types/Result";
-import { Bundle } from "../types/Bundle";
+import { Bundle, BundleCategory } from "../types/Bundle";
 import { BundleMetadata } from "../types/BundleMetadata";
 import { CreateBundleRequest } from "../types/CreateBundleRequest";
 import { defaultErrorHandler } from "./utils";
@@ -144,12 +144,12 @@ export function useBundleRequest(bundleCode: string | undefined) {
     });
 }
 
-export function useBundlesRequest(mode: "owned" | "public" | "joined") {
+export function useBundlesRequest(category: BundleCategory) {
     return useQuery({
-        queryKey: ['bundles', mode],
+        queryKey: ['bundles', category],
         queryFn: async () => {
             try {
-                const response = await client.get<BundleMetadata[]>(`/api/v1/bundles/${mode}`);
+                const response = await client.get<BundleMetadata[]>(`/api/v1/bundles/${category}`);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
