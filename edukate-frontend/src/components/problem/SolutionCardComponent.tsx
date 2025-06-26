@@ -64,7 +64,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                 )}
                 { user?.status == "ACTIVE" && (
                     <Stack direction="column" spacing={2} alignItems="center">
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center', maxWidth: '600px' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
                             Take photos of your handwritten solution and upload them here. You can upload up to 5 images.
                         </Typography>
 

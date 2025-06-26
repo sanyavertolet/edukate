@@ -1,5 +1,13 @@
 import { useResultRequest } from "../../http/requests";
-import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Button, Container, Typography } from "@mui/material";
+import {
+    Accordion,
+    AccordionActions,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    Button,
+    Typography
+} from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from "react";
 import { Result } from "../../types/Result";
@@ -38,7 +46,7 @@ export function ResultAccordionComponent({ problem /*, refreshProblem */ }: Resu
 
     const { isAuthorized } = useAuthContext();
     return (
-        <Container>
+        <Box width="60%">
             <Accordion disabled={!isAuthorized}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon/>} aria-controls="result-content" id="result-header">
                     <Typography component="span">Show the result</Typography>
@@ -53,6 +61,6 @@ export function ResultAccordionComponent({ problem /*, refreshProblem */ }: Resu
                     </AccordionActions>
                 )}
             </Accordion>
-        </Container>
+        </Box>
     );
 }
