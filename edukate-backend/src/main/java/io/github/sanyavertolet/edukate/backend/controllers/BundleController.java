@@ -28,10 +28,17 @@ public class BundleController {
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication
     ) {
-        return Mono.justOrEmpty(authentication)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED)))
-                .flatMapMany(auth -> bundleService.getOwnedBundles(auth, PageRequest.of(page, size)))
-                .map(Bundle::toBundleMetadata);
+        return bundleService.getOwnedBundles(authentication, PageRequest.of(page, size)).map(Bundle::toBundleMetadata);
+    }
+
+    @GetMapping("/joined")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public Flux<BundleMetadata> getJoinedBundles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication
+    ) {
+        return bundleService.getJoinedBundles(authentication, PageRequest.of(page, size)).map(Bundle::toBundleMetadata);
     }
 
     @GetMapping("/public")
@@ -42,25 +49,16 @@ public class BundleController {
         return bundleService.getPublicBundles(PageRequest.of(page, size)).map(Bundle::toBundleMetadata);
     }
 
-    @GetMapping("/joined")
-    @PreAuthorize("hasRole('ROLE_USER')")
-    public Flux<BundleMetadata> getJoinedBundles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Authentication authentication
-    ) {
-        return Mono.justOrEmpty(authentication)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED)))
-                .flatMapMany(auth -> bundleService.getJoinedBundles(auth, PageRequest.of(page, size)))
-                .map(Bundle::toBundleMetadata);
-    }
-
     @PostMapping("/join/{shareCode}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public Mono<BundleMetadata> joinBundle(@PathVariable String shareCode, Authentication authentication) {
-        return Mono.just(authentication).map(Authentication::getName)
-                .flatMap(userName -> bundleService.joinUser(userName, shareCode))
-                .map(Bundle::toBundleMetadata);
+        return bundleService.joinUser(authentication.getName(), shareCode).map(Bundle::toBundleMetadata);
+    }
+
+    @PostMapping("/leave/{shareCode}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public Mono<String> leaveBundle(@PathVariable String shareCode, Authentication authentication) {
+        return bundleService.removeUser(authentication.getName(), shareCode).map(Bundle::getShareCode);
     }
 
     @GetMapping("/{shareCode}")
@@ -69,13 +67,7 @@ public class BundleController {
             @PathVariable String shareCode,
             Authentication authentication) {
         return bundleService.findBundleByShareCode(shareCode)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Bundle " + shareCode + " not found"
-                )))
-                .filter(bundle ->
-                        bundle.isUserInBundle(authentication.getName()) || bundle.isAdmin(authentication.getName())
-                )
+                .filter(bundle -> bundle.isUserInBundle(authentication.getName()))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
                 .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
     }

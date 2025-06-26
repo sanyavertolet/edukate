@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,19 +27,10 @@ public class BundleService {
     private final ProblemService problemService;
 
     public Mono<Bundle> findBundleByShareCode(String shareCode) {
-        return bundleRepository.findBundleByShareCode(shareCode);
-    }
-
-    public Mono<Bundle> joinUser(String userId, String shareCode) {
         return bundleRepository.findBundleByShareCode(shareCode)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Bundle [" + shareCode + "] not found")))
-                .filter(bundle -> !bundle.isUserInBundle(userId))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already joined the bundle")))
-                .map(bundle -> {
-                    bundle.addUser(userId, Role.USER);
-                    return bundle;
-                })
-                .flatMap(bundleRepository::save);
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Bundle [" + shareCode + "] not found")
+                ));
     }
 
     public Flux<Bundle> getOwnedBundles(Authentication authentication, PageRequest pageable) {
@@ -78,6 +70,44 @@ public class BundleService {
         return Mono.just(createBundleRequest)
                 .map(request -> Bundle.fromCreateRequest(request, authentication.getName()))
                 .map(bundle -> bundle.updateShareCode(shareCodeGenerator.generateShareCode()))
+                .flatMap(bundleRepository::save);
+    }
+
+    @Transactional
+    public Mono<Bundle> joinUser(String userId, String shareCode) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle -> !bundle.isUserInBundle(userId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "User has already joined the bundle [" + shareCode + "]"
+                )))
+                .map(bundle -> {
+                    bundle.addUser(userId, Role.USER);
+                    return bundle;
+                })
+                .flatMap(bundleRepository::save);
+    }
+
+    @Transactional
+    public Mono<Bundle> removeUser(String userId, String shareCode) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle ->
+                        bundle.isUserInBundle(userId)
+                )
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not in bundle")
+                ))
+                .filter(bundle ->
+                        !bundle.isAdmin(userId) || bundle.getAdmins().size() > 1
+                )
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Last admin should delete bundle, not leave it"
+                )))
+                .map(bundle -> {
+                    bundle.removeUser(userId);
+                    return bundle;
+                })
                 .flatMap(bundleRepository::save);
     }
 }
