@@ -1,8 +1,7 @@
 package io.github.sanyavertolet.edukate.notifier.controllers.internal;
 
-import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto;
+import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreationRequest;
 import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
-import io.github.sanyavertolet.edukate.notifier.entities.SimpleNotification;
 import io.github.sanyavertolet.edukate.notifier.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,31 +17,21 @@ public class NotificationInternalController {
 
     /**
      * Endpoint for other services to post notifications.
-     * Accepts any subclass of BaseNotificationDto and converts it to the appropriate entity.
+     * Accepts any subclass of BaseNotificationCreationRequest and converts it to the appropriate entity.
      * <p>
      * <b>Field `_type` is required for deserialization.</b>
      *
-     * @param notificationDto The notification DTO to process
-     * @return A Mono with the saved notification entity
+     * @param creationRequest Notification creation request
+     * @return A Mono with notification UUID as String
      */
     @PostMapping
-    public Mono<BaseNotification> postNotification(@RequestBody BaseNotificationDto notificationDto) {
-        log.info("Received notification request: {}", notificationDto);
-        return Mono.just(notificationDto)
-                .map(BaseNotification::fromDto)
+    public Mono<String> postNotification(@RequestBody BaseNotificationCreationRequest creationRequest) {
+        log.info("Received notification request: {}", creationRequest);
+        return Mono.just(creationRequest)
+                .map(BaseNotification::fromCreationRequest)
                 .flatMap(notificationService::saveIfAbsent)
                 .doOnSuccess(notification -> log.info("Successfully saved notification: {}", notification))
-                .doOnError(e -> log.error("Error saving notification: {}", notificationDto, e));
-    }
-
-    @PostMapping("/simple")
-    public Mono<BaseNotification> postSimpleNotification(
-            @RequestParam String userId,
-            @RequestParam String title,
-            @RequestParam String message,
-            @RequestParam String source
-    ) {
-        return Mono.fromCallable(() -> new SimpleNotification(userId, title, message, source))
-                .flatMap(notificationService::saveIfAbsent);
+                .doOnError(e -> log.error("Error saving notification: {}", creationRequest, e))
+                .map(BaseNotification::getUuid);
     }
 }

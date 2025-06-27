@@ -4,8 +4,10 @@ import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
+import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.BundleRepository;
 import io.github.sanyavertolet.edukate.common.Role;
+import io.github.sanyavertolet.edukate.common.services.HttpNotifierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -25,12 +27,13 @@ public class BundleService {
     private final ShareCodeGenerator shareCodeGenerator;
     private final SubmissionService submissionService;
     private final ProblemService problemService;
+    private final BundlePermissionEvaluator bundlePermissionEvaluator;
+    private final HttpNotifierService notifierService;
 
     public Mono<Bundle> findBundleByShareCode(String shareCode) {
-        return bundleRepository.findBundleByShareCode(shareCode)
-                .switchIfEmpty(Mono.error(
-                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Bundle [" + shareCode + "] not found")
-                ));
+        return bundleRepository.findBundleByShareCode(shareCode).switchIfEmpty(Mono.error(
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Bundle [" + shareCode + "] not found")
+        ));
     }
 
     public Flux<Bundle> getOwnedBundles(Authentication authentication, PageRequest pageable) {
@@ -109,5 +112,20 @@ public class BundleService {
                     return bundle;
                 })
                 .flatMap(bundleRepository::save);
+    }
+
+    public Mono<String> inviteUser(String inviterId, String inviteeId, String shareCode) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, inviterId))
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions to invite")
+                ))
+                .filter(bundle -> !bundle.isUserInBundle(inviteeId))
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already in bundle")
+                ))
+                .flatMap(bundle ->
+                        notifierService.notifyInvite(inviteeId, inviterId, bundle.getName(), bundle.getShareCode())
+                );
     }
 }

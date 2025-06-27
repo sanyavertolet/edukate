@@ -3,8 +3,10 @@ package io.github.sanyavertolet.edukate.notifier.entities;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreationRequest;
+import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreationRequest;
+import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreationRequest;
 import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto;
-import io.github.sanyavertolet.edukate.notifier.dtos.SimpleNotificationDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.bson.types.ObjectId;
@@ -26,12 +28,13 @@ import java.time.LocalDateTime;
         visible = true
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = SimpleNotification.class, name = "simple")
+        @JsonSubTypes.Type(value = SimpleNotification.class, name = "simple"),
+        @JsonSubTypes.Type(value = InviteNotification.class, name = "invite")
 })
 @JsonTypeName("base")
 @TypeAlias("base")
 @AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
-public sealed class BaseNotification permits SimpleNotification {
+public sealed class BaseNotification permits SimpleNotification, InviteNotification {
     @Id
     private ObjectId _id;
     @Indexed(unique = true)
@@ -40,23 +43,20 @@ public sealed class BaseNotification permits SimpleNotification {
     private String userId;
     private LocalDateTime createdAt;
 
-    /**
-     * Convert a DTO to its corresponding entity.
-     * This method handles polymorphic conversion from any DTO to the appropriate entity.
-     *
-     * @param dto The DTO to convert
-     * @return The converted entity
-     */
-    public static BaseNotification fromDto(BaseNotificationDto dto) {
-        if (dto instanceof SimpleNotificationDto simpleDto) {
-            return SimpleNotification.fromDto(simpleDto);
+    public static BaseNotification fromCreationRequest(BaseNotificationCreationRequest creationRequest) {
+        if (creationRequest instanceof SimpleNotificationCreationRequest simpleNotificationCreationRequest) {
+            return SimpleNotification.fromCreationRequest(simpleNotificationCreationRequest);
+        } else if (creationRequest instanceof InviteNotificationCreationRequest inviteNotificationCreationRequest) {
+            return InviteNotification.fromCreationRequest(inviteNotificationCreationRequest);
         }
-        throw new UnsupportedOperationException("Unsupported DTO type: " + dto.getClass().getName());
+        throw new UnsupportedOperationException("Unsupported DTO type: " + creationRequest.getClass().getName());
     }
 
     public BaseNotificationDto toDto() {
         if (this instanceof SimpleNotification simpleNotification) {
             return simpleNotification.toDto();
+        } else if (this instanceof InviteNotification inviteNotification) {
+            return inviteNotification.toDto();
         }
         throw new UnsupportedOperationException("Unsupported Notification type: " + getClass().getName());
     }

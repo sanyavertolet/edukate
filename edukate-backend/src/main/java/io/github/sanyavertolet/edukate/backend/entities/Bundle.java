@@ -56,12 +56,16 @@ public class Bundle {
         return 0;
     }
 
+    public Role getUserRole(String userId) {
+        return userRoles.getOrDefault(userId, null);
+    }
+
     public boolean isUserInBundle(String userId) {
         return userRoles.containsKey(userId);
     }
 
     public boolean isAdmin(String userId) {
-        return userRoles.getOrDefault(userId, null).equals(Role.ADMIN);
+        return getUserRole(userId).equals(Role.ADMIN);
     }
 
     public int removeUser(String userId) {

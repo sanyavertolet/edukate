@@ -61,6 +61,15 @@ public class BundleController {
         return bundleService.removeUser(authentication.getName(), shareCode).map(Bundle::getShareCode);
     }
 
+    @PostMapping("/invite/{shareCode}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public Mono<String> inviteToBundle(
+            @PathVariable String shareCode, @RequestParam String inviteeId, Authentication authentication
+    ) {
+        return bundleService.inviteUser(authentication.getName(), inviteeId, shareCode)
+                .thenReturn("User " + inviteeId + " has been invited to bundle " + shareCode);
+    }
+
     @GetMapping("/{shareCode}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public Mono<BundleDto> getBundleByShareCode(
