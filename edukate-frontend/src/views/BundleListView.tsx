@@ -4,12 +4,15 @@ import { BundleJoinForm } from "../components/bundle/BundleJoinForm";
 import { BundleInfoCards } from "../components/bundle/BundleInfoCards";
 import { SyntheticEvent, useState } from "react";
 import { BundleCategory } from "../types/Bundle";
+import { useAuthContext } from "../components/auth/AuthContextProvider";
+import { AuthRequired } from "../components/auth/AuthRequired";
 
 type ExtendedBundleCategory = BundleCategory | "info";
 
 export default function BundleListView() {
     const [tab, setTab] = useState<ExtendedBundleCategory>("info");
     const onTabChange = (_: SyntheticEvent, newValue: ExtendedBundleCategory) => { setTab(newValue); }
+    const { isAuthorized } = useAuthContext();
     return (
         <Box>
             <Container>
@@ -21,18 +24,22 @@ export default function BundleListView() {
             <Box>
                 <Container>
                     <Box pt={2} width={"100%"} justifySelf={"center"}>
-                        <BundleJoinForm/>
+                        <BundleJoinForm disabled={!isAuthorized}/>
                     </Box>
                     <Tabs value={tab} onChange={onTabChange} centered>
                         <Tab key={"info"} value={"info"} label="Info" />
                         <Tab key={"joined"} value={"joined"} label="Joined" />
                         <Tab key={"owned"} value={"owned"} label="Owned" />
-                        <Tab key={"public"} value={"public"} label="Public"/>
+                        <Tab key={"public"} value={"public"} label="Public" />
                     </Tabs>
                 </Container>
 
                 { tab == "info" && <BundleInfoCards/>}
-                { tab != "info" && <BundleCategoryListComponent tab={tab}/>}
+                { tab != "info" && (
+                    <AuthRequired>
+                        <BundleCategoryListComponent tab={tab}/>
+                    </AuthRequired>
+                )}
             </Box>
         </Box>
     );

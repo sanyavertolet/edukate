@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-
 import PageSkeleton from "./components/PageSkeleton";
 import ProblemView from "./views/ProblemView";
 import ProblemListView from "./views/ProblemListView";
@@ -9,7 +8,7 @@ import SignUpView from "./views/SignUpView";
 import BundleListView from "./views/BundleListView";
 import BundleView from "./views/BundleView";
 import BundleCreationView from "./views/BundleCreationView";
-import {AuthRequired} from "./components/auth/AuthRequired";
+import { AuthRequired } from "./components/auth/AuthRequired";
 
 export const router = createBrowserRouter([
     {
@@ -39,9 +38,7 @@ export const router = createBrowserRouter([
             {
                 path: "/bundles",
                 element: (
-                    <AuthRequired>
-                        <BundleListView/>
-                    </AuthRequired>
+                    <BundleListView/>
                 ),
             },
             {
