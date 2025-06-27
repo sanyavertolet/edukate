@@ -4,7 +4,8 @@ import { SlotProps, Tooltip } from "@mui/material";
 
 interface ConditionalTooltipProps {
     slotProps?: SlotProps<never, never, never>;
-    children: ReactElement<unknown, never>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    children: ReactElement<unknown, any>;
     title: string;
     shown?: boolean;
     placement?: | 'bottom-end'
