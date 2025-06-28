@@ -1,4 +1,4 @@
-import { Bundle } from "../../types/Bundle";
+import { Bundle } from "../../types/bundle/Bundle";
 import { FC } from "react";
 import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
 

@@ -3,8 +3,8 @@ import Grid from "@mui/material/Grid2";
 import { BundleCard } from "./BundleCard";
 import { useBundlesRequest } from "../../http/requests";
 import { useEffect, useState } from "react";
-import { BundleMetadata } from "../../types/BundleMetadata";
-import { BundleCategory } from "../../types/Bundle";
+import { BundleMetadata } from "../../types/bundle/BundleMetadata";
+import { BundleCategory } from "../../types/bundle/Bundle";
 
 interface BundleCategoryListComponentProps {
     tab: BundleCategory;

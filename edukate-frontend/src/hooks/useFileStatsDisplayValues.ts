@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { formatFileSize } from "../utils/utils";
-import { FileMetadata } from "../types/FileMetadata";
+import { FileMetadata } from "../types/file/FileMetadata";
 
 type UseFileStatsDisplayValuesProps = {
     files: FileMetadata[];

@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography } from "@mui/material";
-import { Problem } from "../../types/Problem";
+import { Problem } from "../../types/problem/Problem";
 import { SubtasksComponent } from "./SubtasksComponent";
 import { LatexComponent } from "../LatexComponent";
 import { ImageListComponent } from "../images/ImageListComponent";

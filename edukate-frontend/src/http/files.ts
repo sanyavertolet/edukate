@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { client } from "./client";
 import { defaultErrorHandler } from "./utils";
-import { FileMetadata } from "../types/FileMetadata";
+import { FileMetadata } from "../types/file/FileMetadata";
 
 export function useDeleteTempFileMutation() {
     return useMutation({

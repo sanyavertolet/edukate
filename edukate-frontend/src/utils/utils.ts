@@ -26,6 +26,8 @@ export const defaultTooltipSlotProps: SlotProps<any, any, any> = {
     },
 };
 
+export const getFirstLetters = (str: string, n: number) => str.substring(0, n);
+
 export const areNavigationsEqual = (nav1: AdditionalNavigationElement[], nav2: AdditionalNavigationElement[]) => {
     if (nav1.length !== nav2.length) return false;
     for (let i = 0; i < nav1.length; i++) {

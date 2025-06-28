@@ -1,4 +1,4 @@
-import { BundleMetadata } from "../../types/BundleMetadata";
+import { BundleMetadata } from "../../types/bundle/BundleMetadata";
 import { FC } from "react";
 import {
     Avatar, AvatarGroup,
@@ -15,7 +15,7 @@ import StorageIcon from "@mui/icons-material/Storage";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useNavigate } from "react-router-dom";
 import { PublicityIcon } from "./PublicityIcon";
-import { defaultTooltipSlotProps, getColorByStringHash } from "../../utils/utils"
+import { defaultTooltipSlotProps, getColorByStringHash, getFirstLetters } from "../../utils/utils"
 
 interface BundleCardProps {
     bundleMetadata: BundleMetadata;
@@ -24,7 +24,6 @@ interface BundleCardProps {
 
 export const BundleCard: FC<BundleCardProps> = ({bundleMetadata, onCopy}) => {
     const copyShareCode = () => { navigator.clipboard.writeText(bundleMetadata.shareCode).finally(onCopy); };
-    const getInitials = (username: string) => username.substring(0, 2);
     const navigate = useNavigate();
     const navigateTo = (bundleMetadata: BundleMetadata) => navigate(`/bundles/${bundleMetadata.shareCode}`);
     return (
@@ -64,7 +63,7 @@ export const BundleCard: FC<BundleCardProps> = ({bundleMetadata, onCopy}) => {
                             {bundleMetadata.admins.map((admin) => (
                                 <Tooltip slotProps={defaultTooltipSlotProps} key={`${admin}-tooltip`} title={admin}>
                                     <Avatar key={`${admin}-avatar`} sx={{ backgroundColor: getColorByStringHash(admin) }}>
-                                        {getInitials(admin)}
+                                        {getFirstLetters(admin, 2)}
                                     </Avatar>
                                 </Tooltip>
                             ))}

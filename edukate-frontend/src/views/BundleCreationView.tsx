@@ -1,7 +1,7 @@
 import {Button, Card, CardActions, CardContent, Container, Stack, TextField, Typography} from "@mui/material";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { OptionPickerComponent } from "../components/basic/OptionPickerComponent";
-import { CreateBundleRequest } from "../types/CreateBundleRequest";
+import { CreateBundleRequest } from "../types/bundle/CreateBundleRequest";
 import { useCreateBundleMutation } from "../http/requests";
 import { useNavigate } from "react-router-dom";
 

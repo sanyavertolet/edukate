@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.backend.services;
 import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
+import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.BundleRepository;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -127,5 +129,43 @@ public class BundleService {
                 .flatMap(bundle ->
                         notifierService.notifyInvite(inviteeId, inviterId, bundle.getName(), bundle.getShareCode())
                 );
+    }
+
+    public Mono<Map<String, Role>> getBundleUsers(String shareCode, Authentication authentication) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, authentication.getName()))
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions...")
+                ))
+                .map(Bundle::getUserRoles);
+    }
+
+    public Mono<List<UserNameWithRole>> mapToList(Map<String, Role> userRoles) {
+        return Mono.justOrEmpty(userRoles)
+                .map(map ->
+                        map.entrySet().stream().map(mapEntry ->
+                                new UserNameWithRole(mapEntry.getKey(), mapEntry.getValue()))
+                                .toList()
+                );
+    }
+
+    @Transactional
+    public Mono<Role> changeUserRole(String shareCode, String username, Role requestedRole, Authentication authentication) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle ->
+                        bundlePermissionEvaluator.hasChangeRolePermission(
+                                bundle, authentication.getName(), username, requestedRole
+                        )
+                )
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Cannot set " + username + " role to be " + requestedRole
+                )))
+                .map(bundle -> {
+                    bundle.changeUserRole(username, requestedRole);
+                    return bundle;
+                })
+                .flatMap(bundleRepository::save)
+                .thenReturn(requestedRole);
     }
 }

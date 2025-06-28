@@ -3,7 +3,7 @@ import { BundleCategoryListComponent } from "../components/bundle/BundleCategory
 import { BundleJoinForm } from "../components/bundle/BundleJoinForm";
 import { BundleInfoCards } from "../components/bundle/BundleInfoCards";
 import { SyntheticEvent, useState } from "react";
-import { BundleCategory } from "../types/Bundle";
+import { BundleCategory } from "../types/bundle/Bundle";
 import { useAuthContext } from "../components/auth/AuthContextProvider";
 import { AuthRequired } from "../components/auth/AuthRequired";
 

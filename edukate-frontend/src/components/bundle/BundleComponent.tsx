@@ -2,7 +2,7 @@ import { useBundleRequest } from "../../http/requests";
 import { useState } from "react";
 import { Box, Card } from "@mui/material";
 import { BundleProblemSelectorComponent } from "./BundleProblemSelectorComponent";
-import { ProblemMetadata } from "../../types/ProblemMetadata";
+import { ProblemMetadata } from "../../types/problem/ProblemMetadata";
 import { ProblemComponent } from "../problem/ProblemComponent";
 import { BundleIndexCardComponent } from "./BundleIndexCardComponent";
 import Grid from "@mui/material/Grid2";

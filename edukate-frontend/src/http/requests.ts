@@ -1,16 +1,17 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ProblemMetadata } from "../types/ProblemMetadata";
 import { client } from "./client";
-import { Problem } from "../types/Problem";
-import { Submission } from "../types/Submission";
 import { useAuthContext } from "../components/auth/AuthContextProvider";
-import { Result } from "../types/Result";
-import { Bundle, BundleCategory } from "../types/Bundle";
-import { BundleMetadata } from "../types/BundleMetadata";
-import { CreateBundleRequest } from "../types/CreateBundleRequest";
+import { CreateBundleRequest } from "../types/bundle/CreateBundleRequest";
+import { Bundle, BundleCategory } from "../types/bundle/Bundle";
+import { BundleMetadata } from "../types/bundle/BundleMetadata";
+import { BaseNotification } from "../types/notification/BaseNotification";
+import { Problem } from "../types/problem/Problem";
+import { ProblemMetadata } from "../types/problem/ProblemMetadata";
+import { Result } from "../types/problem/Result";
+import { CreateSubmissionRequest } from "../types/submission/CreateSubmissionRequest";
+import { Submission } from "../types/submission/Submission";
+import { UserWithRole } from "../types/user/UserWithRole";
 import { defaultErrorHandler } from "./utils";
-import { CreateSubmissionRequest } from "../types/CreateSubmissionRequest";
-import { BaseNotification } from "../types/notifications/BaseNotification";
 
 export function useProblemListRequest(page: number, size: number) {
     const { user } = useAuthContext();
@@ -261,6 +262,64 @@ export function useMarkAllNotificationsAsReadMutation() {
             try {
                 const response = await client.post('/api/v1/notifications/mark-all-as-read');
                 return response.data as number;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useBundleInviteUserMutation() {
+    const { isAuthorized } = useAuthContext();
+    return useMutation({
+        mutationKey: ['bundle', 'user', 'invite'],
+        mutationFn: async ({username, shareCode}: {username: string, shareCode: string}) => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/invite`, undefined, {
+                    params: { shareCode, inviteeId: username }
+                });
+                return response.status;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useBundleChangeUserRoleMutation() {
+    const { isAuthorized } = useAuthContext();
+    return useMutation({
+        mutationKey: ['bundle', 'user', 'change-role'],
+        mutationFn: async ({username, role, shareCode} : {username: string, role: string, shareCode: string}) => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/change-role`, undefined, {
+                    params: { username, requestedRole: role }
+                });
+                return response.status;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useBundleUserListQuery(shareCode: string) {
+    const { isAuthorized } = useAuthContext();
+    return useQuery({
+        queryKey: ['bundle', 'user', 'list', shareCode, isAuthorized],
+        queryFn: async () => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.get<UserWithRole[]>(`/api/v1/bundles/${shareCode}/users`);
+                return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
             }

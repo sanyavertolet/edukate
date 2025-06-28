@@ -10,10 +10,10 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from "react";
-import { Result } from "../../types/Result";
+import { Result } from "../../types/problem/Result";
 import { LatexComponent } from "../LatexComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
-import { Problem } from "../../types/Problem";
+import { Problem } from "../../types/problem/Problem";
 import { ImageListComponent } from "../images/ImageListComponent";
 
 interface ResultComponentProps {

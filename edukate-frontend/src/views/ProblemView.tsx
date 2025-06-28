@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 import { ProblemStatusIcon } from "../components/problem/ProblemStatusIcon";
 import { ProblemComponent } from "../components/problem/ProblemComponent";
-import { ProblemStatus } from "../types/ProblemMetadata";
+import { ProblemStatus } from "../types/problem/ProblemMetadata";
 
 export default function ProblemView() {
     const { id } = useParams();

@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from "@mui/material";
 import React, { useState } from "react";
 import { LatexComponent } from "../LatexComponent";
-import { Subtask } from "../../types/Problem";
+import { Subtask } from "../../types/problem/Problem";
 
 interface SubtasksComponentProps {
     subtasks: Subtask[] | null

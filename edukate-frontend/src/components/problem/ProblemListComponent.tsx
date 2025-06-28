@@ -1,4 +1,4 @@
-import { ProblemMetadata } from '../../types/ProblemMetadata';
+import { ProblemMetadata } from '../../types/problem/ProblemMetadata';
 import {
     Table,
     TableBody,
@@ -93,8 +93,8 @@ export default function ProblemListComponent() {
     useEffect(() => {
         const pageNumber = searchParams.get("page");
         const pageSize = searchParams.get("pageSize");
-        setPage(_ => pageNumber ? parseInt(pageNumber) : 0);
-        setRowsPerPage(_ => pageSize ? parseInt(pageSize) : DEFAULT_PAGE_SIZE);
+        setPage(() => pageNumber ? parseInt(pageNumber) : 0);
+        setRowsPerPage(() => pageSize ? parseInt(pageSize) : DEFAULT_PAGE_SIZE);
     }, [searchParams.get("page"), searchParams.get("pageSize")]);
 
     const handleChangePage = (_: unknown, newPage: number) => {

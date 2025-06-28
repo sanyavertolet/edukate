@@ -1,6 +1,6 @@
 import { createContext, FC, ReactNode, useContext } from "react";
 import { useWhoamiQuery } from "../../http/auth";
-import { User } from "../../types/User";
+import { User } from "../../types/user/User";
 
 /**
  * Auth context interface that provides user information and methods to manage authentication

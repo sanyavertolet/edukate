@@ -1,4 +1,4 @@
-import { ProblemMetadata } from "./ProblemMetadata";
+import { ProblemMetadata } from "../problem/ProblemMetadata";
 
 export interface Bundle {
     name: string;

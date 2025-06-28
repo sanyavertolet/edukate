@@ -1,4 +1,4 @@
-import { Problem } from "../../types/Problem";
+import { Problem } from "../../types/problem/Problem";
 import { Alert, Card, CardContent, Link, Snackbar, Stack, Typography } from "@mui/material";
 import { FileUploadComponent } from "../files/FileUploadComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";

@@ -1,5 +1,5 @@
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider } from "@mui/material";
-import { ProblemMetadata } from "../../types/ProblemMetadata";
+import { ProblemMetadata } from "../../types/problem/ProblemMetadata";
 import { ProblemStatusIcon } from "../problem/ProblemStatusIcon";
 import { useDeviceContext, usePageSpecificNavigation } from "../topbar/DeviceContextProvider";
 import { AdditionalNavigationElement } from "../topbar/AdditionalNavigationElement";

@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { Avatar, Badge, Box, MenuItem, Stack, Typography } from "@mui/material";
-import { SimpleNotification } from "../../types/notifications/SimpleNotification";
+import { SimpleNotification } from "../../types/notification/SimpleNotification";
 
 interface SimpleNotificationComponentProps {
     notification: SimpleNotification;

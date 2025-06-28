@@ -3,7 +3,7 @@ import ProblemCardComponent from "./ProblemCardComponent";
 import SolutionCardComponent from "./SolutionCardComponent";
 import { useEffect, useState } from "react";
 import { useProblemRequest } from "../../http/requests";
-import { Problem } from "../../types/Problem";
+import { Problem } from "../../types/problem/Problem";
 
 interface ProblemComponentProps {
     problemId?: string;

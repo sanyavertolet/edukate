@@ -1,4 +1,4 @@
-import { Bundle } from "../../types/Bundle";
+import { Bundle } from "../../types/bundle/Bundle";
 import { Box, Card, Divider, Tab, Tabs } from "@mui/material";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import React, { FC, useMemo, useState } from "react";

@@ -2,7 +2,7 @@ import { FC, useMemo } from "react";
 import { defaultTooltipSlotProps } from "../../utils/utils";
 import { IconButton, ListItem, ListItemText, Tooltip } from "@mui/material";
 import UploadIcon from "@mui/icons-material/Upload";
-import { FileMetadata } from "../../types/FileMetadata";
+import { FileMetadata } from "../../types/file/FileMetadata";
 import { useFileStatsDisplayValues } from "../../hooks/useFileStatsDisplayValues";
 
 type FileDragAndDropComponentProps = {

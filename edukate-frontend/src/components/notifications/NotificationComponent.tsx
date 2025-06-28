@@ -1,8 +1,8 @@
-import { BaseNotification } from "../../types/notifications/BaseNotification";
+import { BaseNotification } from "../../types/notification/BaseNotification";
 import React, { FC } from "react";
 import { ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { SimpleNotificationComponent } from "./SimpleNotificationComponent";
-import { SimpleNotification } from "../../types/notifications/SimpleNotification";
+import { SimpleNotification } from "../../types/notification/SimpleNotification";
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 interface NotificationComponentProps {

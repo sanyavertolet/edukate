@@ -1,6 +1,6 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { usePostTempFileMutation, useDeleteTempFileMutation, useGetTempFiles } from "../http/files";
-import { FileMetadata } from "../types/FileMetadata";
+import { FileMetadata } from "../types/file/FileMetadata";
 import { formatFileSize } from "../utils/utils";
 
 type UseFileUploadProps = {

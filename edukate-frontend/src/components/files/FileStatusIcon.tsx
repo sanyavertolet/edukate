@@ -2,7 +2,7 @@ import { Tooltip } from "@mui/material";
 import ErrorIcon from "@mui/icons-material/Error";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import { FileMetadata } from "../../types/FileMetadata";
+import { FileMetadata } from "../../types/file/FileMetadata";
 
 interface FileStatusIconProps {
     file: FileMetadata;

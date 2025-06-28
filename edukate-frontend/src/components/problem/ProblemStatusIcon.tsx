@@ -1,4 +1,4 @@
-import { ProblemStatus } from "../../types/ProblemMetadata";
+import { ProblemStatus } from "../../types/problem/ProblemMetadata";
 import { Box, Tooltip } from "@mui/material";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
 import CloseIcon from "@mui/icons-material/CloseOutlined";

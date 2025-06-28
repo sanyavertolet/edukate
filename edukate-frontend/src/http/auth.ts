@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { client } from "./client";
-import { AuthorizationInfo } from "../types/AuthorizationInfo";
-import { User } from "../types/User";
+import { AuthorizationInfo } from "../types/user/AuthorizationInfo";
+import { User } from "../types/user/User";
 import { useCookies } from "react-cookie";
 import { defaultCookieOptions, TOKEN_COOKIE } from "../utils/cookies";
 import { queryClient } from "./queryClient";
