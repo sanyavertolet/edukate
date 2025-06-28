@@ -1,13 +1,13 @@
 import { FC } from "react";
 import { Avatar, Badge, Box, MenuItem, Stack, Typography } from "@mui/material";
-import { SimpleNotification } from "../../types/notification/SimpleNotification";
+import { InviteNotification } from "../../types/notification/InviteNotification";
 
-interface SimpleNotificationComponentProps {
-    notification: SimpleNotification;
+interface InviteNotificationComponentProps {
+    notification: InviteNotification;
     onNotificationClick: (uuid: string) => void;
 }
 
-export const SimpleNotificationComponent: FC<SimpleNotificationComponentProps> = (
+export const InviteNotificationComponent: FC<InviteNotificationComponentProps> = (
     { notification, onNotificationClick }
 ) => {
     const formatNotificationDate = (date: Date) => {
@@ -25,25 +25,22 @@ export const SimpleNotificationComponent: FC<SimpleNotificationComponentProps> =
         >
             <Stack direction={"row"} alignItems={"center"}>
                 <Badge color="secondary" variant="dot" invisible={notification.isRead} sx={{mr: 2}}>
-                    <Avatar alt="edukate" src="logo.png" />
+                    <Avatar alt="edukate" />
                 </Badge>
                 <Box>
-                    <Typography component={"span"} variant={"h6"} textAlign={"center"}>
-                        {notification.title}
+                    <Typography component={"span"} variant={"h6"} textAlign={"center"} color={"primary"}>
+                        { notification.inviter } invites you!
                     </Typography>
                     <Box>
                         <Box>
                             <Typography component={"span"} variant={"body1"}>
-                                { notification.message }
+                                Join a bundle { notification.bundleName } with share code
+                                <code> { notification.bundleShareCode }!</code>
                             </Typography>
                         </Box>
                         <Box>
                             <Typography component="span" variant="caption">
                                 { formatNotificationDate(notification.createdAt) }
-                                {" from "}
-                                <u>
-                                    { notification.source }
-                                </u>
                             </Typography>
                         </Box>
                     </Box>

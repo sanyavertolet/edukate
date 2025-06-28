@@ -146,7 +146,6 @@ export const useFileUpload = ({
         if (file && file.status === 'success') {
             deleteTempFileMutation.mutate(key, {
                 onSuccess: (serverKey) => {
-                    console.log(serverKey);
                     onTempFileDeleted(serverKey);
                     setFileMetadataList(prev => prev.filter(file => file.key !== serverKey));
                 }

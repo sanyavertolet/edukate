@@ -27,7 +27,6 @@ export const NotificationMenuComponent: FC<NotificationListComponentProps> = ({a
         markAsReadMutation.mutate([uuid]);
         refetchNotifications().then();
     };
-
     const isMenuOpen = Boolean(anchorEl);
     return (
         <Menu

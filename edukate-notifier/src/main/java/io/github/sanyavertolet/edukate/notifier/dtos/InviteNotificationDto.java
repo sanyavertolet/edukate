@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@JsonTypeName("simple")
+@JsonTypeName("invite")
 public final class InviteNotificationDto extends BaseNotificationDto {
     private String inviter;
     private String bundleName;

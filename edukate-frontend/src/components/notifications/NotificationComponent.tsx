@@ -4,6 +4,8 @@ import { ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { SimpleNotificationComponent } from "./SimpleNotificationComponent";
 import { SimpleNotification } from "../../types/notification/SimpleNotification";
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { InviteNotification } from "../../types/notification/InviteNotification";
+import { InviteNotificationComponent } from "./InviteNotificationComponent";
 
 interface NotificationComponentProps {
     notification: BaseNotification;
@@ -14,6 +16,11 @@ export const NotificationComponent: FC<NotificationComponentProps> = ({ notifica
     if (notification._type === "simple") {
         return <SimpleNotificationComponent
             notification={ notification as SimpleNotification }
+            onNotificationClick={onNotificationClick}
+        />
+    } else if (notification._type === "invite") {
+        return <InviteNotificationComponent
+            notification={ notification as InviteNotification }
             onNotificationClick={onNotificationClick}
         />
     }
