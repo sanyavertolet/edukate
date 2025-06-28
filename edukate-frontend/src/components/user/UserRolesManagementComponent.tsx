@@ -34,7 +34,10 @@ const UserSearchForm: FC<UserSearchFormProps> = ({bundleShareCode}) => {
     const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage | null>(null);
     const handleSnackbarClose = () => { setSnackbarMessage(null); };
     return (
-        <Paper component="form" sx={{ p: '0px 1px', display: 'flex', alignItems: 'center' }} variant={"outlined"}>
+        <Paper
+            component="form" variant={"outlined"}
+            sx={{ p: '0px 1px', display: 'flex', alignItems: 'center', borderRadius: 0 }}
+        >
             <InputBase
                 sx={{ ml: 1, flex: 1 }} placeholder="Username" value={username}
                 onChange={(e) => setUsername(e.target.value)} inputProps={{ 'aria-label': 'username' }}
@@ -73,7 +76,7 @@ const UserRoleManager: FC<UserRoleManagerProps> = ({shareCode}) => {
         [users, user?.name]
     )
     return (
-        <Paper variant={"outlined"}>
+        <Paper variant={"outlined"} sx={{ borderRadius: 0, borderTop: 0 }}>
             <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
                 { users && users.map(({username, role}) =>
                     <ListItem secondaryAction={
@@ -109,7 +112,7 @@ interface UserRolesManagementComponentProps {
 
 export const UserRolesManagementComponent: FC<UserRolesManagementComponentProps> = ({ shareCode }) => {
     return (
-        <Box>
+        <Box sx={{ borderRadius: 1 }}>
             <UserSearchForm bundleShareCode={shareCode}/>
             <UserRoleManager shareCode={shareCode}/>
         </Box>
