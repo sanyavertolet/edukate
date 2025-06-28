@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import {
-    Avatar, Box, FormControl, IconButton, InputBase, InputLabel, List,
-    ListItem, ListItemAvatar, ListItemText, MenuItem, Paper, Select
+    Alert, Avatar, Box, FormControl, IconButton, InputBase, InputLabel, List,
+    ListItem, ListItemAvatar, ListItemText, MenuItem, Paper, Select, Snackbar
 } from "@mui/material";
 import { getColorByStringHash, getFirstLetters } from "../../utils/utils";
 import AddIcon from "@mui/icons-material/AddOutlined";
@@ -18,11 +18,21 @@ const UserSearchForm: FC<UserSearchFormProps> = ({bundleShareCode}) => {
     const [username, setUsername] = useState("");
     /* todo: should use url from props or an axios request */
     const inviteUserMutation = useBundleInviteUserMutation();
-
-    // todo: display a snackbar in case of both success and error
     const onAddClick = () => {
-        inviteUserMutation.mutate({ username, shareCode: bundleShareCode });
+        inviteUserMutation.mutate({ username, shareCode: bundleShareCode }, {
+            onSuccess: () => {
+                setSnackbarMessage({ message: `User ${username} has been invited!`, severity: "success" });
+                setUsername("");
+            },
+            onError: () => {
+                setSnackbarMessage({ message: `Could not invite ${username}!`, severity: "error" });
+                setUsername("");
+            },
+        });
     };
+    type SnackbarMessage = { message: string, severity: "success" | "error" };
+    const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage | null>(null);
+    const handleSnackbarClose = () => { setSnackbarMessage(null); };
     return (
         <Paper component="form" sx={{ p: '0px 1px', display: 'flex', alignItems: 'center' }} variant={"outlined"}>
             <InputBase
@@ -32,6 +42,11 @@ const UserSearchForm: FC<UserSearchFormProps> = ({bundleShareCode}) => {
             <IconButton color="primary" aria-label="add user" onClick={onAddClick}>
                 <AddIcon/>
             </IconButton>
+            <Snackbar open={snackbarMessage != null} autoHideDuration={4000} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={snackbarMessage?.severity} sx={{ width: '100%' }}>
+                    { snackbarMessage?.message }
+                </Alert>
+            </Snackbar>
         </Paper>
     );
 };

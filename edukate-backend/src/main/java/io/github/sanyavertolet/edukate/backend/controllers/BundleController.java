@@ -6,6 +6,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.services.BundleService;
+import io.github.sanyavertolet.edukate.backend.services.UserService;
 import io.github.sanyavertolet.edukate.common.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequestMapping("/api/v1/bundles")
 public class BundleController {
     private final BundleService bundleService;
+    private final UserService userService;
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
@@ -88,7 +90,13 @@ public class BundleController {
     public Mono<String> inviteToBundle(
             @PathVariable String shareCode, @RequestParam String inviteeId, Authentication authentication
     ) {
-        return bundleService.inviteUser(authentication.getName(), inviteeId, shareCode)
+        return Mono.just(inviteeId)
+                .filterWhen(userService::doesUserExist)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User " + inviteeId +  " not found"
+                )))
+                .flatMap(invitee -> bundleService.inviteUser(authentication.getName(), invitee, shareCode))
                 .thenReturn("User " + inviteeId + " has been invited to bundle " + shareCode);
     }
 

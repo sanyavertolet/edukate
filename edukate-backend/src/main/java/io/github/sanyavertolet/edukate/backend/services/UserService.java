@@ -28,6 +28,10 @@ public class UserService {
         return userRepository.deleteById(id).thenReturn(true).onErrorReturn(false);
     }
 
+    public Mono<Boolean> doesUserExist(String username) {
+        return userRepository.existsById(username);
+    }
+
     public Mono<Boolean> hasUserPermissionToSubmit(User user) {
         return Mono.just(user).filter(usr -> usr.getStatus().equals(UserStatus.ACTIVE)).hasElement();
     }
