@@ -81,6 +81,11 @@ public class BundleService {
     @Transactional
     public Mono<Bundle> joinUser(String userId, String shareCode) {
         return findBundleByShareCode(shareCode)
+                .filter(bundle -> bundlePermissionEvaluator.hasJoinPermission(bundle, userId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "To join this bundle, you should be invited"
+                )))
                 .filter(bundle -> !bundle.isUserInBundle(userId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
@@ -116,6 +121,7 @@ public class BundleService {
                 .flatMap(bundleRepository::save);
     }
 
+    @Transactional
     public Mono<String> inviteUser(String inviterId, String inviteeId, String shareCode) {
         return findBundleByShareCode(shareCode)
                 .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, inviterId))
@@ -126,6 +132,11 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already in bundle")
                 ))
+                .filter(bundle -> !bundle.isUserInvited(inviteeId))
+                .switchIfEmpty(Mono.error(
+                        new ResponseStatusException(HttpStatus.BAD_REQUEST, "User has already been invited")
+                ))
+                .doOnSuccess(bundleRepository::save)
                 .flatMap(bundle ->
                         notifierService.notifyInvite(inviteeId, inviterId, bundle.getName(), bundle.getShareCode())
                 );

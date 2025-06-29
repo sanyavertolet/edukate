@@ -45,7 +45,10 @@ public class Bundle {
     }
 
     public int addUsers(Map<String, Role> usersWithRoles) {
-        return usersWithRoles.entrySet().stream().map(entry -> addUser(entry.getKey(), entry.getValue())).reduce(0, Integer::sum);
+        return usersWithRoles.entrySet()
+                .stream()
+                .map(entry ->addUser(entry.getKey(), entry.getValue()))
+                .reduce(0, Integer::sum);
     }
 
     public int changeUserRole(String userId, Role newRole) {
@@ -61,7 +64,11 @@ public class Bundle {
     }
 
     public boolean isUserInBundle(String userId) {
-        return userRoles.containsKey(userId);
+        return getUserRole(userId) != null;
+    }
+
+    public boolean isUserInvited(String userId) {
+        return userRoles.containsKey(userId) && userRoles.get(userId) == null;
     }
 
     public boolean isAdmin(String userId) {

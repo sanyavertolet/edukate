@@ -18,6 +18,10 @@ public class BundlePermissionEvaluator {
         return hasRole(bundle, username, Role.MODERATOR);
     }
 
+    public Boolean hasJoinPermission(Bundle bundle, String username) {
+        return bundle.getIsPublic() || bundle.isUserInvited(username);
+    }
+
     public Boolean hasChangeRolePermission(Bundle bundle, String requesterName, String userName, Role requestedRole) {
         Role currentUserRole = bundle.getUserRole(userName);
         Boolean adminRoleIsHigherThanUserRole = hasRoleHigherThan(bundle, requesterName, currentUserRole);

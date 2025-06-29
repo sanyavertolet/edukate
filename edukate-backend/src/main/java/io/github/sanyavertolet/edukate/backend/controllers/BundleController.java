@@ -69,7 +69,10 @@ public class BundleController {
             Authentication authentication) {
         return bundleService.findBundleByShareCode(shareCode)
                 .filter(bundle -> bundle.isUserInBundle(authentication.getName()))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "You must be a member of the bundle to view it."
+                )))
                 .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
     }
 
