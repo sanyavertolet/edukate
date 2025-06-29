@@ -37,6 +37,7 @@ gateway:
 
 notifier:
   name: notifier
+  profile: prod,secure,notifier
   imageName: edukate-notifier
   pullPolicy: Always
   containerPort: 5820
