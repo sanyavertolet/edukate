@@ -5,7 +5,6 @@ import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
 import io.github.sanyavertolet.edukate.notifier.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -36,11 +35,11 @@ public class NotificationController {
     public Flux<BaseNotificationDto> getNotifications(
             @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "false") Boolean isRead,
+            @RequestParam(required = false) Boolean isRead,
             Authentication authentication
     ) {
         return Mono.justOrEmpty(authentication).flatMapMany(auth ->
-                notificationService.getUserNotifications(isRead, Pageable.ofSize(size).withPage(page), auth)
+                notificationService.getUserNotifications(isRead, size, page, auth)
         )
                 .map(BaseNotification::toDto);
     }

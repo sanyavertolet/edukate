@@ -17,5 +17,7 @@ public interface NotificationRepository extends ReactiveMongoRepository<BaseNoti
 
     Flux<BaseNotification> findAllByUserIdAndIsRead(String userId, Boolean isRead, Pageable pageable);
 
+    Flux<BaseNotification> findAllByUserId(String userId, Pageable pageable);
+
     Flux<BaseNotification> findByUuidInAndUserId(List<String> uuid, String userId);
 }

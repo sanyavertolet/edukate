@@ -4,7 +4,9 @@ import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
 import io.github.sanyavertolet.edukate.notifier.repositories.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +33,15 @@ public class NotificationService {
     }
 
     public Flux<BaseNotification> getUserNotifications(
-            Boolean isRead, Pageable pageable, Authentication authentication
+            Boolean isRead, int size, int page, Authentication authentication
     ) {
-        return notificationRepository.findAllByUserIdAndIsRead(authentication.getName(), isRead, pageable);
+        return Mono.just(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"))
+                .flatMapMany(pageRequest -> {
+                    if (isRead == null) {
+                        return notificationRepository.findAllByUserId(authentication.getName(), pageRequest);
+                    }
+                    return notificationRepository.findAllByUserIdAndIsRead(authentication.getName(), isRead, pageRequest);
+                });
     }
 
     public Mono<Long> countAllUserNotifications(Boolean isRead, Authentication authentication) {

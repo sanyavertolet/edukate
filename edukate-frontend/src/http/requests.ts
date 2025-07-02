@@ -193,7 +193,7 @@ export function useOptionsRequest<T = string>(urlPath: string, prefix: string, s
     })
 }
 
-export function useNotificationsCountRequest(isRead: boolean = false) {
+export function useNotificationsCountRequest(isRead?: boolean) {
     const { isAuthorized } = useAuthContext();
     return useQuery({
         queryKey: ['notifications', 'count', isRead, isAuthorized],
@@ -213,7 +213,7 @@ export function useNotificationsCountRequest(isRead: boolean = false) {
     })
 }
 
-export function useGetNotificationsRequest(isRead: boolean = false, size: number = 10, page: number = 0) {
+export function useGetNotificationsRequest(isRead?: boolean, size: number = 10, page: number = 0) {
     const { isAuthorized } = useAuthContext();
     return useQuery({
         queryKey: ['notifications', 'get', isRead, size, page, isAuthorized],
