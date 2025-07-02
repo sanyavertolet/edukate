@@ -14,7 +14,9 @@ export function OptionPickerComponent(
     {optionsUrl, selectedOptions = [], debounceTime = 500, onOptionsChange, placeholderText, label}: OptionPickerComponentProps
 ) {
     const onSelectedOptionsChange = (options: string[]) => {
-        onOptionsChange && onOptionsChange(options)
+        if (onOptionsChange != null) {
+            onOptionsChange(options)
+        }
     };
 
     return (

@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.notifier.controllers;
 
 import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto;
+import io.github.sanyavertolet.edukate.notifier.dtos.NotificationStatistics;
 import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
 import io.github.sanyavertolet.edukate.notifier.services.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +34,8 @@ public class NotificationController {
     @GetMapping
     @PreAuthorize("hasRole('ROLE_USER')")
     public Flux<BaseNotificationDto> getNotifications(
-            @RequestParam(required = false, defaultValue = "10") Integer size,
-            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(required = false) Boolean isRead,
             Authentication authentication
     ) {
@@ -46,10 +47,9 @@ public class NotificationController {
 
     @GetMapping("/count")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public Mono<Long> getNotificationsCount(
-            @RequestParam(required = false, defaultValue = "false") Boolean isRead,
+    public Mono<NotificationStatistics> getNotificationsCount(
             Authentication authentication
     ) {
-        return notificationService.countAllUserNotifications(isRead, authentication);
+        return notificationService.gatherUserStatistics(authentication);
     }
 }

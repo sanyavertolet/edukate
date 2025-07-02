@@ -12,6 +12,7 @@ import { CreateSubmissionRequest } from "../types/submission/CreateSubmissionReq
 import { Submission } from "../types/submission/Submission";
 import { UserWithRole } from "../types/user/UserWithRole";
 import { defaultErrorHandler } from "./utils";
+import { NotificationStatistics } from "../types/notification/NotificationStatistics";
 
 export function useProblemListRequest(page: number, size: number) {
     const { user } = useAuthContext();
@@ -202,7 +203,7 @@ export function useNotificationsCountRequest(isRead?: boolean) {
                 return null;
             }
             try {
-                const response = await client.get<number>('/api/v1/notifications/count', {
+                const response = await client.get<NotificationStatistics>('/api/v1/notifications/count', {
                     params: { isRead }
                 });
                 return response.data;

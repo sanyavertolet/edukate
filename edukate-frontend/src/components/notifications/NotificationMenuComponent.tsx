@@ -1,20 +1,35 @@
-import { FC } from "react";
+import { ChangeEvent, FC, useMemo, useState } from "react";
 import {
     useGetNotificationsRequest,
     useMarkAllNotificationsAsReadMutation,
     useMarkNotificationsAsReadMutation
 } from "../../http/requests";
-import { Box, Button, Divider, Menu, Typography } from "@mui/material";
+import { Box, Button, Divider, Menu, Pagination, Typography } from "@mui/material";
 import { NotificationComponent } from "./NotificationComponent";
 import { MarkEmailRead } from "@mui/icons-material";
+import { NotificationStatistics } from "../../types/notification/NotificationStatistics";
 
 interface NotificationListComponentProps {
     anchorEl?: HTMLElement;
     onClose: () => void;
+    notificationStatistics: NotificationStatistics | null | undefined;
 }
 
-export const NotificationMenuComponent: FC<NotificationListComponentProps> = ({anchorEl, onClose}) => {
-    const { data: notifications, refetch: refetchNotifications } = useGetNotificationsRequest();
+const defaultNotificationPageSize: number = 10;
+
+function calculateNumberOfPage(statistics: NotificationStatistics | undefined | null) {
+    return statistics ? Math.ceil(statistics.total / defaultNotificationPageSize) : 1;
+}
+
+export const NotificationMenuComponent: FC<NotificationListComponentProps> = (
+    {anchorEl, onClose, notificationStatistics}
+) => {
+    const [page, setPage] = useState(1);
+    const { data: notifications, refetch: refetchNotifications } = useGetNotificationsRequest(
+        undefined,
+        defaultNotificationPageSize,
+        page - 1
+    );
 
     const markAllAsReadMutation = useMarkAllNotificationsAsReadMutation();
     const handleMarkAllAsRead = () => {
@@ -27,7 +42,9 @@ export const NotificationMenuComponent: FC<NotificationListComponentProps> = ({a
         markAsReadMutation.mutate([uuid]);
         refetchNotifications().then();
     };
+    const onPaginationChange = (_: ChangeEvent<unknown>, newPage: number) => { setPage(newPage); };
     const isMenuOpen = Boolean(anchorEl);
+    const numberOfPages = useMemo(() => calculateNumberOfPage(notificationStatistics), [notificationStatistics]);
     return (
         <Menu
             id="notifications-menu"
@@ -51,6 +68,15 @@ export const NotificationMenuComponent: FC<NotificationListComponentProps> = ({a
             { notifications && notifications.map((notification) =>
                 <NotificationComponent notification={notification} onNotificationClick={onNotificationClick}/>
             )}
+            { notifications && numberOfPages > 1 &&
+                <Box>
+                    <Divider sx={{ my: 1 }}/>
+                    <Pagination
+                        count={numberOfPages} page={page} showFirstButton showLastButton onChange={onPaginationChange}
+                        size={"small"} color={"primary"} sx={{ justifySelf: "center" }}
+                    />
+                </Box>
+            }
         </Menu>
     )
 };

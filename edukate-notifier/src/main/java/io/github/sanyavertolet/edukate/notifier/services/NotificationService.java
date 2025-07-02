@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.notifier.services;
 
+import io.github.sanyavertolet.edukate.notifier.dtos.NotificationStatistics;
 import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
 import io.github.sanyavertolet.edukate.notifier.repositories.NotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +45,8 @@ public class NotificationService {
                 });
     }
 
-    public Mono<Long> countAllUserNotifications(Boolean isRead, Authentication authentication) {
-        return notificationRepository.countAllByUserIdAndIsRead(authentication.getName(), isRead)
-                .defaultIfEmpty(0L);
+    public Mono<NotificationStatistics> gatherUserStatistics(Authentication authentication) {
+        return notificationRepository.gatherStatistics(authentication.getName());
     }
 
     @Transactional

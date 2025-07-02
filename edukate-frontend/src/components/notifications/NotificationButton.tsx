@@ -13,7 +13,7 @@ export const NotificationButton: FC<NotificationExpandableMenuProps> = ({ px = 2
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
 
     const { isAuthorized } = useAuthContext();
-    const { data: notificationsCount } = useNotificationsCountRequest(false);
+    const { data: statistics } = useNotificationsCountRequest(false);
 
     const handleClose = () => setAnchorEl(undefined);
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -21,10 +21,10 @@ export const NotificationButton: FC<NotificationExpandableMenuProps> = ({ px = 2
     };
     return (
         <Box hidden={ !isAuthorized } px={px}>
-            <NotificationMenuComponent anchorEl={anchorEl} onClose={handleClose}/>
+            <NotificationMenuComponent notificationStatistics={statistics} anchorEl={anchorEl} onClose={handleClose}/>
             <IconButton aria-label="show notifications" aria-haspopup="true"
                 color={"primary"} edge="end" onClick={handleOpen}>
-                <Badge badgeContent={ notificationsCount || 0 } color="primary">
+                <Badge badgeContent={ statistics?.unread || 0 } color="primary">
                     <NotificationsIcon />
                 </Badge>
             </IconButton>
