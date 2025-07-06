@@ -27,6 +27,7 @@ public class Bundle {
 
     private List<String> problemIds;
     private Map<String, Role> userRoles;
+    private Set<String> invitedUserIds;
 
     @Indexed(unique = true)
     private String shareCode = null;
@@ -68,7 +69,22 @@ public class Bundle {
     }
 
     public boolean isUserInvited(String userId) {
-        return userRoles.containsKey(userId) && userRoles.get(userId) == null;
+        return invitedUserIds != null && invitedUserIds.contains(userId);
+    }
+
+    public int inviteUser(String userId) {
+        if (invitedUserIds == null) {
+            invitedUserIds = new HashSet<>();
+        }
+        if (!invitedUserIds.contains(userId)) {
+            invitedUserIds.add(userId);
+            return 1;
+        }
+        return 0;
+    }
+
+    public int removeInvitedUser(String userId) {
+        return invitedUserIds != null && invitedUserIds.remove(userId) ? 1 : 0;
     }
 
     public boolean isAdmin(String userId) {
@@ -87,7 +103,6 @@ public class Bundle {
         if (problemIds == null) {
             problemIds = new ArrayList<>();
         }
-
         if (!problemIds.contains(problemId)) {
             problemIds.add(problemId);
             return 1;
@@ -122,6 +137,7 @@ public class Bundle {
                 bundleRequest.getIsPublic(),
                 bundleRequest.getProblemIds(),
                 Map.of(adminId, Role.ADMIN),
+                Set.of(),
                 null
         );
     }

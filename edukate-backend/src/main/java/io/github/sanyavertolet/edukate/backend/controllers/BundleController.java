@@ -103,6 +103,22 @@ public class BundleController {
                 .thenReturn("User " + inviteeId + " has been invited to bundle " + shareCode);
     }
 
+    @PostMapping("/{shareCode}/reply-invite")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public Mono<String> replyToInvite(
+            @PathVariable String shareCode, @RequestParam Boolean response, Authentication authentication
+    ) {
+        return Mono.just(response)
+                .flatMap(hasAccepted -> {
+                    if (hasAccepted) {
+                        return bundleService.joinUser(authentication.getName(), shareCode)
+                                .thenReturn("You have accepted invite to bundle " + shareCode);
+                    }
+                    return bundleService.declineInvite(shareCode, authentication)
+                            .thenReturn("You have declined invite to bundle " + shareCode);
+                });
+    }
+
     @GetMapping("/{shareCode}/users")
     @PreAuthorize("hasRole('ROLE_USER')")
     public Mono<List<UserNameWithRole>> getUsersInBundle(@PathVariable String shareCode, Authentication authentication) {

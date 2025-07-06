@@ -21,7 +21,7 @@ export const NotificationComponent: FC<NotificationComponentProps> = ({ notifica
     } else if (notification._type === "invite") {
         return <InviteNotificationComponent
             notification={ notification as InviteNotification }
-            onNotificationClick={onNotificationClick}
+            markAsRead={onNotificationClick}
         />
     }
     return <BaseNotificationComponent notification={notification} onNotificationClick={onNotificationClick}/>

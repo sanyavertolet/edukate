@@ -89,7 +89,7 @@ public class BundleService {
                 .filter(bundle -> !bundle.isUserInBundle(userId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "User has already joined the bundle [" + shareCode + "]"
+                        "You have already joined the bundle [" + shareCode + "]"
                 )))
                 .map(bundle -> {
                     bundle.addUser(userId, Role.USER);
@@ -136,7 +136,17 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "User has already been invited")
                 ))
-                .doOnSuccess(bundleRepository::save)
+                .flatMap(bundle -> {
+                    if (bundle.inviteUser(inviteeId) == 0) {
+                        return Mono.error(new ResponseStatusException(
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Cannot invite user " + inviteeId + " to bundle " + shareCode + " due to internal error")
+                        );
+                    }
+                    bundle.removeInvitedUser(inviteeId);
+                    return Mono.just(bundle);
+                })
+                .flatMap(bundleRepository::save)
                 .flatMap(bundle ->
                         notifierService.notifyInvite(inviteeId, inviterId, bundle.getName(), bundle.getShareCode())
                 );
@@ -178,5 +188,25 @@ public class BundleService {
                 })
                 .flatMap(bundleRepository::save)
                 .thenReturn(requestedRole);
+    }
+
+    @Transactional
+    public Mono<Bundle> declineInvite(String shareCode, Authentication authentication) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle -> bundle.isUserInvited(authentication.getName()))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "You cannot decline the invitation as nobody has invited you yet"
+                )))
+                .flatMap(bundle -> {
+                    if (bundle.removeInvitedUser(authentication.getName()) == 0) {
+                        return Mono.error(new ResponseStatusException(
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Cannot decline invitation for user " + authentication.getName() + " due to internal error"
+                        ));
+                    }
+                    return Mono.just(bundle);
+                })
+                .flatMap(bundleRepository::save);
     }
 }

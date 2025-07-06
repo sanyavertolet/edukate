@@ -62,3 +62,10 @@ export function getColorByStringHash(str: string) {
     }
     return colors[Math.abs(hash) % colors.length];
 }
+
+export function formatDate(date: Date) {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+        month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+}

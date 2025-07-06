@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Avatar, Badge, Box, MenuItem, Stack, Typography } from "@mui/material";
 import { SimpleNotification } from "../../types/notification/SimpleNotification";
+import { formatDate } from "../../utils/utils";
 
 interface SimpleNotificationComponentProps {
     notification: SimpleNotification;
@@ -10,12 +11,6 @@ interface SimpleNotificationComponentProps {
 export const SimpleNotificationComponent: FC<SimpleNotificationComponentProps> = (
     { notification, onNotificationClick }
 ) => {
-    const formatNotificationDate = (date: Date) => {
-        const d = new Date(date);
-        return d.toLocaleDateString('en-US', {
-            month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-    };
     const onClick = () => onNotificationClick(notification.uuid);
     return (
         <MenuItem
@@ -39,7 +34,7 @@ export const SimpleNotificationComponent: FC<SimpleNotificationComponentProps> =
                         </Box>
                         <Box>
                             <Typography component="span" variant="caption">
-                                { formatNotificationDate(notification.createdAt) }
+                                { formatDate(notification.createdAt) }
                                 {" from "}
                                 <u>
                                     { notification.source }
