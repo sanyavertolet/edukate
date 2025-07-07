@@ -9,13 +9,16 @@ import {
     Paper,
     Skeleton,
     Box,
-    Chip, TableFooter, TablePagination
+    TableFooter,
+    TablePagination,
+    Stack
 } from '@mui/material';
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useProblemCountRequest, useProblemListRequest } from "../../http/requests";
 import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
 import { ProblemStatusIcon } from "./ProblemStatusIcon";
+import { TagChip } from "../basic/TagChip";
 
 function getSearchParamAsInt(searchParams: URLSearchParams, key: string, defaultValue: number) {
     return searchParams.get(key) ? parseInt(searchParams.get(key)!) : defaultValue;
@@ -56,9 +59,13 @@ export default function ProblemListComponent() {
         >
             <TableCell key={`${item.name}-status`}>{ <ProblemStatusIcon status={item.status}/> }</TableCell>
             <TableCell key={`${item.name}-id`}>{ item.name + (item.isHard ? "*" : "") } </TableCell>
-            <TableCell key={`${item.name}-tags`}>{ item.tags.map(tag =>
-                <Chip key={`${item.name}-tag-${tag}`} label={tag} size="small" sx={{ mx: 1 }} variant="outlined"/>
-            )}</TableCell>
+            <TableCell key={`${item.name}-tags`}>
+                <Stack direction={{ xs: "column", md: "row" }} spacing={{xs: 0.5, md: 1} }>
+                    { item.tags.map(tag =>
+                        <TagChip label={tag}/>
+                    )}
+                </Stack>
+            </TableCell>
         </TableRow>
     ));
 
@@ -77,8 +84,8 @@ export default function ProblemListComponent() {
     ));
 
     const updateSearchParams = (pageNumber?: string, pageSize?: string) => {
-        const isPageNumber = pageNumber && pageNumber != "0"
-        const isPageSize = pageSize && pageSize != DEFAULT_PAGE_SIZE.toString();
+        const isPageNumber = pageNumber != undefined && pageNumber != "0"
+        const isPageSize = pageSize != undefined && pageSize != DEFAULT_PAGE_SIZE.toString();
         if (isPageNumber && isPageSize) {
             setSearchParams({ page: pageNumber, pageSize: pageSize });
         } else if (isPageNumber) {
@@ -118,9 +125,7 @@ export default function ProblemListComponent() {
                     <TableBody key={"table-body"}>
                         { !problemListQuery.isLoading && !problemListQuery.error
                         && !problemCountQuery.isLoading && !problemCountQuery.error
-                            ?
-                            tableRows :
-                            tableRowsPlaceholder
+                            ? tableRows : tableRowsPlaceholder
                         }
                     </TableBody>
                     <TableFooter key={"table-footer"}>

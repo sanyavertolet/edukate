@@ -8,7 +8,7 @@ interface BundleDescriptionTabComponentProps {
 
 export const BundleDescriptionTabComponent: FC<BundleDescriptionTabComponentProps> = ({ bundle }) => {
     return (
-        <Paper variant={"outlined"} sx={{ justifySelf: "center", p: 2, m: 2, width: { sm: "100%", md: "50%" } }}>
+        <Paper variant={"outlined"} sx={{ justifySelf: "center", p: 2, m: 2, width: { xs: "100%", md: "50%" } }}>
             <Stack spacing={3} useFlexGap>
                 <Typography color={"primary"} variant={"h4"}>{bundle.name}</Typography>
                 <Box>

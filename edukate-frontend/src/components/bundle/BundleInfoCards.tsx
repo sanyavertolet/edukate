@@ -117,10 +117,10 @@ export const BundleInfoCards = () => {
                 <WhyUseBundlesCard/>
             </Box>
 
-            <Stack spacing={2} direction={"row"} paddingTop={3}>
-                    <JoinedCard/>
-                    <OwnedCard/>
-                    <PublicCard/>
+            <Stack spacing={{ xs: 3, md: 2 }} direction={{ xs: "column", md: "row" }} paddingTop={3}>
+                <JoinedCard/>
+                <OwnedCard/>
+                <PublicCard/>
             </Stack>
 
             <Box paddingTop={3}>

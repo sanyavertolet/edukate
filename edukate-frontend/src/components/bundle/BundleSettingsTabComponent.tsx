@@ -25,7 +25,7 @@ interface BundleSettingsTabComponentProps {
 export const BundleSettingsTabComponent: FC<BundleSettingsTabComponentProps> = ({ bundle }) => {
     return (
         <Box>
-            <Paper variant={"outlined"} sx={{ justifySelf: "center", p: 2, m: 2, width: { sm: "100%", md: "50%" } }}>
+            <Paper variant={"outlined"} sx={{ justifySelf: "center", p: 2, m: 2, width: { xs: "100%", md: "50%" } }}>
                 <BundleUserManagementComponent bundle={bundle}/>
             </Paper>
         </Box>

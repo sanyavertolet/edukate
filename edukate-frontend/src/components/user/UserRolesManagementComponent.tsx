@@ -85,7 +85,7 @@ const UserRoleManager: FC<UserRoleManagerProps> = ({shareCode}) => {
                             <Select
                                 labelId={`${username}-role-label`} id={`${username}-role`} value={role} label="Role"
                                 onChange={(event) => handleRoleChange(username, event.target.value)}
-                                disabled={ user?.name == username } size={"small"} sx={{ minWidth: { xs: 125, md: 200 } }}
+                                disabled={ user?.name == username } size={"small"} sx={{ minWidth: { xs: 125, lg: 200 } }}
                             >
                                 <MenuItem value={"ADMIN"} disabled>Admin</MenuItem>
                                 <MenuItem value={"MODERATOR"} disabled={userRole == "USER"}>Moderator</MenuItem>
