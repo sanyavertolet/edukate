@@ -1,9 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.controllers;
 
-import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
-import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata;
-import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
-import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole;
+import io.github.sanyavertolet.edukate.backend.dtos.*;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.services.BundleService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
@@ -125,7 +122,7 @@ public class BundleController {
         return bundleService.getBundleUsers(shareCode, authentication).flatMap(bundleService::mapToList);
     }
 
-    @PostMapping("/{shareCode}/change-role")
+    @PostMapping("/{shareCode}/role")
     @PreAuthorize("hasRole('ROLE_USER')")
     public Mono<Role> changeUserRole(
             @PathVariable String shareCode,
@@ -134,5 +131,27 @@ public class BundleController {
             Authentication authentication
     ) {
         return bundleService.changeUserRole(shareCode, username, requestedRole, authentication);
+    }
+
+    @PostMapping("/{shareCode}/visibility")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public Mono<BundleDto> changeVisibility(
+            @PathVariable String shareCode,
+            @RequestParam Boolean isPublic,
+            Authentication authentication
+    ) {
+        return bundleService.changeVisibility(shareCode, isPublic, authentication)
+                .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
+    }
+
+    @PostMapping("/{shareCode}/problems")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public Mono<BundleDto> changeProblems(
+            @PathVariable String shareCode,
+            @RequestBody ChangeBundleProblemsRequest changeBundleProblemsRequest,
+            Authentication authentication
+    ) {
+        return bundleService.changeProblems(shareCode, changeBundleProblemsRequest.problemIds(), authentication)
+                .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
     }
 }

@@ -309,13 +309,13 @@ export function useBundleInvitationReplyMutation() {
 export function useBundleChangeUserRoleMutation() {
     const { isAuthorized } = useAuthContext();
     return useMutation({
-        mutationKey: ['bundle', 'user', 'change-role'],
+        mutationKey: ['bundle', 'user', 'role'],
         mutationFn: async ({username, role, shareCode} : {username: string, role: string, shareCode: string}) => {
             if (!isAuthorized) {
                 return null;
             }
             try {
-                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/change-role`, undefined, {
+                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/role`, undefined, {
                     params: { username, requestedRole: role }
                 });
                 return response.status;

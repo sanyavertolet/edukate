@@ -209,4 +209,40 @@ public class BundleService {
                 })
                 .flatMap(bundleRepository::save);
     }
+
+    @Transactional
+    public Mono<Bundle> changeVisibility(String shareCode, Boolean isPublic, Authentication authentication) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, authentication.getName(), Role.MODERATOR))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Cannot change visibility due to lack of permissions"
+                )))
+                .map(bundle -> {
+                    bundle.setIsPublic(isPublic);
+                    return bundle;
+                })
+                .flatMap(bundleRepository::save);
+    }
+
+    @Transactional
+    public Mono<Bundle> changeProblems(String shareCode, List<String> problemIds, Authentication authentication) {
+        return Mono.just(shareCode)
+                .filter(_ -> !problemIds.isEmpty())
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Bundle problem list cannot be empty"
+                )))
+                .flatMap(this::findBundleByShareCode)
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, authentication.getName(), Role.MODERATOR))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Cannot change problem list due to lack of permissions"
+                )))
+                .map(bundle -> {
+                    bundle.setProblemIds(problemIds);
+                    return bundle;
+                })
+                .flatMap(bundleRepository::save);
+    }
 }
