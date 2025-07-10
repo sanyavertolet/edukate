@@ -30,7 +30,7 @@ export default function ProblemListComponent() {
     const navigate = useNavigate();
     const navigateToProblem = (problemName: string) => { navigate(`/problems/${problemName}`) };
 
-    const [ searchParams, setSearchParams ] = useSearchParams()
+    const [ searchParams, setSearchParams ] = useSearchParams();
     const [ page, setPage ] = useState(getSearchParamAsInt(searchParams, 'page', 0));
     const [ rowsPerPage, setRowsPerPage ] = useState(getSearchParamAsInt(searchParams, 'pageSize', DEFAULT_PAGE_SIZE));
 
@@ -62,7 +62,7 @@ export default function ProblemListComponent() {
             <TableCell key={`${item.name}-tags`}>
                 <Stack direction={{ xs: "column", md: "row" }} spacing={{xs: 0.5, md: 1} }>
                     { item.tags.map(tag =>
-                        <TagChip label={tag}/>
+                        <TagChip key={`${tag}-tag`} label={tag}/>
                     )}
                 </Stack>
             </TableCell>
@@ -97,12 +97,12 @@ export default function ProblemListComponent() {
         }
     };
 
+    const pageNumberSearchParam = searchParams.get("page");
+    const pageSizeSearchParam = searchParams.get("pageSize");
     useEffect(() => {
-        const pageNumber = searchParams.get("page");
-        const pageSize = searchParams.get("pageSize");
-        setPage(() => pageNumber ? parseInt(pageNumber) : 0);
-        setRowsPerPage(() => pageSize ? parseInt(pageSize) : DEFAULT_PAGE_SIZE);
-    }, [searchParams.get("page"), searchParams.get("pageSize")]);
+        setPage(() => pageNumberSearchParam ? parseInt(pageNumberSearchParam) : 0);
+        setRowsPerPage(() => pageSizeSearchParam ? parseInt(pageSizeSearchParam) : DEFAULT_PAGE_SIZE);
+    }, [pageSizeSearchParam, pageNumberSearchParam]);
 
     const handleChangePage = (_: unknown, newPage: number) => {
         updateSearchParams(newPage.toString())
@@ -114,7 +114,7 @@ export default function ProblemListComponent() {
     return (
         <Box>
             <TableContainer component={ Paper }>
-                <Table aria-label="problem table">
+                <Table key={"table"} aria-label="problem table">
                     <TableHead key={"table-headers"}>
                         <TableRow key={"table-headers-row"}>
                             <TableCell key={"table-headers-status"}>Status</TableCell>
