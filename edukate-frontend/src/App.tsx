@@ -8,7 +8,7 @@ import { queryClient } from "./http/queryClient";
 import { router } from "./Router";
 import { CssBaseline } from "@mui/material";
 import { DeviceProvider } from "./components/topbar/DeviceContextProvider";
-import { NotificationProvider } from "./components/snackbars/NotificationContextProvider";
+import { ToastContainer, Zoom } from "react-toastify";
 
 export default function App() {
     return (
@@ -18,9 +18,12 @@ export default function App() {
                 <AuthProvider>
                     <CookiesProvider defaultSetOptions={{ path: '/' }}>
                         <DeviceProvider>
-                            <NotificationProvider>
-                                <RouterProvider router={router}/>
-                            </NotificationProvider>
+                            <RouterProvider router={router}/>
+                            <ToastContainer
+                                aria-label={"Edukate toasts"} position="bottom-left" autoClose={5000} hideProgressBar
+                                newestOnTop={false} closeOnClick={false} rtl={false} pauseOnFocusLoss draggable
+                                pauseOnHover theme="colored" transition={Zoom} style={{ color: "primary" }}
+                            />
                         </DeviceProvider>
                     </CookiesProvider>
                 </AuthProvider>

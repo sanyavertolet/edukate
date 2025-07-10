@@ -1,33 +1,16 @@
 import axios from 'axios';
 import { getTokenFromCookies, removeCookies } from "../utils/cookies";
-import { showNotification, NotificationOptions } from "../components/snackbars/NotificationContextProvider";
 import { queryClient } from './queryClient';
+import { toast } from "react-toastify";
 
-/**
- * Axios client instance configured with base URL
- */
 export const client = axios.create({
     baseURL: window.location.origin,
 });
 
-/**
- * Handles 401 Unauthorized errors by:
- * 1. Removing authentication cookies
- * 2. Invalidating user-related queries
- * 3. Showing a user-friendly error message
- */
 const handle401Error = () => {
     removeCookies();
     queryClient.invalidateQueries({ queryKey: ['whoami'] }).finally();
-
-    // Show a user-friendly error message with custom styling
-    const notificationOptions: NotificationOptions = {
-        severity: "warning",
-        variant: "filled",
-        autoHideDuration: 6000
-    };
-
-    showNotification("Oops! Your session has timed out. Please sign in again.", notificationOptions);
+    toast.warn("Oops! Your session has timed out. Please sign in again.");
 };
 
 client.interceptors.request.use(

@@ -3,14 +3,24 @@ import { ScreenAdaptingTopBar } from "./topbar/ScreenAdaptingTopBar";
 import { Outlet } from "react-router-dom";
 import { ParticlesComponent } from "./animation/Particles";
 import { useAuthContext } from "./auth/AuthContextProvider";
-import { PendingStatusSnackbar } from "./snackbars/PendingStatusSnackbar";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 
 export default function PageSkeleton() {
     const { user } = useAuthContext();
 
+    useEffect(
+        () => {
+            if (user?.status === "PENDING") {
+                toast.info("Your account is pending approval. Some features are temporarily restricted.");
+            }
+        },
+        // eslint-disable-next-line
+        []
+    );
+
     return (
         <Box>
-            <PendingStatusSnackbar open={user != undefined && user.status == "PENDING"}/>
             <ScreenAdaptingTopBar/>
             <Box sx={{ paddingY: "2rem" }}>
                 <Outlet/>

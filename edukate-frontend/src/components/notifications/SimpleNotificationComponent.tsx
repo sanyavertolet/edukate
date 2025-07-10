@@ -5,18 +5,17 @@ import { formatDate } from "../../utils/utils";
 
 interface SimpleNotificationComponentProps {
     notification: SimpleNotification;
-    onNotificationClick: (uuid: string) => void;
+    onClick: () => void;
+    disabled?: boolean;
 }
 
 export const SimpleNotificationComponent: FC<SimpleNotificationComponentProps> = (
-    { notification, onNotificationClick }
+    { notification, onClick, disabled = false }
 ) => {
-    const onClick = () => onNotificationClick(notification.uuid);
     return (
         <MenuItem
-            key={notification.uuid}
+            key={notification.uuid} onClick={onClick} disabled={disabled}
             sx={{ fontWeight: notification.isRead ? 'normal' : 'bold', whiteSpace: 'normal', display: 'block', py: 1 }}
-            onClick={onClick}
         >
             <Stack direction={"row"} alignItems={"center"}>
                 <Badge color="secondary" variant="dot" invisible={notification.isRead} sx={{mr: 2}}>

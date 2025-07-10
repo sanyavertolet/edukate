@@ -9,22 +9,25 @@ import { InviteNotificationComponent } from "./InviteNotificationComponent";
 
 interface NotificationComponentProps {
     notification: BaseNotification;
-    onNotificationClick: (uuid: string) => void;
+    onClick: () => void;
 }
 
-export const NotificationComponent: FC<NotificationComponentProps> = ({ notification, onNotificationClick }) => {
+export const NotificationComponent: FC<NotificationComponentProps> = ({ notification, onClick }) => {
+    const disabled = notification.isRead;
     if (notification._type === "simple") {
         return <SimpleNotificationComponent
             notification={ notification as SimpleNotification }
-            onNotificationClick={onNotificationClick}
+            onClick={onClick}
+            disabled={disabled}
         />
     } else if (notification._type === "invite") {
         return <InviteNotificationComponent
             notification={ notification as InviteNotification }
-            markAsRead={onNotificationClick}
+            onClick={onClick}
+            disabled={disabled}
         />
     }
-    return <BaseNotificationComponent notification={notification} onNotificationClick={onNotificationClick}/>
+    return <BaseNotificationComponent notification={notification} onClick={onClick}/>
 };
 
 const BaseNotificationComponent: FC<NotificationComponentProps> = ({notification}) => {

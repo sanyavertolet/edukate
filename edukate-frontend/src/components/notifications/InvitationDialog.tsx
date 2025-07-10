@@ -1,27 +1,30 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { FC } from "react";
 
+type BundleInviteInfo = {
+    bundleName: string;
+    inviterName: string;
+};
+
 interface InvitationDialogProps {
-    bundleName: string | undefined;
-    inviterName: string | undefined;
+    bundleInfo: BundleInviteInfo | undefined;
     onClose: (isAccepted: boolean | undefined) => void;
-    open: boolean;
 }
 
-export const InvitationDialog: FC<InvitationDialogProps> = ({inviterName, bundleName, onClose, open}) => {
+export const InvitationDialog: FC<InvitationDialogProps> = ({bundleInfo, onClose}) => {
     return (
         <Dialog
-            open={open}
+            open={bundleInfo != undefined}
             onClose={() => onClose(undefined)}
             aria-labelledby="invitation-dialog-title"
             aria-describedby="invitation-dialog-description"
         >
             <DialogTitle id="invitation-dialog-title">
-                {`${bundleName} invite`}
+                {`${bundleInfo?.bundleName} invite`}
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="invitation-dialog-description">
-                    {`${inviterName} has invited you to ${bundleName} bundle. Do you wish to join the bundle?`}
+                    {`${bundleInfo?.inviterName} has invited you to ${bundleInfo?.bundleName} bundle. Do you wish to join the bundle?`}
                 </DialogContentText>
             </DialogContent>
             <DialogActions>

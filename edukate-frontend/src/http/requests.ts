@@ -294,18 +294,14 @@ export function useBundleInvitationReplyMutation() {
     const { isAuthorized } = useAuthContext();
     return useMutation({
         mutationKey: ['bundle', 'user', 'reply-invite'],
-        mutationFn: async ({shareCode, isAccepted}: { shareCode: string, isAccepted: boolean }) => {
+        mutationFn: async ({ shareCode, isAccepted }: { shareCode: string, isAccepted: boolean }) => {
             if (!isAuthorized) {
                 return null;
             }
-            try {
-                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/reply-invite`, undefined, {
-                    params: { shareCode, response: isAccepted }
-                });
-                return response.status;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
+            const response = await client.post<string>(`/api/v1/bundles/${shareCode}/reply-invite`, undefined, {
+                params: { shareCode, response: isAccepted }
+            });
+            return response.status;
         }
     })
 }
