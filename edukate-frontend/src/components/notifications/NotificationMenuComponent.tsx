@@ -1,10 +1,13 @@
 import { ChangeEvent, FC, useMemo, useState } from "react";
 import { useGetNotificationsRequest, useMarkAllNotificationsAsReadMutation } from "../../http/requests";
-import { Box, Button, Divider, Menu, Pagination, Typography } from "@mui/material";
-import { NotificationComponent } from "./NotificationComponent";
+import { Box, Button, Divider, Menu, MenuItem, Pagination, Typography } from "@mui/material";
 import { MarkEmailRead } from "@mui/icons-material";
 import { NotificationStatistics } from "../../types/notification/NotificationStatistics";
 import { BaseNotification } from "../../types/notification/BaseNotification";
+import { SimpleNotificationComponent } from "./SimpleNotificationComponent";
+import { SimpleNotification } from "../../types/notification/SimpleNotification";
+import { InviteNotificationComponent } from "./InviteNotificationComponent";
+import { InviteNotification } from "../../types/notification/InviteNotification";
 
 interface NotificationListComponentProps {
     anchorEl?: HTMLElement;
@@ -35,6 +38,7 @@ export const NotificationMenuComponent: FC<NotificationListComponentProps> = (
     const onPaginationChange = (_: ChangeEvent<unknown>, newPage: number) => { setPage(newPage); };
     const isMenuOpen = Boolean(anchorEl);
     const numberOfPages = useMemo(() => calculateNumberOfPage(notificationStatistics), [notificationStatistics]);
+    const notificationsMenuPrefixSx = { p: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' };
     return (
         <Menu
             id="notifications-menu" open={isMenuOpen} onClose={onClose} anchorEl={anchorEl}
@@ -43,7 +47,7 @@ export const NotificationMenuComponent: FC<NotificationListComponentProps> = (
             MenuListProps={{ 'aria-labelledby': 'notifications-button' }}
             slotProps={{ paper: { style: { maxHeight: '400px', width: '350px' }} }}
         >
-            <Box sx={{ p: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box key="notifications-menu-header" sx={notificationsMenuPrefixSx}>
                 <Typography variant="subtitle2" fontWeight="bold">
                     Notifications
                 </Typography>
@@ -51,12 +55,16 @@ export const NotificationMenuComponent: FC<NotificationListComponentProps> = (
                     Mark all as read
                 </Button>
             </Box>
-            <Divider />
+            <Divider/>
             { notifications && notifications.map((notification) =>
-                <NotificationComponent notification={notification} onClick={() => onNotificationClick(notification)}/>
+                <NotificationComponent
+                    key={notification.uuid}
+                    notification={notification}
+                    onClick={() => onNotificationClick(notification)}
+                />
             )}
             { notifications && numberOfPages > 1 &&
-                <Box>
+                <Box key="notifications-menu-footer">
                     <Divider sx={{ my: 1 }}/>
                     <Pagination
                         count={numberOfPages} page={page} showFirstButton showLastButton onChange={onPaginationChange}
@@ -65,5 +73,26 @@ export const NotificationMenuComponent: FC<NotificationListComponentProps> = (
                 </Box>
             }
         </Menu>
+    )
+};
+
+interface NotificationComponentProps {
+    notification: BaseNotification;
+    onClick: () => void;
+}
+
+const NotificationComponent: FC<NotificationComponentProps> = ({ notification, onClick }) => {
+    const menuItemSx = {
+        fontWeight: notification.isRead ? 'normal' : 'bold', whiteSpace: 'normal', display: 'block', py: 1
+    };
+    return (
+        <MenuItem onClick={onClick} disabled={notification.isRead} sx={menuItemSx}>
+            { notification._type === "simple" && (
+                <SimpleNotificationComponent notification={ notification as SimpleNotification }/>
+            )}
+            { notification._type === "invite" && (
+                <InviteNotificationComponent notification={ notification as InviteNotification }/>
+            )}
+        </MenuItem>
     )
 };
