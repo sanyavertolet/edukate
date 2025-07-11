@@ -3,6 +3,10 @@ kind: Ingress
 metadata:
   name: edukate-ingress
   namespace: {{ .Values.namespace }}
+  annotations:
+    cert-manager.io/issuer: edukate-letsencrypt-issuer-prod
+  labels:
+    app: edukate-ingress
 spec:
   ingressClassName: nginx
   rules:
@@ -29,10 +33,13 @@ spec:
                 name: {{ .Values.frontend.name }}
                 port:
                   number: 80
+      {{ if .Values.ingress.host }}
+      host: {{ .Values.ingress.host }}
+      {{ end }}
 
   {{ if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - www.example.com
-      secretName: example-tls
+        - edukate.mooo.com
+      secretName: letsencrypt-nginx-tls-cert
   {{ end }}
