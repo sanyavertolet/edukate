@@ -1,6 +1,5 @@
 package io.github.sanyavertolet.edukate.gateway.filters;
 
-import io.github.sanyavertolet.edukate.auth.EdukateUserDetails;
 import io.github.sanyavertolet.edukate.auth.services.JwtTokenService;
 import io.github.sanyavertolet.edukate.auth.utils.AuthUtils;
 import io.github.sanyavertolet.edukate.gateway.services.UserDetailsService;
@@ -37,13 +36,12 @@ public class JwtAuthenticationFilter implements WebFilter {
         }
 
         return Mono.just(token)
-                .filter(jwtTokenService::validateToken)
+                .map(jwtTokenService::getUserDetailsFromToken)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Expired token")))
-                .map(jwtTokenService::getUsernameFromToken)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token")))
-                .flatMap(userDetailsService::findByUsername)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found")))
-                .cast(EdukateUserDetails.class)
+                .flatMap(userDetailsService::checkUserDetails)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "Token seems to be rotten as it differs from database")))
                 .flatMap(userDetails -> {
                     Authentication auth = userDetails.toPreAuthenticatedAuthenticationToken();
                     ServerHttpRequest modifiedRequest = exchange.getRequest().mutate().headers(headers -> {

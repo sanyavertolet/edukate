@@ -21,6 +21,7 @@ import static io.github.sanyavertolet.edukate.auth.utils.AuthHeaders.*;
 @AllArgsConstructor
 public class EdukateUserDetails implements UserDetails, CredentialsContainer {
     private final String name;
+    @Getter
     private final Set<Role> roles;
     @Getter
     private final UserStatus status;

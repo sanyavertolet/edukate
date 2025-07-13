@@ -24,6 +24,14 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         return backendService.getUserByName(username).map(EdukateUserDetails::new);
     }
 
+    public Mono<EdukateUserDetails> checkUserDetails(EdukateUserDetails userDetailsFromToken) {
+        return backendService.getUserByName(userDetailsFromToken.getUsername())
+                .filter(user ->
+                    userDetailsFromToken.getRoles().equals(user.getRoles()) &&
+                    userDetailsFromToken.getStatus() == user.getStatus())
+                .thenReturn(userDetailsFromToken);
+    }
+
     public Mono<EdukateUserDetails> create(String username, String encodedPassword) {
         User user = new User(username, encodedPassword, RoleUtils.getDefaultRole(), UserStatus.PENDING);
         return backendService.saveUser(user).map(EdukateUserDetails::new)
