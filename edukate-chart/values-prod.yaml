@@ -16,6 +16,9 @@ pullPolicy: IfNotPresent
 ingress:
   tls:
     enabled: true
+#   either staging or prod
+    profile: "prod"
+    email: "lxnfrolov@gmail.com"
   host: "edukate.mooo.com"
 
 s3:

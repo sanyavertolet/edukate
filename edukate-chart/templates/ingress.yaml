@@ -4,7 +4,7 @@ metadata:
   name: edukate-ingress
   namespace: {{ .Values.namespace }}
   annotations:
-    cert-manager.io/issuer: edukate-letsencrypt-issuer-prod
+    cert-manager.io/cluster-issuer: edukate-letsencrypt-issuer-{{ .Values.ingress.tls.profile }}
   labels:
     app: edukate-ingress
 spec:
@@ -40,6 +40,6 @@ spec:
   {{ if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
-        - edukate.mooo.com
-      secretName: letsencrypt-nginx-tls-cert
+        - {{ .Values.ingress.host }}
+      secretName: letsencrypt-nginx-private-key-cert-{{ .Values.ingress.tls.profile }}
   {{ end }}

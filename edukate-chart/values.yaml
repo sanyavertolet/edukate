@@ -47,6 +47,7 @@ notifier:
 
 ingress:
   tls:
+    profile: "staging"
     enabled: false
 
 s3:
