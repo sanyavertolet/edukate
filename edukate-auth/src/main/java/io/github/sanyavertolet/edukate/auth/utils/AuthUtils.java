@@ -13,8 +13,6 @@ import static io.github.sanyavertolet.edukate.auth.utils.AuthHeaders.*;
 
 @Slf4j
 public class AuthUtils {
-    private static final String BEARER_PREFIX = "Bearer ";
-
     private AuthUtils() {
         throw new IllegalStateException("Utility class");
     }
@@ -38,13 +36,5 @@ public class AuthUtils {
         }
         log.debug("Header {} is not provided: skipping pre-authenticated edukate-user authentication", headerName);
         return null;
-    }
-
-    public static String getTokenFromHeaders(HttpHeaders headers) {
-        String authorizationHeader = getSingleHeader(headers, HttpHeaders.AUTHORIZATION);
-        if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-            return null;
-        }
-        return authorizationHeader.substring(BEARER_PREFIX.length());
     }
 }

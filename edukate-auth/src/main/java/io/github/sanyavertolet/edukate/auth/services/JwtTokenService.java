@@ -58,6 +58,7 @@ public class JwtTokenService {
             return null;
         }
 
+        log.debug("Token recognized, subject: {}", claims.getSubject());
         return new EdukateUserDetails(
                 claims.getSubject(),
                 Role.fromString(claims.get("roles", String.class)),

@@ -18,6 +18,10 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: gateway_route
+          uri: no://op
+          predicates:
+            - Path= /api/*/auth/*
         - id: notifier_route
           uri: ${gateway.notifier.url}
           predicates:

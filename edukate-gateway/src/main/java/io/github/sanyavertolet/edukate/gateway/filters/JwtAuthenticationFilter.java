@@ -1,22 +1,21 @@
 package io.github.sanyavertolet.edukate.gateway.filters;
 
+import io.github.sanyavertolet.edukate.auth.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.auth.services.AuthCookieService;
 import io.github.sanyavertolet.edukate.auth.services.JwtTokenService;
-import io.github.sanyavertolet.edukate.auth.utils.AuthUtils;
 import io.github.sanyavertolet.edukate.gateway.services.UserDetailsService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
+import reactor.util.function.Tuples;
 
 
 @RequiredArgsConstructor
@@ -25,32 +24,40 @@ import reactor.core.publisher.Mono;
 public class JwtAuthenticationFilter implements WebFilter {
     private final JwtTokenService jwtTokenService;
     private final UserDetailsService userDetailsService;
+    private final AuthCookieService authCookieService;
+
+    private ServerHttpRequest getModifierRequest(ServerWebExchange exchange, EdukateUserDetails userDetails) {
+        return exchange.getRequest().mutate().headers(userDetails::populateHeaders).build();
+    }
+
+    @NonNull
+    private ServerWebExchange modifyRequestHeaders(
+            @NonNull ServerWebExchange exchange,
+            @NonNull EdukateUserDetails userDetails
+    ) {
+        ServerHttpRequest modifiedRequest = getModifierRequest(exchange, userDetails);
+        return exchange.mutate().request(modifiedRequest).build();
+    }
+
+    private Context createAuthContext(@NonNull EdukateUserDetails userDetails) {
+        return ReactiveSecurityContextHolder.withAuthentication(
+                userDetails.toPreAuthenticatedAuthenticationToken()
+        );
+    }
 
     @Override
     @NonNull
-    public Mono<Void> filter(ServerWebExchange exchange, @NonNull WebFilterChain chain) {
-        HttpHeaders httpHeaders = exchange.getRequest().getHeaders();
-        String token = AuthUtils.getTokenFromHeaders(httpHeaders);
-        if (token == null) {
-            return chain.filter(exchange);
-        }
-
-        return Mono.just(token)
+    public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
+        return authCookieService.ejectToken(exchange)
                 .map(jwtTokenService::getUserDetailsFromToken)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Expired token")))
                 .flatMap(userDetailsService::checkUserDetails)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.CONFLICT,
-                        "Token seems to be rotten as it differs from database")))
-                .flatMap(userDetails -> {
-                    Authentication auth = userDetails.toPreAuthenticatedAuthenticationToken();
-                    ServerHttpRequest modifiedRequest = exchange.getRequest().mutate().headers(headers -> {
-                        headers.remove(HttpHeaders.AUTHORIZATION);
-                        userDetails.populateHeaders(headers);
-                    }).build();
-
-                    return chain.filter(exchange.mutate().request(modifiedRequest).build())
-                            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
-                });
+                .map(userDetails -> Tuples.of(
+                        modifyRequestHeaders(exchange, userDetails),
+                        createAuthContext(userDetails)
+                ))
+                .defaultIfEmpty(Tuples.of(exchange, Context.empty()))
+                .flatMap(tuple ->
+                        chain.filter(tuple.getT1()).contextWrite(tuple.getT2())
+                );
     }
 }

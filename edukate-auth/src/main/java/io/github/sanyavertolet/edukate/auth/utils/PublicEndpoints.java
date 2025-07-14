@@ -16,7 +16,7 @@ public class PublicEndpoints {
             "/actuator/health/liveness",
             "/internal/**",
             "/api/v1/problems/**",
-            "/auth/**"
+            "/api/v1/auth/*"
     );
 
     public static String[] asArray() {
