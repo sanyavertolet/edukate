@@ -5,7 +5,7 @@ gateway:
     url: http://notifier
 
 jwt:
-  expiration: 1800000
+  expirationSeconds: 3600
   secret: ${JWT_SECRET}
 
 spring:

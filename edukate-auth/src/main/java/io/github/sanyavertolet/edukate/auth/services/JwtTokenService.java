@@ -7,6 +7,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -22,8 +23,9 @@ public class JwtTokenService {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
-    private long expirationTimeMillis;
+    @Getter
+    @Value("${jwt.expirationSeconds}")
+    private long expirationTimeSeconds;
 
     private SecretKey key;
 
@@ -33,7 +35,7 @@ public class JwtTokenService {
     }
 
     private Date getExpirationDate(Date now) {
-        return new Date(now.getTime() + expirationTimeMillis);
+        return new Date(now.getTime() + TimeUnit.SECONDS.toMillis(expirationTimeSeconds));
     }
 
     public String generateToken(EdukateUserDetails userDetails) {
@@ -42,8 +44,8 @@ public class JwtTokenService {
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .issuedAt(now)
-                .claim("roles", userDetails.getRoles())
-                .claim("status", userDetails.getStatus())
+                .claim("roles", Role.toString(userDetails.getRoles()))
+                .claim("status", userDetails.getStatus().toString())
                 .expiration(getExpirationDate(now))
                 .signWith(key)
                 .compact();
@@ -51,13 +53,16 @@ public class JwtTokenService {
 
     public EdukateUserDetails getUserDetailsFromToken(String token) {
         Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-        boolean isValid = claims.getExpiration().after(new Date());
-        if (!isValid) {
+
+        if (claims.getExpiration().before(new Date())) {
             return null;
         }
-        @SuppressWarnings("unchecked")
-        Set<Role> roles = claims.get("roles", Set.class);
-        UserStatus status = UserStatus.valueOf(claims.get("status", String.class));
-        return new EdukateUserDetails(claims.getSubject(), roles, status, token);
+
+        return new EdukateUserDetails(
+                claims.getSubject(),
+                Role.fromString(claims.get("roles", String.class)),
+                UserStatus.valueOf(claims.get("status", String.class)),
+                token
+        );
     }
 }
