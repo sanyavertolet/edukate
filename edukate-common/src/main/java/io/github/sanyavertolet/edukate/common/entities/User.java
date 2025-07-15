@@ -18,7 +18,9 @@ import java.util.Set;
 @Document(collection = "users")
 public class User {
     @Id
-    @NonNull
+    private String id;
+
+    // todo: put NonNull annotation back
     @Indexed(unique = true)
     private final String name;
 

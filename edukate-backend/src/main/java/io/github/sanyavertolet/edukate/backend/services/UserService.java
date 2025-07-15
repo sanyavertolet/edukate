@@ -35,4 +35,22 @@ public class UserService {
     public Mono<Boolean> hasUserPermissionToSubmit(User user) {
         return Mono.just(user).filter(usr -> usr.getStatus().equals(UserStatus.ACTIVE)).hasElement();
     }
+
+    @Deprecated
+    public Mono<Long> updateUsers() {
+        return userRepository.findAll()
+                .flatMap(user -> userRepository.delete(user).thenReturn(user))
+                .flatMap(user -> {
+                    String id = user.getId();
+                    String name = user.getName();
+                    return userRepository.save(new User(
+                            name != null ? id : null,
+                            name != null ? name : id,
+                            user.getToken(),
+                            user.getRoles(),
+                            user.getStatus()
+                    ));
+                })
+                .count();
+    }
 }
