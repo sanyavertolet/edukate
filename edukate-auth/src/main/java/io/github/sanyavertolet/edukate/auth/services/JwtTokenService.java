@@ -20,11 +20,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class JwtTokenService {
-    @Value("${jwt.secret}")
+    @Value("${auth.jwt.secret}")
     private String secretKey;
 
     @Getter
-    @Value("${jwt.expirationSeconds}")
+    @Value("${auth.jwt.expirationSeconds}")
     private long expirationTimeSeconds;
 
     private SecretKey key;

@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.auth.services;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.Cookie;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +15,23 @@ import reactor.core.publisher.Mono;
 public class AuthCookieService {
     private static final String AUTHORIZATION_COOKIE = "X-Auth";
 
-    @Value("${jwt.expirationSeconds}")
+    public AuthCookieService(Environment environment) {
+        this.environment = environment;
+    }
+
+    @Value("${auth.jwt.expirationSeconds}")
     private long expirationTimeSeconds;
+
+    @Value("${auth.hostname}")
+    private String hostname;
+
+    private final Environment environment;
 
     private ResponseCookie createTokenCookie(String token) {
         return ResponseCookie.from(AUTHORIZATION_COOKIE, token)
                 .httpOnly(true)
-                .secure(true)
+                .secure(!environment.matchesProfiles("dev"))
+                .domain(hostname)
                 .path("/")
                 .maxAge(expirationTimeSeconds)
                 .sameSite(Cookie.SameSite.STRICT.toString())
@@ -30,7 +41,8 @@ public class AuthCookieService {
     private ResponseCookie createExpiredTokenCookie() {
         return ResponseCookie.from(AUTHORIZATION_COOKIE, "expired")
                 .httpOnly(true)
-                .secure(true)
+                .secure(!environment.matchesProfiles("dev"))
+                .domain(hostname)
                 .path("/")
                 .maxAge(0)
                 .sameSite(Cookie.SameSite.STRICT.toString())

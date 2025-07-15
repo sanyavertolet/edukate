@@ -4,9 +4,11 @@ gateway:
   notifier:
     url: http://notifier
 
-jwt:
-  expirationSeconds: 3600
-  secret: ${JWT_SECRET}
+auth:
+  jwt:
+    expirationSeconds: 3600
+    secret: ${JWT_SECRET}
+  hostname: ${HOST_NAME}
 
 spring:
   application:

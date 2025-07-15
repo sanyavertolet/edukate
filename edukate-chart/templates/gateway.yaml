@@ -29,6 +29,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.jwt.secretName }}
                   key: {{ .Values.jwt.secretKey }}
+            - name: HOST_NAME
+              value: {{ .Values.ingress.host }}
           volumeMounts:
             - {{ include "spring-boot.config-volume-mount" . | indent 14 | trim }}
           {{- include "spring-boot.management" .Values.gateway | nindent 10 }}
