@@ -7,7 +7,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,6 @@ public class JwtTokenService {
     @Value("${auth.jwt.secret}")
     private String secretKey;
 
-    @Getter
     @Value("${auth.jwt.expirationSeconds}")
     private long expirationTimeSeconds;
 

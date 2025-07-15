@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import { useSignOutMutation } from "../../http/auth";
 import { AccountCircle } from "@mui/icons-material";
-import {queryClient} from "../../http/queryClient.ts";
+import { queryClient } from "../../http/queryClient";
 
 export function UserMenu() {
     const { user } = useAuthContext();
@@ -17,7 +17,10 @@ export function UserMenu() {
         signOutMutation.mutate(undefined, {
             onSuccess: () => queryClient
                 .refetchQueries({ queryKey: ['whoami'] })
-                .finally(() => { handleClose();}),
+                .finally(() => {
+                    handleClose();
+                    window.location.reload();
+                }),
         });
     };
     const handleSignIn = () => { navigate("/sign-in"); handleClose() };
