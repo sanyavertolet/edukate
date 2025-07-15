@@ -3,6 +3,7 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { useSignUpMutation } from "../../http/auth";
 import { useNavigate } from "react-router-dom";
 import { validate } from "../../utils/validation";
+import {queryClient} from "../../http/queryClient.ts";
 
 interface FormDataItem {
     value: string;
@@ -68,8 +69,15 @@ export const SignUpComponent = ({shouldRefreshInsteadOfNavigate = false}: SignUp
         }
     };
 
-    const onSuccess = () => { shouldRefreshInsteadOfNavigate ? window.location.reload() : navigate("/"); };
-    useEffect(() => { if (signUpMutation.isSuccess) { onSuccess(); }}, [signUpMutation.isSuccess]);
+    useEffect(() => { if (signUpMutation.isSuccess) {
+        queryClient.refetchQueries({ queryKey: ["whoami"] }).finally(() => {
+            if (shouldRefreshInsteadOfNavigate) {
+                window.location.reload();
+            } else {
+                navigate("/");
+            }
+        })
+    }}, [signUpMutation.isSuccess]);
 
     return (
         <Box component="form" onSubmit={handleSubmit}>

@@ -2,17 +2,24 @@ import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../auth/AuthContextProvider";
-import { useSignOut } from "../../http/auth";
+import { useSignOutMutation } from "../../http/auth";
 import { AccountCircle } from "@mui/icons-material";
+import {queryClient} from "../../http/queryClient.ts";
 
 export function UserMenu() {
     const { user } = useAuthContext();
     const navigate = useNavigate();
-    const signOut = useSignOut();
+    const signOutMutation = useSignOutMutation();
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget) };
     const handleClose = () => { setAnchorEl(undefined) };
-    const handleSignOut = () => { signOut(); handleClose() };
+    const handleSignOut = () => {
+        signOutMutation.mutate(undefined, {
+            onSuccess: () => queryClient
+                .refetchQueries({ queryKey: ['whoami'] })
+                .finally(() => { handleClose();}),
+        });
+    };
     const handleSignIn = () => { navigate("/sign-in"); handleClose() };
     const handleSignUp = () => { navigate("/sign-up"); handleClose() };
 

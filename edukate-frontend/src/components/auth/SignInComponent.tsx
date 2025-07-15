@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { useSignInMutation } from "../../http/auth";
 import { useNavigate } from "react-router-dom";
+import {queryClient} from "../../http/queryClient.ts";
 
 interface SignInComponentProps {
     shouldRefreshInsteadOfNavigate?: boolean;
@@ -18,8 +19,15 @@ export const SignInComponent = ({shouldRefreshInsteadOfNavigate = false}: SignIn
         signInMutation.mutate({ username, password });
     };
 
-    const onSuccess = () => { shouldRefreshInsteadOfNavigate ? window.location.reload() : navigate("/"); };
-    useEffect(() => { if (signInMutation.isSuccess) { onSuccess(); } }, [signInMutation.isSuccess]);
+    useEffect(() => { if (signInMutation.isSuccess) {
+        queryClient.refetchQueries({ queryKey: ["whoami"] }).finally(() => {
+            if (shouldRefreshInsteadOfNavigate) {
+                window.location.reload();
+            } else {
+                navigate("/");
+            }
+        })
+    } }, [signInMutation.isSuccess]);
     return (
         <Box component="form" onSubmit={ handleSubmit }>
             <TextField
