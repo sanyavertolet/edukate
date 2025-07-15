@@ -5,6 +5,7 @@ import io.github.sanyavertolet.edukate.common.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -22,6 +23,7 @@ public class User {
     private final String name;
 
     @NonNull
+    @ToString.Exclude
     private final String token;
 
     private final Set<Role> roles;
