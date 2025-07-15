@@ -31,10 +31,4 @@ public class UserInternalController {
     public Mono<Boolean> deleteUserById(@PathVariable String id) {
         return userService.deleteUserById(id);
     }
-
-    @Deprecated
-    @PostMapping("/update-users")
-    public Mono<Long> updateUsers() {
-        return userService.updateUsers();
-    }
 }

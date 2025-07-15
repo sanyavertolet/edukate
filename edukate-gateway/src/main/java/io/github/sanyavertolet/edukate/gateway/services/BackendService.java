@@ -34,4 +34,11 @@ public class BackendService {
                 .retrieve()
                 .bodyToMono(User.class);
     }
+
+    public Mono<User> getUserById(String id) {
+        return webClient.get()
+                .uri("/internal/users/by-id/{id}", id)
+                .retrieve()
+                .bodyToMono(User.class);
+    }
 }

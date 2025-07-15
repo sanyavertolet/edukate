@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.auth.configs;
 
 import io.github.sanyavertolet.edukate.auth.EdukateUserDetails;
-import io.github.sanyavertolet.edukate.auth.utils.AuthUtils;
+import io.github.sanyavertolet.edukate.auth.utils.HttpHeadersUtils;
 import io.github.sanyavertolet.edukate.auth.utils.PublicEndpoints;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -49,7 +49,7 @@ public class WebSecurityConfig {
 
         authenticationWebFilter.setServerAuthenticationConverter(exchange ->
                 Mono.just(exchange.getRequest().getHeaders())
-                        .mapNotNull(AuthUtils::toEdukateUserDetails)
+                        .mapNotNull(HttpHeadersUtils::toEdukateUserDetails)
                         .map(EdukateUserDetails::toPreAuthenticatedAuthenticationToken));
         return authenticationWebFilter;
     }

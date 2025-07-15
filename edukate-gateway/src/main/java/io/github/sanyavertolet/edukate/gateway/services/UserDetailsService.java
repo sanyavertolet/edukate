@@ -24,12 +24,12 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         return backendService.getUserByName(username).map(EdukateUserDetails::new);
     }
 
-    public Mono<EdukateUserDetails> checkUserDetails(EdukateUserDetails userDetailsFromToken) {
-        return backendService.getUserByName(userDetailsFromToken.getUsername())
-                .filter(user ->
-                    userDetailsFromToken.getRoles().equals(user.getRoles()) &&
-                    userDetailsFromToken.getStatus() == user.getStatus())
-                .thenReturn(userDetailsFromToken);
+    public Mono<EdukateUserDetails> findById(String id) {
+        return backendService.getUserById(id).map(EdukateUserDetails::new);
+    }
+
+    public Mono<Boolean> isNotUserPresent(String username) {
+        return findByUsername(username).hasElement().map(it -> !it);
     }
 
     public Mono<EdukateUserDetails> create(String username, String encodedPassword) {

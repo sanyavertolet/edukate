@@ -40,8 +40,9 @@ public class JwtTokenService {
         Date now = new Date();
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .subject(userDetails.getId())
                 .issuedAt(now)
+                .claim("name", userDetails.getUsername())
                 .claim("roles", Role.toString(userDetails.getRoles()))
                 .claim("status", userDetails.getStatus().toString())
                 .expiration(getExpirationDate(now))
@@ -56,9 +57,10 @@ public class JwtTokenService {
             return null;
         }
 
-        log.debug("Token recognized, subject: {}", claims.getSubject());
+        log.debug("Token recognized, subject: {} ({})", claims.getSubject(), claims.get("name", String.class));
         return new EdukateUserDetails(
                 claims.getSubject(),
+                claims.get("name", String.class),
                 Role.fromString(claims.get("roles", String.class)),
                 UserStatus.valueOf(claims.get("status", String.class)),
                 token

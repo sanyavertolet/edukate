@@ -24,15 +24,12 @@ public class AuthService {
     }
 
     public Mono<String> signUp(SignUpRequest signUpRequest) {
-        return Mono.just(signUpRequest).filterWhen(this::isNotUserPresent)
+        return Mono.just(signUpRequest)
+                .filterWhen(request -> userDetailsService.isNotUserPresent(request.getUsername()))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.CONFLICT)))
                 .flatMap(request ->
                         userDetailsService.create(request.getUsername(), passwordEncoder.encode(request.getPassword()))
                 )
                 .map(jwtTokenService::generateToken);
-    }
-
-    private Mono<Boolean> isNotUserPresent(SignUpRequest signUpRequest) {
-        return userDetailsService.findByUsername(signUpRequest.getUsername()).hasElement().map(it -> !it);
     }
 }

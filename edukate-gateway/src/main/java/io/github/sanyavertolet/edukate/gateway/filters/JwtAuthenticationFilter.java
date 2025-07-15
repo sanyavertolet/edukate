@@ -18,8 +18,8 @@ import reactor.util.context.Context;
 import reactor.util.function.Tuples;
 
 
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 @Import(JwtTokenService.class)
 public class JwtAuthenticationFilter implements WebFilter {
     private final JwtTokenService jwtTokenService;
@@ -50,7 +50,8 @@ public class JwtAuthenticationFilter implements WebFilter {
     public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
         return authCookieService.ejectToken(exchange)
                 .map(jwtTokenService::getUserDetailsFromToken)
-                .flatMap(userDetailsService::checkUserDetails)
+                .map(EdukateUserDetails::getId)
+                .flatMap(userDetailsService::findById)
                 .map(userDetails -> Tuples.of(
                         modifyRequestHeaders(exchange, userDetails),
                         createAuthContext(userDetails)

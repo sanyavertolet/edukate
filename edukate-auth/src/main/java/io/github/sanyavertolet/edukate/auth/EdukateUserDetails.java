@@ -20,6 +20,8 @@ import static io.github.sanyavertolet.edukate.auth.utils.AuthHeaders.*;
 
 @AllArgsConstructor
 public class EdukateUserDetails implements UserDetails, CredentialsContainer {
+    @Getter
+    private final String id;
     private final String name;
     @Getter
     private final Set<Role> roles;
@@ -29,6 +31,7 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
 
     public EdukateUserDetails(User user) {
         this(
+                Objects.requireNonNull(user.getId(), "User id must not be null"),
                 Objects.requireNonNull(user.getName(), "User name must not be null"),
                 Objects.requireNonNull(user.getRoles(), "User role must not be null"),
                 Objects.requireNonNull(user.getStatus(), "User status must not be null"),
@@ -42,6 +45,7 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
 
     public void populateHeaders(HttpHeaders httpHeaders) {
         Objects.requireNonNull(httpHeaders, "HttpHeaders must not be null");
+        httpHeaders.set(AUTHORIZATION_ID.headerName, id);
         httpHeaders.set(AUTHORIZATION_NAME.headerName, name);
         httpHeaders.set(AUTHORIZATION_STATUS.headerName, status.name());
         String rolesString = Role.toString(roles);
