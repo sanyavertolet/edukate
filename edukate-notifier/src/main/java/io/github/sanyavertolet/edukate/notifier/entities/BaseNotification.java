@@ -37,10 +37,14 @@ import java.time.LocalDateTime;
 public sealed class BaseNotification permits SimpleNotification, InviteNotification {
     @Id
     private ObjectId _id;
+
     @Indexed(unique = true)
     private String uuid;
+
     private Boolean isRead;
-    private String userId;
+
+    private String targetUserName;
+
     private LocalDateTime createdAt;
 
     public static BaseNotification fromCreationRequest(BaseNotificationCreationRequest creationRequest) {

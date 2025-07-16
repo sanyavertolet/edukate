@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public sealed class BaseNotificationDto permits SimpleNotificationDto, InviteNotificationDto {
     private String uuid;
-    private String userId;
     private Boolean isRead;
     private LocalDateTime createdAt;
 }

@@ -21,5 +21,5 @@ public sealed class BaseNotificationCreationRequest permits
         SimpleNotificationCreationRequest,
         InviteNotificationCreationRequest {
     private String uuid;
-    private String userId;
+    private String targetUserName;
 }

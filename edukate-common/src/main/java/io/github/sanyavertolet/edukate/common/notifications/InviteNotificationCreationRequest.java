@@ -8,22 +8,22 @@ import lombok.Setter;
 @Setter
 @JsonTypeName("invite")
 public final class InviteNotificationCreationRequest extends BaseNotificationCreationRequest {
-    private String inviter;
+    private String inviterName;
     private String bundleName;
     private String bundleShareCode;
 
     public InviteNotificationCreationRequest(
-            String uuid, String userId, String inviter, String bundleName, String bundleShareCode
+            String uuid, String targetUserName, String inviterName, String bundleName, String bundleShareCode
     ) {
-        super(uuid, userId);
-        this.inviter = inviter;
+        super(uuid, targetUserName);
+        this.inviterName = inviterName;
         this.bundleName = bundleName;
         this.bundleShareCode = bundleShareCode;
     }
 
     public static InviteNotificationCreationRequest of(
-            String uuid, String userId, String inviter, String bundleName, String bundleShareCode
+            String uuid, String targetUserName, String inviter, String bundleName, String bundleShareCode
     ) {
-        return new InviteNotificationCreationRequest(uuid, userId, inviter, bundleName, bundleShareCode);
+        return new InviteNotificationCreationRequest(uuid, targetUserName, inviter, bundleName, bundleShareCode);
     }
 }

@@ -50,8 +50,8 @@ public class SubmissionService {
         return submissionRepository.findById(id);
     }
 
-    public Flux<Submission> findSubmissionsByUsernameAndProblemId(String username, String problemId, Pageable pageable) {
-        return submissionRepository.findAllByProblemIdAndUserId(problemId, username, pageable);
+    public Flux<Submission> findSubmissionsByUserNameAndProblemId(String userName, String problemId, Pageable pageable) {
+        return submissionRepository.findAllByProblemIdAndUserName(problemId, userName, pageable);
     }
 
     public Flux<Submission> findSubmissionsByStatusIn(List<Submission.Status> statuses, Pageable pageable) {

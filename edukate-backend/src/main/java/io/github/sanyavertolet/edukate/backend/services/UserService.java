@@ -29,7 +29,7 @@ public class UserService {
     }
 
     public Mono<Boolean> doesUserExist(String username) {
-        return userRepository.existsById(username);
+        return userRepository.existsByName(username);
     }
 
     public Mono<Boolean> hasUserPermissionToSubmit(User user) {

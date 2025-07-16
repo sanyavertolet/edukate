@@ -39,7 +39,7 @@ public class SubmissionController {
     ) {
         return submissionService.findSubmissionById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
-                .filter(submission -> submission.getUserId().equals(authentication.getName()))
+                .filter(submission -> submission.getUserName().equals(authentication.getName()))
                 .map(Submission::toDto)
                 .flatMap(submissionService::updateFileUrlsInDto);
     }
@@ -77,7 +77,7 @@ public class SubmissionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return submissionService.findSubmissionsByUsernameAndProblemId(
+        return submissionService.findSubmissionsByUserNameAndProblemId(
                 username,
                 problemId,
                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")

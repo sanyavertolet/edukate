@@ -22,6 +22,7 @@ import java.util.List;
 public class NotificationService {
     private final NotificationRepository notificationRepository;
 
+    @Transactional
     public Mono<BaseNotification> saveIfAbsent(BaseNotification notification) {
         return notificationRepository.findNotificationByUuid(notification.getUuid())
                 .doOnNext(existingNotification -> log.debug(
@@ -39,9 +40,9 @@ public class NotificationService {
         return Mono.just(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"))
                 .flatMapMany(pageRequest -> {
                     if (isRead == null) {
-                        return notificationRepository.findAllByUserId(authentication.getName(), pageRequest);
+                        return notificationRepository.findAllByTargetUserName(authentication.getName(), pageRequest);
                     }
-                    return notificationRepository.findAllByUserIdAndIsRead(authentication.getName(), isRead, pageRequest);
+                    return notificationRepository.findAllByTargetUserNameAndIsRead(authentication.getName(), isRead, pageRequest);
                 });
     }
 
@@ -51,7 +52,7 @@ public class NotificationService {
 
     @Transactional
     public Mono<Long> markAsRead(List<String> uuids, Authentication authentication) {
-        return notificationRepository.findByUuidInAndUserId(uuids, authentication.getName())
+        return notificationRepository.findByTargetUserNameAndUuidIn(authentication.getName(), uuids)
                 .map(notification -> {
                     notification.setIsRead(Boolean.TRUE);
                     return notification;
@@ -62,7 +63,7 @@ public class NotificationService {
 
     @Transactional
     public Mono<Long> markAllAsRead(Authentication authentication) {
-        return notificationRepository.findAllByUserIdAndIsRead(authentication.getName(), Boolean.FALSE, Pageable.unpaged())
+        return notificationRepository.findAllByTargetUserNameAndIsRead(authentication.getName(), Boolean.FALSE, Pageable.unpaged())
                 .map(notification -> {
                     notification.setIsRead(Boolean.TRUE);
                     return notification;

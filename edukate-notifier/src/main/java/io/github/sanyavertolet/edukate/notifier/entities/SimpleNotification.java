@@ -22,34 +22,34 @@ public final class SimpleNotification extends BaseNotification {
 
     @PersistenceCreator
     public SimpleNotification(
-            ObjectId _id, String uuid, String userId, LocalDateTime createdAt,
-            String title, String message, String source
+            ObjectId _id, String uuid, String targetUserName, LocalDateTime createdAt, String title, String message,
+            String source
     ) {
-        this(_id, uuid, false, userId, createdAt, title, message, source);
+        this(_id, uuid, false, targetUserName, createdAt, title, message, source);
     }
 
     public SimpleNotification(
-            ObjectId _id, String uuid, Boolean isRead, String userId,
+            ObjectId _id, String uuid, Boolean isRead, String targetUserName,
             LocalDateTime createdAt, String title, String message, String source
     ) {
-        super(_id, uuid, isRead, userId, createdAt != null ? createdAt : LocalDateTime.now());
+        super(_id, uuid, isRead, targetUserName, createdAt != null ? createdAt : LocalDateTime.now());
         this.title = title;
         this.message = message;
         this.source = source;
     }
 
-    public SimpleNotification(String uuid, String userId, String title, String message, String source) {
-        this(null, uuid, userId, LocalDateTime.now(), title, message, source);
+    public SimpleNotification(String uuid, String targetUserName, String title, String message, String source) {
+        this(null, uuid, targetUserName, LocalDateTime.now(), title, message, source);
     }
 
     @Override
     public SimpleNotificationDto toDto() {
-        return new SimpleNotificationDto(getUuid(), getUserId(), getIsRead(), getCreatedAt(), title, message, source);
+        return new SimpleNotificationDto(getUuid(), getIsRead(), getCreatedAt(), title, message, source);
     }
 
     public static SimpleNotification fromCreationRequest(SimpleNotificationCreationRequest creationRequest) {
         return new SimpleNotification(
-                creationRequest.getUuid(), creationRequest.getUserId(),
+                creationRequest.getUuid(), creationRequest.getTargetUserName(),
                 creationRequest.getTitle(), creationRequest.getMessage(), creationRequest.getSource()
         );
     }

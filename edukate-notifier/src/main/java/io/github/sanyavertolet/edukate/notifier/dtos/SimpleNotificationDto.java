@@ -14,10 +14,10 @@ public final class SimpleNotificationDto extends BaseNotificationDto {
     private String source;
 
     public SimpleNotificationDto(
-            String uuid, String userId, Boolean isRead, LocalDateTime createdAt,
+            String uuid, Boolean isRead, LocalDateTime createdAt,
             String title, String message, String source
     ) {
-        super(uuid, userId, isRead, createdAt);
+        super(uuid, isRead, createdAt);
         this.title = title;
         this.message = message;
         this.source = source;

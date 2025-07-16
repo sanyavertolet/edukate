@@ -16,45 +16,45 @@ import java.time.LocalDateTime;
 @TypeAlias("invite")
 @JsonTypeName("invite")
 public final class InviteNotification extends BaseNotification {
-    private final String inviter;
+    private final String inviterName;
     private final String bundleName;
     private final String bundleShareCode;
 
     @PersistenceCreator
     public InviteNotification(
-            ObjectId _id, String uuid, String userId, LocalDateTime createdAt,
-            String inviter, String bundleName, String bundleShareCode
+            ObjectId _id, String uuid, String targetUserName, LocalDateTime createdAt,
+            String inviterName, String bundleName, String bundleShareCode
     ) {
-        this(_id, uuid, false, userId, createdAt, inviter, bundleName, bundleShareCode);
+        this(_id, uuid, false, targetUserName, createdAt, inviterName, bundleName, bundleShareCode);
     }
 
     public InviteNotification(
-            ObjectId _id, String uuid, Boolean isRead, String userId,
-            LocalDateTime createdAt, String inviter, String bundleName, String bundleShareCode
+            ObjectId _id, String uuid, Boolean isRead, String targetUserName,
+            LocalDateTime createdAt, String inviterName, String bundleName, String bundleShareCode
     ) {
-        super(_id, uuid, isRead, userId, createdAt != null ? createdAt : LocalDateTime.now());
-        this.inviter = inviter;
+        super(_id, uuid, isRead, targetUserName, createdAt != null ? createdAt : LocalDateTime.now());
+        this.inviterName = inviterName;
         this.bundleName = bundleName;
         this.bundleShareCode = bundleShareCode;
     }
 
     public InviteNotification(
-            String uuid, String userId, String inviter, String bundleName, String bundleShareCode
+            String uuid, String targetUserName, String inviterName, String bundleName, String bundleShareCode
     ) {
-        this(null, uuid, userId, LocalDateTime.now(), inviter, bundleName, bundleShareCode);
+        this(null, uuid, targetUserName, LocalDateTime.now(), inviterName, bundleName, bundleShareCode);
     }
 
     @Override
     public InviteNotificationDto toDto() {
         return new InviteNotificationDto(
-                getUuid(), getUserId(), getIsRead(), getCreatedAt(), inviter, bundleName, bundleShareCode
+                getUuid(), getIsRead(), getCreatedAt(), inviterName, bundleName, bundleShareCode
         );
     }
 
     public static InviteNotification fromCreationRequest(InviteNotificationCreationRequest creationRequest) {
         return new InviteNotification(
-                creationRequest.getUuid(), creationRequest.getUserId(),
-                creationRequest.getInviter(), creationRequest.getBundleName(), creationRequest.getBundleShareCode()
+                creationRequest.getUuid(), creationRequest.getTargetUserName(), creationRequest.getInviterName(),
+                creationRequest.getBundleName(), creationRequest.getBundleShareCode()
         );
     }
 }

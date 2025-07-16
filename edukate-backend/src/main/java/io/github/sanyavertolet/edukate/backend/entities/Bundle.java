@@ -27,7 +27,7 @@ public class Bundle {
 
     private List<String> problemIds;
     private Map<String, Role> userRoles;
-    private Set<String> invitedUserIds;
+    private Set<String> invitedUserNames;
 
     @Indexed(unique = true)
     private String shareCode = null;
@@ -37,9 +37,9 @@ public class Bundle {
         return this;
     }
 
-    public int addUser(String userId, Role role) {
-        if (!userRoles.containsKey(userId)) {
-            userRoles.put(userId, role);
+    public int addUser(String userName, Role role) {
+        if (!userRoles.containsKey(userName)) {
+            userRoles.put(userName, role);
             return 1;
         }
         return 0;
@@ -52,51 +52,51 @@ public class Bundle {
                 .reduce(0, Integer::sum);
     }
 
-    public int changeUserRole(String userId, Role newRole) {
-        if (userRoles.containsKey(userId)) {
-            userRoles.put(userId, newRole);
+    public int changeUserRole(String userName, Role newRole) {
+        if (userRoles.containsKey(userName)) {
+            userRoles.put(userName, newRole);
             return 1;
         }
         return 0;
     }
 
-    public Role getUserRole(String userId) {
-        return userRoles.getOrDefault(userId, null);
+    public Role getUserRole(String userName) {
+        return userRoles.getOrDefault(userName, null);
     }
 
-    public boolean isUserInBundle(String userId) {
-        return getUserRole(userId) != null;
+    public boolean isUserInBundle(String userName) {
+        return getUserRole(userName) != null;
     }
 
-    public boolean isUserInvited(String userId) {
-        return invitedUserIds != null && invitedUserIds.contains(userId);
+    public boolean isUserInvited(String userName) {
+        return invitedUserNames != null && invitedUserNames.contains(userName);
     }
 
-    public int inviteUser(String userId) {
-        if (invitedUserIds == null) {
-            invitedUserIds = new HashSet<>();
+    public int inviteUser(String userName) {
+        if (invitedUserNames == null) {
+            invitedUserNames = new HashSet<>();
         }
-        if (!invitedUserIds.contains(userId)) {
-            invitedUserIds.add(userId);
+        if (!invitedUserNames.contains(userName)) {
+            invitedUserNames.add(userName);
             return 1;
         }
         return 0;
     }
 
-    public int removeInvitedUser(String userId) {
-        return invitedUserIds != null && invitedUserIds.remove(userId) ? 1 : 0;
+    public int removeInvitedUser(String userName) {
+        return invitedUserNames != null && invitedUserNames.remove(userName) ? 1 : 0;
     }
 
-    public boolean isAdmin(String userId) {
-        return getUserRole(userId).equals(Role.ADMIN);
+    public boolean isAdmin(String userName) {
+        return getUserRole(userName).equals(Role.ADMIN);
     }
 
-    public int removeUser(String userId) {
-        return userRoles.remove(userId) != null ? 1 : 0;
+    public int removeUser(String userName) {
+        return userRoles.remove(userName) != null ? 1 : 0;
     }
 
-    public int removeUsers(List<String> userIds) {
-        return userIds.stream().map(this::removeUser).reduce(0, Integer::sum);
+    public int removeUsers(List<String> userNames) {
+        return userNames.stream().map(this::removeUser).reduce(0, Integer::sum);
     }
 
     public int addProblem(String problemId) {
@@ -126,7 +126,8 @@ public class Bundle {
     }
 
     public List<String> getAdmins() {
-        return userRoles.entrySet().stream().filter(entry -> entry.getValue().equals(Role.ADMIN)).map(Map.Entry::getKey).toList();
+        return userRoles.entrySet().stream().filter(entry -> entry.getValue().equals(Role.ADMIN))
+                .map(Map.Entry::getKey).toList();
     }
 
     public static Bundle fromCreateRequest(CreateBundleRequest bundleRequest, String adminId) {

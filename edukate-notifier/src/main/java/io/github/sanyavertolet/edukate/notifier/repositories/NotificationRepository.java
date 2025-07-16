@@ -15,14 +15,14 @@ import java.util.List;
 public interface NotificationRepository extends ReactiveMongoRepository<BaseNotification, String> {
     Mono<BaseNotification> findNotificationByUuid(String uuid);
 
-    Flux<BaseNotification> findAllByUserIdAndIsRead(String userId, Boolean isRead, Pageable pageable);
+    Flux<BaseNotification> findAllByTargetUserNameAndIsRead(String targetUserName, Boolean isRead, Pageable pageable);
 
-    Flux<BaseNotification> findAllByUserId(String userId, Pageable pageable);
+    Flux<BaseNotification> findAllByTargetUserName(String targetUserName, Pageable pageable);
 
-    Flux<BaseNotification> findByUuidInAndUserId(List<String> uuid, String userId);
+    Flux<BaseNotification> findByTargetUserNameAndUuidIn(String targetUserName, List<String> uuid);
 
     @Aggregation(pipeline = {
-            "{ $match: { userId: ?0 } }",
+            "{ $match: { targetUserName: ?0 } }",
             "{ $facet: { " +
                     "  unread: [{ $match: { isRead: false } }, { $count: 'count' }], " +
                     "  total: [{ $count: 'count' }] " +
@@ -32,5 +32,5 @@ public interface NotificationRepository extends ReactiveMongoRepository<BaseNoti
                     "  total: { $ifNull: [{ $arrayElemAt: ['$total.count', 0] }, 0] } " +
                     "} }"
     })
-    Mono<NotificationStatistics> gatherStatistics(String userId);
+    Mono<NotificationStatistics> gatherStatistics(String targetUserName);
 }

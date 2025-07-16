@@ -79,76 +79,64 @@ public class BundleService {
     }
 
     @Transactional
-    public Mono<Bundle> joinUser(String userId, String shareCode) {
+    public Mono<Bundle> joinUser(String userName, String shareCode) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasJoinPermission(bundle, userId))
+                .filter(bundle -> bundlePermissionEvaluator.hasJoinPermission(bundle, userName))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN,
                         "To join this bundle, you should be invited"
                 )))
-                .filter(bundle -> !bundle.isUserInBundle(userId))
+                .filter(bundle -> !bundle.isUserInBundle(userName))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "You have already joined the bundle [" + shareCode + "]"
                 )))
                 .map(bundle -> {
-                    bundle.addUser(userId, Role.USER);
+                    bundle.addUser(userName, Role.USER);
+                    bundle.removeInvitedUser(userName);
                     return bundle;
                 })
                 .flatMap(bundleRepository::save);
     }
 
     @Transactional
-    public Mono<Bundle> removeUser(String userId, String shareCode) {
+    public Mono<Bundle> removeUser(String userName, String shareCode) {
         return findBundleByShareCode(shareCode)
                 .filter(bundle ->
-                        bundle.isUserInBundle(userId)
+                        bundle.isUserInBundle(userName)
                 )
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not in bundle")
                 ))
                 .filter(bundle ->
-                        !bundle.isAdmin(userId) || bundle.getAdmins().size() > 1
+                        !bundle.isAdmin(userName) || bundle.getAdmins().size() > 1
                 )
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Last admin should delete bundle, not leave it"
                 )))
                 .map(bundle -> {
-                    bundle.removeUser(userId);
+                    bundle.removeUser(userName);
                     return bundle;
                 })
                 .flatMap(bundleRepository::save);
     }
 
     @Transactional
-    public Mono<String> inviteUser(String inviterId, String inviteeId, String shareCode) {
+    public Mono<String> inviteUser(String inviterName, String inviteeName, String shareCode) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, inviterId))
+                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, inviterName))
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions to invite")
                 ))
-                .filter(bundle -> !bundle.isUserInBundle(inviteeId))
+                .filter(bundle -> !bundle.isUserInBundle(inviteeName))
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already in bundle")
                 ))
-                .filter(bundle -> !bundle.isUserInvited(inviteeId))
-                .switchIfEmpty(Mono.error(
-                        new ResponseStatusException(HttpStatus.BAD_REQUEST, "User has already been invited")
-                ))
-                .flatMap(bundle -> {
-                    if (bundle.inviteUser(inviteeId) == 0) {
-                        return Mono.error(new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Cannot invite user " + inviteeId + " to bundle " + shareCode + " due to internal error")
-                        );
-                    }
-                    bundle.removeInvitedUser(inviteeId);
-                    return Mono.just(bundle);
-                })
+                .doOnNext(bundle -> bundle.inviteUser(inviteeName))
                 .flatMap(bundleRepository::save)
                 .flatMap(bundle ->
-                        notifierService.notifyInvite(inviteeId, inviterId, bundle.getName(), bundle.getShareCode())
+                        notifierService.notifyInvite(inviteeName, inviterName, bundle.getName(), bundle.getShareCode())
                 );
     }
 

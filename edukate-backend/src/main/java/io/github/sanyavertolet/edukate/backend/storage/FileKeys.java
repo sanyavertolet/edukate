@@ -12,8 +12,8 @@ public class FileKeys {
         return problemDir(problem) + fileName;
     }
 
-    public static String avatar(String userId) {
-        return userDir(userId) + "avatar";
+    public static String avatar(String userName) {
+        return userDir(userName) + "avatar";
     }
 
     public static String result(Problem problem, String fileName) {
@@ -33,15 +33,15 @@ public class FileKeys {
     }
 
     public static String submissionsDir(Submission submission) {
-        return userDir(submission.getUserId()) + "submissions/" + submission.getProblemId() + "/";
+        return userDir(submission.getUserName()) + "submissions/" + submission.getProblemId() + "/";
     }
 
-    public static String tempDir(String userId) {
-        return userDir(userId) + "tmp/";
+    public static String tempDir(String userName) {
+        return userDir(userName) + "tmp/";
     }
 
-    private static String userDir(String userId) {
-        return "users/" + userId + "/";
+    private static String userDir(String userName) {
+        return "users/" + userName + "/";
     }
 
     public static String prefixed(String prefix, String fileName) {

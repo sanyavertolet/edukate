@@ -37,15 +37,18 @@ public class HttpNotifierService {
                 .bodyToMono(String.class);
     }
 
-    public Mono<String> notifySimple(String userId, String title, String message, String source) {
+    @SuppressWarnings("unused")
+    public Mono<String> notifySimple(String targetUserName, String title, String message, String source) {
         return notify(SimpleNotificationCreationRequest.of(
-                UUID.randomUUID().toString(), userId, title, message, source
+                UUID.randomUUID().toString(), targetUserName, title, message, source
         ));
     }
 
-    public Mono<String> notifyInvite(String userId, String inviter, String bundleName, String bundleShareCode) {
+    public Mono<String> notifyInvite(
+            String targetUserName, String inviterName, String bundleName, String bundleShareCode
+    ) {
         return notify(InviteNotificationCreationRequest.of(
-                UUID.randomUUID().toString(), userId, inviter, bundleName, bundleShareCode
+                UUID.randomUUID().toString(), targetUserName, inviterName, bundleName, bundleShareCode
         ));
     }
 }

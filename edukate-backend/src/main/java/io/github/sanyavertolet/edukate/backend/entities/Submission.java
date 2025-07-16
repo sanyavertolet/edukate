@@ -18,7 +18,7 @@ public class Submission {
     @Id
     private String id;
     private String problemId;
-    private String userId;
+    private String userName;
     private Status status;
     private List<String> fileKeys;
     private Instant createdAt;
@@ -30,7 +30,7 @@ public class Submission {
     }
 
     public SubmissionDto toDto() {
-        return new SubmissionDto(id, problemId, userId, status, createdAt, fileKeys);
+        return new SubmissionDto(id, problemId, userName, status, createdAt, fileKeys);
     }
 
     public static Submission of(String problemId, String userId, List<String> fileKeys) {

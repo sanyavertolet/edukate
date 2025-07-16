@@ -63,7 +63,8 @@ public class BundleController {
     @PreAuthorize("hasRole('ROLE_USER')")
     public Mono<BundleDto> getBundleByShareCode(
             @PathVariable String shareCode,
-            Authentication authentication) {
+            Authentication authentication
+    ) {
         return bundleService.findBundleByShareCode(shareCode)
                 .filter(bundle -> bundle.isUserInBundle(authentication.getName()))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
@@ -88,16 +89,16 @@ public class BundleController {
     @PostMapping("/{shareCode}/invite")
     @PreAuthorize("hasRole('ROLE_USER')")
     public Mono<String> inviteToBundle(
-            @PathVariable String shareCode, @RequestParam String inviteeId, Authentication authentication
+            @PathVariable String shareCode, @RequestParam String inviteeName, Authentication authentication
     ) {
-        return Mono.just(inviteeId)
+        return Mono.just(inviteeName)
                 .filterWhen(userService::doesUserExist)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "User " + inviteeId +  " not found"
+                        "User " + inviteeName +  " not found"
                 )))
                 .flatMap(invitee -> bundleService.inviteUser(authentication.getName(), invitee, shareCode))
-                .thenReturn("User " + inviteeId + " has been invited to bundle " + shareCode);
+                .thenReturn("User " + inviteeName + " has been invited to bundle " + shareCode);
     }
 
     @PostMapping("/{shareCode}/reply-invite")

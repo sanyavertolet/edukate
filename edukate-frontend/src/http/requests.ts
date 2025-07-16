@@ -280,7 +280,7 @@ export function useBundleInviteUserMutation() {
             }
             try {
                 const response = await client.post<string>(`/api/v1/bundles/${shareCode}/invite`, undefined, {
-                    params: { shareCode, inviteeId: username }
+                    params: { shareCode, inviteeName: username }
                 });
                 return response.status;
             } catch (error) {
