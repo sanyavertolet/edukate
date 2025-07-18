@@ -3,12 +3,14 @@ package io.github.sanyavertolet.edukate.notifier.controllers.internal;
 import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreationRequest;
 import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
 import io.github.sanyavertolet.edukate.notifier.services.NotificationService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @Slf4j
+@Hidden
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal/notifications")
