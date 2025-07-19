@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.backend.controllers.internal;
 
 import io.github.sanyavertolet.edukate.backend.services.FileService;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.nio.ByteBuffer;
 
+@Hidden
 @RestController
 @RequestMapping("/internal/images")
 @AllArgsConstructor

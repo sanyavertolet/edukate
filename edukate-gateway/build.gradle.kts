@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.cloud.starter.gateway)
+    implementation(libs.springdoc.openapi.starter.webflux.ui)
 
     implementation(libs.snakeyaml)
 

@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.data.mongodb.reactive)
+    implementation(libs.springdoc.openapi.starter.webflux.ui)
 
     implementation(libs.awssdk.s3)
     implementation(libs.awssdk.s3.transfer.manager)

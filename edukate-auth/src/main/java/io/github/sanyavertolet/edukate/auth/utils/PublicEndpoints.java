@@ -17,7 +17,8 @@ public class PublicEndpoints {
             "/internal/**",
             "/api/v1/problems/**",
             "/api/v1/auth/*",
-            "/swagger/**"
+            "/swagger/**",
+            "/swagger-ui/**"
     );
 
     public static String[] asArray() {

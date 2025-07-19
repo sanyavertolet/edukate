@@ -9,6 +9,14 @@ import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
 import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,6 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/submissions")
 @RequiredArgsConstructor
+@Tag(name = "Submissions", description = "API for managing problem submissions")
 public class SubmissionController {
     private final ProblemService problemService;
     private final UserService userService;
@@ -33,6 +42,21 @@ public class SubmissionController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/by-id")
+    @Operation(
+            summary = "Get submission by ID",
+            description = "Retrieves a specific submission by its ID for the authenticated user"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved submission",
+                    content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Submission not found", content = @Content)
+    })
+    @Parameters({
+            @Parameter(name = "id", description = "Submission ID", required = true),
+            @Parameter(name = "authentication", description = "Spring authentication", hidden = true),
+    })
     public Mono<SubmissionDto> getSubmissionById(
             @RequestParam String id,
             Authentication authentication
@@ -46,6 +70,24 @@ public class SubmissionController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
+    @Operation(
+            summary = "Upload a submission",
+            description = "Creates a new submission for a problem with the provided files"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully created submission",
+                    content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Not enough permissions", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User, problem, or files not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Failed to save submission", content = @Content)
+    })
+    @Parameters({
+            @Parameter(name = "submissionRequest", description = "Submission details", required = true),
+            @Parameter(name = "check", description = "Type of check to perform on the submission"),
+            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
+    })
     public Mono<SubmissionDto> uploadSubmission(
             @RequestBody CreateSubmissionRequest submissionRequest,
             @RequestParam(required = false, defaultValue = "SELF", name = "check") CheckType checkType,
@@ -71,6 +113,22 @@ public class SubmissionController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/{problemId}/{username}")
+    @Operation(
+            summary = "Get submissions by username and problem ID",
+            description = "Retrieves paginated submissions for a specific user and problem"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved submissions",
+                    content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @Parameters({
+            @Parameter(name = "problemId", description = "Problem ID", required = true),
+            @Parameter(name = "username", description = "Username", required = true),
+            @Parameter(name = "page", description = "Page number (zero-based)"),
+            @Parameter(name = "size", description = "Number of submissions per page")
+    })
     public Flux<SubmissionDto> getSubmissionsByUsernameAndProblemId(
             @PathVariable String problemId,
             @PathVariable String username,
@@ -88,6 +146,20 @@ public class SubmissionController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping
+    @Operation(
+            summary = "Get all successful submissions",
+            description = "Retrieves paginated list of all submissions with SUCCESS status"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved submissions",
+                    content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+    })
+    @Parameters({
+            @Parameter(name = "page", description = "Page number (zero-based)"),
+            @Parameter(name = "size", description = "Number of submissions per page")
+    })
     public Flux<SubmissionDto> getSubmissions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size

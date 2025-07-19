@@ -10,6 +10,24 @@ auth:
     secret: ${JWT_SECRET}
   hostname: ${HOST_NAME}
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /swagger/gateway/api-docs
+  swagger-ui:
+    enabled: true
+    urls:
+      - name: edukate-gateway
+        url: /swagger/gateway/api-docs
+      - name: edukate-backend
+        url: /swagger/backend/api-docs
+      - name: edukate-notifier
+        url: /swagger/notifier/api-docs
+    config-url: /swagger/gateway/api-docs/swagger-config
+    path: /swagger
+    disable-swagger-default-url: true
+    urls-primary-name: edukate-gateway
+
 spring:
   application:
     name: gateway
@@ -23,17 +41,17 @@ spring:
         - id: gateway_route
           uri: no://op
           predicates:
-            - Path= /api/*/auth/*
+            - Path=/api/*/auth/*,/swagger/gateway/api-docs/**
         - id: notifier_route
           uri: ${gateway.notifier.url}
           predicates:
-            - Path=/api/*/notifications/**
+            - Path=/api/*/notifications/**,/swagger/notifier/api-docs/**
           filters:
             - RemoveRequestHeader=Cookie
         - id: api_route
           uri: ${gateway.backend.url}
           predicates:
-            - Path=/api/**
+            - Path=/api/**,/swagger/backend/api-docs/**
           filters:
             - RemoveRequestHeader=Cookie
 
