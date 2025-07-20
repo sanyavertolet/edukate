@@ -3,6 +3,7 @@ gateway:
     url: http://backend
   notifier:
     url: http://notifier
+  url: https://${HOST_NAME}
 
 auth:
   jwt:

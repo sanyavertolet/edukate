@@ -25,9 +25,9 @@ public class JwtAuthenticationFilter implements WebFilter {
     private final AuthCookieService authCookieService;
 
     private ServerHttpRequest getModifierRequest(ServerWebExchange exchange, EdukateUserDetails userDetails) {
-        return exchange.getRequest().mutate().headers(headers ->
-                HttpHeadersUtils.populateHeaders(headers, userDetails)
-        ).build();
+        return exchange.getRequest().mutate()
+                .headers(headers -> HttpHeadersUtils.populateHeaders(headers, userDetails))
+                .build();
     }
 
     @NonNull

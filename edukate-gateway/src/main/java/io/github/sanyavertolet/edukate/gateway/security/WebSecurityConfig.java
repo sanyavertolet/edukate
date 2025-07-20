@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.gateway.security;
 import io.github.sanyavertolet.edukate.common.utils.PublicEndpoints;
 import io.github.sanyavertolet.edukate.gateway.filters.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -17,7 +18,11 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
-import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -26,28 +31,38 @@ import org.springframework.security.web.server.authentication.logout.HttpStatusR
 public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${gateway.url}")
+    private String hostname;
+
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(hostname));
+        configuration.setAllowedHeaders(List.of("Content-Type", "api_key"));
+        configuration.setMaxAge(3600L);
+        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
     @Bean
     @Order(2)
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(ServerHttpSecurity.CorsSpec::disable)
+                .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/internal/**").denyAll()
                         .pathMatchers(PublicEndpoints.asArray()).permitAll()
-                        .pathMatchers("/api/**").authenticated()
-                )
+                        .pathMatchers("/api/**").authenticated())
                 .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .exceptionHandling(exceptionHandlingSpec ->
                         exceptionHandlingSpec.authenticationEntryPoint(
-                                new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)
-                        ))
+                                new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-                .logout(logoutSpec ->
-                        logoutSpec.logoutSuccessHandler(
-                                new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.OK)
-                        ))
+                .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .build();
         }
 
@@ -55,6 +70,7 @@ public class WebSecurityConfig {
     @Order(1)
     public SecurityWebFilterChain publicEndpointsSecurityWebFilterChain(ServerHttpSecurity http) {
         return http.securityMatcher(PublicEndpoints.asMatcher())
+                .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchange -> exchange.anyExchange().permitAll())
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)

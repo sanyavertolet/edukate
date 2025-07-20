@@ -3,6 +3,7 @@ gateway:
     url: http://localhost:5800
   notifier:
     url: http://localhost:5820
+  url: http://localhost:5810
 
 auth:
   jwt:
