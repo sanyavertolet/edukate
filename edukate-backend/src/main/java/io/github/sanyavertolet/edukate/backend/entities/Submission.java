@@ -6,6 +6,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -18,6 +19,7 @@ public class Submission {
     @Id
     private String id;
     private String problemId;
+    @Field("userId")
     private String userName;
     private Status status;
     private List<String> fileKeys;
