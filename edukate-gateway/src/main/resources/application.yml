@@ -25,7 +25,7 @@ springdoc:
       - name: edukate-notifier
         url: /swagger/notifier/api-docs
     config-url: /swagger/gateway/api-docs/swagger-config
-    path: /swagger-ui
+    path: /swagger
     disable-swagger-default-url: true
     urls-primary-name: edukate-gateway
     operations-sorter: alpha
