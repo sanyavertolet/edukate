@@ -30,6 +30,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
+
 @RestController
 @RequestMapping("/api/v1/submissions")
 @RequiredArgsConstructor
@@ -40,9 +43,9 @@ public class SubmissionController {
     private final SubmissionService submissionService;
     private final FileService fileService;
 
-    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/by-id")
     @Operation(
+
             summary = "Get submission by ID",
             description = "Retrieves a specific submission by its ID for the authenticated user"
     )
@@ -50,25 +53,23 @@ public class SubmissionController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved submission",
                     content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied - user name does not match",
+                    content = @Content),
             @ApiResponse(responseCode = "404", description = "Submission not found", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "id", description = "Submission ID", required = true),
+            @Parameter(name = "id", description = "Submission ID", in = QUERY, required = true),
             @Parameter(name = "authentication", description = "Spring authentication", hidden = true),
     })
-    public Mono<SubmissionDto> getSubmissionById(
-            @RequestParam String id,
-            Authentication authentication
-    ) {
+    public Mono<SubmissionDto> getSubmissionById(@RequestParam String id, Authentication authentication) {
         return submissionService.findSubmissionById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
                 .filter(submission -> submission.getUserName().equals(authentication.getName()))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
                 .map(Submission::toDto)
                 .flatMap(submissionService::updateFileUrlsInDto);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping
     @Operation(
             summary = "Upload a submission",
@@ -77,15 +78,13 @@ public class SubmissionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully created submission",
                     content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Not enough permissions", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied - No submit permission", content = @Content),
             @ApiResponse(responseCode = "404", description = "User, problem, or files not found", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Failed to save submission", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "submissionRequest", description = "Submission details", required = true),
-            @Parameter(name = "check", description = "Type of check to perform on the submission"),
+            @Parameter(name = "check", description = "Type of check to perform on the submission, !ignored for now!",
+                    in = QUERY),
             @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<SubmissionDto> uploadSubmission(
@@ -106,12 +105,11 @@ public class SubmissionController {
                 .filterWhen(fileService::doFilesExist)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.")))
                 .flatMap(_ -> submissionService.saveSubmission(authentication.getName(), submissionRequest))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save submission")))
                 .map(Submission::toDto)
                 .flatMap(submissionService::updateFileUrlsInDto);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_MODERATOR')")
     @GetMapping("/{problemId}/{username}")
     @Operation(
             summary = "Get submissions by username and problem ID",
@@ -121,13 +119,14 @@ public class SubmissionController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved submissions",
                     content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires MODERATOR role",
+                    content = @Content)
     })
     @Parameters({
-            @Parameter(name = "problemId", description = "Problem ID", required = true),
-            @Parameter(name = "username", description = "Username", required = true),
-            @Parameter(name = "page", description = "Page number (zero-based)"),
-            @Parameter(name = "size", description = "Number of submissions per page")
+            @Parameter(name = "problemId", description = "Problem ID", in = PATH, required = true),
+            @Parameter(name = "username", description = "Username", in = PATH, required = true),
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
+            @Parameter(name = "size", description = "Number of submissions per page", in = QUERY)
     })
     public Flux<SubmissionDto> getSubmissionsByUsernameAndProblemId(
             @PathVariable String problemId,
@@ -144,7 +143,7 @@ public class SubmissionController {
                 .flatMap(submissionService::updateFileUrlsInDto);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @GetMapping
     @Operation(
             summary = "Get all successful submissions",
@@ -153,12 +152,12 @@ public class SubmissionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved submissions",
                     content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
+            @ApiResponse(responseCode = "403", description = "Access denied - Requires MODERATOR role",
+                    content = @Content)
     })
     @Parameters({
-            @Parameter(name = "page", description = "Page number (zero-based)"),
-            @Parameter(name = "size", description = "Number of submissions per page")
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
+            @Parameter(name = "size", description = "Number of submissions per page", in = QUERY)
     })
     public Flux<SubmissionDto> getSubmissions(
             @RequestParam(defaultValue = "0") int page,
@@ -167,7 +166,9 @@ public class SubmissionController {
         return submissionService.findSubmissionsByStatusIn(
                 List.of(Submission.Status.SUCCESS),
                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
-        ).map(Submission::toDto);
+        )
+                .map(Submission::toDto)
+                .flatMap(submissionService::updateFileUrlsInDto);
     }
 
     private Mono<Boolean> problemExists(String problemId) {

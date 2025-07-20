@@ -27,6 +27,7 @@ springdoc:
     path: /swagger
     disable-swagger-default-url: true
     urls-primary-name: edukate-gateway
+    operations-sorter: alpha
 
 spring:
   application:

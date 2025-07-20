@@ -27,6 +27,7 @@ public class UserController {
 
     @GetMapping("/whoami")
     @Operation(
+            operationId = "whoami",
             summary = "Get current user information",
             description = "Retrieves information about the currently authenticated user"
     )
@@ -34,9 +35,9 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved user information",
                     content = @Content(schema = @Schema(implementation = UserDto.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "User not found by name from token", content = @Content)
     })
-    public Mono<UserDto> whoami(@Parameter(hidden = true) Authentication authentication) {
+    public Mono<UserDto> whoami(Authentication authentication) {
         return Mono.justOrEmpty(authentication)
                 .map(Principal::getName)
                 .flatMap(userService::findUserByName)

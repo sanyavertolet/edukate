@@ -11,12 +11,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/results")
@@ -34,15 +38,14 @@ public class ResultController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved result",
                     content = @Content(schema = @Schema(implementation = Result.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid ID supplied", content = @Content),
             @ApiResponse(responseCode = "404", description = "Result not found", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "id", description = "Result ID", required = true)
+            @Parameter(name = "id", description = "Result ID", in = PATH, required = true)
     })
     public Mono<Result> getResultById(@PathVariable String id) {
         return resultService.findResultById(id)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Result not found")))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found")))
                 .flatMap(resultService::updateImagesInResult);
     }
 }

@@ -24,6 +24,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
+
 @RestController
 @RequestMapping("/api/v1/problems")
 @RequiredArgsConstructor
@@ -40,17 +43,16 @@ public class ProblemController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved problem list",
                     content = @Content(schema = @Schema(implementation = ProblemMetadata.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "page", description = "Page number (zero-based)"),
-            @Parameter(name = "size", description = "Number of problems per page"),
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
+            @Parameter(name = "size", description = "Number of problems per page", in = QUERY),
             @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Flux<ProblemMetadata> getProblemList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @Parameter(hidden = true) Authentication authentication
+            Authentication authentication
     ) {
         return Mono.just(PageRequest.of(page, size))
                 .flatMapMany(problemService::getFilteredProblems)
@@ -84,8 +86,9 @@ public class ProblemController {
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @Parameters({
-            @Parameter(name = "prefix", description = "The prefix to match problem IDs against", required = true),
-            @Parameter(name = "limit", description = "Maximum number of results to return")
+            @Parameter(name = "prefix", description = "The prefix to match problem IDs against", in = QUERY,
+                    required = true),
+            @Parameter(name = "limit", description = "Maximum number of results to return", in = QUERY)
     })
     public Mono<List<String>> getProblemIdsByPrefix(
             @RequestParam String prefix, 
@@ -102,16 +105,15 @@ public class ProblemController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved problem",
                     content = @Content(schema = @Schema(implementation = ProblemDto.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Problem not found", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "id", description = "Problem ID", required = true),
+            @Parameter(name = "id", description = "Problem ID", in = PATH, required = true),
             @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<ProblemDto> getProblem(
             @PathVariable String id,
-            @Parameter(hidden = true) Authentication authentication
+            Authentication authentication
     ) {
         return problemService.findProblemById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found")))
