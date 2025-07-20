@@ -5,8 +5,6 @@ import io.github.sanyavertolet.edukate.gateway.dtos.SignInRequest;
 import io.github.sanyavertolet.edukate.gateway.dtos.SignUpRequest;
 import io.github.sanyavertolet.edukate.gateway.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,16 +31,14 @@ public class AuthController {
 
     @PostMapping("/sign-in")
     @Operation(
-            summary = "Sign in user",
+            operationId = "sign-in",
+            summary = "Sign user in",
             description = "Authenticates a user with provided credentials and returns a JWT token in a cookie"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully authenticated", content = @Content),
+            @ApiResponse(responseCode = "204", description = "Successfully authenticated", content = @Content),
             @ApiResponse(responseCode = "403", description = "Authentication failed", content = @Content)
     })
-    @Parameters(
-            @Parameter(name = "signInRequest", description = "User credentials for authentication", required = true)
-    )
     public Mono<ResponseEntity<Void>> signIn(@RequestBody SignInRequest signInRequest) {
         return authService.signIn(signInRequest).flatMap(authCookieService::respondWithToken)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN)));
@@ -50,16 +46,15 @@ public class AuthController {
 
     @PostMapping("/sign-up")
     @Operation(
+            operationId = "sign-up",
             summary = "Register new user",
             description = "Registers a new user with provided information and returns a JWT token in a cookie"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully registered", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Registration failed", content = @Content)
+            @ApiResponse(responseCode = "204", description = "Successfully registered", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Registration failed", content = @Content),
+            @ApiResponse(responseCode = "409", description = "User with this name already exists", content = @Content),
     })
-    @Parameters(
-            @Parameter(name = "signUpRequest", description = "User information for registration", required = true)
-    )
     public Mono<ResponseEntity<Void>> signUp(@RequestBody SignUpRequest signUpRequest) {
         return authService.signUp(signUpRequest).flatMap(authCookieService::respondWithToken)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN)));
@@ -67,11 +62,12 @@ public class AuthController {
 
     @PostMapping("/sign-out")
     @Operation(
-            summary = "Sign out user",
+            operationId = "sign-out",
+            summary = "Sign user out",
             description = "Signs out the current user by expiring their authentication token"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully signed out", content = @Content)
+            @ApiResponse(responseCode = "204", description = "Successfully signed out", content = @Content)
     })
     public Mono<ResponseEntity<Void>> signOut() {
         return authCookieService.respondWithExpiredToken();

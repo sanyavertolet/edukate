@@ -14,13 +14,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,16 +40,11 @@ public class NotificationController {
             @ApiResponse(responseCode = "200", description = "Successfully marked notifications as read",
                     content = @Content(schema = @Schema(implementation = Long.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "uuids", description = "List of notification UUIDs to mark as read", required = true),
             @Parameter(name = "authentication", description = "spring authentication", hidden = true)
     })
-    public Mono<Long> markAsRead(
-            @RequestBody List<String> uuids,
-            @Parameter(hidden = true) Authentication authentication
-    ) {
+    public Mono<Long> markAsRead(@RequestBody List<String> uuids, Authentication authentication) {
         return notificationService.markAsRead(uuids, authentication);
     }
 
@@ -61,7 +57,6 @@ public class NotificationController {
             @ApiResponse(responseCode = "200", description = "Successfully marked all notifications as read",
                     content = @Content(schema = @Schema(implementation = Long.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     @Parameters(
             @Parameter(name = "authentication", description = "spring authentication", hidden = true)
@@ -71,7 +66,6 @@ public class NotificationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_USER')")
     @Operation(
             summary = "Get user notifications",
             description = "Retrieves paginated notifications for the authenticated user"
@@ -80,12 +74,11 @@ public class NotificationController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved notifications", 
                     content = @Content(schema = @Schema(implementation = BaseNotificationDto.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-        @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "size", description = "Number of notifications to retrieve per page"),
-            @Parameter(name = "page", description = "Page number (zero-based)"),
-            @Parameter(name = "isRead", description = "Filter by read status (null for all notifications)"),
+            @Parameter(name = "size", description = "Number of notifications to retrieve per page", in = QUERY),
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
+            @Parameter(name = "isRead", description = "Filter by read status (null for all notifications)", in = QUERY),
             @Parameter(name = "authentication", description = "spring authentication", hidden = true)
     })
     public Flux<BaseNotificationDto> getNotifications(
@@ -101,7 +94,6 @@ public class NotificationController {
     }
 
     @GetMapping("/count")
-    @PreAuthorize("hasRole('ROLE_USER')")
     @Operation(
             summary = "Get notification statistics",
             description = "Retrieves notification statistics for the authenticated user"
@@ -110,14 +102,11 @@ public class NotificationController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved notification statistics",
                     content = @Content(schema = @Schema(implementation = NotificationStatistics.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     @Parameters(
             @Parameter(name = "authentication", description = "spring authentication", hidden = true)
     )
-    public Mono<NotificationStatistics> getNotificationsCount(
-            Authentication authentication
-    ) {
+    public Mono<NotificationStatistics> getNotificationsCount(Authentication authentication) {
         return notificationService.gatherUserStatistics(authentication);
     }
 }

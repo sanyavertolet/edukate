@@ -144,7 +144,7 @@ public class BundleService {
         return findBundleByShareCode(shareCode)
                 .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, authentication.getName()))
                 .switchIfEmpty(Mono.error(
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions...")
+                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")
                 ))
                 .map(Bundle::getUserRoles);
     }
