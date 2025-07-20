@@ -1,4 +1,4 @@
-package io.github.sanyavertolet.edukate.auth.utils;
+package io.github.sanyavertolet.edukate.common.utils;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,8 +1,8 @@
-package io.github.sanyavertolet.edukate.auth.configs;
+package io.github.sanyavertolet.edukate.common.security;
 
-import io.github.sanyavertolet.edukate.auth.EdukateUserDetails;
-import io.github.sanyavertolet.edukate.auth.utils.HttpHeadersUtils;
-import io.github.sanyavertolet.edukate.auth.utils.PublicEndpoints;
+import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.utils.HttpHeadersUtils;
+import io.github.sanyavertolet.edukate.common.utils.PublicEndpoints;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

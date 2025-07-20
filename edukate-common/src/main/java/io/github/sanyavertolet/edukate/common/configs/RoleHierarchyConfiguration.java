@@ -1,4 +1,4 @@
-package io.github.sanyavertolet.edukate.auth.configs;
+package io.github.sanyavertolet.edukate.common.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

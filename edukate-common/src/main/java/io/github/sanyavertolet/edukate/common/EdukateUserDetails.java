@@ -1,11 +1,8 @@
-package io.github.sanyavertolet.edukate.auth;
+package io.github.sanyavertolet.edukate.common;
 
-import io.github.sanyavertolet.edukate.common.Role;
-import io.github.sanyavertolet.edukate.common.UserStatus;
 import io.github.sanyavertolet.edukate.common.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,8 +12,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static io.github.sanyavertolet.edukate.auth.utils.AuthHeaders.*;
 
 @AllArgsConstructor
 public class EdukateUserDetails implements UserDetails, CredentialsContainer {
@@ -43,14 +38,6 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
         return new PreAuthenticatedAuthenticationToken(this, null, getAuthorities());
     }
 
-    public void populateHeaders(HttpHeaders httpHeaders) {
-        Objects.requireNonNull(httpHeaders, "HttpHeaders must not be null");
-        httpHeaders.set(AUTHORIZATION_ID.headerName, id);
-        httpHeaders.set(AUTHORIZATION_NAME.headerName, name);
-        httpHeaders.set(AUTHORIZATION_STATUS.headerName, status.name());
-        String rolesString = Role.toString(roles);
-        httpHeaders.set(AUTHORIZATION_ROLES.headerName, rolesString);
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -1,6 +1,6 @@
 package io.github.sanyavertolet.edukate.gateway.services;
 
-import io.github.sanyavertolet.edukate.auth.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
 import io.github.sanyavertolet.edukate.auth.utils.RoleUtils;
 import io.github.sanyavertolet.edukate.common.UserStatus;
 import io.github.sanyavertolet.edukate.common.entities.User;

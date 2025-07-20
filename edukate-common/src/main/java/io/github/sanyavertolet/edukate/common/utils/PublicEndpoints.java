@@ -1,4 +1,4 @@
-package io.github.sanyavertolet.edukate.auth.utils;
+package io.github.sanyavertolet.edukate.common.utils;
 
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
@@ -13,7 +13,6 @@ public class PublicEndpoints {
 
     private static final List<String> publicEndpoints = List.of(
             "/actuator/**",
-            "/actuator/health/liveness",
             "/internal/**",
             "/api/v1/problems/**",
             "/api/v1/auth/*",

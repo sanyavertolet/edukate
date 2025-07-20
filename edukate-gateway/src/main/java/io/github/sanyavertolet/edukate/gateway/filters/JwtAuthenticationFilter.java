@@ -1,12 +1,12 @@
 package io.github.sanyavertolet.edukate.gateway.filters;
 
-import io.github.sanyavertolet.edukate.auth.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
 import io.github.sanyavertolet.edukate.auth.services.AuthCookieService;
 import io.github.sanyavertolet.edukate.auth.services.JwtTokenService;
+import io.github.sanyavertolet.edukate.common.utils.HttpHeadersUtils;
 import io.github.sanyavertolet.edukate.gateway.services.UserDetailsService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,17 +17,17 @@ import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 import reactor.util.function.Tuples;
 
-
 @Component
 @RequiredArgsConstructor
-@Import(JwtTokenService.class)
 public class JwtAuthenticationFilter implements WebFilter {
     private final JwtTokenService jwtTokenService;
     private final UserDetailsService userDetailsService;
     private final AuthCookieService authCookieService;
 
     private ServerHttpRequest getModifierRequest(ServerWebExchange exchange, EdukateUserDetails userDetails) {
-        return exchange.getRequest().mutate().headers(userDetails::populateHeaders).build();
+        return exchange.getRequest().mutate().headers(headers ->
+                HttpHeadersUtils.populateHeaders(headers, userDetails)
+        ).build();
     }
 
     @NonNull
