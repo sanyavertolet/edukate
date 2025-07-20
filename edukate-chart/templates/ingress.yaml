@@ -19,6 +19,13 @@ spec:
                 name: {{ .Values.gateway.name }}
                 port:
                   number: 80
+          - path: "/swagger-ui"
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.gateway.name }}
+                port:
+                  number: 80
           - path: "/"
             pathType: Prefix
             backend:
