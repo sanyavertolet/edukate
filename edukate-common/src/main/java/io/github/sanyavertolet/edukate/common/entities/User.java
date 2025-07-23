@@ -24,6 +24,8 @@ public class User {
     @Indexed(unique = true)
     private final String name;
 
+    private final String email;
+
     @NonNull
     @ToString.Exclude
     private final String token;

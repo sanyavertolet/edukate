@@ -10,4 +10,5 @@ public class SignUpRequest {
     private String username;
     @ToString.Exclude
     private String password;
+    private String email;
 }

@@ -32,8 +32,8 @@ public class UserDetailsService implements ReactiveUserDetailsService {
         return findByUsername(username).hasElement().map(it -> !it);
     }
 
-    public Mono<EdukateUserDetails> create(String username, String encodedPassword) {
-        User user = new User(null, username, encodedPassword, RoleUtils.getDefaultRole(), UserStatus.PENDING);
+    public Mono<EdukateUserDetails> create(String username, String email, String encodedPassword) {
+        User user = new User(null, username, email, encodedPassword, RoleUtils.getDefaultRole(), UserStatus.PENDING);
         return backendService.saveUser(user).map(EdukateUserDetails::new)
                 .doOnNext(EdukateUserDetails::eraseCredentials);
     }

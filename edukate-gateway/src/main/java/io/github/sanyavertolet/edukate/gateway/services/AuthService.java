@@ -28,8 +28,10 @@ public class AuthService {
                 .filterWhen(request -> userDetailsService.isNotUserPresent(request.getUsername()))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.CONFLICT)))
                 .flatMap(request ->
-                        userDetailsService.create(request.getUsername(), passwordEncoder.encode(request.getPassword()))
-                )
+                        userDetailsService.create(
+                                request.getUsername(),
+                                request.getEmail(),
+                                passwordEncoder.encode(request.getPassword())))
                 .map(jwtTokenService::generateToken);
     }
 }
