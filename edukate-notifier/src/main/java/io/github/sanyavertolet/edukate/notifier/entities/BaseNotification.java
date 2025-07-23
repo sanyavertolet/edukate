@@ -43,7 +43,7 @@ public sealed class BaseNotification permits SimpleNotification, InviteNotificat
 
     private Boolean isRead;
 
-    private String targetUserName;
+    private String targetUserId;
 
     private LocalDateTime createdAt;
 

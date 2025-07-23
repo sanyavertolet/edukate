@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.notifier.services;
 
+import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.github.sanyavertolet.edukate.notifier.dtos.NotificationStatistics;
 import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
 import io.github.sanyavertolet.edukate.notifier.repositories.NotificationRepository;
@@ -37,22 +38,24 @@ public class NotificationService {
     public Flux<BaseNotification> getUserNotifications(
             Boolean isRead, int size, int page, Authentication authentication
     ) {
-        return Mono.just(PageRequest.of(page, size, Sort.Direction.DESC, "createdAt"))
-                .flatMapMany(pageRequest -> {
+        return AuthUtils.monoId(authentication)
+                .flatMapMany(userId -> {
+                    PageRequest pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
                     if (isRead == null) {
-                        return notificationRepository.findAllByTargetUserName(authentication.getName(), pageRequest);
+                        return notificationRepository.findAllByTargetUserId(userId, pageRequest);
                     }
-                    return notificationRepository.findAllByTargetUserNameAndIsRead(authentication.getName(), isRead, pageRequest);
+                    return notificationRepository.findAllByTargetUserIdAndIsRead(userId, isRead, pageRequest);
                 });
     }
 
     public Mono<NotificationStatistics> gatherUserStatistics(Authentication authentication) {
-        return notificationRepository.gatherStatistics(authentication.getName());
+        return AuthUtils.monoId(authentication).flatMap(notificationRepository::gatherStatistics);
     }
 
     @Transactional
     public Mono<Long> markAsRead(List<String> uuids, Authentication authentication) {
-        return notificationRepository.findByTargetUserNameAndUuidIn(authentication.getName(), uuids)
+        return AuthUtils.monoId(authentication)
+                .flatMapMany(userId -> notificationRepository.findByTargetUserIdAndUuidIn(userId, uuids))
                 .map(notification -> {
                     notification.setIsRead(Boolean.TRUE);
                     return notification;
@@ -63,7 +66,10 @@ public class NotificationService {
 
     @Transactional
     public Mono<Long> markAllAsRead(Authentication authentication) {
-        return notificationRepository.findAllByTargetUserNameAndIsRead(authentication.getName(), Boolean.FALSE, Pageable.unpaged())
+        return AuthUtils.monoId(authentication)
+                .flatMapMany(userId ->
+                        notificationRepository.findAllByTargetUserIdAndIsRead(userId, Boolean.FALSE, Pageable.unpaged())
+                )
                 .map(notification -> {
                     notification.setIsRead(Boolean.TRUE);
                     return notification;

@@ -13,17 +13,17 @@ public final class InviteNotificationCreationRequest extends BaseNotificationCre
     private String bundleShareCode;
 
     public InviteNotificationCreationRequest(
-            String uuid, String targetUserName, String inviterName, String bundleName, String bundleShareCode
+            String uuid, String targetUserId, String inviterName, String bundleName, String bundleShareCode
     ) {
-        super(uuid, targetUserName);
+        super(uuid, targetUserId);
         this.inviterName = inviterName;
         this.bundleName = bundleName;
         this.bundleShareCode = bundleShareCode;
     }
 
     public static InviteNotificationCreationRequest of(
-            String uuid, String targetUserName, String inviter, String bundleName, String bundleShareCode
+            String uuid, String targetUserId, String inviter, String bundleName, String bundleShareCode
     ) {
-        return new InviteNotificationCreationRequest(uuid, targetUserName, inviter, bundleName, bundleShareCode);
+        return new InviteNotificationCreationRequest(uuid, targetUserId, inviter, bundleName, bundleShareCode);
     }
 }

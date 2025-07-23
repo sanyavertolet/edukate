@@ -22,26 +22,26 @@ public final class InviteNotification extends BaseNotification {
 
     @PersistenceCreator
     public InviteNotification(
-            ObjectId _id, String uuid, String targetUserName, LocalDateTime createdAt,
+            ObjectId _id, String uuid, String targetUserId, LocalDateTime createdAt,
             String inviterName, String bundleName, String bundleShareCode
     ) {
-        this(_id, uuid, false, targetUserName, createdAt, inviterName, bundleName, bundleShareCode);
+        this(_id, uuid, false, targetUserId, createdAt, inviterName, bundleName, bundleShareCode);
     }
 
     public InviteNotification(
-            ObjectId _id, String uuid, Boolean isRead, String targetUserName,
+            ObjectId _id, String uuid, Boolean isRead, String targetUserId,
             LocalDateTime createdAt, String inviterName, String bundleName, String bundleShareCode
     ) {
-        super(_id, uuid, isRead, targetUserName, createdAt != null ? createdAt : LocalDateTime.now());
+        super(_id, uuid, isRead, targetUserId, createdAt != null ? createdAt : LocalDateTime.now());
         this.inviterName = inviterName;
         this.bundleName = bundleName;
         this.bundleShareCode = bundleShareCode;
     }
 
     public InviteNotification(
-            String uuid, String targetUserName, String inviterName, String bundleName, String bundleShareCode
+            String uuid, String targetUserId, String inviterName, String bundleName, String bundleShareCode
     ) {
-        this(null, uuid, targetUserName, LocalDateTime.now(), inviterName, bundleName, bundleShareCode);
+        this(null, uuid, targetUserId, LocalDateTime.now(), inviterName, bundleName, bundleShareCode);
     }
 
     @Override
@@ -53,7 +53,7 @@ public final class InviteNotification extends BaseNotification {
 
     public static InviteNotification fromCreationRequest(InviteNotificationCreationRequest creationRequest) {
         return new InviteNotification(
-                creationRequest.getUuid(), creationRequest.getTargetUserName(), creationRequest.getInviterName(),
+                creationRequest.getUuid(), creationRequest.getTargetUserId(), creationRequest.getInviterName(),
                 creationRequest.getBundleName(), creationRequest.getBundleShareCode()
         );
     }

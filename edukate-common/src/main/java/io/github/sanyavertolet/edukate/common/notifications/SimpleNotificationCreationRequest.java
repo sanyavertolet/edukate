@@ -13,9 +13,9 @@ public final class SimpleNotificationCreationRequest extends BaseNotificationCre
     private String source;
 
     public SimpleNotificationCreationRequest(
-            String uuid, String targetUserName, String title, String message, String source
+            String uuid, String targetUserId, String title, String message, String source
     ) {
-        super(uuid, targetUserName);
+        super(uuid, targetUserId);
         this.title = title;
         this.message = message;
         this.source = source;

@@ -22,24 +22,24 @@ public final class SimpleNotification extends BaseNotification {
 
     @PersistenceCreator
     public SimpleNotification(
-            ObjectId _id, String uuid, String targetUserName, LocalDateTime createdAt, String title, String message,
+            ObjectId _id, String uuid, String targetUserId, LocalDateTime createdAt, String title, String message,
             String source
     ) {
-        this(_id, uuid, false, targetUserName, createdAt, title, message, source);
+        this(_id, uuid, false, targetUserId, createdAt, title, message, source);
     }
 
     public SimpleNotification(
-            ObjectId _id, String uuid, Boolean isRead, String targetUserName,
+            ObjectId _id, String uuid, Boolean isRead, String targetUserId,
             LocalDateTime createdAt, String title, String message, String source
     ) {
-        super(_id, uuid, isRead, targetUserName, createdAt != null ? createdAt : LocalDateTime.now());
+        super(_id, uuid, isRead, targetUserId, createdAt != null ? createdAt : LocalDateTime.now());
         this.title = title;
         this.message = message;
         this.source = source;
     }
 
-    public SimpleNotification(String uuid, String targetUserName, String title, String message, String source) {
-        this(null, uuid, targetUserName, LocalDateTime.now(), title, message, source);
+    public SimpleNotification(String uuid, String targetUserId, String title, String message, String source) {
+        this(null, uuid, targetUserId, LocalDateTime.now(), title, message, source);
     }
 
     @Override
@@ -49,7 +49,7 @@ public final class SimpleNotification extends BaseNotification {
 
     public static SimpleNotification fromCreationRequest(SimpleNotificationCreationRequest creationRequest) {
         return new SimpleNotification(
-                creationRequest.getUuid(), creationRequest.getTargetUserName(),
+                creationRequest.getUuid(), creationRequest.getTargetUserId(),
                 creationRequest.getTitle(), creationRequest.getMessage(), creationRequest.getSource()
         );
     }
