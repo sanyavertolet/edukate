@@ -32,7 +32,7 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 public class FileController {
     private final FileService fileService;
 
-    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @GetMapping("/get")
     @Operation(
             summary = "Get file content",
@@ -57,7 +57,7 @@ public class FileController {
                 );
     }
 
-    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @GetMapping("/exists")
     @Operation(
             summary = "Check if file exists",
@@ -177,7 +177,7 @@ public class FileController {
                 .flatMap(fileService::updateKeyInFileMetadata);
     }
 
-    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @PostMapping("/upload")
     @Operation(
             summary = "Upload file",

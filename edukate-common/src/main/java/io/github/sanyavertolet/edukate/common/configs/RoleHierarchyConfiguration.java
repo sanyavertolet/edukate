@@ -7,8 +7,12 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 
 @Configuration
 public class RoleHierarchyConfiguration {
+    // todo: this does not seem to work at all
     @Bean
-    public RoleHierarchy roleHierarchy() {
-        return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_MODERATOR > ROLE_USER");
+    public static RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+                .role("ADMIN").implies("MODERATOR")
+                .role("MODERATOR").implies("USER")
+                .build();
     }
 }
