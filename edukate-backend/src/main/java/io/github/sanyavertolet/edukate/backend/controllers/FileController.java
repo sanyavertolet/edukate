@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 import io.github.sanyavertolet.edukate.backend.dtos.FileMetadata;
 import io.github.sanyavertolet.edukate.backend.services.FileService;
 import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
+import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -77,7 +78,6 @@ public class FileController {
         return fileService.doesFileExist(key);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/temp")
     @Operation(
             summary = "Upload temporary file",
@@ -97,10 +97,10 @@ public class FileController {
             @RequestPart Flux<ByteBuffer> content, 
             Authentication authentication
     ) {
-        return Mono.fromCallable(UUID::randomUUID)
-                .flatMap(uuid ->
-                        fileService.uploadFile(FileKeys.temp(authentication.getName(), uuid.toString()), content)
-                                .thenReturn(uuid.toString()));
+        return AuthUtils.monoId(authentication)
+                .flatMap(userId -> Mono.fromCallable(UUID::randomUUID).map(UUID::toString).flatMap(uuid ->
+                        fileService.uploadFile(FileKeys.temp(userId, uuid), content).thenReturn(uuid)
+                ));
     }
 
     @DeleteMapping("/temp")
@@ -122,8 +122,8 @@ public class FileController {
             @RequestParam String key, 
             Authentication authentication
     ) {
-        return Mono.fromCallable(authentication::getName)
-                .map(userName -> FileKeys.temp(userName, key))
+        return AuthUtils.monoId(authentication)
+                .map(userId -> FileKeys.temp(userId, key))
                 .filterWhen(fileService::doesFileExist)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found")))
                 .flatMap(fileService::deleteFile)
@@ -149,8 +149,8 @@ public class FileController {
             @RequestParam String fileName, 
             Authentication authentication
     ) {
-        return Mono.just(fileName)
-                .map(filename -> FileKeys.temp(authentication.getName(), filename))
+        return AuthUtils.monoId(authentication)
+                .map(userId -> FileKeys.temp(userId, fileName))
                 .flatMapMany(fileService::getFile);
     }
 
@@ -168,10 +168,10 @@ public class FileController {
             @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Flux<FileMetadata> getTempFiles(Authentication authentication) {
-        return Mono.fromCallable(authentication::getName)
-                .flatMap(userName -> Mono.zip(
-                        Mono.just(userName),
-                        Mono.just(FileKeys.tempDir(userName))
+        return AuthUtils.monoId(authentication)
+                .flatMap(userId -> Mono.zip(
+                        Mono.just(userId),
+                        Mono.just(FileKeys.tempDir(userId))
                 ))
                 .flatMapMany(tuple -> fileService.listFileMetadataWithPrefix(tuple.getT2(), tuple.getT1()))
                 .flatMap(fileService::updateKeyInFileMetadata);

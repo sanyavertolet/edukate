@@ -3,7 +3,9 @@ package io.github.sanyavertolet.edukate.backend.services;
 import io.github.sanyavertolet.edukate.backend.repositories.UserRepository;
 import io.github.sanyavertolet.edukate.common.UserStatus;
 import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -11,6 +13,10 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+
+    public Mono<User> findUserByAuthentication(Authentication authentication) {
+        return AuthUtils.monoId(authentication).flatMap(this::findUserById);
+    }
 
     public Mono<User> saveUser(User user) {
         return userRepository.save(user);

@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
 import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
 import io.github.sanyavertolet.edukate.backend.utils.StatusCount;
+import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -25,14 +26,18 @@ public class SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final FileService fileService;
 
-    public Mono<Submission> saveSubmission(String userName, CreateSubmissionRequest submissionRequest) {
+    public Mono<Submission> saveSubmission(CreateSubmissionRequest submissionRequest, Authentication authentication) {
+        return AuthUtils.monoId(authentication).flatMap(userId -> saveSubmission(userId, submissionRequest));
+    }
+
+    public Mono<Submission> saveSubmission(String userId, CreateSubmissionRequest submissionRequest) {
         return Mono.just(submissionRequest)
-                .map(request -> Submission.of(request.getProblemId(), userName, request.getFileKeys()))
+                .map(request -> Submission.of(request.getProblemId(), userId, request.getFileKeys()))
                 .zipWhen(submission ->
                         Flux.fromIterable(submission.getFileKeys())
                                 .flatMap(fileKey ->
                                         fileService.moveFile(
-                                                FileKeys.temp(userName, fileKey),
+                                                FileKeys.temp(userId, fileKey),
                                                 FileKeys.submission(submission, fileKey)))
                                 .collectList()
                                 .filter(list -> list.size() == submissionRequest.getFileKeys().size())
