@@ -12,10 +12,6 @@ export default defineConfig({
         target: 'http://localhost:5810',
         changeOrigin: true,
       },
-      '/auth': {
-        target: 'http://localhost:5810',
-        changeOrigin: true,
-      }
     },
   },
   optimizeDeps: {
