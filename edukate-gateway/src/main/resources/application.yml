@@ -57,6 +57,8 @@ spring:
           filters:
             - RemoveRequestHeader=Cookie
 
+cors:
+  allowed-origin-pattern: https://edukate.mooo.com
 ---
 server:
   servlet:

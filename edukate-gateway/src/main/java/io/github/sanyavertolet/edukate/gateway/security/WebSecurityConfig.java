@@ -31,14 +31,14 @@ import java.util.List;
 public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${gateway.url}")
-    private String hostname;
+    @Value("${cors.allowed-origin-pattern}")
+    private String corsAllowedOriginPattern;
 
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(hostname));
         configuration.setAllowedHeaders(List.of("Content-Type", "api_key"));
+        configuration.setAllowedOrigins(List.of(corsAllowedOriginPattern));
         configuration.setMaxAge(3600L);
         configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
