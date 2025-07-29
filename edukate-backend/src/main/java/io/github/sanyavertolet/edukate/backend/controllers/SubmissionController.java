@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
 import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
+import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -79,7 +80,8 @@ public class SubmissionController {
             @ApiResponse(responseCode = "200", description = "Successfully created submission",
                     content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied - No submit permission", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied - No submit permission",
+                    content = @Content),
             @ApiResponse(responseCode = "404", description = "User, problem, or files not found", content = @Content),
     })
     @Parameters({
@@ -92,7 +94,7 @@ public class SubmissionController {
             @RequestParam(required = false, defaultValue = "SELF", name = "check") CheckType checkType,
             Authentication authentication
     ) {
-        return userService.findUserByName(authentication.getName())
+        return userService.findUserByAuthentication(authentication)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
                 .filterWhen(userService::hasUserPermissionToSubmit)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
@@ -100,16 +102,16 @@ public class SubmissionController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.")))
                 .then(Mono.fromCallable(submissionRequest::getFileKeys))
                 .flatMapMany(Flux::fromIterable)
-                .map(fileKey -> FileKeys.temp(authentication.getName(), fileKey))
+                .map(fileKey -> FileKeys.temp(AuthUtils.id(authentication), fileKey))
                 .collectList()
                 .filterWhen(fileService::doFilesExist)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.")))
-                .flatMap(_ -> submissionService.saveSubmission(authentication.getName(), submissionRequest))
+                .flatMap(_ -> submissionService.saveSubmission(submissionRequest, authentication))
                 .map(Submission::toDto)
                 .flatMap(submissionService::updateFileUrlsInDto);
     }
 
-    @PreAuthorize("hasRole('ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @GetMapping("/{problemId}/{username}")
     @Operation(
             summary = "Get submissions by username and problem ID",
