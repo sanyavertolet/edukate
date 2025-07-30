@@ -12,7 +12,7 @@ import java.util.Collection;
 
 @Repository
 public interface SubmissionRepository extends ReactiveMongoRepository<Submission, String> {
-    Flux<Submission> findAllByProblemIdAndUserName(String problemId, String userName, Pageable pageable);
+    Flux<Submission> findAllByProblemIdAndUserId(String problemId, String userId, Pageable pageable);
 
     Flux<Submission> findAllByStatusIn(Collection<Submission.Status> statuses, Pageable pageable);
 
