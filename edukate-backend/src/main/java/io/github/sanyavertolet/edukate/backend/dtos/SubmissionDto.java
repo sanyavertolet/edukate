@@ -14,6 +14,7 @@ import java.util.List;
 public class SubmissionDto {
     private String id;
     private String problemId;
+    @With
     private String userName;
     private Submission.Status status;
     private Instant createdAt;

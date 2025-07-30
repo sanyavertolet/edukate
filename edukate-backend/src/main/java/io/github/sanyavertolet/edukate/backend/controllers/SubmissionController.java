@@ -46,7 +46,6 @@ public class SubmissionController {
 
     @GetMapping("/by-id")
     @Operation(
-
             summary = "Get submission by ID",
             description = "Retrieves a specific submission by its ID for the authenticated user"
     )
@@ -65,10 +64,9 @@ public class SubmissionController {
     public Mono<SubmissionDto> getSubmissionById(@RequestParam String id, Authentication authentication) {
         return submissionService.findSubmissionById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
-                .filter(submission -> submission.getUserName().equals(authentication.getName()))
+                .filter(submission -> submission.getUserId().equals(AuthUtils.id(authentication)))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
-                .map(Submission::toDto)
-                .flatMap(submissionService::updateFileUrlsInDto);
+                .flatMap(submissionService::createSubmissionDto);
     }
 
     @PostMapping
@@ -98,7 +96,7 @@ public class SubmissionController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
                 .filterWhen(userService::hasUserPermissionToSubmit)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
-                .filterWhen(_ -> problemExists(submissionRequest.getProblemId()))
+                .filterWhen(_ -> problemService.findProblemById(submissionRequest.getProblemId()).hasElement())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.")))
                 .then(Mono.fromCallable(submissionRequest::getFileKeys))
                 .flatMapMany(Flux::fromIterable)
@@ -107,8 +105,7 @@ public class SubmissionController {
                 .filterWhen(fileService::doFilesExist)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.")))
                 .flatMap(_ -> submissionService.saveSubmission(submissionRequest, authentication))
-                .map(Submission::toDto)
-                .flatMap(submissionService::updateFileUrlsInDto);
+                .flatMap(submissionService::createSubmissionDto);
     }
 
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
@@ -136,13 +133,15 @@ public class SubmissionController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return submissionService.findSubmissionsByUserNameAndProblemId(
-                username,
-                problemId,
-                PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
-        )
-                .map(Submission::toDto)
-                .flatMap(submissionService::updateFileUrlsInDto);
+        return userService.findUserByName(username)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User " + username + " not found")))
+                .flatMapMany(user ->
+                        submissionService.findSubmissionsByProblemIdAndUserId(
+                                problemId, user.getId(),
+                                PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")))
+                .flatMap(submissionService::createSubmissionDto);
     }
 
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
@@ -169,11 +168,6 @@ public class SubmissionController {
                 List.of(Submission.Status.SUCCESS),
                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
         )
-                .map(Submission::toDto)
-                .flatMap(submissionService::updateFileUrlsInDto);
-    }
-
-    private Mono<Boolean> problemExists(String problemId) {
-        return problemService.findProblemById(problemId).hasElement();
+                .flatMap(submissionService::createSubmissionDto);
     }
 }

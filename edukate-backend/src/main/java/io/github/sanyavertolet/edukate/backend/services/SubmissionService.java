@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
 import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
 import io.github.sanyavertolet.edukate.backend.utils.StatusCount;
+import io.github.sanyavertolet.edukate.common.entities.User;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import java.util.Map;
 public class SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final FileService fileService;
+    private final UserService userService;
 
     public Mono<Submission> saveSubmission(CreateSubmissionRequest submissionRequest, Authentication authentication) {
         return AuthUtils.monoId(authentication).flatMap(userId -> saveSubmission(userId, submissionRequest));
@@ -55,8 +57,8 @@ public class SubmissionService {
         return submissionRepository.findById(id);
     }
 
-    public Flux<Submission> findSubmissionsByUserNameAndProblemId(String userName, String problemId, Pageable pageable) {
-        return submissionRepository.findAllByProblemIdAndUserName(problemId, userName, pageable);
+    public Flux<Submission> findSubmissionsByProblemIdAndUserId(String problemId, String userId, Pageable pageable) {
+        return submissionRepository.findAllByProblemIdAndUserId(problemId, userId, pageable);
     }
 
     public Flux<Submission> findSubmissionsByStatusIn(List<Submission.Status> statuses, Pageable pageable) {
@@ -71,21 +73,9 @@ public class SubmissionService {
         );
     }
 
-    public Mono<SubmissionDto> updateFileUrlsInDto(SubmissionDto submissionDto) {
-        return Flux.fromIterable(submissionDto.getFileUrls())
-                .flatMap(fileService::getDownloadUrlOrEmpty)
-                .collectList()
-                .zipWith(Mono.justOrEmpty(submissionDto))
-                .map(tuple -> {
-                    List<String> urls = tuple.getT1();
-                    SubmissionDto dto = tuple.getT2();
-                    return dto.withFileUrls(urls);
-                });
-    }
-
     public Mono<ProblemMetadata> updateStatusInMetadata(Authentication authentication, ProblemMetadata problemMetadata) {
         return Mono.justOrEmpty(problemMetadata)
-                .zipWhen(metadata -> collectProblemStatus(authentication, metadata.getName()))
+                .zipWhen(metadata -> collectProblemStatus(metadata.getName(), authentication))
                 .map(tuple -> {
                     ProblemMetadata metadata = tuple.getT1();
                     Problem.Status status = tuple.getT2();
@@ -97,7 +87,7 @@ public class SubmissionService {
 
     public Mono<ProblemDto> updateStatusInDto(Authentication authentication, ProblemDto problemDto) {
         return Mono.justOrEmpty(problemDto)
-                .zipWhen(dto -> collectProblemStatus(authentication, dto.getId()))
+                .zipWhen(dto -> collectProblemStatus(dto.getId(), authentication))
                 .map(tuple -> {
                     ProblemDto dto = tuple.getT1();
                     Problem.Status status = tuple.getT2();
@@ -107,11 +97,9 @@ public class SubmissionService {
                 .defaultIfEmpty(problemDto);
     }
 
-    public Mono<Problem.Status> collectProblemStatus(Authentication authentication, String problemId) {
-        return Mono.justOrEmpty(authentication)
-                .flatMap(auth ->
-                        submissionRepository.countAllForUserByStatus(problemId, auth.getName()).collectList()
-                )
+    private Mono<Problem.Status> collectProblemStatus(String problemId, Authentication authentication) {
+        return AuthUtils.monoId(authentication)
+                .flatMap(userId -> submissionRepository.countAllForUserByStatus(problemId, userId).collectList())
                 .map(StatusCount::asMap)
                 .flatMap(this::statusDecision);
     }
@@ -134,5 +122,29 @@ public class SubmissionService {
                 return Problem.Status.NOT_SOLVED;
             }
         });
+    }
+
+    public Mono<SubmissionDto> createSubmissionDto(Submission submission) {
+        return Mono.justOrEmpty(submission)
+                .map(sbm -> new SubmissionDto(
+                        sbm.getId(), sbm.getProblemId(), sbm.getUserId(),
+                        sbm.getStatus(), sbm.getCreatedAt(), sbm.getFileKeys()
+                ))
+                .flatMap(this::updateFileUrlsInDto)
+                .flatMap(this::updateUserNameInDto);
+    }
+
+    private Mono<SubmissionDto> updateUserNameInDto(SubmissionDto submissionDto) {
+        return userService.findUserById(submissionDto.getUserName())
+                .map(User::getName)
+                .defaultIfEmpty("UNKNOWN")
+                .map(submissionDto::withUserName);
+    }
+
+    private Mono<SubmissionDto> updateFileUrlsInDto(SubmissionDto submissionDto) {
+        return Flux.fromIterable(submissionDto.getFileUrls())
+                .flatMap(fileService::getDownloadUrlOrEmpty)
+                .collectList()
+                .map(submissionDto::withFileUrls);
     }
 }

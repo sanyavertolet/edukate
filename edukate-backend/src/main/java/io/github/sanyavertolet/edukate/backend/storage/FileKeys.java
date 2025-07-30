@@ -33,7 +33,7 @@ public class FileKeys {
     }
 
     public static String submissionsDir(Submission submission) {
-        return userDir(submission.getUserName()) + "submissions/" + submission.getProblemId() + "/";
+        return userDir(submission.getUserId()) + "submissions/" + submission.getProblemId() + "/";
     }
 
     public static String tempDir(String userName) {
