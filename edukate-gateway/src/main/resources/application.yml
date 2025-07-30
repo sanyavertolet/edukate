@@ -59,7 +59,7 @@ spring:
 
 cors:
   allowed-origin-pattern: https://edukate.mooo.com
----
+
 server:
   servlet:
     session:
@@ -80,7 +80,6 @@ management:
       probes:
         enabled: true
 
----
 logging:
   level:
     org:
@@ -88,15 +87,3 @@ logging:
     io:
       github:
         sanyavertolet: DEBUG
-
----
-spring:
-  config:
-    activate:
-      on-profile: kubernetes
-
----
-spring:
-  config:
-    activate:
-      on-profile: prod
