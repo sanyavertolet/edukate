@@ -2,7 +2,9 @@ package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.dtos.Result;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
+import io.github.sanyavertolet.edukate.backend.entities.files.ResultFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
+import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -14,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ResultService {
     private final ProblemRepository problemRepository;
-    private final FileService fileService;
+    private final BaseFileService baseFileService;
 
     public Mono<String> updateResult(Result result) {
         return problemRepository.findById(result.id())
@@ -32,18 +34,19 @@ public class ResultService {
                     .map(Problem::getId));
     }
 
-    public Mono<Result> updateImagesInResult(Result result) {
+    public Mono<Result> findResultById(String id) {
+        return problemRepository.findById(id).map(Problem::getResult).flatMap(this::updateImagesInResult);
+    }
+
+    private Mono<Result> updateImagesInResult(Result result) {
         return Flux.fromIterable(result.images())
-                .flatMap(fileService::getDownloadUrlOrEmpty)
+                .map(fileName -> ResultFileKey.of(result.id(), fileName))
+                .flatMap(baseFileService::getDownloadUrlOrEmpty)
                 .collectList()
                 .zipWith(Mono.justOrEmpty(result))
                 .map(tuple -> {
                     List<String> urls = tuple.getT1();
                     return tuple.getT2().withImages(urls);
                 });
-    }
-
-    public Mono<Result> findResultById(String id) {
-        return problemRepository.findById(id).map(Problem::getResult);
     }
 }

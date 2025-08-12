@@ -41,9 +41,6 @@ public class NotificationController {
                     content = @Content(schema = @Schema(implementation = Long.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
-    @Parameters({
-            @Parameter(name = "authentication", description = "spring authentication", hidden = true)
-    })
     public Mono<Long> markAsRead(@RequestBody List<String> uuids, Authentication authentication) {
         return notificationService.markAsRead(uuids, authentication);
     }
@@ -58,9 +55,6 @@ public class NotificationController {
                     content = @Content(schema = @Schema(implementation = Long.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
-    @Parameters(
-            @Parameter(name = "authentication", description = "spring authentication", hidden = true)
-    )
     public Mono<Long> markAsRead(Authentication authentication) {
         return notificationService.markAllAsRead(authentication);
     }
@@ -79,7 +73,6 @@ public class NotificationController {
             @Parameter(name = "size", description = "Number of notifications to retrieve per page", in = QUERY),
             @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
             @Parameter(name = "isRead", description = "Filter by read status (null for all notifications)", in = QUERY),
-            @Parameter(name = "authentication", description = "spring authentication", hidden = true)
     })
     public Flux<BaseNotificationDto> getNotifications(
             @RequestParam(defaultValue = "10") Integer size,
@@ -103,9 +96,6 @@ public class NotificationController {
                     content = @Content(schema = @Schema(implementation = NotificationStatistics.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
-    @Parameters(
-            @Parameter(name = "authentication", description = "spring authentication", hidden = true)
-    )
     public Mono<NotificationStatistics> getNotificationsCount(Authentication authentication) {
         return notificationService.gatherUserStatistics(authentication);
     }

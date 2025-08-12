@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.storage;
 
+import io.github.sanyavertolet.edukate.backend.entities.files.FileKey;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -7,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.Collection;
 
-public interface Storage<Key> {
+public interface Storage<Key extends FileKey> {
     default boolean isInitDone() {
         return true;
     }
@@ -19,8 +20,6 @@ public interface Storage<Key> {
     default Mono<Key> overwrite(Key key, Long contentLength, Flux<ByteBuffer> content) {
         return delete(key).flatMap((_) -> upload(key, contentLength, content));
     }
-
-    Flux<Key> list();
 
     Flux<Key> prefixedList(String prefix);
 

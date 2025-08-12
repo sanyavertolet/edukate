@@ -47,7 +47,6 @@ public class ProblemController {
     @Parameters({
             @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
             @Parameter(name = "size", description = "Number of problems per page", in = QUERY),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Flux<ProblemMetadata> getProblemList(
             @RequestParam(defaultValue = "0") int page,
@@ -109,7 +108,6 @@ public class ProblemController {
     })
     @Parameters({
             @Parameter(name = "id", description = "Problem ID", in = PATH, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<ProblemDto> getProblem(
             @PathVariable String id,

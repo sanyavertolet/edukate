@@ -1,7 +1,7 @@
-package io.github.sanyavertolet.edukate.backend.services;
+package io.github.sanyavertolet.edukate.backend.services.files;
 
 import io.github.sanyavertolet.edukate.backend.dtos.FileMetadata;
-import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
+import io.github.sanyavertolet.edukate.backend.entities.files.FileKey;
 import io.github.sanyavertolet.edukate.backend.storage.Storage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,42 +15,43 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class FileService {
-    private final Storage<String> storage;
+public class BaseFileService {
+    private final Storage<FileKey> storage;
 
-    public Flux<ByteBuffer> getFile(String key) {
+    public Flux<ByteBuffer> getFile(FileKey key) {
         return storage.download(key);
     }
 
-    public Mono<String> getDownloadUrlOrEmpty(String key) {
+    public Mono<String> getDownloadUrlOrEmpty(FileKey key) {
         return Mono.justOrEmpty(key).filterWhen(storage::doesExist).flatMap(storage::getDownloadUrl);
     }
 
-    public Mono<String> uploadFile(String key, Flux<ByteBuffer> content) {
+    public Mono<FileKey> uploadFile(FileKey key, Flux<ByteBuffer> content) {
         return storage.upload(key, content);
     }
 
-    public Mono<Boolean> deleteFile(String key) {
+    public Mono<Boolean> deleteFile(FileKey key) {
         return storage.delete(key);
     }
 
-    public Flux<String> listFiles() {
-        return storage.list();
-    }
-
-    public Mono<Boolean> doesFileExist(String key) {
+    public Mono<Boolean> doesFileExist(FileKey key) {
         return storage.doesExist(key);
     }
 
-    public Mono<Boolean> doFilesExist(List<String> keys) {
-        return Flux.fromIterable(keys).map(this::doesFileExist).count().map(count -> count == keys.size());
+    public Mono<Boolean> doFilesExist(List<FileKey> keys) {
+        return Flux.fromIterable(keys).flatMap(this::doesFileExist).all(Boolean::booleanValue);
     }
 
-    public Mono<String> moveFile(String oldKey, String newKey) {
-        return Mono.justOrEmpty(oldKey).flatMap(key -> storage.move(key, newKey)).map(_ -> newKey);
+    public Mono<FileKey> moveFile(FileKey oldKey, FileKey newKey) {
+        return Mono.justOrEmpty(oldKey)
+                .flatMap(key -> storage.move(key, newKey))
+                .flatMap(success -> success
+                        ? Mono.just(newKey)
+                        : Mono.error(new IllegalStateException("Move failed: " + oldKey + " -> " + newKey))
+                );
     }
 
-    public Flux<String> listFilesWithPrefix(String prefix) {
+    public Flux<FileKey> listFilesWithPrefix(String prefix) {
         return Mono.justOrEmpty(prefix).flatMapMany(storage::prefixedList);
     }
 
@@ -62,14 +63,10 @@ public class FileService {
                         storage.contentLength(key)
                 ))
                 .map(tuple -> FileMetadata.of(
-                        tuple.getT1(),
+                        tuple.getT1().getFileName(),
                         authorName,
                         LocalDateTime.ofInstant(tuple.getT2(), ZoneId.systemDefault()),
                         tuple.getT3()
                 ));
-    }
-
-    public Mono<FileMetadata> updateKeyInFileMetadata(FileMetadata fileMetadata) {
-        return Mono.fromCallable(fileMetadata::getKey).map(FileKeys::fileName).map(fileMetadata::withKey);
     }
 }

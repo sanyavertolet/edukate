@@ -45,7 +45,6 @@ public class ResultController {
     })
     public Mono<Result> getResultById(@PathVariable String id) {
         return resultService.findResultById(id)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found")))
-                .flatMap(resultService::updateImagesInResult);
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found")));
     }
 }
