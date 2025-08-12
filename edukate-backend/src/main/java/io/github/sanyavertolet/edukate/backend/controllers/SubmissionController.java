@@ -4,15 +4,17 @@ import io.github.sanyavertolet.edukate.backend.domain.CheckType;
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
-import io.github.sanyavertolet.edukate.backend.services.FileService;
+import io.github.sanyavertolet.edukate.backend.entities.files.FileKey;
+import io.github.sanyavertolet.edukate.backend.entities.files.TempFileKey;
+import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
-import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +45,7 @@ public class SubmissionController {
     private final ProblemService problemService;
     private final UserService userService;
     private final SubmissionService submissionService;
-    private final FileService fileService;
+    private final BaseFileService baseFileService;
 
     @GetMapping("/by-id")
     @Operation(
@@ -59,7 +62,6 @@ public class SubmissionController {
     })
     @Parameters({
             @Parameter(name = "id", description = "Submission ID", in = QUERY, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true),
     })
     public Mono<SubmissionDto> getSubmissionById(@RequestParam String id, Authentication authentication) {
         return submissionService.findSubmissionById(id)
@@ -83,10 +85,16 @@ public class SubmissionController {
             @ApiResponse(responseCode = "404", description = "User, problem, or files not found", content = @Content),
     })
     @Parameters({
-            @Parameter(name = "check", description = "Type of check to perform on the submission, !ignored for now!",
-                    in = QUERY),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
+            @Parameter(name = "check", in = QUERY,
+                    description = "Type of check to perform on the submission. Reserved for future use"),
     })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = CreateSubmissionRequest.class)
+            )
+    )
     public Mono<SubmissionDto> uploadSubmission(
             @RequestBody CreateSubmissionRequest submissionRequest,
             @RequestParam(required = false, defaultValue = "SELF", name = "check") CheckType checkType,
@@ -98,13 +106,17 @@ public class SubmissionController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
                 .filterWhen(_ -> problemService.findProblemById(submissionRequest.getProblemId()).hasElement())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.")))
-                .then(Mono.fromCallable(submissionRequest::getFileKeys))
-                .flatMapMany(Flux::fromIterable)
-                .map(fileKey -> FileKeys.temp(AuthUtils.id(authentication), fileKey))
-                .collectList()
-                .filterWhen(fileService::doFilesExist)
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.")))
-                .flatMap(_ -> submissionService.saveSubmission(submissionRequest, authentication))
+                .flatMap(user -> Flux.fromIterable(submissionRequest.getFileKeys())
+                        .map(fileName -> TempFileKey.of(user.getId(), fileName))
+                        .cast(FileKey.class)
+                        .collectList()
+                        .filterWhen(baseFileService::doFilesExist)
+                        .switchIfEmpty(Mono.error(new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Could not find files."
+                        )))
+                        .then(submissionService.saveSubmission(submissionRequest, authentication))
+                )
                 .flatMap(submissionService::createSubmissionDto);
     }
 
@@ -116,7 +128,7 @@ public class SubmissionController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved submissions",
-                    content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SubmissionDto.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Access denied - Requires MODERATOR role",
                     content = @Content)
@@ -124,8 +136,10 @@ public class SubmissionController {
     @Parameters({
             @Parameter(name = "problemId", description = "Problem ID", in = PATH, required = true),
             @Parameter(name = "username", description = "Username", in = PATH, required = true),
-            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
-            @Parameter(name = "size", description = "Number of submissions per page", in = QUERY)
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY,
+                    schema = @Schema(minimum = "0")),
+            @Parameter(name = "size", description = "Number of submissions per page", in = QUERY,
+                    schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<SubmissionDto> getSubmissionsByUsernameAndProblemId(
             @PathVariable String problemId,
@@ -152,7 +166,7 @@ public class SubmissionController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved submissions",
-                    content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = SubmissionDto.class)))),
             @ApiResponse(responseCode = "403", description = "Access denied - Requires MODERATOR role",
                     content = @Content)
     })

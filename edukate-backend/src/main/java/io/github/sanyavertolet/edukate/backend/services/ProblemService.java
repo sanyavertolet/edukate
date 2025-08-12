@@ -3,7 +3,9 @@ package io.github.sanyavertolet.edukate.backend.services;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
+import io.github.sanyavertolet.edukate.backend.entities.files.ProblemFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
+import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.utils.Sorts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProblemService {
     private final ProblemRepository problemRepository;
-    private final FileService fileService;
+    private final BaseFileService baseFileService;
 
     public Flux<Problem> getFilteredProblems(PageRequest pageRequest) {
         return problemRepository.findAll(pageRequest.withSort(Sorts.semVerSort()));
@@ -51,14 +53,16 @@ public class ProblemService {
     }
 
     public Mono<ProblemDto> updateImagesInDto(ProblemDto problemDto) {
-        return Flux.fromIterable(problemDto.getImages())
-                .flatMap(fileService::getDownloadUrlOrEmpty)
+        return Mono.justOrEmpty(problemDto.getImages())
+                .defaultIfEmpty(List.of())
+                .flatMapMany(Flux::fromIterable)
+                .map(fileName -> ProblemFileKey.of(problemDto.getId(), fileName))
+                .flatMap(baseFileService::getDownloadUrlOrEmpty)
                 .collectList()
                 .zipWith(Mono.justOrEmpty(problemDto))
                 .map(tuple -> {
-                    List<String> urls = tuple.getT1();
                     ProblemDto dto = tuple.getT2();
-                    dto.setImages(urls);
+                    dto.setImages(tuple.getT1());
                     return dto;
                 });
     }

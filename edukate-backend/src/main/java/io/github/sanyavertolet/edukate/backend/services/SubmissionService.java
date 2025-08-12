@@ -6,8 +6,10 @@ import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
+import io.github.sanyavertolet.edukate.backend.entities.files.SubmissionFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
-import io.github.sanyavertolet.edukate.backend.storage.FileKeys;
+import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
+import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService;
 import io.github.sanyavertolet.edukate.backend.utils.StatusCount;
 import io.github.sanyavertolet.edukate.common.entities.User;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
@@ -15,8 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
@@ -25,32 +29,24 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SubmissionService {
     private final SubmissionRepository submissionRepository;
-    private final FileService fileService;
+    private final BaseFileService baseFileService;
+    private final SubmissionFileService submissionFileService;
     private final UserService userService;
 
+    @Transactional
     public Mono<Submission> saveSubmission(CreateSubmissionRequest submissionRequest, Authentication authentication) {
         return AuthUtils.monoId(authentication).flatMap(userId -> saveSubmission(userId, submissionRequest));
     }
 
+    @Transactional
     public Mono<Submission> saveSubmission(String userId, CreateSubmissionRequest submissionRequest) {
         return Mono.just(submissionRequest)
                 .map(request -> Submission.of(request.getProblemId(), userId, request.getFileKeys()))
-                .zipWhen(submission ->
-                        Flux.fromIterable(submission.getFileKeys())
-                                .flatMap(fileKey ->
-                                        fileService.moveFile(
-                                                FileKeys.temp(userId, fileKey),
-                                                FileKeys.submission(submission, fileKey)))
-                                .collectList()
-                                .filter(list -> list.size() == submissionRequest.getFileKeys().size())
-                                .switchIfEmpty(Mono.error(new IllegalArgumentException("Some files were not found"))))
-                .map(tuple -> {
-                    Submission submission = tuple.getT1();
-                    List<String> fileKeys = tuple.getT2();
-                    submission.setFileKeys(fileKeys);
-                    return submission;
-                })
-                .flatMap(submissionRepository::save);
+                .flatMap(submissionRepository::save)
+                .publishOn(Schedulers.boundedElastic())
+                .doOnSuccess(submission ->
+                        submissionFileService.moveSubmissionFiles(userId, submission.getId(), submissionRequest).subscribe()
+                );
     }
 
     public Mono<Submission> findSubmissionById(String id) {
@@ -143,7 +139,10 @@ public class SubmissionService {
 
     private Mono<SubmissionDto> updateFileUrlsInDto(SubmissionDto submissionDto) {
         return Flux.fromIterable(submissionDto.getFileUrls())
-                .flatMap(fileService::getDownloadUrlOrEmpty)
+                .map(fileName -> SubmissionFileKey.of(
+                        submissionDto.getUserName(), submissionDto.getProblemId(), submissionDto.getId(), fileName
+                ))
+                .flatMap(baseFileService::getDownloadUrlOrEmpty)
                 .collectList()
                 .map(submissionDto::withFileUrls);
     }

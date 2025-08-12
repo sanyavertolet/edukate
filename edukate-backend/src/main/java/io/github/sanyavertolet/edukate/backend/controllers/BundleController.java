@@ -45,9 +45,6 @@ public class BundleController {
                     content = @Content(schema = @Schema(implementation = BundleDto.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
-    @Parameters({
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
-    })
     public Mono<BundleDto> createBundle(@RequestBody CreateBundleRequest request, Authentication authentication) {
         return bundleService.createBundle(request, authentication)
                 .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
@@ -66,7 +63,6 @@ public class BundleController {
     @Parameters({
             @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
             @Parameter(name = "size", description = "Number of bundles per page", in = QUERY),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Flux<BundleMetadata> getOwnedBundles(
             @RequestParam(defaultValue = "0") int page,
@@ -89,7 +85,6 @@ public class BundleController {
     @Parameters({
             @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
             @Parameter(name = "size", description = "Number of bundles per page", in = QUERY),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Flux<BundleMetadata> getJoinedBundles(
             @RequestParam(defaultValue = "0") int page,
@@ -134,7 +129,6 @@ public class BundleController {
     })
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<BundleDto> getBundleByShareCode(
             @PathVariable String shareCode,
@@ -165,7 +159,6 @@ public class BundleController {
     })
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<BundleMetadata> joinBundle(
             @PathVariable String shareCode, 
@@ -190,7 +183,6 @@ public class BundleController {
     })
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<String> leaveBundle(
             @PathVariable String shareCode, 
@@ -217,7 +209,6 @@ public class BundleController {
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
             @Parameter(name = "inviteeName", description = "Username of the user to invite", in = QUERY,
                     required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<String> inviteToBundle(
             @PathVariable String shareCode, 
@@ -251,7 +242,6 @@ public class BundleController {
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
             @Parameter(name = "response", description = "True to accept, false to decline", in = QUERY,
                     required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<String> replyToInvite(
             @PathVariable String shareCode, 
@@ -284,7 +274,6 @@ public class BundleController {
     })
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<List<UserNameWithRole>> getUsersInBundle(
             @PathVariable String shareCode, 
@@ -310,7 +299,6 @@ public class BundleController {
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
             @Parameter(name = "username", description = "Username", in = QUERY, required = true),
             @Parameter(name = "requestedRole", description = "Role to set", in = QUERY, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<Role> changeUserRole(
             @PathVariable String shareCode,
@@ -337,7 +325,6 @@ public class BundleController {
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
             @Parameter(name = "isPublic", description = "Visibility flag", in = QUERY, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<BundleDto> changeVisibility(
             @PathVariable String shareCode,
@@ -364,7 +351,6 @@ public class BundleController {
     })
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
-            @Parameter(name = "authentication", description = "Spring authentication", hidden = true)
     })
     public Mono<BundleDto> changeProblems(
             @PathVariable String shareCode,

@@ -2,13 +2,7 @@ package io.github.sanyavertolet.edukate.backend.dtos;
 
 import java.util.List;
 
-public record Result(
-        String id,
-        String text,
-        String notes,
-        ResultType type,
-        List<String> images
-) {
+public record Result(String id, String text, String notes, ResultType type, List<String> images) {
     public Result {
         if (images == null) {
             images = List.of();

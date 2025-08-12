@@ -9,7 +9,7 @@ export function useDeleteTempFileMutation() {
         mutationFn: async (fileName: string) => {
             try {
                 const response = await client.delete<string>('/api/v1/files/temp', {
-                    params: { key: fileName }
+                    params: { fileName }
                 });
                 return response.data;
             } catch (error) {
