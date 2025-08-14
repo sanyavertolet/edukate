@@ -64,9 +64,8 @@ abstract public class FileKey {
         if (keySegments.length == 3 && keySegments[0].equals("results")) {
             return ResultFileKey.of(keySegments[1], keySegments[2]);
         }
-        throw new IllegalArgumentException("Invalid key format: '" + rawKey + "' (normalized: '" + String.join("/", keySegments) + "'). " +
-                "Expected one of: users/{userId}/tmp/{fileName}; " +
-                "users/{userId}/submissions/{problemId}/{submissionId}/{fileName}; " +
-                "problems/{problemId}/{fileName}; results/{problemId}/{fileName}");
+        throw new IllegalArgumentException(
+                "Invalid key format: '" + rawKey + "' (normalized: '" + String.join("/", keySegments) + "')."
+        );
     }
 }
