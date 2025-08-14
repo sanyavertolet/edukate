@@ -1,14 +1,20 @@
 package io.github.sanyavertolet.edukate.backend.entities.files;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("result")
 @JsonTypeName("result")
+@EqualsAndHashCode(callSuper = true, of = {"problemId"})
 public class ResultFileKey extends FileKey {
+    @Getter
     private final String problemId;
 
-    private ResultFileKey(String problemId, String fileName) {
+    @PersistenceCreator
+    public ResultFileKey(String problemId, String fileName) {
         super(fileName);
         this.problemId = problemId;
     }

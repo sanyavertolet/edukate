@@ -19,10 +19,6 @@ public class TempFileService {
         return baseFileService.doesFileExist(TempFileKey.of(userId, fileName));
     }
 
-    public Flux<FileKey> listFiles(String userId) {
-        return baseFileService.listFilesWithPrefix(TempFileKey.prefix(userId));
-    }
-
     public Flux<FileMetadata> listFileMetadata(String userId) {
         return baseFileService.listFileMetadataWithPrefix(TempFileKey.prefix(userId), userId);
     }

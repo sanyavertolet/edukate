@@ -1,15 +1,21 @@
 package io.github.sanyavertolet.edukate.backend.entities.files;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("tmp")
 @JsonTypeName("tmp")
+@EqualsAndHashCode(callSuper = true, of = {"userId"})
 public class TempFileKey extends FileKey {
+    @Getter
     private final String userId;
 
-    private TempFileKey(String userId, String key) {
-        super(key);
+    @PersistenceCreator
+    public TempFileKey(String userId, String fileName) {
+        super(fileName);
         this.userId = userId;
     }
 
