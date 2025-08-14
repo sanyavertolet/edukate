@@ -1,11 +1,14 @@
 package io.github.sanyavertolet.edukate.backend.entities.files;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
 
 @TypeAlias("submission")
 @JsonTypeName("submission")
+@EqualsAndHashCode(callSuper = true, of = {"userId", "problemId", "submissionId"})
 public class SubmissionFileKey extends FileKey {
     @Getter
     private final String userId;
@@ -14,7 +17,8 @@ public class SubmissionFileKey extends FileKey {
     @Getter
     private final String submissionId;
 
-    private SubmissionFileKey(String userId, String problemId, String submissionId, String fileName) {
+    @PersistenceCreator
+    public SubmissionFileKey(String userId, String problemId, String submissionId, String fileName) {
         super(fileName);
         this.userId = userId;
         this.problemId = problemId;
