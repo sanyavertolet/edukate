@@ -1,12 +1,12 @@
 import { Problem } from "../../types/problem/Problem";
-import { Alert, Card, CardContent, Link, Snackbar, Stack, Typography } from "@mui/material";
+import { Card, CardContent, Link, Stack, Typography } from "@mui/material";
 import { FileUploadComponent } from "../files/FileUploadComponent";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import { ResultAccordionComponent } from "./ResultAccordionComponent";
-import { useEffect, useState } from "react";
 import { useSubmitProblemMutation } from "../../http/requests";
 import { useDeviceContext } from "../topbar/DeviceContextProvider";
 import { MobileFileUploadComponent } from "../files/MobileFileUploadComponent";
+import { toast } from "react-toastify";
 
 interface SolutionCardComponentProps {
     problem: Problem;
@@ -17,35 +17,23 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
     const { user } = useAuthContext();
     const { isMobile } = useDeviceContext();
 
-    const [error, setError] = useState<string | null>(null);
-    const [isSuccess, setIsSuccess] = useState<boolean>(false);
-
     const submitFilesMutation = useSubmitProblemMutation();
-
-    useEffect(() => {
-        if (submitFilesMutation.error) {
-            setError(submitFilesMutation.error.message);
-        }
-    }, [submitFilesMutation.error]);
 
     const handleSubmit = (fileNames: string[]) => {
         if (fileNames.length === 0) {
-            setError('Please select at least one file to submit');
+            toast.error("Please select at least one file to submit");
             return;
         }
 
         submitFilesMutation.mutate(
             { problemId: problem.id, fileNames },
             { onSuccess: () => {
-                setIsSuccess(true);
+                toast.success("Your solution has been submitted successfully!");
                 refreshProblem();
+            }, onError: (error) => {
+                toast.error(error.message);
             }}
         );
-    };
-
-    const handleCloseSnackbar = () => {
-        setError(null);
-        setIsSuccess(false);
     };
 
     return (
@@ -73,20 +61,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                             : <FileUploadComponent accept="image/*" maxFiles={5} onSubmit={handleSubmit}/>
                         }
 
-
                         <ResultAccordionComponent problem={problem} refreshProblem={refreshProblem}/>
-
-                        <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                            <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
-                                {error}
-                            </Alert>
-                        </Snackbar>
-
-                        <Snackbar open={isSuccess} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                            <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-                                Your solution has been submitted successfully!
-                            </Alert>
-                        </Snackbar>
                     </Stack>
                 )}
             </CardContent>

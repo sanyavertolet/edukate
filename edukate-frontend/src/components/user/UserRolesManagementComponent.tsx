@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import {
-    Alert, Avatar, Box, FormControl, IconButton, InputBase, InputLabel, List,
-    ListItem, ListItemAvatar, ListItemText, MenuItem, Paper, Select, Snackbar
+    Avatar, Box, FormControl, IconButton, InputBase, InputLabel, List,
+    ListItem, ListItemAvatar, ListItemText, MenuItem, Paper, Select
 } from "@mui/material";
 import { getColorByStringHash, getFirstLetters } from "../../utils/utils";
 import AddIcon from "@mui/icons-material/AddOutlined";
@@ -9,6 +9,7 @@ import {
     useBundleChangeUserRoleMutation, useBundleInviteUserMutation, useBundleUserListQuery
 } from "../../http/requests";
 import { useAuthContext } from "../auth/AuthContextProvider";
+import { toast } from "react-toastify";
 
 interface UserSearchFormProps {
     bundleShareCode: string;
@@ -21,18 +22,16 @@ const UserSearchForm: FC<UserSearchFormProps> = ({bundleShareCode}) => {
     const onAddClick = () => {
         inviteUserMutation.mutate({ username, shareCode: bundleShareCode }, {
             onSuccess: () => {
-                setSnackbarMessage({ message: `User ${username} has been invited!`, severity: "success" });
+                toast.success(`User ${username} has been invited!`);
                 setUsername("");
             },
             onError: () => {
-                setSnackbarMessage({ message: `Could not invite ${username}!`, severity: "error" });
+                toast.error(`Could not invite ${username}!`);
                 setUsername("");
             },
         });
     };
-    type SnackbarMessage = { message: string, severity: "success" | "error" };
-    const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage | null>(null);
-    const handleSnackbarClose = () => { setSnackbarMessage(null); };
+
     return (
         <Paper
             component="form" variant={"outlined"}
@@ -45,11 +44,6 @@ const UserSearchForm: FC<UserSearchFormProps> = ({bundleShareCode}) => {
             <IconButton color="primary" aria-label="add user" onClick={onAddClick}>
                 <AddIcon/>
             </IconButton>
-            <Snackbar open={snackbarMessage != null} autoHideDuration={4000} onClose={handleSnackbarClose}>
-                <Alert onClose={handleSnackbarClose} severity={snackbarMessage?.severity} sx={{ width: '100%' }}>
-                    { snackbarMessage?.message }
-                </Alert>
-            </Snackbar>
         </Paper>
     );
 };
