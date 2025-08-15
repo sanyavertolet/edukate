@@ -1,8 +1,9 @@
 export interface Submission {
     problemId: string;
-    userId: string;
+    userName: string;
     status: SubmissionStatus;
-    createdAt: Date;
+    createdAt: string;
+    fileUrls: string[];
 }
 
-export type SubmissionStatus = "PENDING" | "SUCCESS" | "ERROR";
+export type SubmissionStatus = "PENDING" | "SUCCESS" | "FAILED";

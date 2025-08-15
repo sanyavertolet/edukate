@@ -7,28 +7,28 @@ interface MobileFileUploadComponentProps {
     accept?: string;
     maxSize?: number;
     maxFiles?: number;
-    onSubmit?: (fileKeys: string[]) => void;
+    onSubmit?: (fileNames: string[]) => void;
 }
 
 export function MobileFileUploadComponent(
     { accept = "*", maxSize = 50 * 1024 * 1024, maxFiles = 5, onSubmit }: MobileFileUploadComponentProps
 ) {
-    const [uploadedFileKeys, setUploadedFileKeys] = useState<string[]>([]);
+    const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const addFileKey = (fileKey: string) => {
-        setUploadedFileKeys(prevState => [...prevState, fileKey]);
+        setUploadedFileNames(prevState => [...prevState, fileKey]);
     };
 
     const deleteFileKey = (fileKey: string) => {
-        setUploadedFileKeys(prevState => prevState.filter(key => key !== fileKey));
+        setUploadedFileNames(prevState => prevState.filter(key => key !== fileKey));
     };
 
     const toggleDrawer = (open: boolean) => () => { setIsDrawerOpen(open); };
 
     const handleSubmit = () => {
-        if (onSubmit && uploadedFileKeys.length > 0) {
-            onSubmit(uploadedFileKeys);
+        if (onSubmit && uploadedFileNames.length > 0) {
+            onSubmit(uploadedFileNames);
         }
     };
 
@@ -50,7 +50,7 @@ export function MobileFileUploadComponent(
                             <MobileFileInputComponent 
                                 onTempFileUploaded={addFileKey} onTempFileDeleted={deleteFileKey}
                                 accept={accept} maxFiles={maxFiles} maxSize={maxSize}/>
-                            {onSubmit && uploadedFileKeys.length > 0 && (
+                            {onSubmit && uploadedFileNames.length > 0 && (
                                 <Button color="secondary" onClick={handleSubmit} sx={{ my: 1, width: '100%' }}>
                                     Submit
                                 </Button>

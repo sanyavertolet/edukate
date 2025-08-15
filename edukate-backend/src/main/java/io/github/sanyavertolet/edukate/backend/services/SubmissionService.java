@@ -6,7 +6,9 @@ import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
+import io.github.sanyavertolet.edukate.backend.entities.files.FileObject;
 import io.github.sanyavertolet.edukate.backend.entities.files.SubmissionFileKey;
+import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService;
@@ -20,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class SubmissionService {
     private final BaseFileService baseFileService;
     private final SubmissionFileService submissionFileService;
     private final UserService userService;
+    private final FileObjectRepository fileObjectRepository;
 
     @Transactional
     public Mono<Submission> saveSubmission(CreateSubmissionRequest submissionRequest, Authentication authentication) {
@@ -40,12 +42,20 @@ public class SubmissionService {
 
     @Transactional
     public Mono<Submission> saveSubmission(String userId, CreateSubmissionRequest submissionRequest) {
-        return Mono.just(submissionRequest)
-                .map(request -> Submission.of(request.getProblemId(), userId, request.getFileKeys()))
+        return Mono.just(Submission.of(submissionRequest.getProblemId(), userId))
                 .flatMap(submissionRepository::save)
-                .publishOn(Schedulers.boundedElastic())
-                .doOnSuccess(submission ->
-                        submissionFileService.moveSubmissionFiles(userId, submission.getId(), submissionRequest).subscribe()
+                .flatMap(submission ->
+                        submissionFileService.moveSubmissionFiles(userId, submission.getId(), submissionRequest)
+                                .then(Flux.fromIterable(submissionRequest.getFileNames())
+                                        .map(fileName -> SubmissionFileKey.of(userId, submissionRequest.getProblemId(), submission.getId(), fileName).toString())
+                                        .flatMap(fileObjectRepository::findByKeyPath)
+                                        .map(FileObject::getId)
+                                        .collectList()
+                                )
+                                .flatMap(ids -> {
+                                    submission.setFileObjectIds(ids);
+                                    return submissionRepository.save(submission);
+                                })
                 );
     }
 
@@ -122,28 +132,19 @@ public class SubmissionService {
 
     public Mono<SubmissionDto> createSubmissionDto(Submission submission) {
         return Mono.justOrEmpty(submission)
-                .map(sbm -> new SubmissionDto(
-                        sbm.getId(), sbm.getProblemId(), sbm.getUserId(),
-                        sbm.getStatus(), sbm.getCreatedAt(), sbm.getFileKeys()
-                ))
-                .flatMap(this::updateFileUrlsInDto)
-                .flatMap(this::updateUserNameInDto);
-    }
-
-    private Mono<SubmissionDto> updateUserNameInDto(SubmissionDto submissionDto) {
-        return userService.findUserById(submissionDto.getUserName())
-                .map(User::getName)
-                .defaultIfEmpty("UNKNOWN")
-                .map(submissionDto::withUserName);
-    }
-
-    private Mono<SubmissionDto> updateFileUrlsInDto(SubmissionDto submissionDto) {
-        return Flux.fromIterable(submissionDto.getFileUrls())
-                .map(fileName -> SubmissionFileKey.of(
-                        submissionDto.getUserName(), submissionDto.getProblemId(), submissionDto.getId(), fileName
-                ))
-                .flatMap(baseFileService::getDownloadUrlOrEmpty)
-                .collectList()
-                .map(submissionDto::withFileUrls);
+                .flatMap(sbm -> fileObjectRepository.findAllById(sbm.getFileObjectIds())
+                        .map(FileObject::getKey)
+                        .flatMap(baseFileService::getDownloadUrlOrEmpty)
+                        .collectList()
+                        .map(urls -> new SubmissionDto(
+                                sbm.getId(), sbm.getProblemId(), sbm.getUserId(),
+                                sbm.getStatus(), sbm.getCreatedAt(), urls
+                        ))
+                )
+                .flatMap(dto -> userService.findUserById(dto.getUserName())
+                        .map(User::getName)
+                        .defaultIfEmpty("UNKNOWN")
+                        .map(dto::withUserName)
+                );
     }
 }

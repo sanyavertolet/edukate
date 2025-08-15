@@ -19,7 +19,7 @@ public class Submission {
     private String problemId;
     private String userId;
     private Status status;
-    private List<String> fileKeys;
+    private List<String> fileObjectIds;
     private Instant createdAt;
 
     public enum Status {
@@ -28,8 +28,8 @@ public class Submission {
         FAILED
     }
 
-    public static Submission of(String problemId, String userId, List<String> fileKeys) {
-        return new Submission(null, problemId, userId, Status.PENDING, fileKeys, Instant.now(Clock.systemUTC()));
+    public static Submission of(String problemId, String userId) {
+        return new Submission(null, problemId, userId, Status.PENDING, List.of(), Instant.now(Clock.systemUTC()));
     }
 
     public Submission markAs(Status status) {

@@ -17,7 +17,7 @@ public class SubmissionFileService {
     private final BaseFileService baseFileService;
 
     public Mono<List<FileKey>> moveSubmissionFiles(String userId, String submissionId, CreateSubmissionRequest request) {
-        return Flux.fromIterable(request.getFileKeys())
+        return Flux.fromIterable(request.getFileNames())
                 .flatMap(file -> baseFileService.moveFile(
                         TempFileKey.of(userId, file),
                         SubmissionFileKey.of(userId, request.getProblemId(), submissionId, file)))

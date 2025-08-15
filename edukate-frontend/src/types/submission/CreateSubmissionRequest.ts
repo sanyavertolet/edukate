@@ -1,4 +1,4 @@
 export type CreateSubmissionRequest = {
     problemId: string;
-    fileKeys: string[];
+    fileNames: string[];
 };

@@ -11,5 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 public class CreateSubmissionRequest {
     private String problemId;
-    private List<String> fileKeys;
+    private List<String> fileNames;
 }
