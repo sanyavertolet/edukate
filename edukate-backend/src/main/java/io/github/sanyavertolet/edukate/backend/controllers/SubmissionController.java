@@ -106,7 +106,7 @@ public class SubmissionController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
                 .filterWhen(_ -> problemService.findProblemById(submissionRequest.getProblemId()).hasElement())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.")))
-                .flatMap(user -> Flux.fromIterable(submissionRequest.getFileKeys())
+                .flatMap(user -> Flux.fromIterable(submissionRequest.getFileNames())
                         .map(fileName -> TempFileKey.of(user.getId(), fileName))
                         .cast(FileKey.class)
                         .collectList()

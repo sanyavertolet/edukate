@@ -28,14 +28,14 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
         }
     }, [submitFilesMutation.error]);
 
-    const handleSubmit = (fileKeys: string[]) => {
-        if (fileKeys.length === 0) {
+    const handleSubmit = (fileNames: string[]) => {
+        if (fileNames.length === 0) {
             setError('Please select at least one file to submit');
             return;
         }
 
         submitFilesMutation.mutate(
-            { problemId: problem.id, fileKeys },
+            { problemId: problem.id, fileNames },
             { onSuccess: () => {
                 setIsSuccess(true);
                 refreshProblem();
