@@ -41,10 +41,10 @@ export const NotificationButton: FC<NotificationExpandableMenuProps> = ({ px = 2
             invitationReplyMutation.mutate({ shareCode: bundleShareCode, isAccepted: response }, {
                 onSuccess: () => {
                     markAsReadMutation.mutate([notificationUuid]);
-                    toast.success(`You have joined ${bundleName} bundle!`)
+                    toast.success(`You have joined ${bundleName} bundle!`);
                 },
                 onError: () => {
-                    toast.error(`You could not join ${bundleName} bundle due to some error...`)
+                    toast.error(`You could not join ${bundleName} bundle due to some error...`);
                 }
             });
         }

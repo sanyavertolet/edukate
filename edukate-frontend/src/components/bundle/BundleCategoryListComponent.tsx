@@ -1,10 +1,11 @@
-import { Box, Card, CardContent, Container, Snackbar, Typography } from "@mui/material";
+import { Box, Card, CardContent, Container, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { BundleCard } from "./BundleCard";
 import { useBundlesRequest } from "../../http/requests";
 import { useEffect, useState } from "react";
 import { BundleMetadata } from "../../types/bundle/BundleMetadata";
 import { BundleCategory } from "../../types/bundle/Bundle";
+import { toast } from "react-toastify";
 
 interface BundleCategoryListComponentProps {
     tab: BundleCategory;
@@ -15,8 +16,6 @@ export function BundleCategoryListComponent({tab}: BundleCategoryListComponentPr
     const [bundles, setBundles] = useState<BundleMetadata[]>([]);
     useEffect(() => { if (data && !isLoading && !error) { setBundles(data); } }, [data, isLoading, error, tab]);
 
-    const [open, setOpen] = useState(false);
-    const onSnackbarClose = () => setOpen(false);
     return (
         <Box>
             <Grid container rowSpacing={ 2 } spacing={ 2 }>
@@ -25,12 +24,10 @@ export function BundleCategoryListComponent({tab}: BundleCategoryListComponentPr
 
                 { bundles.map((bundle, index) => (
                     <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3}} key={`grid-${index}`}>
-                        <BundleCard bundleMetadata={bundle} onCopy={() => setOpen(true)}/>
+                        <BundleCard bundleMetadata={bundle} onCopy={() => toast.info("Copied to clipboard.")}/>
                     </Grid>
                 ))}
             </Grid>
-
-            <Snackbar open={open} autoHideDuration={1000} onClose={onSnackbarClose} message={"Copied to clipboard."}/>
         </Box>
     )
 }
