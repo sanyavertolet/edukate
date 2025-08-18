@@ -11,6 +11,7 @@ import java.util.List;
 public class BundleDto {
     private String name;
     private String description;
+    @With
     private List<String> admins;
     private Boolean isPublic;
     @With

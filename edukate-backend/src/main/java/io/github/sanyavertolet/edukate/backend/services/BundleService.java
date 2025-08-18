@@ -1,14 +1,14 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
+import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata;
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
-import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
-import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.BundleRepository;
 import io.github.sanyavertolet.edukate.common.Role;
-import io.github.sanyavertolet.edukate.common.services.HttpNotifierService;
+import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class BundleService {
     private final SubmissionService submissionService;
     private final ProblemService problemService;
     private final BundlePermissionEvaluator bundlePermissionEvaluator;
-    private final HttpNotifierService notifierService;
+    private final UserService userService;
 
     public Mono<Bundle> findBundleByShareCode(String shareCode) {
         return bundleRepository.findBundleByShareCode(shareCode).switchIfEmpty(Mono.error(
@@ -38,15 +39,15 @@ public class BundleService {
         ));
     }
 
-    public Flux<Bundle> getOwnedBundles(Authentication authentication, PageRequest pageable) {
-        return Mono.justOrEmpty(authentication).flatMapMany(auth ->
-                bundleRepository.findBundlesByUserRoleIn(auth.getName(), List.of(Role.ADMIN), pageable)
+    public Flux<Bundle> getOwnedBundles(PageRequest pageable, Authentication authentication) {
+        return AuthUtils.monoId(authentication).flatMapMany(userId ->
+                bundleRepository.findBundlesByUserRoleIn(userId, List.of(Role.ADMIN), pageable)
         );
     }
 
-    public Flux<Bundle> getJoinedBundles(Authentication authentication, PageRequest pageable) {
-        return Mono.justOrEmpty(authentication).flatMapMany(auth ->
-                bundleRepository.findBundlesByUserRoleIn(auth.getName(), Role.anyRole(), pageable)
+    public Flux<Bundle> getJoinedBundles(PageRequest pageable, Authentication authentication) {
+        return AuthUtils.monoId(authentication).flatMapMany(userId ->
+                bundleRepository.findBundlesByUserRoleIn(userId, Role.anyRole(), pageable)
         );
     }
 
@@ -55,125 +56,96 @@ public class BundleService {
     }
 
     public Mono<BundleDto> prepareDto(Bundle bundle, Authentication authentication) {
-        return Mono.justOrEmpty(bundle)
-                .map(Bundle::toDto)
-                .zipWhen(_ ->
-                        problemService.findProblemListByIds(bundle.getProblemIds())
-                                .flatMapMany(problemMetadataList ->
-                                        submissionService.updateStatusInMetadataMany(authentication, problemMetadataList))
-                                .collectList()
-                )
-                .map(tuple -> {
-                    BundleDto dto = tuple.getT1();
-                    List<ProblemMetadata> metadataList = tuple.getT2();
+        return problemService.findProblemListByIds(bundle.getProblemIds())
+                .flatMapMany(list -> submissionService.updateStatusInMetadataMany(authentication, list))
+                .collectList()
+                .map(list -> bundle.toDto().withProblems(list))
+                .flatMap(dto -> getAdmins(bundle).map(dto::withAdmins));
+    }
 
-                    return dto.withProblems(metadataList);
-                });
+    public Mono<BundleMetadata> prepareMetadata(Bundle bundle) {
+        return getAdmins(bundle).map(admins -> bundle.toBundleMetadata().withAdmins(admins));
     }
 
     public Mono<Bundle> createBundle(CreateBundleRequest createBundleRequest, Authentication authentication) {
-        return Mono.just(createBundleRequest)
-                .map(request -> Bundle.fromCreateRequest(request, authentication.getName()))
-                .map(bundle -> bundle.updateShareCode(shareCodeGenerator.generateShareCode()))
+        return AuthUtils.monoId(authentication)
+                .map(userId -> Bundle.fromCreateRequest(createBundleRequest, userId))
+                .map(bundle -> bundle.withShareCode(shareCodeGenerator.generateShareCode()))
                 .flatMap(bundleRepository::save);
     }
 
     @Transactional
-    public Mono<Bundle> joinUser(String userName, String shareCode) {
+    public Mono<Bundle> joinUser(String shareCode, String userId) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasJoinPermission(bundle, userName))
+                .filter(bundle -> bundlePermissionEvaluator.hasJoinPermission(bundle, userId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "To join this bundle, you should be invited"
+                        HttpStatus.FORBIDDEN, "To join this bundle, you should be invited"
                 )))
-                .filter(bundle -> !bundle.isUserInBundle(userName))
+                .filter(bundle -> !bundle.isUserInBundle(userId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "You have already joined the bundle [" + shareCode + "]"
+                        HttpStatus.BAD_REQUEST, "You have already joined the bundle [" + shareCode + "]"
                 )))
                 .map(bundle -> {
-                    bundle.addUser(userName, Role.USER);
-                    bundle.removeInvitedUser(userName);
+                    bundle.addUser(userId, Role.USER);
+                    bundle.removeInvitedUser(userId);
                     return bundle;
                 })
                 .flatMap(bundleRepository::save);
     }
 
     @Transactional
-    public Mono<Bundle> removeUser(String userName, String shareCode) {
+    public Mono<Bundle> removeUser(String shareCode, String userId) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle ->
-                        bundle.isUserInBundle(userName)
-                )
+                .filter(bundle -> bundle.isUserInBundle(userId))
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not in bundle")
                 ))
-                .filter(bundle ->
-                        !bundle.isAdmin(userName) || bundle.getAdmins().size() > 1
-                )
+                .filter(bundle -> !bundle.isAdmin(userId) || bundle.getAdminIds().size() > 1)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Last admin should delete bundle, not leave it"
+                        HttpStatus.BAD_REQUEST, "Last admin should delete bundle, not leave it"
                 )))
-                .map(bundle -> {
-                    bundle.removeUser(userName);
-                    return bundle;
-                })
+                .doOnNext(bundle -> bundle.removeUser(userId))
                 .flatMap(bundleRepository::save);
     }
 
     @Transactional
-    public Mono<String> inviteUser(String inviterName, String inviteeName, String shareCode) {
+    public Mono<Bundle> inviteUser(String shareCode, String inviterId, String inviteeId) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, inviterName))
+                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, inviterId))
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions to invite")
                 ))
-                .filter(bundle -> !bundle.isUserInBundle(inviteeName))
+                .filter(bundle -> !bundle.isUserInBundle(inviteeId))
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already in bundle")
                 ))
-                .doOnNext(bundle -> bundle.inviteUser(inviteeName))
-                .flatMap(bundleRepository::save)
-                .flatMap(bundle ->
-                        notifierService.notifyInvite(inviteeName, inviterName, bundle.getName(), bundle.getShareCode())
-                );
+                .doOnNext(bundle -> bundle.inviteUser(inviteeId))
+                .flatMap(bundleRepository::save);
+
     }
 
-    public Mono<Map<String, Role>> getBundleUsers(String shareCode, Authentication authentication) {
+    public Flux<Map.Entry<String, Role>> getBundleUserIdsWithRoles(String shareCode, Authentication authentication) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, authentication.getName()))
-                .switchIfEmpty(Mono.error(
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")
-                ))
-                .map(Bundle::getUserRoles);
-    }
-
-    public Mono<List<UserNameWithRole>> mapToList(Map<String, Role> userRoles) {
-        return Mono.justOrEmpty(userRoles)
-                .map(map ->
-                        map.entrySet().stream().map(mapEntry ->
-                                new UserNameWithRole(mapEntry.getKey(), mapEntry.getValue()))
-                                .toList()
-                );
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, AuthUtils.id(authentication), Role.MODERATOR))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
+                .map(Bundle::getUserIdRoleMap)
+                .flatMapMany(map -> Flux.fromIterable(map.entrySet()));
     }
 
     @Transactional
-    public Mono<Role> changeUserRole(String shareCode, String username, Role requestedRole, Authentication authentication) {
+    public Mono<Role> changeUserRole(String shareCode, String userId, Role requestedRole, Authentication authentication) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle ->
-                        bundlePermissionEvaluator.hasChangeRolePermission(
-                                bundle, authentication.getName(), username, requestedRole
-                        )
-                )
+                .filter(bundle -> bundle.isUserInBundle(userId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "Cannot set " + username + " role to be " + requestedRole
+                        HttpStatus.NOT_FOUND, "Target user not found in bundle"
                 )))
-                .map(bundle -> {
-                    bundle.changeUserRole(username, requestedRole);
-                    return bundle;
-                })
+                .filter(bundle -> bundlePermissionEvaluator.hasChangeRolePermission(
+                        bundle, AuthUtils.id(authentication), userId, requestedRole
+                ))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.FORBIDDEN, "Cannot set " + userId + " role to be " + requestedRole
+                )))
+                .doOnNext(bundle -> bundle.changeUserRole(userId, requestedRole))
                 .flatMap(bundleRepository::save)
                 .thenReturn(requestedRole);
     }
@@ -181,13 +153,12 @@ public class BundleService {
     @Transactional
     public Mono<Bundle> declineInvite(String shareCode, Authentication authentication) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundle.isUserInvited(authentication.getName()))
+                .filter(bundle -> bundle.isUserInvited(AuthUtils.id(authentication)))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "You cannot decline the invitation as nobody has invited you yet"
+                        HttpStatus.FORBIDDEN, "You cannot decline the invitation as nobody has invited you yet"
                 )))
                 .flatMap(bundle -> {
-                    if (bundle.removeInvitedUser(authentication.getName()) == 0) {
+                    if (!bundle.removeInvitedUser(AuthUtils.id(authentication))) {
                         return Mono.error(new ResponseStatusException(
                                 HttpStatus.INTERNAL_SERVER_ERROR,
                                 "Cannot decline invitation for user " + authentication.getName() + " due to internal error"
@@ -201,36 +172,34 @@ public class BundleService {
     @Transactional
     public Mono<Bundle> changeVisibility(String shareCode, Boolean isPublic, Authentication authentication) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, authentication.getName(), Role.MODERATOR))
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, Role.MODERATOR, authentication))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "Cannot change visibility due to lack of permissions"
+                        HttpStatus.FORBIDDEN, "Cannot change visibility due to lack of permissions"
                 )))
-                .map(bundle -> {
-                    bundle.setIsPublic(isPublic);
-                    return bundle;
-                })
+                .doOnNext(bundle -> bundle.setIsPublic(isPublic))
                 .flatMap(bundleRepository::save);
     }
 
     @Transactional
     public Mono<Bundle> changeProblems(String shareCode, List<String> problemIds, Authentication authentication) {
         return Mono.just(shareCode)
-                .filter(_ -> !problemIds.isEmpty())
+                .filter(_ -> problemIds != null && !problemIds.isEmpty())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Bundle problem list cannot be empty"
+                        HttpStatus.BAD_REQUEST, "Bundle problem list cannot be empty"
                 )))
                 .flatMap(this::findBundleByShareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, authentication.getName(), Role.MODERATOR))
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, Role.MODERATOR, authentication))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "Cannot change problem list due to lack of permissions"
+                        HttpStatus.FORBIDDEN, "Cannot change problem list due to lack of permissions"
                 )))
-                .map(bundle -> {
-                    bundle.setProblemIds(problemIds);
-                    return bundle;
-                })
+                .doOnNext(bundle -> bundle.setProblemIds(new ArrayList<>(problemIds))) // ensure mutability
                 .flatMap(bundleRepository::save);
+    }
+
+    private Mono<List<String>> getAdmins(Bundle bundle) {
+        return Mono.just(bundle.getAdminIds())
+                .flatMapMany(userService::findUsersByIds)
+                .map(User::getName)
+                .collectList();
     }
 }

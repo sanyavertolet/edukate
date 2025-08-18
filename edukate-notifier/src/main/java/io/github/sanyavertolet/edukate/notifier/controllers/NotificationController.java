@@ -70,9 +70,11 @@ public class NotificationController {
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
     @Parameters({
-            @Parameter(name = "size", description = "Number of notifications to retrieve per page", in = QUERY),
-            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
             @Parameter(name = "isRead", description = "Filter by read status (null for all notifications)", in = QUERY),
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY,
+                    schema = @Schema(minimum = "0")),
+            @Parameter(name = "size", description = "Number of notifications per page", in = QUERY,
+                    schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<BaseNotificationDto> getNotifications(
             @RequestParam(defaultValue = "10") Integer size,

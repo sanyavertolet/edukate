@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.backend.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.With;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
 public class BundleMetadata {
     private String name;
     private String description;
+    @With
     private List<String> admins;
     private String shareCode;
     private Boolean isPublic;

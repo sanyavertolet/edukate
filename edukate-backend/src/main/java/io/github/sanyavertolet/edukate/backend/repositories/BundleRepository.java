@@ -17,6 +17,6 @@ public interface BundleRepository extends ReactiveMongoRepository<Bundle, String
 
     Mono<Bundle> findBundleByShareCode(String shareCode);
 
-    @Query("{ 'userRoles.?0': { $in: ?1 } }")
-    Flux<Bundle> findBundlesByUserRoleIn(String userName, Collection<Role> roles, Pageable pageable);
+    @Query("{ 'userIdRoleMap.?0': { $in: ?1 } }")
+    Flux<Bundle> findBundlesByUserRoleIn(String userId, Collection<Role> roles, Pageable pageable);
 }
