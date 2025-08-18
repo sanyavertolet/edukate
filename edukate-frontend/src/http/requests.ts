@@ -169,7 +169,7 @@ export function useJoinBundleMutation() {
                 return null;
             }
             try {
-                const response = await client.post<BundleMetadata>(`/api/v1/bundles/join/${bundleCode}`);
+                const response = await client.post<BundleMetadata>(`/api/v1/bundles/${bundleCode}/join`);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
