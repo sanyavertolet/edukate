@@ -17,7 +17,7 @@ export const InviteNotificationComponent: FC<InviteNotificationComponentProps> =
             </Badge>
             <Box>
                 <Typography component={"span"} variant={"h6"} textAlign={"center"} color={"primary"}>
-                    { notification.inviter } invites you!
+                    { notification.inviterName } invites you!
                 </Typography>
                 <Box>
                     <Box>
