@@ -56,8 +56,8 @@ export const NotificationButton: FC<NotificationExpandableMenuProps> = ({ px = 2
         if (_type === "simple") {
             markAsReadMutation.mutate([uuid]);
         } else if (_type === "invite") {
-            const { bundleName, bundleShareCode, inviter } = notification as InviteNotification;
-            setBundleInviteInfo({bundleName, inviterName: inviter, bundleShareCode, notificationUuid: uuid});
+            const { bundleName, bundleShareCode, inviterName } = notification as InviteNotification;
+            setBundleInviteInfo({bundleName, inviterName, bundleShareCode, notificationUuid: uuid});
         }
     };
 
