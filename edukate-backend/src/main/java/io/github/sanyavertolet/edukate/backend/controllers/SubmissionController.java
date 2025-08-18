@@ -171,8 +171,10 @@ public class SubmissionController {
                     content = @Content)
     })
     @Parameters({
-            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
-            @Parameter(name = "size", description = "Number of submissions per page", in = QUERY)
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY,
+                    schema = @Schema(minimum = "0")),
+            @Parameter(name = "size", description = "Number of submissions per page", in = QUERY,
+                    schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<SubmissionDto> getSubmissions(
             @RequestParam(defaultValue = "0") int page,

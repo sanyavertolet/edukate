@@ -45,8 +45,10 @@ public class ProblemController {
                     content = @Content(schema = @Schema(implementation = ProblemMetadata.class))),
     })
     @Parameters({
-            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY),
-            @Parameter(name = "size", description = "Number of problems per page", in = QUERY),
+            @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY,
+                    schema = @Schema(minimum = "0")),
+            @Parameter(name = "size", description = "Number of problems per page", in = QUERY,
+                    schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<ProblemMetadata> getProblemList(
             @RequestParam(defaultValue = "0") int page,

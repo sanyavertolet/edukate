@@ -7,7 +7,10 @@ import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +25,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Mono<User> findUserById(String name) {
-        return userRepository.findById(name);
+    public Mono<User> findUserById(String userId) {
+        return userRepository.findById(userId);
+    }
+
+    public Flux<User> findUsersByIds(List<String> userIds) {
+        return userRepository.findUsersByIdIn(userIds);
     }
 
     public Mono<User> findUserByName(String name) {
@@ -32,10 +39,6 @@ public class UserService {
 
     public Mono<Boolean> deleteUserById(String id) {
         return userRepository.deleteById(id).thenReturn(true).onErrorReturn(false);
-    }
-
-    public Mono<Boolean> doesUserExist(String username) {
-        return userRepository.existsByName(username);
     }
 
     public Mono<Boolean> hasUserPermissionToSubmit(User user) {
