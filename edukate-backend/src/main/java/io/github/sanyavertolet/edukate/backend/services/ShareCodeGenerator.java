@@ -8,7 +8,7 @@ import java.security.SecureRandom;
 @Component
 @RequiredArgsConstructor
 public class ShareCodeGenerator {
-    private static final String ALLOWED_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    private static final String ALLOWED_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int CODE_LENGTH = 10;
     private final SecureRandom random = new SecureRandom();
 
