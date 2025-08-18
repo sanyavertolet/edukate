@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useJoinBundleMutation } from "../../http/requests";
 import { defaultTooltipSlotProps } from "../../utils/utils";
 import { ConditionalTooltip } from "../basic/ConditionalTooltip";
+import { toast } from "react-toastify";
 
 interface BundleJoinFormProps {
     disabled?: boolean;
@@ -18,7 +19,11 @@ export const BundleJoinForm: FC<BundleJoinFormProps> = ({disabled = false}) => {
 
     const requestOptions = {
         onSuccess: () => navigate(`/bundles/${bundleCode}`),
-        onError: () => { joinBundleMutation.reset(); setBundleCode(""); }
+        onError: () => {
+            joinBundleMutation.reset();
+            setBundleCode("");
+            toast.error("Could not join a bundle");
+        }
     };
 
     const onSearchClick = () => joinBundleMutation.mutate(bundleCode, requestOptions);
