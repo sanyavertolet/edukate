@@ -1,18 +1,25 @@
 package io.github.sanyavertolet.edukate.backend.dtos;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.annotation.PersistenceCreator;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@RequiredArgsConstructor
-@AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
+@NoArgsConstructor
 public class CreateBundleRequest {
+    @NotBlank
+    @Size(max = 50)
     private String name;
+    @NotBlank
+    @Size(max = 255)
     private String description;
+    @NotNull
     private Boolean isPublic;
-    private List<String> problemIds;
+    @NotEmpty
+    private List<@NotBlank String> problemIds;
 }

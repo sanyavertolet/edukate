@@ -12,6 +12,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -26,6 +32,7 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@Validated
 @RequestMapping("/api/v1/notifications")
 @Tag(name = "Notifications", description = "API for managing user notifications")
 public class NotificationController {
@@ -39,9 +46,10 @@ public class NotificationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully marked notifications as read",
                     content = @Content(schema = @Schema(implementation = Long.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
-    public Mono<Long> markAsRead(@RequestBody List<String> uuids, Authentication authentication) {
+    public Mono<Long> markAsRead(@RequestBody @Valid @NotEmpty List<@NotBlank String> uuids, Authentication authentication) {
         return notificationService.markAsRead(uuids, authentication);
     }
 
@@ -67,6 +75,7 @@ public class NotificationController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved notifications", 
                     content = @Content(schema = @Schema(implementation = BaseNotificationDto.class))),
+        @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
         @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
     @Parameters({
@@ -77,14 +86,13 @@ public class NotificationController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<BaseNotificationDto> getNotifications(
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") @PositiveOrZero int size,
+            @RequestParam(defaultValue = "0") @Positive int page,
             @RequestParam(required = false) Boolean isRead,
             Authentication authentication
     ) {
-        return Mono.justOrEmpty(authentication).flatMapMany(auth ->
-                notificationService.getUserNotifications(isRead, size, page, auth)
-        )
+        return Mono.justOrEmpty(authentication)
+                .flatMapMany(auth -> notificationService.getUserNotifications(isRead, size, page, auth))
                 .map(BaseNotification::toDto);
     }
 

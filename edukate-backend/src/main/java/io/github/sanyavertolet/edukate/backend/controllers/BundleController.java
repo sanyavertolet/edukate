@@ -17,6 +17,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -34,6 +40,7 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/v1/bundles")
 @Tag(name = "Bundles", description = "API for managing problem bundles and user collaborations")
 public class BundleController {
@@ -49,6 +56,7 @@ public class BundleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully created bundle",
                     content = @Content(schema = @Schema(implementation = BundleDto.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -58,7 +66,7 @@ public class BundleController {
                     schema = @Schema(implementation = CreateBundleRequest.class)
             )
     )
-    public Mono<BundleDto> createBundle(@RequestBody CreateBundleRequest request, Authentication authentication) {
+    public Mono<BundleDto> createBundle(@RequestBody @Valid CreateBundleRequest request, Authentication authentication) {
         return bundleService.createBundle(request, authentication)
                 .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
     }
@@ -71,6 +79,7 @@ public class BundleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved owned bundles",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = BundleMetadata.class)))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
     @Parameters({
@@ -80,8 +89,8 @@ public class BundleController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<BundleMetadata> getOwnedBundles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size,
             Authentication authentication
     ) {
         return bundleService.getOwnedBundles(PageRequest.of(page, size), authentication)
@@ -96,6 +105,7 @@ public class BundleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved joined bundles",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = BundleMetadata.class)))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
     @Parameters({
@@ -105,8 +115,8 @@ public class BundleController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<BundleMetadata> getJoinedBundles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size,
             Authentication authentication
     ) {
         return bundleService.getJoinedBundles(PageRequest.of(page, size), authentication)
@@ -121,6 +131,7 @@ public class BundleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved public bundles",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = BundleMetadata.class)))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
     })
     @Parameters({
             @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY,
@@ -129,8 +140,8 @@ public class BundleController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<BundleMetadata> getPublicBundles(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size
     ) {
         return bundleService.getPublicBundles(PageRequest.of(page, size))
                 .flatMap(bundleService::prepareMetadata);
@@ -144,6 +155,7 @@ public class BundleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved bundle",
                     content = @Content(schema = @Schema(implementation = BundleDto.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Access denied - User is not a member of the bundle",
                     content = @Content),
@@ -152,7 +164,9 @@ public class BundleController {
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
     })
-    public Mono<BundleDto> getBundleByShareCode(@PathVariable String shareCode, Authentication authentication) {
+    public Mono<BundleDto> getBundleByShareCode(
+            @PathVariable @NotBlank String shareCode,
+            Authentication authentication) {
         return bundleService.findBundleByShareCode(shareCode)
                 .filter(bundle -> bundle.isUserInBundle(AuthUtils.id(authentication)))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
@@ -178,7 +192,10 @@ public class BundleController {
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
     })
-    public Mono<BundleMetadata> joinBundle(@PathVariable String shareCode, Authentication authentication) {
+    public Mono<BundleMetadata> joinBundle(
+            @PathVariable @NotBlank String shareCode,
+            Authentication authentication
+    ) {
         return AuthUtils.monoId(authentication)
                 .flatMap(userId -> bundleService.joinUser(shareCode, userId))
                 .flatMap(bundleService::prepareMetadata);
@@ -200,7 +217,10 @@ public class BundleController {
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
     })
-    public Mono<String> leaveBundle(@PathVariable String shareCode, Authentication authentication) {
+    public Mono<String> leaveBundle(
+            @PathVariable @NotBlank String shareCode,
+            Authentication authentication
+    ) {
         return AuthUtils.monoId(authentication)
                 .flatMap(userId -> bundleService.removeUser(shareCode, userId))
                 .map(Bundle::getShareCode);
@@ -226,8 +246,8 @@ public class BundleController {
                     required = true),
     })
     public Mono<String> inviteToBundle(
-            @PathVariable String shareCode, 
-            @RequestParam String inviteeName, 
+            @PathVariable @NotBlank String shareCode,
+            @RequestParam @NotBlank String inviteeName,
             Authentication authentication
     ) {
         return userService.findUserByName(inviteeName)
@@ -264,8 +284,8 @@ public class BundleController {
                     required = true),
     })
     public Mono<String> replyToInvite(
-            @PathVariable String shareCode, 
-            @RequestParam Boolean response, 
+            @PathVariable @NotBlank String shareCode,
+            @RequestParam @NotNull Boolean response,
             Authentication authentication
     ) {
         return Mono.just(response).flatMap(hasAccepted -> {
@@ -286,6 +306,7 @@ public class BundleController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved users",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserNameWithRole.class)))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions",
                     content = @Content),
@@ -294,7 +315,10 @@ public class BundleController {
     @Parameters({
             @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
     })
-    public Mono<List<UserNameWithRole>> getUserRoles(@PathVariable String shareCode, Authentication authentication) {
+    public Mono<List<UserNameWithRole>> getUserRoles(
+            @PathVariable @NotBlank String shareCode,
+            Authentication authentication
+    ) {
         return bundleService.getBundleUserIdsWithRoles(shareCode, authentication)
                 .flatMap(entry -> userService.findUserById(entry.getKey())
                         .map(User::getName)
@@ -322,9 +346,9 @@ public class BundleController {
             @Parameter(name = "requestedRole", description = "Role to set", in = QUERY, required = true),
     })
     public Mono<Role> changeUserRole(
-            @PathVariable String shareCode,
-            @RequestParam String username,
-            @RequestParam Role requestedRole,
+            @PathVariable @NotBlank String shareCode,
+            @RequestParam @NotBlank String username,
+            @RequestParam @NotNull Role requestedRole,
             Authentication authentication
     ) {
         return userService.findUserByName(username)
@@ -352,8 +376,8 @@ public class BundleController {
             @Parameter(name = "isPublic", description = "Visibility flag", in = QUERY, required = true),
     })
     public Mono<BundleDto> changeVisibility(
-            @PathVariable String shareCode,
-            @RequestParam Boolean isPublic,
+            @PathVariable @NotBlank String shareCode,
+            @RequestParam @NotNull Boolean isPublic,
             Authentication authentication
     ) {
         return bundleService.changeVisibility(shareCode, isPublic, authentication)
@@ -384,11 +408,11 @@ public class BundleController {
             )
     )
     public Mono<BundleDto> changeProblems(
-            @PathVariable String shareCode,
-            @RequestBody ChangeBundleProblemsRequest changeBundleProblemsRequest,
+            @PathVariable @NotBlank String shareCode,
+            @RequestBody @Valid ChangeBundleProblemsRequest changeBundleProblemsRequest,
             Authentication authentication
     ) {
-        return bundleService.changeProblems(shareCode, changeBundleProblemsRequest.problemIds(), authentication)
+        return bundleService.changeProblems(shareCode, changeBundleProblemsRequest.getProblemIds(), authentication)
                 .flatMap(bundle -> bundleService.prepareDto(bundle, authentication));
     }
 }

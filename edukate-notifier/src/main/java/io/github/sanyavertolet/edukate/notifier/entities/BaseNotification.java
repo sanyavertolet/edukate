@@ -3,9 +3,9 @@ package io.github.sanyavertolet.edukate.notifier.entities;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreationRequest;
-import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreationRequest;
-import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreationRequest;
+import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreateRequest;
+import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest;
+import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -47,10 +47,10 @@ public sealed class BaseNotification permits SimpleNotification, InviteNotificat
 
     private LocalDateTime createdAt;
 
-    public static BaseNotification fromCreationRequest(BaseNotificationCreationRequest creationRequest) {
-        if (creationRequest instanceof SimpleNotificationCreationRequest simpleNotificationCreationRequest) {
+    public static BaseNotification fromCreationRequest(BaseNotificationCreateRequest creationRequest) {
+        if (creationRequest instanceof SimpleNotificationCreateRequest simpleNotificationCreationRequest) {
             return SimpleNotification.fromCreationRequest(simpleNotificationCreationRequest);
-        } else if (creationRequest instanceof InviteNotificationCreationRequest inviteNotificationCreationRequest) {
+        } else if (creationRequest instanceof InviteNotificationCreateRequest inviteNotificationCreationRequest) {
             return InviteNotification.fromCreationRequest(inviteNotificationCreationRequest);
         }
         throw new UnsupportedOperationException("Unsupported DTO type: " + creationRequest.getClass().getName());

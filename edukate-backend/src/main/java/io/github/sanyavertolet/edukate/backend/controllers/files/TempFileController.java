@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +31,7 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 @RestController
 @RequestMapping("/api/v1/files/temp")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Temporary Files", description = "API for managing temporary files")
 public class TempFileController {
     private final TempFileService tempFileService;
@@ -73,7 +76,7 @@ public class TempFileController {
     @Parameters({
             @Parameter(name = "fileName", description = "Name of a file to delete", in = QUERY, required = true),
     })
-    public Mono<String> deleteTempFile(@RequestParam String fileName, Authentication authentication) {
+    public Mono<String> deleteTempFile(@RequestParam @NotBlank String fileName, Authentication authentication) {
         return AuthUtils.monoId(authentication)
                 .filterWhen(userId -> tempFileService.doesExist(userId, fileName))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found")))
@@ -102,7 +105,7 @@ public class TempFileController {
     @Parameters({
             @Parameter(name = "fileName", description = "File name to download", in = QUERY, required = true),
     })
-    public Flux<ByteBuffer> downloadTempFile(@RequestParam String fileName, Authentication authentication) {
+    public Flux<ByteBuffer> downloadTempFile(@RequestParam @NotBlank String fileName, Authentication authentication) {
         return AuthUtils.monoId(authentication)
                 .flatMapMany(userId -> tempFileService.getFile(userId, fileName))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found")));

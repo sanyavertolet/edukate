@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.notifier.entities;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreationRequest;
+import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.notifier.dtos.InviteNotificationDto;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,7 +51,7 @@ public final class InviteNotification extends BaseNotification {
         );
     }
 
-    public static InviteNotification fromCreationRequest(InviteNotificationCreationRequest creationRequest) {
+    public static InviteNotification fromCreationRequest(InviteNotificationCreateRequest creationRequest) {
         return new InviteNotification(
                 creationRequest.getUuid(), creationRequest.getTargetUserId(), creationRequest.getInviterName(),
                 creationRequest.getBundleName(), creationRequest.getBundleShareCode()
