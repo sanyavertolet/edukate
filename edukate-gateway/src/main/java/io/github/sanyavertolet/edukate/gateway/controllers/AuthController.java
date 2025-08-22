@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "API for user authentication operations")
 public class AuthController {
@@ -37,7 +40,7 @@ public class AuthController {
             @ApiResponse(responseCode = "204", description = "Successfully authenticated", content = @Content),
             @ApiResponse(responseCode = "403", description = "Authentication failed", content = @Content)
     })
-    public Mono<ResponseEntity<Void>> signIn(@RequestBody SignInRequest signInRequest) {
+    public Mono<ResponseEntity<Void>> signIn(@RequestBody @Valid SignInRequest signInRequest) {
         return authService.signIn(signInRequest).flatMap(authCookieService::respondWithToken)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN)));
     }
@@ -53,7 +56,7 @@ public class AuthController {
             @ApiResponse(responseCode = "403", description = "Registration failed", content = @Content),
             @ApiResponse(responseCode = "409", description = "User with this name already exists", content = @Content),
     })
-    public Mono<ResponseEntity<Void>> signUp(@RequestBody SignUpRequest signUpRequest) {
+    public Mono<ResponseEntity<Void>> signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
         return authService.signUp(signUpRequest).flatMap(authCookieService::respondWithToken)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN)));
     }

@@ -1,8 +1,8 @@
 package io.github.sanyavertolet.edukate.common.services;
 
-import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreationRequest;
-import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreationRequest;
-import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreationRequest;
+import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreateRequest;
+import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest;
+import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,18 +28,18 @@ public class HttpNotifierService {
         client = WebClient.create(notifierUrl);
     }
 
-    public Mono<String> notify(BaseNotificationCreationRequest notificationCreationRequest) {
+    public Mono<String> notify(BaseNotificationCreateRequest notificationCreationRequest) {
         return client.post()
                 .uri("/internal/notifications")
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(notificationCreationRequest), BaseNotificationCreationRequest.class)
+                .body(Mono.just(notificationCreationRequest), BaseNotificationCreateRequest.class)
                 .retrieve()
                 .bodyToMono(String.class);
     }
 
     @SuppressWarnings("unused")
     public Mono<String> notifySimple(String targetUserId, String title, String message, String source) {
-        return notify(SimpleNotificationCreationRequest.of(
+        return notify(SimpleNotificationCreateRequest.of(
                 UUID.randomUUID().toString(), targetUserId, title, message, source
         ));
     }
@@ -47,7 +47,7 @@ public class HttpNotifierService {
     public Mono<String> notifyInvite(
             String targetUserId, String inviterName, String bundleName, String bundleShareCode
     ) {
-        return notify(InviteNotificationCreationRequest.of(
+        return notify(InviteNotificationCreateRequest.of(
                 UUID.randomUUID().toString(), targetUserId, inviterName, bundleName, bundleShareCode
         ));
     }

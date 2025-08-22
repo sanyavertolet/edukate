@@ -1,15 +1,17 @@
 package io.github.sanyavertolet.edukate.backend.dtos;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class CreateSubmissionRequest {
+    @NotBlank
     private String problemId;
-    private List<String> fileNames;
+    @NotEmpty
+    private List<@NotBlank String> fileNames;
 }

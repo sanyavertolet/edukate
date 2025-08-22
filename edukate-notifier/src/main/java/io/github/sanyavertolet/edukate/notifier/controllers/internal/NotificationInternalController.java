@@ -1,6 +1,6 @@
 package io.github.sanyavertolet.edukate.notifier.controllers.internal;
 
-import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreationRequest;
+import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
 import io.github.sanyavertolet.edukate.notifier.services.NotificationService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -27,7 +27,7 @@ public class NotificationInternalController {
      * @return A Mono with notification UUID as String
      */
     @PostMapping
-    public Mono<String> postNotification(@RequestBody BaseNotificationCreationRequest creationRequest) {
+    public Mono<String> postNotification(@RequestBody BaseNotificationCreateRequest creationRequest) {
         log.info("Received notification request: {}", creationRequest);
         return Mono.just(creationRequest)
                 .map(BaseNotification::fromCreationRequest)

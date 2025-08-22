@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,9 +24,10 @@ import reactor.core.publisher.Mono;
 
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/results")
-@RestController
+@Validated
 @Tag(name = "Results", description = "API for retrieving problem results")
 public class ResultController {
     private final ResultService resultService;
@@ -38,12 +41,12 @@ public class ResultController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved result",
                     content = @Content(schema = @Schema(implementation = Result.class))),
-            @ApiResponse(responseCode = "404", description = "Result not found", content = @Content)
+            @ApiResponse(responseCode = "404", description = "Result not found", content = @Content),
     })
     @Parameters({
             @Parameter(name = "id", description = "Result ID", in = PATH, required = true)
     })
-    public Mono<Result> getResultById(@PathVariable String id) {
+    public Mono<Result> getResultById(@PathVariable @NotBlank String id) {
         return resultService.findResultById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found")));
     }

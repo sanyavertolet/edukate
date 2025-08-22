@@ -20,6 +20,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -38,8 +43,9 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 
 @RestController
-@RequestMapping("/api/v1/submissions")
 @RequiredArgsConstructor
+@Validated
+@RequestMapping("/api/v1/submissions")
 @Tag(name = "Submissions", description = "API for managing problem submissions")
 public class SubmissionController {
     private final ProblemService problemService;
@@ -55,6 +61,7 @@ public class SubmissionController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved submission",
                     content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Access denied - user name does not match",
                     content = @Content),
@@ -63,7 +70,10 @@ public class SubmissionController {
     @Parameters({
             @Parameter(name = "id", description = "Submission ID", in = QUERY, required = true),
     })
-    public Mono<SubmissionDto> getSubmissionById(@RequestParam String id, Authentication authentication) {
+    public Mono<SubmissionDto> getSubmissionById(
+            @RequestParam @NotBlank String id,
+            Authentication authentication
+    ) {
         return submissionService.findSubmissionById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
                 .filter(submission -> submission.getUserId().equals(AuthUtils.id(authentication)))
@@ -96,7 +106,7 @@ public class SubmissionController {
             )
     )
     public Mono<SubmissionDto> uploadSubmission(
-            @RequestBody CreateSubmissionRequest submissionRequest,
+            @RequestBody @Valid CreateSubmissionRequest submissionRequest,
             @RequestParam(required = false, defaultValue = "SELF", name = "check") CheckType checkType,
             Authentication authentication
     ) {
@@ -142,10 +152,10 @@ public class SubmissionController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<SubmissionDto> getSubmissionsByUsernameAndProblemId(
-            @PathVariable String problemId,
-            @PathVariable String username,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @PathVariable @NotBlank String problemId,
+            @PathVariable @NotBlank String username,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size
     ) {
         return userService.findUserByName(username)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
@@ -177,8 +187,8 @@ public class SubmissionController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<SubmissionDto> getSubmissions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size
     ) {
         return submissionService.findSubmissionsByStatusIn(
                 List.of(Submission.Status.SUCCESS),

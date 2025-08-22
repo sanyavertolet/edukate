@@ -8,11 +8,16 @@ import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -28,8 +33,9 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 
 @RestController
-@RequestMapping("/api/v1/problems")
 @RequiredArgsConstructor
+@Validated
+@RequestMapping("/api/v1/problems")
 @Tag(name = "Problems", description = "API for managing and retrieving problems")
 public class ProblemController {
     private final ProblemService problemService;
@@ -43,6 +49,7 @@ public class ProblemController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved problem list",
                     content = @Content(schema = @Schema(implementation = ProblemMetadata.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content)
     })
     @Parameters({
             @Parameter(name = "page", description = "Page number (zero-based)", in = QUERY,
@@ -51,8 +58,8 @@ public class ProblemController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<ProblemMetadata> getProblemList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size,
             Authentication authentication
     ) {
         return Mono.just(PageRequest.of(page, size))
@@ -84,7 +91,8 @@ public class ProblemController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved problem IDs",
-                    content = @Content(schema = @Schema(implementation = String.class)))
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content)
     })
     @Parameters({
             @Parameter(name = "prefix", description = "The prefix to match problem IDs against", in = QUERY,
@@ -92,8 +100,8 @@ public class ProblemController {
             @Parameter(name = "limit", description = "Maximum number of results to return", in = QUERY)
     })
     public Mono<List<String>> getProblemIdsByPrefix(
-            @RequestParam String prefix, 
-            @RequestParam(required = false, defaultValue = "5") int limit
+            @RequestParam @NotBlank String prefix,
+            @RequestParam(required = false, defaultValue = "5") @Positive int limit
     ) {
         return problemService.getProblemIdsByPrefix(prefix, limit).collectList();
     }
@@ -106,13 +114,14 @@ public class ProblemController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved problem",
                     content = @Content(schema = @Schema(implementation = ProblemDto.class))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "404", description = "Problem not found", content = @Content)
     })
     @Parameters({
             @Parameter(name = "id", description = "Problem ID", in = PATH, required = true),
     })
     public Mono<ProblemDto> getProblem(
-            @PathVariable String id,
+            @PathVariable @NotBlank String id,
             Authentication authentication
     ) {
         return problemService.findProblemById(id)
