@@ -30,8 +30,8 @@ import java.util.List;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 
 @Slf4j
-@RequiredArgsConstructor
 @RestController
+@RequiredArgsConstructor
 @Validated
 @RequestMapping("/api/v1/notifications")
 @Tag(name = "Notifications", description = "API for managing user notifications")
@@ -86,8 +86,8 @@ public class NotificationController {
                     schema = @Schema(minimum = "1", maximum = "100")),
     })
     public Flux<BaseNotificationDto> getNotifications(
-            @RequestParam(defaultValue = "10") @PositiveOrZero int size,
-            @RequestParam(defaultValue = "0") @Positive int page,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size,
             @RequestParam(required = false) Boolean isRead,
             Authentication authentication
     ) {

@@ -7,20 +7,24 @@ import io.github.sanyavertolet.edukate.backend.entities.files.ProblemFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.utils.Sorts;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ProblemService {
     private final ProblemRepository problemRepository;
     private final BaseFileService baseFileService;
+    private final ProblemStatusDecisionManager problemStatusDecisionManager;
 
     public Flux<Problem> getFilteredProblems(PageRequest pageRequest) {
         return problemRepository.findAll(pageRequest.withSort(Sorts.semVerSort()));
@@ -30,51 +34,53 @@ public class ProblemService {
         return problemRepository.findById(id);
     }
 
-    public Mono<List<ProblemMetadata>> findProblemListByIds(List<String> problemIds) {
-        return problemRepository.findProblemsByIdIn(problemIds)
-                .map(Problem::toProblemMetadata)
-                .collectList();
+    public Flux<Problem> findProblemsByIds(List<String> problemIds) {
+        return problemRepository.findProblemsByIdIn(problemIds);
     }
 
     public Mono<Problem> updateProblem(Problem problem) {
         return problemRepository.save(problem);
     }
 
-    public Flux<Problem> updateProblemBatch(Flux<Problem> problems) {
-        return problems.flatMap(problemRepository::save);
+    public Flux<Problem> updateProblemBatch(List<Problem> problems) {
+        return Flux.fromIterable(problems).flatMap(problemRepository::save);
     }
 
     public Mono<Long> countProblems() {
         return problemRepository.count();
     }
 
-    public Mono<Boolean> deleteProblemById(String id) {
+    public Mono<Boolean> deleteProblemById(@NonNull String id) {
         return problemRepository.deleteById(id).thenReturn(true).onErrorReturn(false);
     }
 
-    public Mono<ProblemDto> updateImagesInDto(ProblemDto problemDto) {
-        return Mono.justOrEmpty(problemDto.getImages())
-                .defaultIfEmpty(List.of())
-                .flatMapMany(Flux::fromIterable)
-                .map(fileName -> ProblemFileKey.of(problemDto.getId(), fileName))
-                .flatMap(baseFileService::getDownloadUrlOrEmpty)
-                .collectList()
-                .zipWith(Mono.justOrEmpty(problemDto))
-                .map(tuple -> {
-                    ProblemDto dto = tuple.getT2();
-                    dto.setImages(tuple.getT1());
-                    return dto;
-                });
-    }
-
-    public Flux<String> getProblemIdsByPrefix(String prefix, int limit) {
+    public Flux<String> getProblemIdsByPrefix(@NonNull String prefix, int limit) {
         return problemRepository.findProblemsByIdStartingWith(prefix, Pageable.ofSize(limit))
                 .map(Problem::getId);
     }
 
-    public Mono<Long> updateMissingInternalIndices() {
-        return problemRepository.findProblemsWithMissingIndices()
-                .flatMap(problemRepository::save)
-                .count();
+    public Mono<ProblemDto> prepareDto(@NonNull Problem problem, Authentication authentication) {
+        return Mono.fromCallable(problem::toProblemDto)
+                .flatMap(dto ->
+                        problemStatusDecisionManager.getStatus(problem.getId(), authentication)
+                                .map(dto::withStatus)
+                )
+                .flatMap(this::updateImagesInDto);
+    }
+
+    public Mono<ProblemMetadata> prepareMetadata(@NonNull Problem problem, Authentication authentication) {
+        return Mono.fromCallable(problem::toProblemMetadata)
+                .flatMap(metadata ->
+                        problemStatusDecisionManager.getStatus(problem.getId(), authentication)
+                                .map(metadata::withStatus)
+                );
+    }
+
+    private Mono<ProblemDto> updateImagesInDto(@NonNull ProblemDto problemDto) {
+        return Flux.fromIterable(Optional.ofNullable(problemDto.getImages()).orElse(List.of()))
+                .map(fileName -> ProblemFileKey.of(problemDto.getId(), fileName))
+                .flatMap(baseFileService::getDownloadUrlOrEmpty)
+                .collectList()
+                .map(problemDto::withImages);
     }
 }

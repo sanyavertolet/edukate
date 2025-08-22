@@ -28,7 +28,6 @@ import java.util.Map;
 public class BundleService {
     private final BundleRepository bundleRepository;
     private final ShareCodeGenerator shareCodeGenerator;
-    private final SubmissionService submissionService;
     private final ProblemService problemService;
     private final BundlePermissionEvaluator bundlePermissionEvaluator;
     private final UserService userService;
@@ -53,18 +52,6 @@ public class BundleService {
 
     public Flux<Bundle> getPublicBundles(PageRequest pageable) {
         return bundleRepository.findBundlesByIsPublic(true, pageable);
-    }
-
-    public Mono<BundleDto> prepareDto(Bundle bundle, Authentication authentication) {
-        return problemService.findProblemListByIds(bundle.getProblemIds())
-                .flatMapMany(list -> submissionService.updateStatusInMetadataMany(authentication, list))
-                .collectList()
-                .map(list -> bundle.toDto().withProblems(list))
-                .flatMap(dto -> getAdmins(bundle).map(dto::withAdmins));
-    }
-
-    public Mono<BundleMetadata> prepareMetadata(Bundle bundle) {
-        return getAdmins(bundle).map(admins -> bundle.toBundleMetadata().withAdmins(admins));
     }
 
     public Mono<Bundle> createBundle(CreateBundleRequest createBundleRequest, Authentication authentication) {
@@ -192,8 +179,20 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN, "Cannot change problem list due to lack of permissions"
                 )))
-                .doOnNext(bundle -> bundle.setProblemIds(new ArrayList<>(problemIds))) // ensure mutability
+                .doOnNext(bundle -> bundle.setProblemIds(new ArrayList<>(problemIds)))
                 .flatMap(bundleRepository::save);
+    }
+
+    public Mono<BundleDto> prepareDto(Bundle bundle, Authentication authentication) {
+        return problemService.findProblemsByIds(bundle.getProblemIds())
+                .flatMap(problem -> problemService.prepareMetadata(problem, authentication))
+                .collectList()
+                .map(list -> bundle.toDto().withProblems(list))
+                .flatMap(dto -> getAdmins(bundle).map(dto::withAdmins));
+    }
+
+    public Mono<BundleMetadata> prepareMetadata(Bundle bundle) {
+        return getAdmins(bundle).map(admins -> bundle.toBundleMetadata().withAdmins(admins));
     }
 
     private Mono<List<String>> getAdmins(Bundle bundle) {
