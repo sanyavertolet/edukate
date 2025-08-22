@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Hidden
 @RestController
 @RequestMapping("/internal/problems")
@@ -21,17 +23,12 @@ public class ProblemInternalController {
     }
 
     @PostMapping("/batch")
-    public Flux<String> postProblemBatch(@RequestBody Flux<Problem> problems) {
+    public Flux<String> postProblemBatch(@RequestBody List<Problem> problems) {
         return problemService.updateProblemBatch(problems).map(Problem::getId);
     }
 
     @DeleteMapping("/{id}")
     public Mono<Boolean> deleteProblem(@PathVariable String id) {
         return problemService.deleteProblemById(id);
-    }
-
-    @PatchMapping("/missing-internal-indices")
-    public Mono<Long> updateMissingInternalIndices() {
-        return problemService.updateMissingInternalIndices();
     }
 }

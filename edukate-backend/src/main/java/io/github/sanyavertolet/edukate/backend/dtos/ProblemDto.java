@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
 import org.springframework.data.annotation.PersistenceCreator;
 
 import java.util.ArrayList;
@@ -18,7 +19,9 @@ public class ProblemDto {
     private List<String> tags;
     private String text;
     private List<Problem.Subtask> subtasks = new ArrayList<>();
+    @With
     private List<String> images;
+    @With
     private Problem.Status status;
     private Boolean hasResult;
 }

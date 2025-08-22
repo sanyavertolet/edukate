@@ -1,10 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
-import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
-import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
-import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObject;
 import io.github.sanyavertolet.edukate.backend.entities.files.SubmissionFileKey;
@@ -12,9 +9,9 @@ import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService;
-import io.github.sanyavertolet.edukate.backend.utils.StatusCount;
 import io.github.sanyavertolet.edukate.common.entities.User;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -24,11 +21,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class SubmissionService {
+    private static final String DEFAULT_USER_NAME = "UNKNOWN";
+
     private final SubmissionRepository submissionRepository;
     private final BaseFileService baseFileService;
     private final SubmissionFileService submissionFileService;
@@ -71,79 +69,20 @@ public class SubmissionService {
         return submissionRepository.findAllByStatusIn(statuses, pageable);
     }
 
-    public Flux<ProblemMetadata> updateStatusInMetadataMany(Authentication authentication, List<ProblemMetadata> problemMetadataList) {
-        return Flux.concat(
-                problemMetadataList.stream()
-                        .map(problemMetadata -> updateStatusInMetadata(authentication, problemMetadata))
-                        .toList()
-        );
-    }
-
-    public Mono<ProblemMetadata> updateStatusInMetadata(Authentication authentication, ProblemMetadata problemMetadata) {
-        return Mono.justOrEmpty(problemMetadata)
-                .zipWhen(metadata -> collectProblemStatus(metadata.getName(), authentication))
-                .map(tuple -> {
-                    ProblemMetadata metadata = tuple.getT1();
-                    Problem.Status status = tuple.getT2();
-                    metadata.setStatus(status);
-                    return metadata;
-                })
-                .defaultIfEmpty(problemMetadata);
-    }
-
-    public Mono<ProblemDto> updateStatusInDto(Authentication authentication, ProblemDto problemDto) {
-        return Mono.justOrEmpty(problemDto)
-                .zipWhen(dto -> collectProblemStatus(dto.getId(), authentication))
-                .map(tuple -> {
-                    ProblemDto dto = tuple.getT1();
-                    Problem.Status status = tuple.getT2();
-                    dto.setStatus(status);
-                    return dto;
-                })
-                .defaultIfEmpty(problemDto);
-    }
-
-    private Mono<Problem.Status> collectProblemStatus(String problemId, Authentication authentication) {
-        return AuthUtils.monoId(authentication)
-                .flatMap(userId -> submissionRepository.countAllForUserByStatus(problemId, userId).collectList())
-                .map(StatusCount::asMap)
-                .flatMap(this::statusDecision);
-    }
-
-    /**
-     * Submission.Status.SUCCESS > 0    =>  Problem.Status.SOLVED
-     * Submission.Status.FAILED > 0     =>  Problem.Status.FAILED
-     * Submission.Status.PENDING > 0    =>  Problem.Status.SOLVING
-     * else                             =>  Problem.Status.NOT_SOLVED
-     */
-    private Mono<Problem.Status> statusDecision(Map<Submission.Status, Long> statusCounts) {
-        return Mono.fromCallable(() -> {
-            if (statusCounts.getOrDefault(Submission.Status.SUCCESS, 0L) > 0) {
-                return Problem.Status.SOLVED;
-            } else if (statusCounts.getOrDefault(Submission.Status.FAILED, 0L) > 0) {
-                return Problem.Status.FAILED;
-            } else if (statusCounts.getOrDefault(Submission.Status.PENDING, 0L) > 0) {
-                return Problem.Status.SOLVING;
-            } else {
-                return Problem.Status.NOT_SOLVED;
-            }
-        });
-    }
-
-    public Mono<SubmissionDto> createSubmissionDto(Submission submission) {
-        return Mono.justOrEmpty(submission)
-                .flatMap(sbm -> fileObjectRepository.findAllById(sbm.getFileObjectIds())
+    public Mono<SubmissionDto> prepareDto(@NonNull Submission submission) {
+        return Mono.fromCallable(() -> new SubmissionDto(
+                submission.getId(), submission.getProblemId(), null,
+                submission.getStatus(), submission.getCreatedAt(), null
+        ))
+                .flatMap(dto -> fileObjectRepository.findAllById(submission.getFileObjectIds())
                         .map(FileObject::getKey)
                         .flatMap(baseFileService::getDownloadUrlOrEmpty)
                         .collectList()
-                        .map(urls -> new SubmissionDto(
-                                sbm.getId(), sbm.getProblemId(), sbm.getUserId(),
-                                sbm.getStatus(), sbm.getCreatedAt(), urls
-                        ))
+                        .map(dto::withFileUrls)
                 )
-                .flatMap(dto -> userService.findUserById(dto.getUserName())
+                .flatMap(dto -> userService.findUserById(submission.getUserId())
                         .map(User::getName)
-                        .defaultIfEmpty("UNKNOWN")
+                        .defaultIfEmpty(DEFAULT_USER_NAME)
                         .map(dto::withUserName)
                 );
     }

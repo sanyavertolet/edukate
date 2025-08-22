@@ -1,17 +1,17 @@
-package io.github.sanyavertolet.edukate.backend.configs;
+package io.github.sanyavertolet.edukate.backend.listeners;
 
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.utils.SemVerUtils;
 import org.bson.Document;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
+import org.springframework.stereotype.Component;
 import reactor.util.function.Tuple3;
 
 import java.util.Objects;
 
-@Configuration
-public class ProblemInsertionMongoEventListener extends AbstractMongoEventListener<Problem> {
+@Component
+public class ProblemBeforeSaveListener extends AbstractMongoEventListener<Problem> {
 
     @Override
     public void onBeforeSave(BeforeSaveEvent<Problem> event) {

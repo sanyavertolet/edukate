@@ -78,7 +78,7 @@ public class SubmissionController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
                 .filter(submission -> submission.getUserId().equals(AuthUtils.id(authentication)))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
-                .flatMap(submissionService::createSubmissionDto);
+                .flatMap(submissionService::prepareDto);
     }
 
     @PostMapping
@@ -127,7 +127,7 @@ public class SubmissionController {
                         )))
                         .then(submissionService.saveSubmission(submissionRequest, authentication))
                 )
-                .flatMap(submissionService::createSubmissionDto);
+                .flatMap(submissionService::prepareDto);
     }
 
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
@@ -165,7 +165,7 @@ public class SubmissionController {
                         submissionService.findSubmissionsByProblemIdAndUserId(
                                 problemId, user.getId(),
                                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")))
-                .flatMap(submissionService::createSubmissionDto);
+                .flatMap(submissionService::prepareDto);
     }
 
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
@@ -194,6 +194,6 @@ public class SubmissionController {
                 List.of(Submission.Status.SUCCESS),
                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
         )
-                .flatMap(submissionService::createSubmissionDto);
+                .flatMap(submissionService::prepareDto);
     }
 }

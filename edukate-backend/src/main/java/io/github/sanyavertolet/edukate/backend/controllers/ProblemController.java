@@ -2,9 +2,7 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
-import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
-import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -39,7 +37,6 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 @Tag(name = "Problems", description = "API for managing and retrieving problems")
 public class ProblemController {
     private final ProblemService problemService;
-    private final SubmissionService submissionService;
 
     @GetMapping
     @Operation(
@@ -64,11 +61,7 @@ public class ProblemController {
     ) {
         return Mono.just(PageRequest.of(page, size))
                 .flatMapMany(problemService::getFilteredProblems)
-                .collectList()
-                .map(problems -> problems.stream().map(Problem::toProblemMetadata).toList())
-                .flatMapMany(problemMetadataList ->
-                        submissionService.updateStatusInMetadataMany(authentication, problemMetadataList)
-                );
+                .flatMapSequential(problem -> problemService.prepareMetadata(problem, authentication));
     }
 
     @GetMapping("/count")
@@ -126,8 +119,6 @@ public class ProblemController {
     ) {
         return problemService.findProblemById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found")))
-                .map(Problem::toProblemDto)
-                .flatMap(problemService::updateImagesInDto)
-                .flatMap(problemDto -> submissionService.updateStatusInDto(authentication, problemDto));
+                .flatMap(problem -> problemService.prepareDto(problem, authentication));
     }
 }
