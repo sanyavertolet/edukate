@@ -1,7 +1,9 @@
+import { UtcIsoString } from "../common/DateTypes";
+
 export interface FileMetadata {
     key: string;
     authorName: string;
-    lastModified: string;
+    lastModified: UtcIsoString;
     size: number;
 
     status?: 'pending' | 'uploading' | 'success' | 'error';

@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Avatar, Badge, Box, Stack, Typography } from "@mui/material";
 import { InviteNotification } from "../../types/notification/InviteNotification";
-import { formatDate } from "../../utils/utils";
+import { formatDate } from "../../utils/date";
 
 interface InviteNotificationComponentProps {
     notification: InviteNotification;
