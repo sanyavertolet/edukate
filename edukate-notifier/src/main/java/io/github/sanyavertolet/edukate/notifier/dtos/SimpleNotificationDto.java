@@ -3,7 +3,7 @@ package io.github.sanyavertolet.edukate.notifier.dtos;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -14,7 +14,7 @@ public final class SimpleNotificationDto extends BaseNotificationDto {
     private String source;
 
     public SimpleNotificationDto(
-            String uuid, Boolean isRead, LocalDateTime createdAt,
+            String uuid, Boolean isRead, Instant createdAt,
             String title, String message, String source
     ) {
         super(uuid, isRead, createdAt);

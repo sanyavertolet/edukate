@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.With;
 import org.springframework.data.annotation.PersistenceCreator;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -17,7 +17,7 @@ public class SubmissionDto {
     @With
     private String userName;
     private Submission.Status status;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
     @With
     private List<String> fileUrls;
 }

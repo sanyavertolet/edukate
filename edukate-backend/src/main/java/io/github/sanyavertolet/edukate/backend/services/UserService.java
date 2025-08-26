@@ -42,6 +42,6 @@ public class UserService {
     }
 
     public Mono<Boolean> hasUserPermissionToSubmit(User user) {
-        return Mono.just(user).filter(usr -> usr.getStatus().equals(UserStatus.ACTIVE)).hasElement();
+        return Mono.just(user).filter(usr -> UserStatus.ACTIVE.equals(usr.getStatus())).hasElement();
     }
 }

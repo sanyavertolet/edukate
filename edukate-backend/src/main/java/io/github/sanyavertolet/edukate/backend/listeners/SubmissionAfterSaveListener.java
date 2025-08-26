@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.backend.listeners;
 import com.mongodb.client.model.UpdateOptions;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -23,16 +24,16 @@ public class SubmissionAfterSaveListener extends AbstractMongoEventListener<Subm
     private final ReactiveMongoTemplate template;
 
     @Override
-    public void onAfterSave(AfterSaveEvent<Submission> event) {
+    public void onAfterSave(@NonNull AfterSaveEvent<Submission> event) {
         Submission s = event.getSource();
         String userId = s.getUserId();
         String problemId = s.getProblemId();
         Submission.Status status = s.getStatus();
         String submissionId = s.getId();
 
-        LocalDateTime createdAt = s.getCreatedAt();
+        Instant createdAt = s.getCreatedAt();
         if (createdAt == null) {
-            createdAt = LocalDateTime.now(Clock.systemUTC());
+            createdAt = Instant.now(Clock.systemUTC());
         }
 
         int newRank = switch (status) {

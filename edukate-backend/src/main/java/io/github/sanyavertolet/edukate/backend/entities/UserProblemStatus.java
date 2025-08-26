@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Document("problem_status")
@@ -16,13 +16,13 @@ public class UserProblemStatus {
 
     private Submission.Status latestStatus;
 
-    private LocalDateTime latestTime;
+    private Instant latestTime;
 
     private String latestSubmissionId;
 
     private Submission.Status bestStatus;
 
-    private LocalDateTime bestTime;
+    private Instant bestTime;
 
     private String bestSubmissionId;
 }

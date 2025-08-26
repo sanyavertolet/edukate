@@ -1,18 +1,17 @@
 package io.github.sanyavertolet.edukate.backend.entities;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
+@NoArgsConstructor
 @Document(value = "submissions")
 public class Submission {
     @Id
@@ -21,8 +20,9 @@ public class Submission {
     private String userId;
     private Status status;
     private List<String> fileObjectIds;
+
     @CreatedDate
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public enum Status {
         PENDING,
@@ -30,7 +30,14 @@ public class Submission {
         FAILED
     }
 
+    public Submission(String problemId, String userId) {
+        this.problemId = problemId;
+        this.userId = userId;
+        this.status = Status.PENDING;
+        this.fileObjectIds = new ArrayList<>();
+    }
+
     public static Submission of(String problemId, String userId) {
-        return new Submission(null, problemId, userId, Status.PENDING, List.of(), LocalDateTime.now(Clock.systemUTC()));
+        return new Submission(problemId, userId);
     }
 }

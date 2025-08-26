@@ -3,7 +3,6 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 import io.github.sanyavertolet.edukate.backend.dtos.UserDto;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

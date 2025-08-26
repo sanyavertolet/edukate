@@ -29,9 +29,7 @@ public sealed class BaseNotificationCreateRequest permits
 
     @PersistenceCreator
     public BaseNotificationCreateRequest(String uuid, String targetUserId) {
-        Objects.requireNonNull(uuid, "UUID must not be null");
-        Objects.requireNonNull(targetUserId, "userId must not be null");
-        this.uuid = uuid;
-        this.targetUserId = targetUserId;
+        this.uuid = Objects.requireNonNull(uuid, "UUID must not be null");
+        this.targetUserId = Objects.requireNonNull(targetUserId, "userId must not be null");
     }
 }

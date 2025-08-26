@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ public final class InviteNotificationDto extends BaseNotificationDto {
     private String bundleShareCode;
 
     public InviteNotificationDto(
-            String uuid, Boolean isRead, LocalDateTime createdAt, String inviterName, String bundleName,
+            String uuid, Boolean isRead, Instant createdAt, String inviterName, String bundleName,
             String bundleShareCode
     ) {
         super(uuid, isRead, createdAt);

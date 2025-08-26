@@ -157,7 +157,7 @@ public class BundleService {
     }
 
     @Transactional
-    public Mono<Bundle> changeVisibility(String shareCode, Boolean isPublic, Authentication authentication) {
+    public Mono<Bundle> changeVisibility(String shareCode, boolean isPublic, Authentication authentication) {
         return findBundleByShareCode(shareCode)
                 .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, Role.MODERATOR, authentication))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
