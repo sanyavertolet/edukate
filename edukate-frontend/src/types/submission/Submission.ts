@@ -1,8 +1,10 @@
+import { UtcIsoString } from "../common/DateTypes";
+
 export interface Submission {
     problemId: string;
     userName: string;
     status: SubmissionStatus;
-    createdAt: string;
+    createdAt: UtcIsoString;
     fileUrls: string[];
 }
 

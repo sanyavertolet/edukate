@@ -2,6 +2,7 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { usePostTempFileMutation, useDeleteTempFileMutation, useGetTempFiles } from "../http/files";
 import { FileMetadata } from "../types/file/FileMetadata";
 import { formatFileSize } from "../utils/utils";
+import { nowUtcIso } from "../utils/date";
 
 type UseFileUploadProps = {
     onTempFileUploaded: (fileKey: string) => void;
@@ -66,7 +67,7 @@ export const useFileUpload = ({
         const newFiles: FileMetadata[] = Array.from(event.target.files).map(file => ({
             key: file.name,
             authorName: '',
-            lastModified: new Date().toISOString(),
+            lastModified: nowUtcIso(),
             size: file.size,
             status: 'pending',
             progress: 0,

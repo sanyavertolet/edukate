@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Avatar, Badge, Box, Stack, Typography } from "@mui/material";
 import { SimpleNotification } from "../../types/notification/SimpleNotification";
-import { formatDate } from "../../utils/utils";
+import { formatDate } from "../../utils/date";
 
 interface SimpleNotificationComponentProps {
     notification: SimpleNotification;
@@ -15,7 +15,7 @@ export const SimpleNotificationComponent: FC<SimpleNotificationComponentProps> =
             </Badge>
             <Box>
                 <Typography component={"span"} variant={"h6"} textAlign={"center"}>
-                    {notification.title}
+                    { notification.title }
                 </Typography>
                 <Box>
                     <Box>
