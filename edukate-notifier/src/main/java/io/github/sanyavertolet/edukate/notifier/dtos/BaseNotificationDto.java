@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -22,5 +22,5 @@ import java.time.LocalDateTime;
 public sealed class BaseNotificationDto permits SimpleNotificationDto, InviteNotificationDto {
     private String uuid;
     private Boolean isRead;
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

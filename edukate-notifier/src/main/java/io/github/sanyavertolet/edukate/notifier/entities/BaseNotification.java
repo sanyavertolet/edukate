@@ -7,16 +7,16 @@ import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCrea
 import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.bson.types.ObjectId;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Document(collection = "notifications")
@@ -33,19 +33,27 @@ import java.time.LocalDateTime;
 })
 @JsonTypeName("base")
 @TypeAlias("base")
-@AllArgsConstructor(onConstructor = @__(@PersistenceCreator))
+@NoArgsConstructor
 public sealed class BaseNotification permits SimpleNotification, InviteNotification {
     @Id
-    private ObjectId _id;
+    private String _id;
 
     @Indexed(unique = true)
     private String uuid;
 
+    @NonNull
     private Boolean isRead;
 
     private String targetUserId;
 
-    private LocalDateTime createdAt;
+    @CreatedDate
+    private Instant createdAt;
+
+    public BaseNotification(String uuid, String targetUserId) {
+        this.uuid = uuid;
+        this.targetUserId = targetUserId;
+        this.isRead = false;
+    }
 
     public static BaseNotification fromCreationRequest(BaseNotificationCreateRequest creationRequest) {
         if (creationRequest instanceof SimpleNotificationCreateRequest simpleNotificationCreationRequest) {

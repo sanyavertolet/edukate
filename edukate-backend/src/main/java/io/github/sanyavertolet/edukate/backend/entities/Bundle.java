@@ -30,8 +30,8 @@ public class Bundle {
     private Map<String, Role> userIdRoleMap;
     private Set<String> invitedUserIds;
 
-    @Indexed(unique = true)
     @With
+    @Indexed(unique = true)
     private String shareCode = null;
 
     @SuppressWarnings("UnusedReturnValue")

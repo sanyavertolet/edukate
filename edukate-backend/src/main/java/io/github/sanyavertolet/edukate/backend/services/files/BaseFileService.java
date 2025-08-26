@@ -13,8 +13,6 @@ import reactor.util.function.Tuples;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
@@ -79,9 +77,7 @@ public class BaseFileService {
                 .map(fo -> FileMetadata.of(
                         fo.getKey() != null ? fo.getKey().getFileName() : fo.getKeyPath(),
                         authorName,
-                        fo.getMetadata() != null && fo.getMetadata().getLastModified() != null
-                                ? LocalDateTime.ofInstant(fo.getMetadata().getLastModified(), ZoneId.systemDefault())
-                                : null,
+                        fo.getMetadata() != null ? fo.getMetadata().getLastModified() : null,
                         fo.getMetadata() != null ? fo.getMetadata().getContentLength() : null
                 ));
     }
