@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.annotation.TypeAlias;
 
-@TypeAlias("submission")
 @JsonTypeName("submission")
 @EqualsAndHashCode(callSuper = true, of = {"userId", "problemId", "submissionId"})
 public class SubmissionFileKey extends FileKey {

@@ -76,7 +76,7 @@ public class SubmissionService {
         ))
                 .flatMap(dto -> fileObjectRepository.findAllById(submission.getFileObjectIds())
                         .map(FileObject::getKey)
-                        .flatMap(baseFileService::getDownloadUrlOrEmpty)
+                        .flatMapSequential(baseFileService::getDownloadUrlOrEmpty)
                         .collectList()
                         .map(dto::withFileUrls)
                 )

@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.annotation.TypeAlias;
 
-@TypeAlias("result")
 @JsonTypeName("result")
 @EqualsAndHashCode(callSuper = true, of = {"problemId"})
 public class ResultFileKey extends FileKey {
