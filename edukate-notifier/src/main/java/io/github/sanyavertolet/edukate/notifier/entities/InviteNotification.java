@@ -6,12 +6,10 @@ import io.github.sanyavertolet.edukate.notifier.dtos.InviteNotificationDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.TypeAlias;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@TypeAlias("invite")
 @JsonTypeName("invite")
 public final class InviteNotification extends BaseNotification {
     private String inviterName;

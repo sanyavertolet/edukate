@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -32,7 +31,6 @@ import java.time.Instant;
         @JsonSubTypes.Type(value = InviteNotification.class, name = "invite")
 })
 @JsonTypeName("base")
-@TypeAlias("base")
 @NoArgsConstructor
 public sealed class BaseNotification permits SimpleNotification, InviteNotification {
     @Id

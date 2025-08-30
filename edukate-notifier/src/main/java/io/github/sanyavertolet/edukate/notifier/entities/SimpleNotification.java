@@ -6,12 +6,10 @@ import io.github.sanyavertolet.edukate.notifier.dtos.SimpleNotificationDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.TypeAlias;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@TypeAlias("simple")
 @JsonTypeName("simple")
 public final class SimpleNotification extends BaseNotification {
     private String title;

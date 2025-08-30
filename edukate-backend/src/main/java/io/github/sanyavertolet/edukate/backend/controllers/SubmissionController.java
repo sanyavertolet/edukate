@@ -165,11 +165,11 @@ public class SubmissionController {
                         submissionService.findSubmissionsByProblemIdAndUserId(
                                 problemId, user.getId(),
                                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")))
-                .flatMap(submissionService::prepareDto);
+                .flatMapSequential(submissionService::prepareDto);
     }
 
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
-    @GetMapping
+    @GetMapping("/all")
     @Operation(
             summary = "Get all successful submissions",
             description = "Retrieves paginated list of all submissions with SUCCESS status"

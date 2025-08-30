@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.ToString;
-import org.springframework.data.annotation.TypeAlias;
 
 import java.util.Arrays;
 
@@ -23,7 +22,6 @@ import java.util.Arrays;
 })
 @ToString
 @JsonTypeName("base")
-@TypeAlias("base")
 abstract public class FileKey {
     @Getter
     protected String fileName;
