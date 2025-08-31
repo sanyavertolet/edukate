@@ -21,7 +21,7 @@ interface ResultComponentProps {
     refreshProblem: () => void;
 }
 
-// todo: fix Mark as done button when submissions are finished
+// TODO: fix Mark as done button when submissions are finished
 export function ResultAccordionComponent({ problem /*, refreshProblem */ }: ResultComponentProps) {
     const [result, setResult] = useState<Result>();
     const resultRequest = useResultRequest(problem.id);
@@ -34,7 +34,7 @@ export function ResultAccordionComponent({ problem /*, refreshProblem */ }: Resu
         [resultRequest.data, resultRequest.isLoading, resultRequest.error]
     );
 
-    // fixme
+    // FIXME: implement submission mutation
     // const submitMutation = useSubmitMutation(problem.id);
     // useEffect(() => {
     //     if (submitMutation.isSuccess && submitMutation.data) {

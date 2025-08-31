@@ -24,7 +24,7 @@ export function ProblemComponent({ problemId, onLoaded }: ProblemComponentProps)
         }
     }}, [data, isLoading, error]);
 
-    // todo: page is being reloaded after successful submission, needs to be fixed
+    // TODO: page is being reloaded after successful submission, needs to be fixed
     const refreshProblem = () => { setShouldRefresh((flag) => !flag); };
 
     return (
