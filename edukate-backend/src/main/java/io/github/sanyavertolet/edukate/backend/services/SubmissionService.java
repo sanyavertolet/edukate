@@ -14,6 +14,7 @@ import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,9 @@ public class SubmissionService {
                 .flatMap(submission ->
                         submissionFileService.moveSubmissionFiles(userId, submission.getId(), submissionRequest)
                                 .then(Flux.fromIterable(submissionRequest.getFileNames())
-                                        .map(fileName -> SubmissionFileKey.of(userId, submissionRequest.getProblemId(), submission.getId(), fileName).toString())
+                                        .map(fileName -> SubmissionFileKey.of(
+                                                userId, submissionRequest.getProblemId(), submission.getId(), fileName
+                                        ).toString())
                                         .flatMap(fileObjectRepository::findByKeyPath)
                                         .map(FileObject::getId)
                                         .collectList()
@@ -63,6 +66,16 @@ public class SubmissionService {
 
     public Flux<Submission> findSubmissionsByProblemIdAndUserId(String problemId, String userId, Pageable pageable) {
         return submissionRepository.findAllByProblemIdAndUserId(problemId, userId, pageable);
+    }
+
+    /**
+     * If problemId is null, then returns submissions by user id regardless of the problem.
+     */
+    public Flux<Submission> findUserSubmissions(String userId, @Nullable String problemId, Pageable pageable) {
+        if (problemId != null) {
+            return submissionRepository.findAllByProblemIdAndUserId(problemId, userId, pageable);
+        }
+        return submissionRepository.findAllByUserId(userId, pageable);
     }
 
     public Flux<Submission> findSubmissionsByStatusIn(List<Submission.Status> statuses, Pageable pageable) {
