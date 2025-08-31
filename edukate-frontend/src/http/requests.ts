@@ -79,25 +79,6 @@ export function useSubmitProblemMutation() {
     });
 }
 
-// todo: remove me
-export function useMySubmissionsRequest(problemId: string) {
-    const { user } = useAuthContext();
-    return useQuery({
-        queryKey: ['submission', problemId, user?.name],
-        queryFn: async () => {
-            if (!user) {
-                throw new Error("User not signed in");
-            }
-            try {
-                const response = await client.get<Submission[]>(`/api/v1/submissions/${problemId}/${user.name}`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
-    });
-}
-
 export function useResultRequest(problemId: string) {
     return useQuery({
         queryKey: ['result', problemId],
@@ -336,6 +317,27 @@ export function useBundleUserListQuery(shareCode: string) {
             }
             try {
                 const response = await client.get<UserWithRole[]>(`/api/v1/bundles/${shareCode}/users`);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useProblemSubmissionsQuery(problemId?: string) {
+    const { isAuthorized } = useAuthContext();
+    return useQuery({
+        queryKey: ['problem-submissions', problemId],
+        queryFn: async () => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const params = problemId ? { problemId } : undefined;
+                const response = await client.get<Submission[]>(`/api/v1/submissions/my`, {
+                    params: params
+                });
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);

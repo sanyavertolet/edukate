@@ -3,7 +3,7 @@ import { Box, TextField, Button, Typography } from '@mui/material';
 import { useSignUpMutation } from "../../http/auth";
 import { useNavigate } from "react-router-dom";
 import { validate } from "../../utils/validation";
-import {queryClient} from "../../http/queryClient.ts";
+import { queryClient } from "../../http/queryClient";
 
 interface FormDataItem {
     value: string;
