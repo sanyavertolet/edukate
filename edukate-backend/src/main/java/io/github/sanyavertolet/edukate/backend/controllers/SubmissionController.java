@@ -24,6 +24,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -53,7 +54,7 @@ public class SubmissionController {
     private final SubmissionService submissionService;
     private final BaseFileService baseFileService;
 
-    @GetMapping("/by-id")
+    @GetMapping("/by-id/{id}")
     @Operation(
             summary = "Get submission by ID",
             description = "Retrieves a specific submission by its ID for the authenticated user"
@@ -63,15 +64,15 @@ public class SubmissionController {
                     content = @Content(schema = @Schema(implementation = SubmissionDto.class))),
             @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied - user name does not match",
+            @ApiResponse(responseCode = "403", description = "Access denied - user id does not match",
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Submission not found", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "id", description = "Submission ID", in = QUERY, required = true),
+            @Parameter(name = "id", description = "Submission ID", in = PATH, required = true),
     })
     public Mono<SubmissionDto> getSubmissionById(
-            @RequestParam @NotBlank String id,
+            @PathVariable @NotBlank String id,
             Authentication authentication
     ) {
         return submissionService.findSubmissionById(id)
@@ -161,10 +162,42 @@ public class SubmissionController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "User " + username + " not found")))
-                .flatMapMany(user ->
-                        submissionService.findSubmissionsByProblemIdAndUserId(
-                                problemId, user.getId(),
-                                PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")))
+                .flatMapMany(user -> submissionService.findSubmissionsByProblemIdAndUserId(
+                        problemId, user.getId(), sortedPageable(page, size)
+                ))
+                .flatMapSequential(submissionService::prepareDto);
+    }
+
+    @GetMapping("/my")
+    @Operation(
+            summary = "Get my submissions",
+            description = "Requires an authenticated session via the gateway cookie. " +
+                    "Returns the authenticated user's submissions, optionally filtered by problemId. " +
+                    "Results are paginated (page, size) and sorted by createdAt in descending order."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved submissions", content = @Content(
+                    array = @ArraySchema(schema = @Schema(implementation = SubmissionDto.class)))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    @Parameters({
+            @Parameter(name = "problemId", in = QUERY,
+                    description = "Optional problem ID to filter the user's submissions"),
+            @Parameter(name = "page", in = QUERY, description = "Page number (zero-based)",
+                    schema = @Schema(minimum = "0")),
+            @Parameter(name = "size", in = QUERY, description = "Number of submissions per page (max 100)",
+                    schema = @Schema(minimum = "1", maximum = "100"))
+    })
+    public Flux<SubmissionDto> getMySubmissions(
+            @RequestParam(required = false) String problemId,
+            @RequestParam(defaultValue = "0") @PositiveOrZero int page,
+            @RequestParam(defaultValue = "10") @Positive int size,
+            Authentication authentication
+    ) {
+        return AuthUtils.monoId(authentication)
+                .flatMapMany(userId ->
+                        submissionService.findUserSubmissions(userId, problemId, sortedPageable(page, size))
+                )
                 .flatMapSequential(submissionService::prepareDto);
     }
 
@@ -191,9 +224,12 @@ public class SubmissionController {
             @RequestParam(defaultValue = "10") @Positive int size
     ) {
         return submissionService.findSubmissionsByStatusIn(
-                List.of(Submission.Status.SUCCESS),
-                PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
+                List.of(Submission.Status.SUCCESS), sortedPageable(page, size)
         )
                 .flatMap(submissionService::prepareDto);
+    }
+
+    private Pageable sortedPageable(int page, int size) {
+        return PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
     }
 }
