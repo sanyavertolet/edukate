@@ -1,12 +1,14 @@
 import { Alert, Box, CircularProgress, Stack } from "@mui/material";
-import ProblemCardComponent from "./ProblemCardComponent";
-import SolutionCardComponent from "./SolutionCardComponent";
+import ProblemCardComponent from "./cards/ProblemCardComponent";
+import SolutionCardComponent from "./cards/SolutionCardComponent";
 import { useEffect, useState } from "react";
 import { useProblemRequest } from "../../http/requests";
 import { Problem } from "../../types/problem/Problem";
+import SubmissionsCardComponent from "./cards/SubmissionsCardComponent";
+import { AuthRequired } from "../auth/AuthRequired";
 
 interface ProblemComponentProps {
-    problemId?: string;
+    problemId: string;
     onLoaded?: (problem: Problem) => void;
 }
 
@@ -32,7 +34,10 @@ export function ProblemComponent({ problemId, onLoaded }: ProblemComponentProps)
             {!isLoading && !error && problem && (
                 <Stack display="flex" justifyContent="center" spacing={ 2 }>
                     <ProblemCardComponent problem={ problem }/>
-                    <SolutionCardComponent problem={ problem } refreshProblem={refreshProblem}/>
+                    <AuthRequired>
+                        <SolutionCardComponent problem={ problem } refreshProblem={refreshProblem}/>
+                        <SubmissionsCardComponent problemId={problem.id}/>
+                    </AuthRequired>
                 </Stack>
             )}
 
