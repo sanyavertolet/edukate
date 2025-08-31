@@ -15,7 +15,7 @@ export default function IndexView() {
       }}
     >
 
-      {/* Текст слева */}
+      {/* Left text */}
       <Box sx={{ position: 'relative', zIndex: 1, maxWidth: { xs: '100%', md: '60%' } }}>
         <Typography
           component="h1"
@@ -65,7 +65,7 @@ export default function IndexView() {
         </Typography>
       </Box>
 
-      {/* Кнопка */}
+      {/* Button */}
       <Box
         sx={{
           position: 'relative',
