@@ -345,3 +345,18 @@ export function useProblemSubmissionsQuery(problemId?: string) {
         }
     })
 }
+
+export function useRandomProblemIdQuery() {
+    return useQuery({
+        queryKey: ['random-problem'],
+        queryFn: async () => {
+            try {
+                const response = await client.get<string>(`/api/v1/problems/random`);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        },
+        enabled: false
+    })
+}
