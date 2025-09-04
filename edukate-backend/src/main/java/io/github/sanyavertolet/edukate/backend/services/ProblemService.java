@@ -7,10 +7,12 @@ import io.github.sanyavertolet.edukate.backend.entities.files.ProblemFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.utils.Sorts;
+import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -57,6 +59,12 @@ public class ProblemService {
     public Flux<String> getProblemIdsByPrefix(@NonNull String prefix, int limit) {
         return problemRepository.findProblemsByIdStartingWith(prefix, Pageable.ofSize(limit))
                 .map(Problem::getId);
+    }
+
+    public Mono<String> getRandomUnsolvedProblemId(@Nullable Authentication authentication) {
+        return AuthUtils.monoId(authentication)
+                .flatMap(problemRepository::findRandomUnsolvedProblemId)
+                .switchIfEmpty(problemRepository.findRandomProblemId());
     }
 
     public Mono<ProblemDto> prepareDto(@NonNull Problem problem, Authentication authentication) {
