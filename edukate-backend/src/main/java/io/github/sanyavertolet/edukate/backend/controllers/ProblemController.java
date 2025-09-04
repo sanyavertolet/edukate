@@ -44,8 +44,8 @@ public class ProblemController {
             description = "Retrieves a paginated list of problem metadata"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved problem list",
-                    content = @Content(schema = @Schema(implementation = ProblemMetadata.class))),
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved problem list", content = @Content(
+                    array = @ArraySchema(schema = @Schema(implementation = ProblemMetadata.class)))),
             @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content)
     })
     @Parameters({
@@ -120,5 +120,22 @@ public class ProblemController {
         return problemService.findProblemById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found")))
                 .flatMap(problem -> problemService.prepareDto(problem, authentication));
+    }
+
+    @GetMapping("/random")
+    @Operation(
+            summary = "Get random problem ID",
+            description = "Returns a random problem ID. If the user is authenticated, prioritizes problems" +
+                    "the user hasn't solved yet; otherwise returns any random problem."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved random problem ID",
+                    content = @Content(mediaType = "text/plain", schema = @Schema(implementation = String.class))
+            )
+    })
+    public Mono<String> getRandomUnsolvedProblemId(Authentication authentication) {
+        return problemService.getRandomUnsolvedProblemId(authentication);
     }
 }

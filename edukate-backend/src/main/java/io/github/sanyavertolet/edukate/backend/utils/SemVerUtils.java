@@ -1,30 +1,11 @@
 package io.github.sanyavertolet.edukate.backend.utils;
 
-import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 public final class SemVerUtils {
-
-    /**
-     * Warning: changing this field will destroy the sorting logic.
-     *
-     * @see ProblemRepository#findProblemsWithMissingIndices
-     */
     public static String majorFieldName = "majorId";
-
-    /**
-     * Warning: changing this field will destroy the sorting logic.
-     *
-     * @see ProblemRepository#findProblemsWithMissingIndices
-     */
     public static String minorFieldName = "minorId";
-
-    /**
-     * Warning: changing this field will destroy the sorting logic.
-     *
-     * @see ProblemRepository#findProblemsWithMissingIndices
-     */
     public static String patchFieldName = "patchId";
 
     private SemVerUtils() { }
