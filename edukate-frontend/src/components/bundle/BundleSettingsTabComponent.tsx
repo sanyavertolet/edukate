@@ -10,7 +10,7 @@ interface BundleUserManagementComponentProps {
 const BundleUserManagementComponent: FC<BundleUserManagementComponentProps> = ({ bundle }) => {
     return (
         <Box>
-            <Typography color={"primary"} variant={"h4"}>
+            <Typography color={"primary"} variant={"h4"} align="center">
                 Users
             </Typography>
             <UserRolesManagementComponent shareCode={ bundle.shareCode }/>
@@ -25,7 +25,7 @@ interface BundleSettingsTabComponentProps {
 export const BundleSettingsTabComponent: FC<BundleSettingsTabComponentProps> = ({ bundle }) => {
     return (
         <Box>
-            <Paper variant={"outlined"} sx={{ justifySelf: "center", p: 2, m: 2, width: { xs: "100%", md: "50%" } }}>
+            <Paper variant={"outlined"} sx={{ p: 2, m: 2, mx: "auto", width: { xs: "100%", md: "50%" }}}>
                 <BundleUserManagementComponent bundle={bundle}/>
             </Paper>
         </Box>
