@@ -10,7 +10,7 @@ import { ProblemMetadata } from "../types/problem/ProblemMetadata";
 import { Result } from "../types/problem/Result";
 import { CreateSubmissionRequest } from "../types/submission/CreateSubmissionRequest";
 import { Submission } from "../types/submission/Submission";
-import { UserWithRole } from "../types/user/UserWithRole";
+import { UserNameWithRole } from "../types/user/UserNameWithRole";
 import { defaultErrorHandler } from "./utils";
 import { NotificationStatistics } from "../types/notification/NotificationStatistics";
 
@@ -316,7 +316,25 @@ export function useBundleUserListQuery(shareCode: string) {
                 return null;
             }
             try {
-                const response = await client.get<UserWithRole[]>(`/api/v1/bundles/${shareCode}/users`);
+                const response = await client.get<UserNameWithRole[]>(`/api/v1/bundles/${shareCode}/users`);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
+    })
+}
+
+export function useBundleInvitedUserListQuery(shareCode: string) {
+    const { isAuthorized } = useAuthContext();
+    return useQuery({
+        queryKey: ['bundle', 'invited-user', 'list', shareCode, isAuthorized],
+        queryFn: async () => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.get<string[]>(`/api/v1/bundles/${shareCode}/invited-users`);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
@@ -358,5 +376,25 @@ export function useRandomProblemIdQuery() {
             }
         },
         enabled: false
+    })
+}
+
+export function useBundleExpireInviteMutation() {
+    const { isAuthorized } = useAuthContext();
+    return useMutation({
+        mutationKey: ['bundle', 'user', 'expire-invite'],
+        mutationFn: async ({ shareCode, username }: { shareCode: string, username: string }) => {
+            if (!isAuthorized) {
+                return null;
+            }
+            try {
+                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/expire-invite`, undefined, {
+                    params: { shareCode, inviteeName: username }
+                });
+                return response.status;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        }
     })
 }

@@ -1,7 +1,7 @@
 import { FC } from "react";
-import {Box, Paper, Typography} from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import { Bundle } from "../../types/bundle/Bundle";
-import { UserRolesManagementComponent } from "../user/UserRolesManagementComponent";
+import { BundleUserManagement } from "../user/BundleUserManagement";
 
 interface BundleUserManagementComponentProps {
     bundle: Bundle;
@@ -13,7 +13,7 @@ const BundleUserManagementComponent: FC<BundleUserManagementComponentProps> = ({
             <Typography color={"primary"} variant={"h4"} align="center">
                 Users
             </Typography>
-            <UserRolesManagementComponent shareCode={ bundle.shareCode }/>
+            <BundleUserManagement shareCode={ bundle.shareCode }/>
         </Box>
     )
 };
