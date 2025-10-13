@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-    public Flux<User> findUsersByIds(List<String> userIds) {
+    public Flux<User> findUsersByIds(Collection<String> userIds) {
         return userRepository.findUsersByIdIn(userIds);
     }
 

@@ -265,6 +265,40 @@ public class BundleController {
                 });
     }
 
+    @PostMapping("/{shareCode}/expire-invite")
+    @Operation(
+            summary = "Expire bundle invitation",
+            description = "Cancels an existing invitation for a specific user"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully expired invitation",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "400", description = "User is not invited", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied - Insufficient permissions in bundle",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Bundle or user not found", content = @Content)
+    })
+    @Parameters({
+            @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
+            @Parameter(name = "inviteeName", description = "Username of the user whose invitation to cancel",
+                    in = QUERY, required = true),
+    })
+    public Mono<String> expireInvite(
+            @PathVariable @NotBlank String shareCode,
+            @RequestParam @NotBlank String inviteeName,
+            Authentication authentication
+    ) {
+        return userService.findUserByName(inviteeName)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User " + inviteeName + " not found"
+                )))
+                .flatMap(invitee ->
+                        bundleService.expireInvite(shareCode, AuthUtils.id(authentication), invitee.getId())
+                )
+                .thenReturn("Invitation for user " + inviteeName + " has been expired in bundle " + shareCode);
+    }
+
     @PostMapping("/{shareCode}/reply-invite")
     @Operation(
             summary = "Reply to bundle invitation",
@@ -312,19 +346,33 @@ public class BundleController {
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "Bundle not found", content = @Content)
     })
-    @Parameters({
-            @Parameter(name = "shareCode", description = "Bundle share code", in = PATH, required = true),
-    })
-    public Mono<List<UserNameWithRole>> getUserRoles(
+    public Flux<UserNameWithRole> getUserRoles(
             @PathVariable @NotBlank String shareCode,
             Authentication authentication
     ) {
-        return bundleService.getBundleUserIdsWithRoles(shareCode, authentication)
-                .flatMap(entry -> userService.findUserById(entry.getKey())
-                        .map(User::getName)
-                        .map(userName -> new UserNameWithRole(userName, entry.getValue()))
-                )
-                .collectList();
+        return bundleService.getBundleUsers(shareCode, authentication);
+    }
+
+    @GetMapping("/{shareCode}/invited-users")
+    @Operation(
+            summary = "Get invited user names in bundle",
+            description = "Retrieves the list of invited (pending) user names"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved invited user names",
+                    content = @Content(array = @ArraySchema(
+                            schema = @Schema(implementation = String.class)))),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Bundle not found", content = @Content)
+    })
+    public Mono<List<String>> getInvitedUsers(
+            @PathVariable @NotBlank String shareCode,
+            Authentication authentication
+    ) {
+        return bundleService.getBundleInvitedUsers(shareCode, authentication).collectList();
     }
 
     @PostMapping("/{shareCode}/role")

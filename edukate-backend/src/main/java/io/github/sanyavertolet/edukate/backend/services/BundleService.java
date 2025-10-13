@@ -1,8 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
-import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
-import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata;
-import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
+import io.github.sanyavertolet.edukate.backend.dtos.*;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.BundleRepository;
@@ -19,9 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -111,12 +107,56 @@ public class BundleService {
 
     }
 
-    public Flux<Map.Entry<String, Role>> getBundleUserIdsWithRoles(String shareCode, Authentication authentication) {
+    @Transactional
+    public Mono<Bundle> expireInvite(String shareCode, String inviterId, String inviteeId) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, AuthUtils.id(authentication), Role.MODERATOR))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
-                .map(Bundle::getUserIdRoleMap)
-                .flatMapMany(map -> Flux.fromIterable(map.entrySet()));
+                .filter(bundle -> bundlePermissionEvaluator.hasInvitePermission(bundle, inviterId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.FORBIDDEN, "Not enough permissions to expire invite"
+                )))
+                .filter(bundle -> bundle.isUserInvited(inviteeId))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "User is not invited to this bundle"
+                )))
+                .flatMap(bundle -> {
+                    if (!bundle.removeInvitedUser(inviteeId)) {
+                        return Mono.error(new ResponseStatusException(
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Cannot expire invitation due to internal error"
+                        ));
+                    }
+                    return Mono.just(bundle);
+                })
+                .flatMap(bundleRepository::save);
+    }
+
+    @Transactional
+    public Flux<UserNameWithRole> getBundleUsers(String shareCode, Authentication authentication) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(
+                        bundle, AuthUtils.id(authentication), Role.MODERATOR
+                ))
+                .flatMapMany(bundle -> {
+                    Map<String, Role> userIdRoleMap = bundle.getUserIdRoleMap();
+                    Set<String> userIds = userIdRoleMap.keySet();
+                    return userService.findUsersByIds(userIds)
+                            .map(user -> new UserNameWithRole(
+                                    user.getName(),
+                                    userIdRoleMap.get(user.getId())
+                            ));
+                });
+    }
+
+    @Transactional
+    public Flux<String> getBundleInvitedUsers(String shareCode, Authentication authentication) {
+        return findBundleByShareCode(shareCode)
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(
+                        bundle, AuthUtils.id(authentication), Role.MODERATOR
+                ))
+                .flatMapMany(bundle -> Mono.justOrEmpty(bundle.getInvitedUserIds())
+                        .flatMapMany(userService::findUsersByIds)
+                        .map(User::getName)
+                );
     }
 
     @Transactional
