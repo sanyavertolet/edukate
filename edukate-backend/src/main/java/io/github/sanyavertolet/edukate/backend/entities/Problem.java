@@ -11,7 +11,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -40,18 +39,6 @@ public class Problem {
 
     public enum Status {
         SOLVED, SOLVING, FAILED, NOT_SOLVED
-    }
-
-    public void addImageIfNotPresent(String imageName) {
-        if (images == null) {
-            images = new ArrayList<>();
-            images.add(imageName);
-            return;
-        }
-        boolean contains = images.contains(imageName);
-        if (!contains) {
-            images.add(imageName);
-        }
     }
 
     public ProblemMetadata toProblemMetadata() {

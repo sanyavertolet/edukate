@@ -26,6 +26,12 @@ public class BaseFileService {
         return storage.download(key);
     }
 
+    public Flux<String> getDownloadUrlsByFileObjectIds(Iterable<String> fileObjectIds) {
+        return fileObjectRepository.findAllById(fileObjectIds)
+                .map(FileObject::getKey)
+                .flatMap(storage::getDownloadUrl);
+    }
+
     public Mono<String> getDownloadUrlOrEmpty(FileKey key) {
         return Mono.justOrEmpty(key).filterWhen(storage::doesExist).flatMap(storage::getDownloadUrl);
     }

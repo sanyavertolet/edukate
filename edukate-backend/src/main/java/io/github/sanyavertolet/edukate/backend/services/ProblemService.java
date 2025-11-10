@@ -19,7 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +66,12 @@ public class ProblemService {
                 .switchIfEmpty(problemRepository.findRandomProblemId());
     }
 
+    public Flux<String> problemImageDownloadUrls(@NonNull String problemId, @NonNull List<String> images) {
+        return Flux.fromIterable(images)
+                .map(fileName -> ProblemFileKey.of(problemId, fileName))
+                .flatMap(baseFileService::getDownloadUrlOrEmpty);
+    }
+
     public Mono<ProblemDto> prepareDto(@NonNull Problem problem, Authentication authentication) {
         return Mono.fromCallable(problem::toProblemDto)
                 .flatMap(dto ->
@@ -85,10 +90,7 @@ public class ProblemService {
     }
 
     private Mono<ProblemDto> updateImagesInDto(@NonNull ProblemDto problemDto) {
-        return Flux.fromIterable(Optional.ofNullable(problemDto.getImages()).orElse(List.of()))
-                .map(fileName -> ProblemFileKey.of(problemDto.getId(), fileName))
-                .flatMap(baseFileService::getDownloadUrlOrEmpty)
-                .collectList()
+        return problemImageDownloadUrls(problemDto.getId(), problemDto.getImages()).collectList()
                 .map(problemDto::withImages);
     }
 }
