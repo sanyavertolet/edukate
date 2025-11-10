@@ -22,9 +22,19 @@ export default function PageSkeleton() {
     return (
         <Box>
             <ScreenAdaptingTopBar/>
-            <Box sx={{ paddingY: "2rem" }}>
+            <Box sx={{ paddingY: "2rem", position: "relative" }}>
                 <Outlet/>
-                <ParticlesComponent/>
+                <Box sx={{ 
+                    position: "fixed", 
+                    top: 0, 
+                    left: 0, 
+                    width: "100%", 
+                    height: "100%", 
+                    zIndex: -1,
+                    pointerEvents: "none"
+                }}>
+                    <ParticlesComponent/>
+                </Box>
             </Box>
         </Box>
     );

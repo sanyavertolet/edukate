@@ -9,26 +9,62 @@ type AuthRequiredProps = {
     bypass?: boolean;
 };
 
-export function AuthRequired({children, bypass = false}: AuthRequiredProps) {
-    const { isAuthorized } = useAuthContext();
-    const [isSignUp, setIsSignUp] = useState(false);
-    if (isAuthorized || bypass) { return <>{children}</>; }
-    return (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-            <Paper elevation={3} sx={{maxWidth: "500px", p: 3, display: "flex", flexDirection: "column", gap: 2}}>
-                <Typography variant={"h5"} align={"center"}>Authentication Required</Typography>
-                <Typography variant={"body1"}>You need to sign in to fully access this page.</Typography>
-                { isSignUp
-                    ? <SignUpComponent shouldRefreshInsteadOfNavigate/>
-                    : <SignInComponent shouldRefreshInsteadOfNavigate/>}
-                { isSignUp
-                    ? <Link sx={{ cursor: "pointer" }} onClick={() => setIsSignUp(false)} color={"secondary"}>
-                        I already have an account.
-                    </Link>
-                    : <Link sx={{ cursor: "pointer" }} onClick={() => setIsSignUp(true)} color={"secondary"}>
-                        I don't have an account.
-                    </Link>}
-            </Paper>
-        </Box>
-    )
+export function AuthRequired({ children, bypass = false }: AuthRequiredProps) {
+  const { isAuthorized } = useAuthContext();
+  const [isSignUp, setIsSignUp] = useState(false);
+
+  if (isAuthorized || bypass) return children;
+
+  return (
+    <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          maxWidth: 500,
+          p: 3,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <Typography variant="h5" align="center">
+          Authentication Required
+        </Typography>
+        <Typography variant="body1">
+          Please log in to continue.
+        </Typography>
+
+        {isSignUp ? (
+          <SignUpComponent key="signup" shouldRefreshInsteadOfNavigate />
+        ) : (
+          <SignInComponent key="signin" shouldRefreshInsteadOfNavigate />
+        )}
+
+      {isSignUp ? (
+        <Link
+          component="button"
+          type="button"
+          onClick={() => setIsSignUp(false)}
+          color="secondary"
+          underline="hover"
+          sx={{ alignSelf: "center" }}
+        >
+          Already have an account? Sign in
+        </Link>
+      ) : (
+        <Link
+          component="button"
+          type="button"
+          onClick={() => setIsSignUp(true)}
+          color="secondary"
+          underline="hover"
+          sx={{ alignSelf: "center" }}
+        >
+          Don&apos;t have an account? Sign up
+        </Link>
+      )}
+
+      </Paper>
+    </Box>
+  );
 }

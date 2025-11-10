@@ -8,7 +8,12 @@ export function ScreenAdaptingTopBar(){
     const { isMobile } = useDeviceContext();
 
     return (
-        <AppBar sx={{ position: "static", background: "transparent", backdropFilter: "blur(8px)" }}>
+        <AppBar sx={{ 
+            position: "static", 
+            background: "transparent", 
+            backdropFilter: "blur(8px)",
+            zIndex: 1000
+        }}>
             <Box>
                 <Toolbar>
                     <ToolbarHomeComponent/>
