@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService;
+import io.github.sanyavertolet.edukate.common.checks.SubmissionContext;
 import io.github.sanyavertolet.edukate.common.entities.User;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.NonNull;
@@ -27,12 +28,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SubmissionService {
     private static final String DEFAULT_USER_NAME = "UNKNOWN";
-
     private final SubmissionRepository submissionRepository;
     private final BaseFileService baseFileService;
     private final SubmissionFileService submissionFileService;
     private final UserService userService;
     private final FileObjectRepository fileObjectRepository;
+    private final ProblemService problemService;
 
     @Transactional
     public Mono<Submission> saveSubmission(CreateSubmissionRequest submissionRequest, Authentication authentication) {
@@ -98,5 +99,24 @@ public class SubmissionService {
                         .defaultIfEmpty(DEFAULT_USER_NAME)
                         .map(dto::withUserName)
                 );
+    }
+
+    public Mono<SubmissionContext> prepareContext(@NonNull Submission submission) {
+        return Mono.fromCallable(submission::getProblemId)
+                .flatMap(problemService::findProblemById)
+                .flatMap(problem -> {
+                    String problemText = problem.getText();
+                    return baseFileService.getDownloadUrlsByFileObjectIds(submission.getFileObjectIds()).collectList()
+                            .zipWith(problemService.problemImageDownloadUrls(problem.getId(), problem.getImages())
+                                    .collectList())
+                            .map(tuple -> SubmissionContext.builder()
+                                    .submissionId(submission.getId())
+                                    .problemId(problem.getId())
+                                    .problemText(problemText)
+                                    .submissionImageUrls(tuple.getT1())
+                                    .problemImageUrls(tuple.getT2())
+                                    .build()
+                            );
+                });
     }
 }
