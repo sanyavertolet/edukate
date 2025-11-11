@@ -21,5 +21,6 @@ include("edukate-common")
 include("edukate-gateway")
 include("edukate-auth")
 include("edukate-notifier")
+include("edukate-checker")
 
 includeBuild("gradle/plugins")
