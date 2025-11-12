@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.checker.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{ include "common.labels" (merge (dict "service" .Values.checker) .) | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: checker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        {{ include "pod.common.labels" (merge (dict "service" .Values.checker ) .) | nindent 8 }}
+      annotations:
+        {{ include "pod.common.annotations" (dict "service" .Values.checker ) | nindent 8 }}
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: notifier
+          {{ include "spring-boot.common" (merge (dict "service" .Values.checker) .) | nindent 10 }}
+          env:
+            {{ include "spring-boot.common.env" (merge (dict "service" .Values.checker) .) | nindent 12 }}
+            - name: OPENAI_SYSTEM_PROMPT
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secret
+                  key: prompt
+            - name: OPENAI_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secret
+                  key: model
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-secret
+                  key: key
+          {{ include "spring-boot.management" .Values.checker | nindent 10 }}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.checker.name }}-config
+  namespace: {{ .Values.namespace }}
+data:
+  application.properties: |
+    {{ if .Values.checker.applicationProperties }}
+    {{ .Values.checker.applicationProperties | nindent 4 }}
+    {{ end }}
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+{{ include "service.common.metadata" (dict "service" .Values.checker) | nindent 2 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+    {{ include "service.common.ports" (dict "service" .Values.checker) | nindent 4 }}
+  selector:
+    {{ include "service.common.selectors" (dict "service" .Values.checker) | nindent 4 }}
