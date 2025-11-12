@@ -45,6 +45,15 @@ notifier:
   clusterIP: null
   applicationProperties:
 
+checker:
+  name: checker
+  imageName: edukate-checker
+  pullPolicy: Always
+  containerPort: 5830
+  managementPort: 5831
+  clusterIP: null
+  applicationProperties:
+
 ingress:
   tls:
     profile: "staging"
