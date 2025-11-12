@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.checker.services;
 
 import io.github.sanyavertolet.edukate.checker.domain.RequestContext;
-import io.github.sanyavertolet.edukate.common.checks.ModelResponse;
+import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
