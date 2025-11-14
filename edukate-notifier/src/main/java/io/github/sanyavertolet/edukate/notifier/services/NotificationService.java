@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.notifier.services;
 
+import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.github.sanyavertolet.edukate.notifier.dtos.NotificationStatistics;
 import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification;
@@ -24,6 +25,13 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     @Transactional
+    public Mono<BaseNotification> saveIfAbsent(BaseNotificationCreateRequest createRequest) {
+        return Mono.just(createRequest)
+                .map(BaseNotification::fromCreationRequest)
+                .flatMap(this::saveIfAbsent);
+    }
+
+    @Transactional
     public Mono<BaseNotification> saveIfAbsent(BaseNotification notification) {
         return notificationRepository.findNotificationByUuid(notification.getUuid())
                 .doOnNext(existingNotification -> log.debug(
@@ -32,7 +40,9 @@ public class NotificationService {
                 ))
                 .switchIfEmpty(notificationRepository.save(notification).doOnSuccess(savedNotification ->
                         log.info("Saved new notification with UUID {}: {}", notification.getUuid(), savedNotification)
-                ));
+                ))
+                .doOnSuccess(notif -> log.info("Successfully saved notification: {}", notif))
+                .doOnError(e -> log.error("Error saving notification: {}", notification.getUuid(), e));
     }
 
     public Flux<BaseNotification> getUserNotifications(

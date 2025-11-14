@@ -25,9 +25,11 @@ repositories {
 dependencies {
     implementation(projects.edukateCommon)
     implementation(projects.edukateAuth)
+    implementation(projects.edukateMessaging)
 
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.security)
+    implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.mongodb.reactive)
