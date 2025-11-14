@@ -29,11 +29,6 @@ public class NotificationInternalController {
     @PostMapping
     public Mono<String> postNotification(@RequestBody BaseNotificationCreateRequest creationRequest) {
         log.info("Received notification request: {}", creationRequest);
-        return Mono.just(creationRequest)
-                .map(BaseNotification::fromCreationRequest)
-                .flatMap(notificationService::saveIfAbsent)
-                .doOnSuccess(notification -> log.info("Successfully saved notification: {}", notification))
-                .doOnError(e -> log.error("Error saving notification: {}", creationRequest, e))
-                .map(BaseNotification::getUuid);
+        return notificationService.saveIfAbsent(creationRequest).map(BaseNotification::getUuid);
     }
 }
