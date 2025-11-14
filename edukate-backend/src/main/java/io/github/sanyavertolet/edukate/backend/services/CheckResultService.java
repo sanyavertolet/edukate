@@ -14,4 +14,9 @@ public class CheckResultService {
     public Mono<CheckResult> save(CheckResult checkResult) {
         return checkResultRepository.save(checkResult);
     }
+
+    public Mono<CheckResult> saveSelfCheckResult(String submissionId) {
+        return Mono.just(CheckResult.self().submissionId(submissionId).build())
+                .flatMap(checkResultRepository::save);
+    }
 }

@@ -2,8 +2,6 @@ plugins {
     java
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
-
-    id("io.github.sanyavertolet.edukate.buildutils.spring-boot-app-configuration")
 }
 
 java {
@@ -23,23 +21,9 @@ repositories {
 }
 
 dependencies {
-    implementation(projects.edukateCommon)
-    implementation(projects.edukateAuth)
-    implementation(projects.edukateMessaging)
-
-    implementation(libs.spring.boot.starter.webflux)
-    implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.amqp)
-    implementation(libs.spring.ai.starter.model.openai)
-
-    developmentOnly(libs.spring.boot.devtools)
-    developmentOnly(libs.spring.boot.docker.compose)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
 }

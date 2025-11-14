@@ -38,4 +38,5 @@ out/
 
 /mongo-data/
 /minio-data/
+/rabbitmq-data/
 /pdf-cracker/data/

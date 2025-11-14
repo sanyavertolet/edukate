@@ -14,17 +14,18 @@ public class CheckerService {
     private final MediaContentResolver mediaContentResolver;
     private final ResultPublisher resultPublisher;
 
-    public Mono<Void> runCheck(String submissionId) {
-        return submissionFetcher.fetch(submissionId)
-                .flatMap(this::buildRequestContext)
+    public Mono<Void> runCheck(SubmissionContext context) {
+        return buildRequestContext(context)
                 .flatMap(aiService::evaluate)
-                .map(modelResponse -> modelResponse.toCheckResult(submissionId))
-                // todo: save detailed results into a local database
+                .map(modelResponse -> modelResponse.toCheckResult(context.getSubmissionId()))
+                // todo: create a stub of CheckResult and report an error occurred
                 .flatMap(resultPublisher::publish)
                 // todo: notify the user about the result
-                // todo: create a stub of CheckResult and report an error occurred
-                .then()
-                ;
+                .then();
+    }
+
+    public Mono<Void> runCheck(String submissionId) {
+        return submissionFetcher.fetch(submissionId).flatMap(this::runCheck);
     }
 
     private Mono<RequestContext> buildRequestContext(SubmissionContext submissionContext) {

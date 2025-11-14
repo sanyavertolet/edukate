@@ -1,6 +1,5 @@
 package io.github.sanyavertolet.edukate.backend.controllers;
 
-import io.github.sanyavertolet.edukate.backend.domain.CheckType;
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
@@ -95,10 +94,6 @@ public class SubmissionController {
                     content = @Content),
             @ApiResponse(responseCode = "404", description = "User, problem, or files not found", content = @Content),
     })
-    @Parameters({
-            @Parameter(name = "check", in = QUERY,
-                    description = "Type of check to perform on the submission. Reserved for future use"),
-    })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
             content = @Content(
@@ -108,7 +103,6 @@ public class SubmissionController {
     )
     public Mono<SubmissionDto> uploadSubmission(
             @RequestBody @Valid CreateSubmissionRequest submissionRequest,
-            @RequestParam(required = false, defaultValue = "SELF", name = "check") CheckType checkType,
             Authentication authentication
     ) {
         return userService.findUserByAuthentication(authentication)
