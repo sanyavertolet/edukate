@@ -32,6 +32,7 @@ public class ModelResponse {
 
     public CheckResult toCheckResult(String submissionId) {
         return CheckResult.builder()
+                .id(null)
                 .submissionId(submissionId)
                 .status(status)
                 .trustLevel(trustLevel)
