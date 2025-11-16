@@ -1,12 +1,17 @@
 package io.github.sanyavertolet.edukate.common.notifications;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
+@SuperBuilder
+@ToString(callSuper = true)
 @JsonTypeName("simple")
 public final class SimpleNotificationCreateRequest extends BaseNotificationCreateRequest {
     @NotBlank
@@ -16,6 +21,7 @@ public final class SimpleNotificationCreateRequest extends BaseNotificationCreat
     @NotBlank
     private String source;
 
+    @JsonCreator
     public SimpleNotificationCreateRequest(
             String uuid, String targetUserId, String title, String message, String source
     ) {
@@ -23,11 +29,5 @@ public final class SimpleNotificationCreateRequest extends BaseNotificationCreat
         this.title = title;
         this.message = message;
         this.source = source;
-    }
-
-    public static SimpleNotificationCreateRequest of(
-            String uuid, String targetUserId, String title, String message, String source
-    ) {
-        return new SimpleNotificationCreateRequest(uuid, targetUserId, title, message, source);
     }
 }

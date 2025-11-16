@@ -1,10 +1,12 @@
 package io.github.sanyavertolet.edukate.common.notifications;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import org.springframework.data.annotation.PersistenceCreator;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Objects;
 
@@ -19,6 +21,8 @@ import java.util.Objects;
         @JsonSubTypes.Type(value = InviteNotificationCreateRequest.class, name = "invite")
 })
 @Getter
+@ToString
+@SuperBuilder
 public sealed class BaseNotificationCreateRequest permits
         SimpleNotificationCreateRequest,
         InviteNotificationCreateRequest {
@@ -27,7 +31,7 @@ public sealed class BaseNotificationCreateRequest permits
     @NotBlank
     private final String targetUserId;
 
-    @PersistenceCreator
+    @JsonCreator
     public BaseNotificationCreateRequest(String uuid, String targetUserId) {
         this.uuid = Objects.requireNonNull(uuid, "UUID must not be null");
         this.targetUserId = Objects.requireNonNull(targetUserId, "userId must not be null");

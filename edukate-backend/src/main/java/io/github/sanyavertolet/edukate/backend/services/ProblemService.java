@@ -51,8 +51,8 @@ public class ProblemService {
         return problemRepository.count();
     }
 
-    public Mono<Boolean> deleteProblemById(@NonNull String id) {
-        return problemRepository.deleteById(id).thenReturn(true).onErrorReturn(false);
+    public Mono<Void> deleteProblemById(@NonNull String id) {
+        return problemRepository.deleteById(id);
     }
 
     public Flux<String> getProblemIdsByPrefix(@NonNull String prefix, int limit) {

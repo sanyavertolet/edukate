@@ -28,7 +28,7 @@ public class ProblemInternalController {
     }
 
     @DeleteMapping("/{id}")
-    public Mono<Boolean> deleteProblem(@PathVariable String id) {
-        return problemService.deleteProblemById(id);
+    public Mono<String> deleteProblem(@PathVariable String id) {
+        return problemService.deleteProblemById(id).thenReturn(id);
     }
 }
