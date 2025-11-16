@@ -6,7 +6,7 @@ import io.github.sanyavertolet.edukate.backend.services.BundleService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
 import io.github.sanyavertolet.edukate.common.Role;
 import io.github.sanyavertolet.edukate.common.entities.User;
-import io.github.sanyavertolet.edukate.common.services.HttpNotifierService;
+import io.github.sanyavertolet.edukate.common.services.Notifier;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,7 +46,7 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 public class BundleController {
     private final BundleService bundleService;
     private final UserService userService;
-    private final HttpNotifierService notifierService;
+    private final Notifier notifier;
 
     @PostMapping
     @Operation(
@@ -258,7 +258,7 @@ public class BundleController {
                 .flatMap(tuple -> {
                     User invitee = tuple.getT1();
                     Bundle bundle = tuple.getT2();
-                    return notifierService.notifyInvite(
+                    return notifier.notifyInvite(
                             invitee.getId(), authentication.getName(), bundle.getName(), bundle.getShareCode()
                     )
                             .thenReturn("User " + inviteeName + " has been invited to bundle " + shareCode);
