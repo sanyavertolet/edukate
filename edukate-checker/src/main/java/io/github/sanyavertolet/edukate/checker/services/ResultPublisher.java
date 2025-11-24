@@ -1,8 +1,9 @@
 package io.github.sanyavertolet.edukate.checker.services;
 
-import io.github.sanyavertolet.edukate.common.checks.CheckResult;
+import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage;
+import lombok.NonNull;
 import reactor.core.publisher.Mono;
 
 public interface ResultPublisher {
-    Mono<Void> publish(CheckResult result);
+    Mono<Void> publish(@NonNull CheckResultMessage result);
 }

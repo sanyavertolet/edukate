@@ -37,7 +37,7 @@ public class ProblemStatusDecisionManager {
                 .map(UserProblemStatus::getBestStatus)
                 .map(best -> switch (best) {
                     case SUCCESS -> Problem.Status.SOLVED;
-                    case FAILED  -> Problem.Status.FAILED;
+                    case FAILED -> Problem.Status.FAILED;
                     case PENDING -> Problem.Status.SOLVING;
                 })
                 .defaultIfEmpty(Problem.Status.NOT_SOLVED);
