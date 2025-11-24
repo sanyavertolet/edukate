@@ -2,11 +2,12 @@ package io.github.sanyavertolet.edukate.checker.dtos;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType;
-import io.github.sanyavertolet.edukate.common.checks.CheckResult;
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class ModelResponse {
     @JsonPropertyDescription(
             "Result of the automated check: 'SUCCESS' when the submission is correct; " +
@@ -17,7 +18,7 @@ public class ModelResponse {
     @JsonPropertyDescription(
             "Model confidence in the check result, from 0.0 (no confidence) to 1.0 (highest confidence)."
     )
-    private Float trustLevel;
+    private float trustLevel;
 
     @JsonPropertyDescription(
             "Type of the detected error, or 'NONE' when no error is present. Must be 'NONE' when status is 'SUCCESS'."
@@ -29,15 +30,4 @@ public class ModelResponse {
                     "for a correct solution, a short confirmation or brief rationale."
     )
     private String explanation;
-
-    public CheckResult toCheckResult(String submissionId) {
-        return CheckResult.builder()
-                .id(null)
-                .submissionId(submissionId)
-                .status(status)
-                .trustLevel(trustLevel)
-                .errorType(errorType)
-                .explanation(explanation)
-                .build();
-    }
 }

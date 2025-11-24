@@ -1,7 +1,8 @@
-package io.github.sanyavertolet.edukate.backend.listeners;
+package io.github.sanyavertolet.edukate.backend.savelisteners;
 
 import com.mongodb.client.model.UpdateOptions;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
+import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class SubmissionAfterSaveListener extends AbstractMongoEventListener<Subm
         Submission s = event.getSource();
         String userId = s.getUserId();
         String problemId = s.getProblemId();
-        Submission.Status status = s.getStatus();
+        SubmissionStatus status = s.getStatus();
         String submissionId = s.getId();
 
         Instant createdAt = s.getCreatedAt();

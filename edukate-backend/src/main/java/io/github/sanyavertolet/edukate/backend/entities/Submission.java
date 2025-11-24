@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.entities;
 
+import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,22 +19,16 @@ public class Submission {
     private String id;
     private String problemId;
     private String userId;
-    private Status status;
+    private SubmissionStatus status;
     private List<String> fileObjectIds;
 
     @CreatedDate
     private Instant createdAt;
 
-    public enum Status {
-        PENDING,
-        SUCCESS,
-        FAILED
-    }
-
     public Submission(String problemId, String userId) {
         this.problemId = problemId;
         this.userId = userId;
-        this.status = Status.PENDING;
+        this.status = SubmissionStatus.PENDING;
         this.fileObjectIds = new ArrayList<>();
     }
 

@@ -1,4 +1,4 @@
-package io.github.sanyavertolet.edukate.backend.listeners;
+package io.github.sanyavertolet.edukate.backend.savelisteners;
 
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.backend.utils.SemVerUtils;

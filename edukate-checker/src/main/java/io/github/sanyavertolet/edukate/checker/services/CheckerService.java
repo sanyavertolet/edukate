@@ -1,39 +1,36 @@
 package io.github.sanyavertolet.edukate.checker.services;
 
 import io.github.sanyavertolet.edukate.checker.domain.RequestContext;
+import io.github.sanyavertolet.edukate.checker.utils.CheckResultMessageUtils;
+import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage;
 import io.github.sanyavertolet.edukate.common.checks.SubmissionContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CheckerService {
-    private final SubmissionFetcher submissionFetcher;
-    private final AiService aiService;
+    private final ChatService chatService;
     private final MediaContentResolver mediaContentResolver;
-    private final ResultPublisher resultPublisher;
 
-    public Mono<Void> runCheck(SubmissionContext context) {
+    public Mono<CheckResultMessage> runCheck(SubmissionContext context) {
         return buildRequestContext(context)
-                .flatMap(aiService::evaluate)
-                .map(modelResponse -> modelResponse.toCheckResult(context.getSubmissionId()))
-                // todo: create a stub of CheckResult and report an error occurred
-                .flatMap(resultPublisher::publish)
-                // todo: notify the user about the result
-                .then();
-    }
-
-    public Mono<Void> runCheck(String submissionId) {
-        return submissionFetcher.fetch(submissionId).flatMap(this::runCheck);
+                .flatMap(chatService::makeRequest)
+                .map(modelResponse -> CheckResultMessageUtils.success(modelResponse, context))
+                .onErrorResume(ex -> Mono.just(CheckResultMessageUtils.error(context))
+                        .doOnNext(_ -> log.error("Failed to check submission", ex))
+                );
     }
 
     private Mono<RequestContext> buildRequestContext(SubmissionContext submissionContext) {
-        return Mono.just(submissionContext)
-                .flatMap(ctx -> Mono.zip(
-                        mediaContentResolver.resolveMedia(ctx.getProblemImageUrls()).collectList(),
-                        mediaContentResolver.resolveMedia(ctx.getSubmissionImageUrls()).collectList()
-                ))
-                .map(tuple -> new RequestContext(submissionContext.getProblemText(), tuple.getT1(), tuple.getT2()));
+        return Mono.zip(
+                mediaContentResolver.resolveMedia(submissionContext.getProblemImageUrls()).collectList(),
+                mediaContentResolver.resolveMedia(submissionContext.getSubmissionImageUrls()).collectList(),
+                (problemMedia, submissionMedia) ->
+                        new RequestContext(submissionContext.getProblemText(), problemMedia, submissionMedia)
+                );
     }
 }

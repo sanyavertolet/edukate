@@ -2,13 +2,13 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
-import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.entities.files.FileKey;
 import io.github.sanyavertolet.edukate.backend.entities.files.TempFileKey;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
+import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -74,7 +74,7 @@ public class SubmissionController {
             @PathVariable @NotBlank String id,
             Authentication authentication
     ) {
-        return submissionService.findSubmissionById(id)
+        return submissionService.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
                 .filter(submission -> submission.getUserId().equals(AuthUtils.id(authentication)))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
@@ -218,7 +218,7 @@ public class SubmissionController {
             @RequestParam(defaultValue = "10") @Positive int size
     ) {
         return submissionService.findSubmissionsByStatusIn(
-                List.of(Submission.Status.SUCCESS), sortedPageable(page, size)
+                List.of(SubmissionStatus.SUCCESS), sortedPageable(page, size)
         )
                 .flatMap(submissionService::prepareDto);
     }

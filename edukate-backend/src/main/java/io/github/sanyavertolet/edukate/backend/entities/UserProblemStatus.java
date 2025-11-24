@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.entities;
 
+import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,13 +15,13 @@ public class UserProblemStatus {
 
     private String problemId;
 
-    private Submission.Status latestStatus;
+    private SubmissionStatus latestStatus;
 
     private Instant latestTime;
 
     private String latestSubmissionId;
 
-    private Submission.Status bestStatus;
+    private SubmissionStatus bestStatus;
 
     private Instant bestTime;
 
