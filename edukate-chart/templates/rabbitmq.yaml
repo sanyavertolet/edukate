@@ -1,0 +1,10 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: edukate-rabbit
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  image: rabbitmq:4.0-management
+  persistence:
+    storage: 10Gi

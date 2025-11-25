@@ -31,6 +31,7 @@ spec:
                   name: {{ .Values.mongodb.secretName }}
                   key: {{ .Values.mongodb.secretKey.notifier }}
             {{ end }}
+            {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}
           volumeMounts:
             - {{ include "spring-boot.config-volume-mount" . | indent 14 | trim }}
           {{ include "spring-boot.management" .Values.notifier | nindent 10 }}

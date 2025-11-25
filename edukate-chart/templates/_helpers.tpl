@@ -79,4 +79,12 @@ configMap:
   items:
     - key: application.properties
       path: application.properties
-{{- end}}
+{{- end }}
+
+{{- define "rabbitmq.addresses.env" -}}
+- name: RABBITMQ_ADDRESSES
+  valueFrom:
+    secretKeyRef:
+      name: edukate-rabbit-default-user
+      key: connection_string
+{{- end }}
