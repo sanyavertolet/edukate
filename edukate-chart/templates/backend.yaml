@@ -58,6 +58,7 @@ spec:
                   name: {{ .Values.s3.secretName }}
                   key: "endpoint"
             {{ end }}
+            {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}
           volumeMounts:
             - {{ include "spring-boot.config-volume-mount" . | indent 14 | trim }}
           {{- include "spring-boot.management" .Values.backend | nindent 10 }}

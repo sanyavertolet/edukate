@@ -39,6 +39,7 @@ spec:
                 secretKeyRef:
                   name: openai-secret
                   key: key
+            {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}
           {{ include "spring-boot.management" .Values.checker | nindent 10 }}
 
 ---
