@@ -3,7 +3,7 @@ package io.github.sanyavertolet.edukate.backend.services;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto;
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
-import io.github.sanyavertolet.edukate.backend.entities.files.ProblemFileKey;
+import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.utils.Sorts;

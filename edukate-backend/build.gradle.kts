@@ -26,6 +26,7 @@ dependencies {
     implementation(projects.edukateCommon)
     implementation(projects.edukateAuth)
     implementation(projects.edukateMessaging)
+    implementation(projects.edukateStorage)
 
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.security)
@@ -34,9 +35,6 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.mongodb.reactive)
     implementation(libs.springdoc.openapi.starter.webflux.ui)
-
-    implementation(libs.awssdk.s3)
-    implementation(libs.awssdk.s3.transfer.manager)
 
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)

@@ -1,4 +1,4 @@
-package io.github.sanyavertolet.edukate.backend.entities.files;
+package io.github.sanyavertolet.edukate.storage.keys;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.EqualsAndHashCode;

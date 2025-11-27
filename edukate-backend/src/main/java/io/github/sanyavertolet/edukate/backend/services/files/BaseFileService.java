@@ -3,7 +3,8 @@ package io.github.sanyavertolet.edukate.backend.services.files;
 import io.github.sanyavertolet.edukate.backend.dtos.FileMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.files.*;
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository;
-import io.github.sanyavertolet.edukate.backend.storage.Storage;
+import io.github.sanyavertolet.edukate.backend.storage.FileKeyStorage;
+import io.github.sanyavertolet.edukate.storage.keys.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BaseFileService {
     private final FileObjectRepository fileObjectRepository;
-    private final Storage<FileKey> storage;
+    private final FileKeyStorage storage;
 
     public Flux<ByteBuffer> getFile(FileKey key) {
         return storage.download(key);
@@ -49,9 +50,9 @@ public class BaseFileService {
                 ? fileObjectRepository.deleteByKeyPath(key.toString())
                 .doOnSuccess(cnt -> {
                     if (cnt != null && cnt > 0) {
-                        log.info("Deleted file object with key path {}", key);
+                        log.info("Deleted file object with key {}", key);
                     } else {
-                        log.warn("Storage deleted but no DB record found for key path {}", key);
+                        log.warn("Storage deleted but no DB record found for key {}", key);
                     }
                 })
                 .thenReturn(true)
@@ -124,7 +125,7 @@ public class BaseFileService {
                     existing.setOwnerUserId(owner);
                     existing.setMetadata(metadata);
                     return fileObjectRepository.save(existing).doOnSuccess(updated ->
-                            log.info("Updated file object with key path {}: {}", lookupKeyPath, updated.getKey()));
+                            log.info("Updated file object with key {}: {}", lookupKeyPath, updated.getKey()));
                 })
                 .switchIfEmpty(fileObjectRepository.save(
                         FileObject.builder()
@@ -135,7 +136,7 @@ public class BaseFileService {
                                 .metadata(metadata)
                                 .metaVersion(1)
                                 .build())
-                        .doOnSuccess(created -> log.info("Created file object with key path {}", created.getKey()))
+                        .doOnSuccess(created -> log.info("Created file object with key {}", created.getKey()))
                 );
     }
 }

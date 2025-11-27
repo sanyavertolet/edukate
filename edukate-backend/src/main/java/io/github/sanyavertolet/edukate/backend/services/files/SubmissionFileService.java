@@ -1,9 +1,9 @@
 package io.github.sanyavertolet.edukate.backend.services.files;
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
-import io.github.sanyavertolet.edukate.backend.entities.files.FileKey;
-import io.github.sanyavertolet.edukate.backend.entities.files.SubmissionFileKey;
-import io.github.sanyavertolet.edukate.backend.entities.files.TempFileKey;
+import io.github.sanyavertolet.edukate.storage.keys.FileKey;
+import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey;
+import io.github.sanyavertolet.edukate.storage.keys.TempFileKey;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -22,12 +22,5 @@ public class SubmissionFileService {
                         TempFileKey.of(userId, file),
                         SubmissionFileKey.of(userId, request.getProblemId(), submissionId, file)))
                 .collectList();
-    }
-
-    public Mono<Boolean> checkIfFilesExist(String userId, String problemId, String submissionId, List<String> fileNames) {
-        return Flux.fromIterable(fileNames)
-                .map(fileName -> SubmissionFileKey.of(userId, problemId, submissionId, fileName))
-                .flatMap(baseFileService::doesFileExist)
-                .all(Boolean::booleanValue);
     }
 }

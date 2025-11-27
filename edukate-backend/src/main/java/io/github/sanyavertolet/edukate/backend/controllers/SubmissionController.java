@@ -2,8 +2,8 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
-import io.github.sanyavertolet.edukate.backend.entities.files.FileKey;
-import io.github.sanyavertolet.edukate.backend.entities.files.TempFileKey;
+import io.github.sanyavertolet.edukate.storage.keys.FileKey;
+import io.github.sanyavertolet.edukate.storage.keys.TempFileKey;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
