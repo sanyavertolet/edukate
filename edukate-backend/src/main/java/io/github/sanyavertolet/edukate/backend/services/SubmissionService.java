@@ -4,7 +4,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObject;
-import io.github.sanyavertolet.edukate.backend.entities.files.SubmissionFileKey;
+import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey;
 import io.github.sanyavertolet.edukate.backend.permissions.SubmissionPermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;

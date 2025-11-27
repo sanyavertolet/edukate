@@ -1,8 +1,8 @@
 package io.github.sanyavertolet.edukate.backend.services.files;
 
 import io.github.sanyavertolet.edukate.backend.dtos.FileMetadata;
-import io.github.sanyavertolet.edukate.backend.entities.files.FileKey;
-import io.github.sanyavertolet.edukate.backend.entities.files.TempFileKey;
+import io.github.sanyavertolet.edukate.storage.keys.FileKey;
+import io.github.sanyavertolet.edukate.storage.keys.TempFileKey;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.entities.files;
 
+import io.github.sanyavertolet.edukate.storage.keys.FileKey;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

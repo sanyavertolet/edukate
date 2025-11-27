@@ -2,7 +2,7 @@ package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.dtos.Result;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
-import io.github.sanyavertolet.edukate.backend.entities.files.ResultFileKey;
+import io.github.sanyavertolet.edukate.storage.keys.ResultFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import lombok.AllArgsConstructor;

@@ -31,33 +31,7 @@ spec:
                   name: {{ .Values.mongodb.secretName }}
                   key: {{ .Values.mongodb.secretKey.backend }}
             {{ end }}
-            {{ if .Values.s3.enabled }}
-            - name: S3_REGION
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.secretName }}
-                  key: "region"
-            - name: S3_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.secretName }}
-                  key: "key"
-            - name: S3_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.secretName }}
-                  key: "secret"
-            - name: S3_BUCKET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.secretName }}
-                  key: "bucket"
-            - name: S3_ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.s3.secretName }}
-                  key: "endpoint"
-            {{ end }}
+            {{ include "s3.configuration.env" . | nindent 12 | trim }}
             {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}
           volumeMounts:
             - {{ include "spring-boot.config-volume-mount" . | indent 14 | trim }}

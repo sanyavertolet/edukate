@@ -88,3 +88,33 @@ configMap:
       name: edukate-rabbit-default-user
       key: connection_string
 {{- end }}
+
+{{- define "s3.configuration.env" -}}
+{{- if .Values.s3.enabled }}
+- name: S3_REGION
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.s3.secretName }}
+      key: region
+- name: S3_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.s3.secretName }}
+      key: key
+- name: S3_SECRET_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.s3.secretName }}
+      key: secret
+- name: S3_BUCKET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.s3.secretName }}
+      key: bucket
+- name: S3_ENDPOINT
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.s3.secretName }}
+      key: endpoint
+{{- end }}
+{{- end }}
