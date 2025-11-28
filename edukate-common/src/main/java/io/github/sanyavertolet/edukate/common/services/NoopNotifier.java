@@ -15,7 +15,7 @@ public class NoopNotifier implements Notifier {
 
     @Override
     public Mono<String> notify(BaseNotificationCreateRequest notificationCreationRequest) {
-        log.warn("Notification is ment to be send: {}", notificationCreationRequest);
+        log.warn("Notification is meant to be send: {}", notificationCreationRequest);
         return Mono.just("stub");
     }
 }

@@ -39,7 +39,7 @@ public class NotificationService {
                         notification.getUuid(), existingNotification
                 ))
                 .switchIfEmpty(notificationRepository.save(notification).doOnSuccess(savedNotification ->
-                        log.info("Saved new notification with UUID {}: {}", notification.getUuid(), savedNotification)
+                        log.debug("Saved new notification with UUID {}: {}", notification.getUuid(), savedNotification)
                 ))
                 .doOnError(e -> log.error("Error saving notification: {}", notification.getUuid(), e));
     }
