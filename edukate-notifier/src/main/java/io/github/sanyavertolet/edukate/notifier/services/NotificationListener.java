@@ -13,9 +13,16 @@ import org.springframework.stereotype.Component;
 public class NotificationListener {
      private final NotificationService notificationService;
 
+    /**
+     * Accepts any subclass of BaseNotificationCreationRequest and converts it to the appropriate entity.
+     * <p>
+     * <b>Field `_type` is required for deserialization.</b>
+     *
+     * @param createRequest Notification creation request
+     */
     @RabbitListener(queues = RabbitTopology.Q_NOTIFY)
     public void scheduleCheck(BaseNotificationCreateRequest createRequest) {
-        log.info("received notification request={}", createRequest.getUuid());
+        log.debug("received notification request={}", createRequest.getUuid());
         notificationService.saveIfAbsent(createRequest).subscribe();
     }
 }
