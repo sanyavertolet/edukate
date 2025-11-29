@@ -3,7 +3,7 @@ package io.github.sanyavertolet.edukate.backend.entities;
 import io.github.sanyavertolet.edukate.backend.dtos.BundleDto;
 import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata;
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest;
-import io.github.sanyavertolet.edukate.common.Role;
+import io.github.sanyavertolet.edukate.common.users.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class Bundle {
     private Boolean isPublic;
 
     private List<String> problemIds;
-    private Map<String, Role> userIdRoleMap;
+    private Map<String, UserRole> userIdRoleMap;
     private Set<String> invitedUserIds;
 
     @With
@@ -35,12 +35,12 @@ public class Bundle {
     private String shareCode = null;
 
     @SuppressWarnings("UnusedReturnValue")
-    public boolean addUser(String userId, Role role) {
+    public boolean addUser(String userId, UserRole role) {
         return userIdRoleMap.putIfAbsent(userId, role) == null;
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public boolean changeUserRole(String userId, Role newRole) {
+    public boolean changeUserRole(String userId, UserRole newRole) {
         if (!userIdRoleMap.containsKey(userId)) {
             return false;
         }
@@ -48,7 +48,7 @@ public class Bundle {
         return true;
     }
 
-    public Role getUserRole(String userId) {
+    public UserRole getUserRole(String userId) {
         return userIdRoleMap.getOrDefault(userId, null);
     }
 
@@ -70,7 +70,7 @@ public class Bundle {
     }
 
     public boolean isAdmin(String userId) {
-        return Role.ADMIN.equals(getUserRole(userId));
+        return UserRole.ADMIN.equals(getUserRole(userId));
     }
 
     @SuppressWarnings("UnusedReturnValue")
@@ -79,7 +79,7 @@ public class Bundle {
     }
 
     public List<String> getAdminIds() {
-        return userIdRoleMap.entrySet().stream().filter(entry -> entry.getValue().equals(Role.ADMIN))
+        return userIdRoleMap.entrySet().stream().filter(entry -> entry.getValue().equals(UserRole.ADMIN))
                 .map(Map.Entry::getKey).toList();
     }
 
@@ -90,7 +90,7 @@ public class Bundle {
                 bundleRequest.getDescription(),
                 Boolean.TRUE.equals(bundleRequest.getIsPublic()),
                 new ArrayList<>(bundleRequest.getProblemIds() != null ? bundleRequest.getProblemIds() : List.of()),
-                new HashMap<>(Map.of(adminId, Role.ADMIN)),
+                new HashMap<>(Map.of(adminId, UserRole.ADMIN)),
                 new HashSet<>(),
                 null
         );

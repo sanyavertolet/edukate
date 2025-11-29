@@ -1,8 +1,9 @@
 package io.github.sanyavertolet.edukate.backend.controllers.internal;
 
 import io.github.sanyavertolet.edukate.backend.services.UserService;
-import io.github.sanyavertolet.edukate.common.UserStatus;
-import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.users.UserStatus;
+import io.github.sanyavertolet.edukate.backend.entities.User;
+import io.github.sanyavertolet.edukate.common.users.UserCredentials;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,18 +19,18 @@ public class UserInternalController {
     private final UserService userService;
 
     @PostMapping
-    public Mono<User> saveUser(@RequestBody User user) {
-        return userService.saveUser(user);
+    public Mono<UserCredentials> saveUser(@RequestBody UserCredentials userCredentials) {
+        return userService.saveUser(User.newFromCredentials(userCredentials)).map(User::toCredentials);
     }
 
     @GetMapping("/by-name/{name}")
-    public Mono<User> getUserByName(@PathVariable String name) {
-        return userService.findUserByName(name);
+    public Mono<UserCredentials> getUserByName(@PathVariable String name) {
+        return userService.findUserByName(name).map(User::toCredentials);
     }
 
     @GetMapping("/by-id/{id}")
-    public Mono<User> getUserById(@PathVariable String id) {
-        return userService.findUserById(id);
+    public Mono<UserCredentials> getUserById(@PathVariable String id) {
+        return userService.findUserById(id).map(User::toCredentials);
     }
 
     @DeleteMapping("/by-id/{id}")

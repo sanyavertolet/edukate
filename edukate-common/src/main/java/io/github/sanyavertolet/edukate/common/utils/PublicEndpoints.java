@@ -1,16 +1,14 @@
 package io.github.sanyavertolet.edukate.common.utils;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 
 import java.util.List;
 
+@UtilityClass
 public class PublicEndpoints {
-    private PublicEndpoints() {
-        throw new IllegalStateException("Utility class");
-    }
-
     private static final List<String> publicEndpoints = List.of(
             "/actuator/**",
             "/internal/**",

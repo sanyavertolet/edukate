@@ -1,4 +1,4 @@
-package io.github.sanyavertolet.edukate.common;
+package io.github.sanyavertolet.edukate.common.users;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public enum Role {
+public enum UserRole {
     USER,
     MODERATOR,
     ADMIN,
@@ -24,23 +24,23 @@ public enum Role {
         return new SimpleGrantedAuthority(asSpringSecurityRole());
     }
 
-    public static Set<Role> fromString(String rolesString) {
+    public static Set<UserRole> fromString(String rolesString) {
         if (rolesString == null || rolesString.trim().isEmpty()) {
-            return EnumSet.noneOf(Role.class);
+            return EnumSet.noneOf(UserRole.class);
         }
         return Arrays.stream(rolesString.split(","))
                 .map(String::trim)
-                .map(Role::valueOf)
-                .collect(Collectors.toCollection(() -> EnumSet.noneOf(Role.class)));
+                .map(UserRole::valueOf)
+                .collect(Collectors.toCollection(() -> EnumSet.noneOf(UserRole.class)));
     }
 
-    public static String toString(Collection<Role> roles) {
+    public static String toString(Collection<UserRole> roles) {
         return roles.stream()
-                .map(Role::name)
+                .map(UserRole::name)
                 .collect(Collectors.joining(","));
     }
 
-    public static Collection<Role> anyRole() {
-        return EnumSet.allOf(Role.class);
+    public static Collection<UserRole> anyRole() {
+        return EnumSet.allOf(UserRole.class);
     }
 }

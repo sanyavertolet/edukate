@@ -4,8 +4,8 @@ import io.github.sanyavertolet.edukate.backend.dtos.*;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.services.BundleService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
-import io.github.sanyavertolet.edukate.common.Role;
-import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.users.UserRole;
+import io.github.sanyavertolet.edukate.backend.entities.User;
 import io.github.sanyavertolet.edukate.common.services.Notifier;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -382,7 +382,7 @@ public class BundleController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully changed user role",
-                    content = @Content(schema = @Schema(implementation = Role.class))),
+                    content = @Content(schema = @Schema(implementation = UserRole.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions",
                     content = @Content),
@@ -393,10 +393,10 @@ public class BundleController {
             @Parameter(name = "username", description = "Username", in = QUERY, required = true),
             @Parameter(name = "requestedRole", description = "Role to set", in = QUERY, required = true),
     })
-    public Mono<Role> changeUserRole(
+    public Mono<UserRole> changeUserRole(
             @PathVariable @NotBlank String shareCode,
             @RequestParam @NotBlank String username,
-            @RequestParam @NotNull Role requestedRole,
+            @RequestParam @NotNull UserRole requestedRole,
             Authentication authentication
     ) {
         return userService.findUserByName(username)

@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.repositories;
 
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
-import io.github.sanyavertolet.edukate.common.Role;
+import io.github.sanyavertolet.edukate.common.users.UserRole;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -18,5 +18,5 @@ public interface BundleRepository extends ReactiveMongoRepository<Bundle, String
     Mono<Bundle> findBundleByShareCode(String shareCode);
 
     @Query("{ 'userIdRoleMap.?0': { $in: ?1 } }")
-    Flux<Bundle> findBundlesByUserRoleIn(String userId, Collection<Role> roles, Pageable pageable);
+    Flux<Bundle> findBundlesByUserRoleIn(String userId, Collection<UserRole> roles, Pageable pageable);
 }

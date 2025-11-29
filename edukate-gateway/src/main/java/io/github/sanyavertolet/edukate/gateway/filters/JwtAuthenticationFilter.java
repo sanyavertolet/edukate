@@ -1,6 +1,6 @@
 package io.github.sanyavertolet.edukate.gateway.filters;
 
-import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails;
 import io.github.sanyavertolet.edukate.auth.services.AuthCookieService;
 import io.github.sanyavertolet.edukate.auth.services.JwtTokenService;
 import io.github.sanyavertolet.edukate.common.utils.HttpHeadersUtils;

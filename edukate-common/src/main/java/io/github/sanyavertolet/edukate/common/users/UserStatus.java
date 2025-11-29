@@ -1,4 +1,4 @@
-package io.github.sanyavertolet.edukate.common;
+package io.github.sanyavertolet.edukate.common.users;
 
 public enum UserStatus {
     PENDING,

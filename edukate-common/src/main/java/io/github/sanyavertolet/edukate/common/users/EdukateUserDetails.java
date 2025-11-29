@@ -1,8 +1,8 @@
-package io.github.sanyavertolet.edukate.common;
+package io.github.sanyavertolet.edukate.common.users;
 
-import io.github.sanyavertolet.edukate.common.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,24 +13,27 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@ToString
 @AllArgsConstructor
 public class EdukateUserDetails implements UserDetails, CredentialsContainer {
     @Getter
     private final String id;
     private final String name;
     @Getter
-    private final Set<Role> roles;
+    private final Set<UserRole> roles;
     @Getter
     private final UserStatus status;
+
+    @ToString.Exclude
     private String token;
 
-    public EdukateUserDetails(User user) {
+    public EdukateUserDetails(UserCredentials userCredentials) {
         this(
-                Objects.requireNonNull(user.getId(), "User id must not be null"),
-                Objects.requireNonNull(user.getName(), "User name must not be null"),
-                Objects.requireNonNull(user.getRoles(), "User role must not be null"),
-                Objects.requireNonNull(user.getStatus(), "User status must not be null"),
-                user.getToken()
+                Objects.requireNonNull(userCredentials.getId(), "User id must not be null"),
+                Objects.requireNonNull(userCredentials.getUsername(), "User name must not be null"),
+                Objects.requireNonNull(userCredentials.getRoles(), "User role must not be null"),
+                Objects.requireNonNull(userCredentials.getStatus(), "User status must not be null"),
+                userCredentials.getEncodedPassword()
         );
     }
 
@@ -41,7 +44,7 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream().map(Role::asGrantedAuthority).collect(Collectors.toSet());
+        return roles.stream().map(UserRole::asGrantedAuthority).collect(Collectors.toSet());
     }
 
     @Override
@@ -72,15 +75,6 @@ public class EdukateUserDetails implements UserDetails, CredentialsContainer {
     @Override
     public String getPassword() {
         return token;
-    }
-
-    @Override
-    public String toString() {
-        return "EdukateUserDetails{" +
-                "name='" + name + '\'' +
-                ", roles='" + roles + '\'' +
-                ", status='" + status + '\'' +
-                '}';
     }
 
     @Override

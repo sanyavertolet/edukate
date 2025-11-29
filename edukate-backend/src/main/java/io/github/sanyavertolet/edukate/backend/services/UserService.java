@@ -1,8 +1,8 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.repositories.UserRepository;
-import io.github.sanyavertolet.edukate.common.UserStatus;
-import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.users.UserStatus;
+import io.github.sanyavertolet.edukate.backend.entities.User;
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.common.services.Notifier;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
