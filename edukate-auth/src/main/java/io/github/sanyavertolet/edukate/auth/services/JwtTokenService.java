@@ -1,8 +1,8 @@
 package io.github.sanyavertolet.edukate.auth.services;
 
-import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
-import io.github.sanyavertolet.edukate.common.Role;
-import io.github.sanyavertolet.edukate.common.UserStatus;
+import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.users.UserRole;
+import io.github.sanyavertolet.edukate.common.users.UserStatus;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -43,7 +43,7 @@ public class JwtTokenService {
                 .subject(userDetails.getId())
                 .issuedAt(now)
                 .claim("name", userDetails.getUsername())
-                .claim("roles", Role.toString(userDetails.getRoles()))
+                .claim("roles", UserRole.toString(userDetails.getRoles()))
                 .claim("status", userDetails.getStatus().toString())
                 .expiration(getExpirationDate(now))
                 .signWith(key)
@@ -61,7 +61,7 @@ public class JwtTokenService {
         return new EdukateUserDetails(
                 claims.getSubject(),
                 claims.get("name", String.class),
-                Role.fromString(claims.get("roles", String.class)),
+                UserRole.fromString(claims.get("roles", String.class)),
                 UserStatus.valueOf(claims.get("status", String.class)),
                 token
         );

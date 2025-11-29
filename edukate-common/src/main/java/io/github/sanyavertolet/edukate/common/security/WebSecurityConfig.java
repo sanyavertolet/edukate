@@ -1,6 +1,6 @@
 package io.github.sanyavertolet.edukate.common.security;
 
-import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails;
 import io.github.sanyavertolet.edukate.common.utils.HttpHeadersUtils;
 import io.github.sanyavertolet.edukate.common.utils.PublicEndpoints;
 import lombok.RequiredArgsConstructor;

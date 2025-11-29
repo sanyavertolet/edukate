@@ -50,7 +50,7 @@ public class BaseFileService {
                 ? fileObjectRepository.deleteByKeyPath(key.toString())
                 .doOnSuccess(cnt -> {
                     if (cnt != null && cnt > 0) {
-                        log.info("Deleted file object with key {}", key);
+                        log.debug("Deleted file object with key {}", key);
                     } else {
                         log.warn("Storage deleted but no DB record found for key {}", key);
                     }
@@ -125,7 +125,7 @@ public class BaseFileService {
                     existing.setOwnerUserId(owner);
                     existing.setMetadata(metadata);
                     return fileObjectRepository.save(existing).doOnSuccess(updated ->
-                            log.info("Updated file object with key {}: {}", lookupKeyPath, updated.getKey()));
+                            log.debug("Updated file object with key {}: {}", lookupKeyPath, updated.getKey()));
                 })
                 .switchIfEmpty(fileObjectRepository.save(
                         FileObject.builder()
@@ -136,7 +136,7 @@ public class BaseFileService {
                                 .metadata(metadata)
                                 .metaVersion(1)
                                 .build())
-                        .doOnSuccess(created -> log.info("Created file object with key {}", created.getKey()))
+                        .doOnSuccess(created -> log.debug("Created file object with key {}", created.getKey()))
                 );
     }
 }

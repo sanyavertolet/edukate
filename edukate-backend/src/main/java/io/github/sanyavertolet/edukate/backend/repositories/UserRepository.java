@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.repositories;
 
-import io.github.sanyavertolet.edukate.common.UserStatus;
-import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.users.UserStatus;
+import io.github.sanyavertolet.edukate.backend.entities.User;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;

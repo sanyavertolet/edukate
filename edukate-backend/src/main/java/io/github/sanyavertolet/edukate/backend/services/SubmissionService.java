@@ -12,7 +12,7 @@ import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService;
 import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import io.github.sanyavertolet.edukate.common.checks.SubmissionContext;
-import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.backend.entities.User;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

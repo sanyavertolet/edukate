@@ -1,9 +1,7 @@
 package io.github.sanyavertolet.edukate.gateway.services;
 
-import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
-import io.github.sanyavertolet.edukate.auth.utils.RoleUtils;
-import io.github.sanyavertolet.edukate.common.UserStatus;
-import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.users.UserCredentials;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,8 +31,8 @@ public class UserDetailsService implements ReactiveUserDetailsService {
     }
 
     public Mono<EdukateUserDetails> create(String username, String email, String encodedPassword) {
-        User user = new User(null, username, email, encodedPassword, RoleUtils.getDefaultRole(), UserStatus.PENDING);
-        return backendService.saveUser(user).map(EdukateUserDetails::new)
+        UserCredentials userCredentials = UserCredentials.newUser(username, encodedPassword, email);
+        return backendService.saveUser(userCredentials).map(EdukateUserDetails::new)
                 .doOnNext(EdukateUserDetails::eraseCredentials);
     }
 }

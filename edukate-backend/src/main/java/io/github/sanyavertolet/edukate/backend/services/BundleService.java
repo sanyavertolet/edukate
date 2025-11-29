@@ -4,8 +4,8 @@ import io.github.sanyavertolet.edukate.backend.dtos.*;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.BundleRepository;
-import io.github.sanyavertolet.edukate.common.Role;
-import io.github.sanyavertolet.edukate.common.entities.User;
+import io.github.sanyavertolet.edukate.common.users.UserRole;
+import io.github.sanyavertolet.edukate.backend.entities.User;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -36,13 +36,13 @@ public class BundleService {
 
     public Flux<Bundle> getOwnedBundles(PageRequest pageable, Authentication authentication) {
         return AuthUtils.monoId(authentication).flatMapMany(userId ->
-                bundleRepository.findBundlesByUserRoleIn(userId, List.of(Role.ADMIN), pageable)
+                bundleRepository.findBundlesByUserRoleIn(userId, List.of(UserRole.ADMIN), pageable)
         );
     }
 
     public Flux<Bundle> getJoinedBundles(PageRequest pageable, Authentication authentication) {
         return AuthUtils.monoId(authentication).flatMapMany(userId ->
-                bundleRepository.findBundlesByUserRoleIn(userId, Role.anyRole(), pageable)
+                bundleRepository.findBundlesByUserRoleIn(userId, UserRole.anyRole(), pageable)
         );
     }
 
@@ -69,7 +69,7 @@ public class BundleService {
                         HttpStatus.BAD_REQUEST, "You have already joined the bundle [" + shareCode + "]"
                 )))
                 .map(bundle -> {
-                    bundle.addUser(userId, Role.USER);
+                    bundle.addUser(userId, UserRole.USER);
                     bundle.removeInvitedUser(userId);
                     return bundle;
                 })
@@ -134,10 +134,10 @@ public class BundleService {
     public Flux<UserNameWithRole> getBundleUsers(String shareCode, Authentication authentication) {
         return findBundleByShareCode(shareCode)
                 .filter(bundle -> bundlePermissionEvaluator.hasRole(
-                        bundle, AuthUtils.id(authentication), Role.MODERATOR
+                        bundle, AuthUtils.id(authentication), UserRole.MODERATOR
                 ))
                 .flatMapMany(bundle -> {
-                    Map<String, Role> userIdRoleMap = bundle.getUserIdRoleMap();
+                    Map<String, UserRole> userIdRoleMap = bundle.getUserIdRoleMap();
                     Set<String> userIds = userIdRoleMap.keySet();
                     return userService.findUsersByIds(userIds)
                             .map(user -> new UserNameWithRole(
@@ -151,7 +151,7 @@ public class BundleService {
     public Flux<String> getBundleInvitedUsers(String shareCode, Authentication authentication) {
         return findBundleByShareCode(shareCode)
                 .filter(bundle -> bundlePermissionEvaluator.hasRole(
-                        bundle, AuthUtils.id(authentication), Role.MODERATOR
+                        bundle, AuthUtils.id(authentication), UserRole.MODERATOR
                 ))
                 .flatMapMany(bundle -> Mono.justOrEmpty(bundle.getInvitedUserIds())
                         .flatMapMany(userService::findUsersByIds)
@@ -160,7 +160,7 @@ public class BundleService {
     }
 
     @Transactional
-    public Mono<Role> changeUserRole(String shareCode, String userId, Role requestedRole, Authentication authentication) {
+    public Mono<UserRole> changeUserRole(String shareCode, String userId, UserRole requestedRole, Authentication authentication) {
         return findBundleByShareCode(shareCode)
                 .filter(bundle -> bundle.isUserInBundle(userId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
@@ -199,7 +199,7 @@ public class BundleService {
     @Transactional
     public Mono<Bundle> changeVisibility(String shareCode, boolean isPublic, Authentication authentication) {
         return findBundleByShareCode(shareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, Role.MODERATOR, authentication))
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, UserRole.MODERATOR, authentication))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN, "Cannot change visibility due to lack of permissions"
                 )))
@@ -215,7 +215,7 @@ public class BundleService {
                         HttpStatus.BAD_REQUEST, "Bundle problem list cannot be empty"
                 )))
                 .flatMap(this::findBundleByShareCode)
-                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, Role.MODERATOR, authentication))
+                .filter(bundle -> bundlePermissionEvaluator.hasRole(bundle, UserRole.MODERATOR, authentication))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN, "Cannot change problem list due to lack of permissions"
                 )))

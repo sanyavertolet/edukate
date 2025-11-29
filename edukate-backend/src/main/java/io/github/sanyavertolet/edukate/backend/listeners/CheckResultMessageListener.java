@@ -19,7 +19,7 @@ public class CheckResultMessageListener {
 
     @RabbitListener(queues = RabbitTopology.Q_RESULT_BACKEND)
     public void onCheckResultMessage(@NonNull CheckResultMessage checkResultMessage) {
-        log.info("Received result for submission {}", checkResultMessage.getSubmissionId());
+        log.debug("Received result for submission {}", checkResultMessage.getSubmissionId());
 
         buildCheckResult(checkResultMessage)
                 .flatMap(checkResultService::saveAndUpdateSubmission)

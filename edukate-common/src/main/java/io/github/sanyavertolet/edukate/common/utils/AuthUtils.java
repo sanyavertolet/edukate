@@ -1,13 +1,12 @@
 package io.github.sanyavertolet.edukate.common.utils;
 
-import io.github.sanyavertolet.edukate.common.EdukateUserDetails;
+import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails;
+import lombok.experimental.UtilityClass;
 import org.springframework.security.core.Authentication;
 import reactor.core.publisher.Mono;
 
+@UtilityClass
 public class AuthUtils {
-    private AuthUtils() {
-        throw new IllegalStateException("Utility class");
-    }
 
     public static String id(Authentication authentication) {
         if (authentication == null) {

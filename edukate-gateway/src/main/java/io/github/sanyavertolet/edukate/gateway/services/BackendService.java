@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.gateway.services;
 
-import io.github.sanyavertolet.edukate.common.entities.User;
-import io.github.sanyavertolet.edukate.gateway.configs.ConfigurationProperties;
+import io.github.sanyavertolet.edukate.common.users.UserCredentials;
+import io.github.sanyavertolet.edukate.gateway.configs.GatewayProperties;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,34 +11,34 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class BackendService {
-    private final ConfigurationProperties configurationProperties;
+    private final GatewayProperties gatewayProperties;
 
     private WebClient webClient;
 
     @PostConstruct
     public void init() {
-        this.webClient = WebClient.create(configurationProperties.getBackend().getUrl());
+        this.webClient = WebClient.create(gatewayProperties.getBackend().url());
     }
 
-    public Mono<User> saveUser(User user) {
+    public Mono<UserCredentials> saveUser(UserCredentials userCredentials) {
         return webClient.post()
                 .uri("/internal/users")
-                .body(Mono.just(user), User.class)
+                .bodyValue(userCredentials)
                 .retrieve()
-                .bodyToMono(User.class);
+                .bodyToMono(UserCredentials.class);
     }
 
-    public Mono<User> getUserByName(String name) {
+    public Mono<UserCredentials> getUserByName(String name) {
         return webClient.get()
                 .uri("/internal/users/by-name/{name}", name)
                 .retrieve()
-                .bodyToMono(User.class);
+                .bodyToMono(UserCredentials.class);
     }
 
-    public Mono<User> getUserById(String id) {
+    public Mono<UserCredentials> getUserById(String id) {
         return webClient.get()
                 .uri("/internal/users/by-id/{id}", id)
                 .retrieve()
-                .bodyToMono(User.class);
+                .bodyToMono(UserCredentials.class);
     }
 }
