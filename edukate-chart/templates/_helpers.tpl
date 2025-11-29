@@ -100,12 +100,12 @@ configMap:
   valueFrom:
     secretKeyRef:
       name: {{ .Values.s3.secretName }}
-      key: key
+      key: access-key
 - name: S3_SECRET_KEY
   valueFrom:
     secretKeyRef:
       name: {{ .Values.s3.secretName }}
-      key: secret
+      key: secret-key
 - name: S3_BUCKET
   valueFrom:
     secretKeyRef:
