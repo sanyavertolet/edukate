@@ -1,18 +1,20 @@
 package io.github.sanyavertolet.edukate.storage;
 
+import io.github.sanyavertolet.edukate.storage.configs.S3Properties;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
 public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> implements Storage<Key> {
 
-    public AbstractStorage(S3AsyncClient s3AsyncClient, String bucket) {
-        super(s3AsyncClient, bucket);
+    public AbstractStorage(S3AsyncClient s3AsyncClient, S3Presigner s3Presigner, S3Properties s3Properties) {
+        super(s3AsyncClient, s3Presigner, s3Properties);
     }
 
     protected abstract Key buildKey(String stringKey);
@@ -20,7 +22,7 @@ public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> 
     @Override
     public Mono<Boolean> delete(Key key) {
         DeleteObjectRequest request = DeleteObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .build();
 
@@ -36,7 +38,7 @@ public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> 
                 .build();
 
         DeleteObjectsRequest request = DeleteObjectsRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .delete(delete)
                 .build();
 
@@ -58,7 +60,7 @@ public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> 
     @Override
     public Mono<Key> upload(Key key, long contentLength, Flux<ByteBuffer> content) {
         PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .contentLength(contentLength)
                 .build();
@@ -73,9 +75,9 @@ public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> 
     @Override
     public Mono<Boolean> move(Key source, Key target) {
         CopyObjectRequest copyRequest = CopyObjectRequest.builder()
-                .sourceBucket(bucket)
+                .sourceBucket(s3Properties.getBucket())
                 .sourceKey(source.toString())
-                .destinationBucket(bucket)
+                .destinationBucket(s3Properties.getBucket())
                 .destinationKey(target.toString())
                 .build();
 

@@ -1,11 +1,14 @@
 package io.github.sanyavertolet.edukate.storage;
 
+import io.github.sanyavertolet.edukate.storage.configs.S3Properties;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -13,11 +16,13 @@ import java.time.Instant;
 @Slf4j
 abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Key> {
     protected final S3AsyncClient s3AsyncClient;
-    protected final String bucket;
+    protected final S3Presigner s3Presigner;
+    protected final S3Properties s3Properties;
 
-    public AbstractReadOnlyStorage(S3AsyncClient s3AsyncClient, String bucket) {
+    public AbstractReadOnlyStorage(S3AsyncClient s3AsyncClient, S3Presigner s3Presigner, S3Properties s3Properties) {
         this.s3AsyncClient = s3AsyncClient;
-        this.bucket = bucket;
+        this.s3Presigner = s3Presigner;
+        this.s3Properties = s3Properties;
     }
 
     protected abstract Key buildKey(String stringKey);
@@ -25,7 +30,7 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
     @Override
     public Flux<Key> prefixedList(String prefix) {
         ListObjectsV2Request request = ListObjectsV2Request.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .prefix(prefix)
                 .build();
 
@@ -45,7 +50,7 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
     @Override
     public Mono<Boolean> doesExist(Key key) {
         HeadObjectRequest request = HeadObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .build();
 
@@ -57,7 +62,7 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
     @Override
     public Mono<Long> contentLength(Key key) {
         HeadObjectRequest request = HeadObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .build();
 
@@ -69,7 +74,7 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
     @Override
     public Mono<Instant> lastModified(Key key) {
         HeadObjectRequest request = HeadObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .build();
 
@@ -83,7 +88,7 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
     @Override
     public Flux<ByteBuffer> download(Key key) {
         GetObjectRequest request = GetObjectRequest.builder()
-                .bucket(bucket)
+                .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .build();
 
@@ -95,11 +100,15 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
     @Override
     public Mono<String> getDownloadUrl(Key key) {
         return Mono.fromCallable(() -> {
-            GetUrlRequest getUrlRequest = GetUrlRequest.builder()
-                    .bucket(bucket)
+            GetObjectRequest get = GetObjectRequest.builder()
+                    .bucket(s3Properties.getBucket())
                     .key(key.toString())
                     .build();
-            return s3AsyncClient.utilities().getUrl(getUrlRequest).toString();
+            GetObjectPresignRequest req = GetObjectPresignRequest.builder()
+                    .signatureDuration(s3Properties.getSignatureDuration())
+                    .getObjectRequest(get)
+                    .build();
+            return s3Presigner.presignGetObject(req).url().toString();
         });
     }
 }
