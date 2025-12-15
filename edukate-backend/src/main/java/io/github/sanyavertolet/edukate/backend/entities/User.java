@@ -48,6 +48,9 @@ public class User {
 
     public UserCredentials toCredentials() {
         return UserCredentials.builder()
+                .id(id)
+                .roles(roles)
+                .status(status)
                 .username(name)
                 .email(email)
                 .encodedPassword(token)
