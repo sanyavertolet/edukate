@@ -11,10 +11,9 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.nio.ByteBuffer;
-import java.time.Instant;
 
 @Slf4j
-abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Key> {
+abstract public class AbstractReadOnlyStorage<Key, Metadata> implements ReadOnlyStorage<Key, Metadata> {
     protected final S3AsyncClient s3AsyncClient;
     protected final S3Presigner s3Presigner;
     protected final S3Properties s3Properties;
@@ -25,80 +24,36 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
         this.s3Properties = s3Properties;
     }
 
-    protected abstract Key buildKey(String stringKey);
+    protected abstract Key buildKey(String key);
+
+    protected abstract Metadata buildMetadata(HeadObjectResponse headObjectResponse);
 
     @Override
-    public Flux<Key> prefixedList(String prefix) {
-        ListObjectsV2Request request = ListObjectsV2Request.builder()
-                .bucket(s3Properties.getBucket())
-                .prefix(prefix)
-                .build();
-
-        return Flux.from(s3AsyncClient.listObjectsV2Paginator(request))
-                .flatMap(response -> Flux.fromIterable(response.contents()))
-                .map(S3Object::key)
-                .flatMap(key -> {
-                    try {
-                        return Mono.just(buildKey(key));
-                    } catch (IllegalArgumentException ex) {
-                        log.warn("Invalid file key: {}, skipping", key);
-                        return Mono.empty();
-                    }
-                });
-    }
-
-    @Override
-    public Mono<Boolean> doesExist(Key key) {
+    public Mono<Metadata> metadata(Key key) {
         HeadObjectRequest request = HeadObjectRequest.builder()
                 .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .build();
 
         return Mono.fromFuture(s3AsyncClient.headObject(request))
-                .map(_ -> true)
-                .onErrorResume(S3Exception.class, e -> e.statusCode() == 404 ? Mono.just(false) : Mono.error(e));
+                .onErrorResume(S3Exception.class, e -> e.statusCode() == 404 ? Mono.empty() : Mono.error(e))
+                .map(this::buildMetadata);
     }
 
     @Override
-    public Mono<Long> contentLength(Key key) {
-        HeadObjectRequest request = HeadObjectRequest.builder()
-                .bucket(s3Properties.getBucket())
-                .key(key.toString())
-                .build();
-
-        return Mono.fromFuture(s3AsyncClient.headObject(request))
-                .map(HeadObjectResponse::contentLength)
-                .onErrorResume(S3Exception.class, e -> e.statusCode() == 404 ? Mono.empty() : Mono.error(e));
-    }
-
-    @Override
-    public Mono<Instant> lastModified(Key key) {
-        HeadObjectRequest request = HeadObjectRequest.builder()
-                .bucket(s3Properties.getBucket())
-                .key(key.toString())
-                .build();
-
-        return Mono.fromFuture(s3AsyncClient.headObject(request))
-                .map(HeadObjectResponse::lastModified)
-                .onErrorResume(S3Exception.class, e -> e.statusCode() == 404 ? Mono.empty() : Mono.error(e));
-    }
-
-
-
-    @Override
-    public Flux<ByteBuffer> download(Key key) {
+    public Flux<ByteBuffer> getContent(Key key) {
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .build();
 
         return Mono.fromFuture(() -> s3AsyncClient.getObject(request, AsyncResponseTransformer.toPublisher()))
-                .flatMapMany(Flux::from)
-                .onErrorResume(S3Exception.class, e -> e.statusCode() == 404 ? Flux.empty() : Flux.error(e));
+                .onErrorResume(S3Exception.class, e -> e.statusCode() == 404 ? Mono.empty() : Mono.error(e))
+                .flatMapMany(Flux::from);
     }
 
     @Override
-    public Mono<String> getDownloadUrl(Key key) {
+    public Mono<String> generatePresignedUrl(Key key) {
         return Mono.fromCallable(() -> {
             GetObjectRequest get = GetObjectRequest.builder()
                     .bucket(s3Properties.getBucket())
@@ -110,5 +65,18 @@ abstract public class AbstractReadOnlyStorage<Key> implements ReadOnlyStorage<Ke
                     .build();
             return s3Presigner.presignGetObject(req).url().toString();
         });
+    }
+
+    @Override
+    public Flux<Key> prefixed(String rawKeyPrefix) {
+        ListObjectsV2Request request = ListObjectsV2Request.builder()
+                .bucket(s3Properties.getBucket())
+                .prefix(rawKeyPrefix)
+                .build();
+
+        return Flux.from(s3AsyncClient.listObjectsV2Paginator(request))
+                .flatMap(response -> Flux.fromIterable(response.contents()))
+                .map(S3Object::key)
+                .map(this::buildKey);
     }
 }

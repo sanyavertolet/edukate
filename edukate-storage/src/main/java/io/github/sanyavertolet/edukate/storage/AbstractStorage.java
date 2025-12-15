@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.storage;
 
 import io.github.sanyavertolet.edukate.storage.configs.S3Properties;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
@@ -8,16 +9,17 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
+import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> implements Storage<Key> {
+@Slf4j
+public abstract class AbstractStorage<Key, Metadata>
+        extends AbstractReadOnlyStorage<Key, Metadata> implements Storage<Key, Metadata> {
 
     public AbstractStorage(S3AsyncClient s3AsyncClient, S3Presigner s3Presigner, S3Properties s3Properties) {
         super(s3AsyncClient, s3Presigner, s3Properties);
     }
-
-    protected abstract Key buildKey(String stringKey);
 
     @Override
     public Mono<Boolean> delete(Key key) {
@@ -27,7 +29,8 @@ public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> 
                 .build();
 
         return Mono.fromFuture(s3AsyncClient.deleteObject(request))
-                .map(_ -> true)
+                .map(response -> response.sdkHttpResponse().isSuccessful())
+                // fixme: need something better than this
                 .onErrorResume(_ -> Mono.just(false));
     }
 
@@ -47,28 +50,15 @@ public abstract class AbstractStorage<Key> extends AbstractReadOnlyStorage<Key> 
     }
 
     @Override
-    public Mono<Key> upload(Key key, Flux<ByteBuffer> content) {
-        return content.collectList()
-                .flatMap(buffers -> {
-                    int totalSize = buffers.stream()
-                            .mapToInt(ByteBuffer::remaining)
-                            .sum();
-                    return upload(key, totalSize, Flux.fromIterable(buffers));
-                });
-    }
-
-    @Override
-    public Mono<Key> upload(Key key, long contentLength, Flux<ByteBuffer> content) {
+    public Mono<Key> upload(Key key, long contentLength, String contentType, Flux<ByteBuffer> content) {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(s3Properties.getBucket())
                 .key(key.toString())
                 .contentLength(contentLength)
+                .contentType(contentType)
                 .build();
 
-        return Mono.fromFuture(() -> s3AsyncClient.putObject(
-                        request,
-                        AsyncRequestBody.fromPublisher(content)
-                ))
+        return Mono.fromFuture(() -> s3AsyncClient.putObject(request, AsyncRequestBody.fromPublisher(content)))
                 .map(_ -> key);
     }
 

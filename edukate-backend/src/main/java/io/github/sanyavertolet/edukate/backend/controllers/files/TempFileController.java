@@ -1,8 +1,10 @@
 package io.github.sanyavertolet.edukate.backend.controllers.files;
 
 import io.github.sanyavertolet.edukate.backend.dtos.FileMetadata;
-import io.github.sanyavertolet.edukate.backend.services.files.TempFileService;
+import io.github.sanyavertolet.edukate.backend.services.files.FileManager;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
+import io.github.sanyavertolet.edukate.storage.keys.FileKey;
+import io.github.sanyavertolet.edukate.storage.keys.TempFileKey;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -34,7 +36,7 @@ import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 @Validated
 @Tag(name = "Temporary Files", description = "API for managing temporary files")
 public class TempFileController {
-    private final TempFileService tempFileService;
+    private final FileManager fileManager;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(
@@ -45,7 +47,7 @@ public class TempFileController {
             @ApiResponse(responseCode = "200", description = "Successfully uploaded temporary file",
                     content = @Content(schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Failed to upload file", content = @Content)
+            @ApiResponse(responseCode = "500", description = "Failed to uploadDeprecated file", content = @Content)
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -54,11 +56,17 @@ public class TempFileController {
                     schema = @Schema(type = "string", format = "binary")
             )
     )
-    public Mono<String> uploadTempFile(@RequestPart Flux<ByteBuffer> content, Authentication authentication) {
-        return AuthUtils.monoId(authentication)
-                .flatMap(userId -> Mono.fromCallable(UUID::randomUUID).map(UUID::toString).flatMap(uuid ->
-                        tempFileService.uploadFile(userId, uuid, content).thenReturn(uuid)
-                ));
+    public Mono<String> uploadTempFile(@RequestPart("content") Flux<ByteBuffer> content, Authentication authentication) {
+        MediaType contentType = defaultMediaType();
+
+        return Mono.fromCallable(() -> TempFileKey.of(AuthUtils.id(authentication), UUID.randomUUID().toString()))
+                .flatMap(fileKey -> fileManager.uploadFile(fileKey, contentType, content))
+                .map(FileKey::getFileName);
+    }
+
+    // todo: detect content type???
+    private MediaType defaultMediaType() {
+        return MediaType.IMAGE_JPEG;
     }
 
     @DeleteMapping(produces = MediaType.TEXT_PLAIN_VALUE)
@@ -77,10 +85,8 @@ public class TempFileController {
             @Parameter(name = "fileName", description = "Name of a file to delete", in = QUERY, required = true),
     })
     public Mono<String> deleteTempFile(@RequestParam @NotBlank String fileName, Authentication authentication) {
-        return AuthUtils.monoId(authentication)
-                .filterWhen(userId -> tempFileService.doesExist(userId, fileName))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found")))
-                .flatMap(userId -> tempFileService.deleteFile(userId, fileName))
+        return Mono.fromCallable(() -> TempFileKey.of(AuthUtils.id(authentication), fileName))
+                .flatMap(fileManager::deleteFile)
                 .flatMap(success -> success
                         ? Mono.just(fileName)
                         : Mono.error(
@@ -106,8 +112,8 @@ public class TempFileController {
             @Parameter(name = "fileName", description = "File name to download", in = QUERY, required = true),
     })
     public Flux<ByteBuffer> downloadTempFile(@RequestParam @NotBlank String fileName, Authentication authentication) {
-        return AuthUtils.monoId(authentication)
-                .flatMapMany(userId -> tempFileService.getFile(userId, fileName))
+        return Mono.fromCallable(() -> TempFileKey.of(AuthUtils.id(authentication), fileName))
+                .flatMapMany(fileManager::getFileContent)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found")));
     }
 
@@ -122,6 +128,7 @@ public class TempFileController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
     })
     public Flux<FileMetadata> getTempFiles(Authentication authentication) {
-        return AuthUtils.monoId(authentication).flatMapMany(tempFileService::listFileMetadata);
+        return AuthUtils.monoId(authentication).map(TempFileKey::prefix)
+                .flatMapMany(prefix -> fileManager.listFileMetadataWithPrefix(prefix, authentication.getName()));
     }
 }

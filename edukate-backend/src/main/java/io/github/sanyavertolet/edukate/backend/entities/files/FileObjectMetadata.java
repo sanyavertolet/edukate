@@ -14,4 +14,5 @@ import java.time.Instant;
 public class FileObjectMetadata {
     private Instant lastModified;
     private Long contentLength;
+    private String contentType;
 }
