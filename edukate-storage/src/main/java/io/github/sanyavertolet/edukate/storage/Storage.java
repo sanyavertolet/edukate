@@ -6,22 +6,21 @@ import reactor.core.publisher.Mono;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
-public interface Storage<Key> extends ReadOnlyStorage<Key> {
-    default Mono<Key> overwrite(Key key, Flux<ByteBuffer> content) {
-        return delete(key).flatMap((_) -> upload(key, content));
+public interface Storage<Key, Metadata> extends ReadOnlyStorage<Key, Metadata> {
+
+    default Mono<Key> upload(Key key, String contentType, Flux<ByteBuffer> content) {
+        return content.collectList().flatMap(buffers -> {
+            int totalSize = buffers.stream().mapToInt(ByteBuffer::remaining).sum();
+            return upload(key, totalSize, contentType, Flux.fromIterable(buffers));
+        });
     }
 
-    default Mono<Key> overwrite(Key key, Long contentLength, Flux<ByteBuffer> content) {
-        return delete(key).flatMap((_) -> upload(key, contentLength, content));
-    }
+    Mono<Key> upload(Key key, long contentLength, String contentType, Flux<ByteBuffer> content);
+
+    Mono<Boolean> move(Key source, Key target);
 
     Mono<Boolean> delete(Key key);
 
+    @SuppressWarnings("unused")
     Mono<Boolean> deleteAll(Collection<Key> keys);
-
-    Mono<Key> upload(Key key, Flux<ByteBuffer> content);
-
-    Mono<Key> upload(Key key, long contentLength, Flux<ByteBuffer> content);
-
-    Mono<Boolean> move(Key source, Key target);
 }

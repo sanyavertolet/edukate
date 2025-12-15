@@ -4,7 +4,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.storage.keys.FileKey;
 import io.github.sanyavertolet.edukate.storage.keys.TempFileKey;
-import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
+import io.github.sanyavertolet.edukate.backend.services.files.FileManager;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
@@ -51,7 +51,7 @@ public class SubmissionController {
     private final ProblemService problemService;
     private final UserService userService;
     private final SubmissionService submissionService;
-    private final BaseFileService baseFileService;
+    private final FileManager fileManager;
 
     @GetMapping("/by-id/{id}")
     @Operation(
@@ -115,7 +115,7 @@ public class SubmissionController {
                         .map(fileName -> TempFileKey.of(user.getId(), fileName))
                         .cast(FileKey.class)
                         .collectList()
-                        .filterWhen(baseFileService::doFilesExist)
+                        .filterWhen(fileManager::doFilesExist)
                         .switchIfEmpty(Mono.error(new ResponseStatusException(
                                 HttpStatus.NOT_FOUND,
                                 "Could not find files."

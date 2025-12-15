@@ -4,11 +4,11 @@ import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObject;
+import io.github.sanyavertolet.edukate.backend.services.files.FileManager;
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey;
 import io.github.sanyavertolet.edukate.backend.permissions.SubmissionPermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
-import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService;
 import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import io.github.sanyavertolet.edukate.common.checks.SubmissionContext;
@@ -33,7 +33,7 @@ import java.util.List;
 public class SubmissionService {
     private static final String DEFAULT_USER_NAME = "UNKNOWN";
     private final SubmissionRepository submissionRepository;
-    private final BaseFileService baseFileService;
+    private final FileManager fileManager;
     private final SubmissionFileService submissionFileService;
     private final UserService userService;
     private final FileObjectRepository fileObjectRepository;
@@ -109,7 +109,7 @@ public class SubmissionService {
                 )
                 .flatMap(dto -> fileObjectRepository.findAllById(submission.getFileObjectIds())
                         .map(FileObject::getKey)
-                        .flatMapSequential(baseFileService::getDownloadUrlOrEmpty)
+                        .flatMapSequential(fileManager::getPresignedUrl)
                         .collectList()
                         .map(dto::withFileUrls)
                 )
@@ -125,7 +125,7 @@ public class SubmissionService {
                 .flatMap(problemService::findProblemById)
                 .flatMap(problem -> {
                     String problemText = problem.getText();
-                    return baseFileService.getDownloadUrlsByFileObjectIds(submission.getFileObjectIds()).collectList()
+                    return fileManager.getPresignedUrlsByFileObjectIds(submission.getFileObjectIds()).collectList()
                             .zipWith(problemService.problemImageDownloadUrls(problem.getId(), problem.getImages())
                                     .collectList())
                             .map(tuple -> SubmissionContext.builder()

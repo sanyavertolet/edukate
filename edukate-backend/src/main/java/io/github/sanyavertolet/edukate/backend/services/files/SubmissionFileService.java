@@ -7,20 +7,17 @@ import io.github.sanyavertolet.edukate.storage.keys.TempFileKey;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class SubmissionFileService {
-    private final BaseFileService baseFileService;
+    private final FileManager fileManager;
 
-    public Mono<List<FileKey>> moveSubmissionFiles(String userId, String submissionId, CreateSubmissionRequest request) {
+    public Flux<FileKey> moveSubmissionFiles(String userId, String submissionId, CreateSubmissionRequest request) {
         return Flux.fromIterable(request.getFileNames())
-                .flatMap(file -> baseFileService.moveFile(
+                .flatMapSequential(file -> fileManager.moveFile(
                         TempFileKey.of(userId, file),
-                        SubmissionFileKey.of(userId, request.getProblemId(), submissionId, file)))
-                .collectList();
+                        SubmissionFileKey.of(userId, request.getProblemId(), submissionId, file))
+                );
     }
 }

@@ -5,7 +5,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata;
 import io.github.sanyavertolet.edukate.backend.entities.Problem;
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey;
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository;
-import io.github.sanyavertolet.edukate.backend.services.files.BaseFileService;
+import io.github.sanyavertolet.edukate.backend.services.files.FileManager;
 import io.github.sanyavertolet.edukate.backend.utils.Sorts;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.NonNull;
@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProblemService {
     private final ProblemRepository problemRepository;
-    private final BaseFileService baseFileService;
+    private final FileManager fileManager;
     private final ProblemStatusDecisionManager problemStatusDecisionManager;
 
     public Flux<Problem> getFilteredProblems(PageRequest pageRequest) {
@@ -69,7 +69,7 @@ public class ProblemService {
     public Flux<String> problemImageDownloadUrls(@NonNull String problemId, @NonNull List<String> images) {
         return Flux.fromIterable(images)
                 .map(fileName -> ProblemFileKey.of(problemId, fileName))
-                .flatMap(baseFileService::getDownloadUrlOrEmpty);
+                .flatMap(fileManager::getPresignedUrl);
     }
 
     public Mono<ProblemDto> prepareDto(@NonNull Problem problem, Authentication authentication) {

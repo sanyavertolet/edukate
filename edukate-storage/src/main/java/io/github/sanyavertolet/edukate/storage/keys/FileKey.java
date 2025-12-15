@@ -30,6 +30,20 @@ abstract public class FileKey {
         this.fileName = fileName;
     }
 
+    public static String typeOf(FileKey key) {
+        if (key instanceof TempFileKey) return "tmp";
+        if (key instanceof SubmissionFileKey) return "submission";
+        if (key instanceof ProblemFileKey) return "problem";
+        if (key instanceof ResultFileKey) return "result";
+        return "base";
+    }
+
+    public static String ownerOf(FileKey key) {
+        if (key instanceof TempFileKey tmp) return tmp.getUserId();
+        if (key instanceof SubmissionFileKey sub) return sub.getUserId();
+        return null;
+    }
+
     public static FileKey of(String rawKey) {
         if (rawKey == null || rawKey.isBlank()) {
             throw new IllegalArgumentException("Key must not be null or blank");

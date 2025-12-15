@@ -4,22 +4,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.ByteBuffer;
-import java.time.Instant;
 
-public interface ReadOnlyStorage<Key> {
-    default boolean isInitDone() {
-        return true;
-    }
+public interface ReadOnlyStorage<Key, Metadata> {
+    Mono<Metadata> metadata(Key key);
 
-    Flux<Key> prefixedList(String prefix);
+    Flux<ByteBuffer> getContent(Key key);
 
-    Mono<Boolean> doesExist(Key key);
+    Mono<String> generatePresignedUrl(Key key);
 
-    Mono<Long> contentLength(Key key);
-
-    Mono<Instant> lastModified(Key key);
-
-    Flux<ByteBuffer> download(Key key);
-
-    Mono<String> getDownloadUrl(Key key);
+    @SuppressWarnings("unused")
+    Flux<Key> prefixed(String rawKeyPrefix);
 }
+
