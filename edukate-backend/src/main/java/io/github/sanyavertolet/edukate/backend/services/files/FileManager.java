@@ -52,13 +52,8 @@ public class FileManager {
                 .doOnError(e -> log.error("presign failed for key={}", key, e));
     }
 
-    public Flux<String> getPresignedUrlsByFileObjectIds(@NonNull Iterable<String> fileObjectIds) {
-        Objects.requireNonNull(fileObjectIds, "fileObjectIds must not be null");
-        return fileObjectRepository.findAllById(fileObjectIds)
-                .map(FileObject::getKey)
-                .flatMap(storage::generatePresignedUrl)
-                .timeout(DEFAULT_TIMEOUT)
-                .doOnError(e -> log.error("presign by ids failed", e));
+    public Flux<FileObject> getFileObjectsByIds(List<String> ids) {
+        return fileObjectRepository.findAllById(ids);
     }
 
     @Transactional

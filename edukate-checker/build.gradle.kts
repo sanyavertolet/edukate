@@ -26,6 +26,7 @@ dependencies {
     implementation(projects.edukateCommon)
     implementation(projects.edukateAuth)
     implementation(projects.edukateMessaging)
+    implementation(projects.edukateStorage)
 
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.actuator)

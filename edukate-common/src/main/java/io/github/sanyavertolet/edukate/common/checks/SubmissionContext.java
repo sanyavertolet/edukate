@@ -13,6 +13,6 @@ public class SubmissionContext {
     private String submissionId;
     private String problemId;
     private String problemText;
-    private List<String> problemImageUrls;
-    private List<String> submissionImageUrls;
+    private List<String> problemImageRawKeys;
+    private List<String> submissionImageRawKeys;
 }

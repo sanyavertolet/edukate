@@ -20,7 +20,7 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-        - name: notifier
+        - name: checker
           {{ include "spring-boot.common" (merge (dict "service" .Values.checker) .) | nindent 10 }}
           env:
             {{ include "spring-boot.common.env" (merge (dict "service" .Values.checker) .) | nindent 12 }}
@@ -40,6 +40,7 @@ spec:
                   name: openai-secret
                   key: key
             {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}
+            {{ include "s3.configuration.env" . | nindent 12 | trim }}
           {{ include "spring-boot.management" .Values.checker | nindent 10 }}
 
 ---
