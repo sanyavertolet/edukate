@@ -26,7 +26,7 @@ public class SpringAiChatService implements ChatService {
     @Override
     public Mono<ModelResponse> makeRequest(@NonNull RequestContext context) {
         return Mono.fromCallable(() -> callModel(context))
-                .doOnSuccess(_ -> log.debug("Successfully retrieved AI response."))
+                .doOnSuccess(_ -> log.debug("Successfully retrieved AI response"))
                 .subscribeOn(Schedulers.boundedElastic());
     }
 

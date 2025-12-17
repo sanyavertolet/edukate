@@ -5,6 +5,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObject;
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager;
+import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey;
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey;
 import io.github.sanyavertolet.edukate.backend.permissions.SubmissionPermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository;
@@ -125,15 +126,21 @@ public class SubmissionService {
                 .flatMap(problemService::findProblemById)
                 .flatMap(problem -> {
                     String problemText = problem.getText();
-                    return fileManager.getPresignedUrlsByFileObjectIds(submission.getFileObjectIds()).collectList()
-                            .zipWith(problemService.problemImageDownloadUrls(problem.getId(), problem.getImages())
-                                    .collectList())
-                            .map(tuple -> SubmissionContext.builder()
+
+                    List<String> problemRawKeys = problem.getImages().stream()
+                            .map(fileName -> ProblemFileKey.of(problem.getId(), fileName))
+                            .map(ProblemFileKey::toString)
+                            .toList();
+
+                    return fileManager.getFileObjectsByIds(submission.getFileObjectIds())
+                            .map(FileObject::getKeyPath)
+                            .collectList()
+                            .map(submissionRawKeys -> SubmissionContext.builder()
                                     .submissionId(submission.getId())
                                     .problemId(problem.getId())
                                     .problemText(problemText)
-                                    .submissionImageUrls(tuple.getT1())
-                                    .problemImageUrls(tuple.getT2())
+                                    .submissionImageRawKeys(submissionRawKeys)
+                                    .problemImageRawKeys(problemRawKeys)
                                     .build()
                             );
                 });

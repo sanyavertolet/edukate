@@ -18,17 +18,20 @@ public class CheckerService {
 
     public Mono<CheckResultMessage> runCheck(SubmissionContext context) {
         return buildRequestContext(context)
+                .doOnNext(ctx -> log.debug("Got {} problem and {} submission images processed",
+                        ctx.problemImages().size(), ctx.submissionImages().size()))
                 .flatMap(chatService::makeRequest)
+                .switchIfEmpty(Mono.error(new IllegalStateException("No AI response received")))
                 .map(modelResponse -> CheckResultMessageUtils.success(modelResponse, context))
-                .onErrorResume(ex -> Mono.just(CheckResultMessageUtils.error(context))
-                        .doOnNext(_ -> log.error("Failed to check submission", ex))
-                );
+                .doOnSuccess(_ -> log.debug("Successfully checked submission {}", context.getSubmissionId()))
+                .doOnError(ex -> log.error("Failed to check submission {}", context.getSubmissionId(), ex))
+                .onErrorReturn(CheckResultMessageUtils.error(context));
     }
 
     private Mono<RequestContext> buildRequestContext(SubmissionContext submissionContext) {
         return Mono.zip(
-                mediaContentResolver.resolveMedia(submissionContext.getProblemImageUrls()).collectList(),
-                mediaContentResolver.resolveMedia(submissionContext.getSubmissionImageUrls()).collectList(),
+                mediaContentResolver.resolveMedia(submissionContext.getProblemImageRawKeys()).collectList(),
+                mediaContentResolver.resolveMedia(submissionContext.getSubmissionImageRawKeys()).collectList(),
                 (problemMedia, submissionMedia) ->
                         new RequestContext(submissionContext.getProblemText(), problemMedia, submissionMedia)
                 );
