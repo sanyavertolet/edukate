@@ -2,7 +2,7 @@ import { Alert, Box, CircularProgress, Stack } from "@mui/material";
 import ProblemCardComponent from "./cards/ProblemCardComponent";
 import SolutionCardComponent from "./cards/SolutionCardComponent";
 import { useEffect, useState } from "react";
-import { useProblemRequest } from "../../http/requests";
+import { useProblemRequest } from "../../http/requests/problems";
 import { Problem } from "../../types/problem/Problem";
 import SubmissionsCardComponent from "./cards/SubmissionsCardComponent";
 import { AuthRequired } from "../auth/AuthRequired";

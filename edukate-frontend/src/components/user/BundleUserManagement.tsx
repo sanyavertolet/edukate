@@ -3,7 +3,7 @@ import {
     Avatar, Box, FormControl, InputLabel, List, ListItem, ListItemAvatar, ListItemText, MenuItem, Paper, Select
 } from "@mui/material";
 import { getColorByStringHash, getFirstLetters } from "../../utils/utils";
-import { useBundleChangeUserRoleMutation, useBundleUserListQuery } from "../../http/requests";
+import { useBundleChangeUserRoleMutation, useBundleUserListQuery } from "../../http/requests/bundles";
 import { useAuthContext } from "../auth/AuthContextProvider";
 import { InvitedUsersManagementComponent } from "./InvitedUsersManagementComponent";
 

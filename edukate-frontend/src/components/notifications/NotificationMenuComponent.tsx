@@ -1,5 +1,5 @@
 import { ChangeEvent, FC, useMemo, useState } from "react";
-import { useGetNotificationsRequest, useMarkAllNotificationsAsReadMutation } from "../../http/requests";
+import { useGetNotificationsRequest, useMarkAllNotificationsAsReadMutation } from "../../http/requests/notifications";
 import { Box, Button, Divider, Menu, MenuItem, Pagination, Typography } from "@mui/material";
 import { MarkEmailRead } from "@mui/icons-material";
 import { NotificationStatistics } from "../../types/notification/NotificationStatistics";

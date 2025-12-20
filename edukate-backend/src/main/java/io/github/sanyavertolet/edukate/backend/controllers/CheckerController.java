@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,6 +40,7 @@ public class CheckerController {
     private final SubmissionService submissionService;
 
     @PostMapping("/ai")
+    @PreAuthorize("hasRole('MODERATOR')")
     @Operation(
             summary = "Schedule AI check",
             description = "Schedules an asynchronous AI check for the provided submission"
@@ -50,10 +52,12 @@ public class CheckerController {
             @ApiResponse(responseCode = "404", description = "Submission not found", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "submissionId", description = "Submission identifier", in = QUERY, required = true,
+            @Parameter(name = "id", description = "Submission identifier", in = QUERY, required = true,
                     schema = @Schema(implementation = String.class))
     })
-    public Mono<ResponseEntity<Void>> aiCheck(@RequestParam String submissionId, Authentication authentication) {
+    public Mono<ResponseEntity<Void>> aiCheck(
+            @RequestParam(name = "id") String submissionId, Authentication authentication
+    ) {
         return submissionService.getSubmissionIfOwns(submissionId, AuthUtils.id(authentication))
                 .flatMap(checkerSchedulerService::scheduleCheck)
                 .thenReturn(ResponseEntity.accepted().build());
@@ -71,10 +75,12 @@ public class CheckerController {
             @ApiResponse(responseCode = "404", description = "Submission not found", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "submissionId", description = "Submission identifier", in = QUERY, required = true,
+            @Parameter(name = "id", description = "Submission identifier", in = QUERY, required = true,
                     schema = @Schema(implementation = String.class))
     })
-    public Mono<ResponseEntity<Void>> selfCheck(@RequestParam String submissionId, Authentication authentication) {
+    public Mono<ResponseEntity<Void>> selfCheck(
+            @RequestParam(name = "id") String submissionId, Authentication authentication
+    ) {
         return submissionService.getSubmissionIfOwns(submissionId, AuthUtils.id(authentication))
                 .map(Submission::getId)
                 .map(id -> CheckResult.self().submissionId(id).build())
@@ -92,11 +98,11 @@ public class CheckerController {
             @ApiResponse(responseCode = "501", description = "Not implemented", content = @Content)
     })
     @Parameters({
-            @Parameter(name = "submissionId", description = "Submission identifier", in = QUERY, required = true,
+            @Parameter(name = "id", description = "Submission identifier", in = QUERY, required = true,
                     schema = @Schema(implementation = String.class))
     })
     public Mono<ResponseEntity<Void>> supervisorCheck(
-            @RequestParam String submissionId, Authentication authentication
+            @RequestParam(name = "id") String submissionId, Authentication authentication
     ) {
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build());
     }

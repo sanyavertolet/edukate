@@ -1,7 +1,7 @@
 import { Box, Card, CardContent, Container, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { BundleCard } from "./BundleCard";
-import { useBundlesRequest } from "../../http/requests";
+import { useBundlesRequest } from "../../http/requests/bundles";
 import { useEffect, useState } from "react";
 import { BundleMetadata } from "../../types/bundle/BundleMetadata";
 import { BundleCategory } from "../../types/bundle/Bundle";

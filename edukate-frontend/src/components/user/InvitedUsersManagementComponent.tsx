@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Avatar, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemText, Paper } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { getColorByStringHash, getFirstLetters } from "../../utils/utils";
-import { useBundleExpireInviteMutation, useBundleInvitedUserListQuery } from "../../http/requests";
+import { useBundleExpireInviteMutation, useBundleInvitedUserListQuery } from "../../http/requests/bundles";
 import { toast } from "react-toastify";
 import { UserSearchInputForm } from "./UserSearchInputForm";
 
@@ -37,7 +37,7 @@ export const InvitedUsersManagementComponent: FC<InvitedUsersManagementComponent
                         <ListItemText secondary="No pending invitations" />
                     </ListItem>
                 )}
-                {invitedUsers && invitedUsers.map((username) => (
+                {invitedUsers && invitedUsers.map((username: string) => (
                     <ListItem key={`invited-${username}`} secondaryAction={
                         <IconButton
                             edge="end" aria-label="remove-invitation" onClick={() => handleRemoveInvitation(username)}

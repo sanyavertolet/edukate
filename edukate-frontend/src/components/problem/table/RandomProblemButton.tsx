@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useRandomProblemIdQuery } from "../../../http/requests";
+import { useRandomProblemIdQuery } from "../../../http/requests/problems";
 import { useNavigate } from "react-router-dom";
 import { IconButton, Tooltip } from "@mui/material";
 import ShuffleIcon from '@mui/icons-material/Shuffle';

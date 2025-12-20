@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { useSignInMutation } from "../../http/auth";
+import { useSignInMutation } from "../../http/requests/auth";
 import { useNavigate } from "react-router-dom";
 import { queryClient } from "../../http/queryClient";
 
