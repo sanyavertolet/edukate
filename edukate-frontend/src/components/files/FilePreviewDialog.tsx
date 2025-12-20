@@ -1,6 +1,6 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import { useDeviceContext } from "../topbar/DeviceContextProvider";
-import { useGetTempFile } from "../../http/files";
+import { useGetTempFile } from "../../http/requests/files";
 import { useEffect, useState } from "react";
 
 interface FilePreviewDialogProps {

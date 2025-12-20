@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { ProblemMetadata } from '../../types/problem/ProblemMetadata';
-import { useProblemCountRequest, useProblemListRequest } from '../../http/requests';
+import { useProblemCountRequest, useProblemListRequest } from '../../http/requests/problems';
 import { ProblemTable } from './table/ProblemTable';
 import { ProblemTableToolbar } from './table/ProblemTableToolbar';
 import { ProblemTableRows } from './table/ProblemTableRows';

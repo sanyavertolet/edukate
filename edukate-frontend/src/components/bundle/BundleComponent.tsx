@@ -1,4 +1,4 @@
-import { useBundleRequest } from "../../http/requests";
+import { useBundleRequest } from "../../http/requests/bundles";
 import { useState } from "react";
 import { Box, Card } from "@mui/material";
 import { BundleProblemSelectorComponent } from "./BundleProblemSelectorComponent";

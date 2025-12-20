@@ -3,7 +3,7 @@ import AddIcon from "@mui/icons-material/Add";
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useJoinBundleMutation } from "../../http/requests";
+import { useJoinBundleMutation } from "../../http/requests/bundles";
 import { defaultTooltipSlotProps } from "../../utils/utils";
 import { ConditionalTooltip } from "../basic/ConditionalTooltip";
 import { toast } from "react-toastify";

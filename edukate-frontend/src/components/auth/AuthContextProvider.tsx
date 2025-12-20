@@ -1,5 +1,5 @@
 import { createContext, FC, ReactNode, useContext } from "react";
-import { useWhoamiQuery } from "../../http/auth";
+import { useWhoamiQuery } from "../../http/requests/auth";
 import { User } from "../../types/user/User";
 
 /**

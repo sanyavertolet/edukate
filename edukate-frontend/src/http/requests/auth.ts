@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { client } from "./client";
-import { User } from "../types/user/User";
-import { queryClient } from "./queryClient";
+import { client } from "../client";
+import { User } from "../../types/user/User";
+import { queryClient } from "../queryClient";
 
 export function useWhoamiQuery() {
     return useQuery({

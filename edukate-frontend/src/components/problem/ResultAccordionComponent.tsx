@@ -1,4 +1,4 @@
-import { useResultRequest } from "../../http/requests";
+import { useResultRequest } from "../../http/requests/problems";
 import {
     Accordion,
     AccordionActions,

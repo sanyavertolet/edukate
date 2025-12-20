@@ -1,10 +1,5 @@
 import React, { FC, useState } from "react";
 import { Badge, Box, IconButton } from "@mui/material";
-import {
-    useBundleInvitationReplyMutation,
-    useMarkNotificationsAsReadMutation,
-    useNotificationsCountRequest
-} from "../../http/requests";
 import { NotificationMenuComponent } from "./NotificationMenuComponent";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useAuthContext } from "../auth/AuthContextProvider";
@@ -12,6 +7,8 @@ import { InvitationDialog } from "./InvitationDialog";
 import { BaseNotification } from "../../types/notification/BaseNotification";
 import { InviteNotification } from "../../types/notification/InviteNotification";
 import { toast } from "react-toastify";
+import { useMarkNotificationsAsReadMutation, useNotificationsCountRequest } from "../../http/requests/notifications";
+import { useBundleInvitationReplyMutation } from "../../http/requests/bundles";
 
 interface NotificationExpandableMenuProps {
     px?: number;

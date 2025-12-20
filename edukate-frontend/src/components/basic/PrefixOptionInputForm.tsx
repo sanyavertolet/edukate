@@ -1,6 +1,6 @@
 import {Fragment, SyntheticEvent, useEffect, useState} from "react";
 import { useDebounce } from "@uidotdev/usehooks";
-import { useOptionsRequest } from "../../http/requests";
+import { useOptionsRequest } from "../../http/requests/requests";
 import { Autocomplete, Chip, CircularProgress, TextField } from "@mui/material";
 
 interface PrefixOptionInputFormProps {

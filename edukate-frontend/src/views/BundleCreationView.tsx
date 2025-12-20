@@ -2,7 +2,7 @@ import {Button, Card, CardActions, CardContent, Container, Stack, TextField, Typ
 import { useEffect, useState } from "react";
 import { OptionPickerComponent } from "../components/basic/OptionPickerComponent";
 import { CreateBundleRequest } from "../types/bundle/CreateBundleRequest";
-import { useCreateBundleMutation } from "../http/requests";
+import { useCreateBundleMutation } from "../http/requests/bundles";
 import { useNavigate } from "react-router-dom";
 
 export default function BundleCreationView() {

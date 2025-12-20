@@ -1,5 +1,5 @@
 import { FC, KeyboardEventHandler, useState } from "react";
-import { useBundleInviteUserMutation } from "../../http/requests";
+import { useBundleInviteUserMutation } from "../../http/requests/bundles";
 import { toast } from "react-toastify";
 import { IconButton, InputBase, Paper } from "@mui/material";
 import AddIcon from "@mui/icons-material/AddOutlined";

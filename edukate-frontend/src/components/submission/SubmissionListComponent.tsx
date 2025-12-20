@@ -1,4 +1,4 @@
-import { useProblemSubmissionsQuery } from "../../http/requests";
+import { useMySubmissionsQuery } from "../../http/requests/submissions";
 import { ReactNode, useMemo, useState } from "react";
 import { Avatar, Box, Button, List, ListItem, ListItemAvatar, ListItemText, Skeleton, Typography } from "@mui/material";
 import { ZoomingImageDialog } from "../images/ZoomingImageDialog";
@@ -14,7 +14,7 @@ interface SubmissionListComponentProps {
 }
 
 export function SubmissionListComponent({ problemId }: SubmissionListComponentProps) {
-    const { data: submissions, isLoading, isError, error } = useProblemSubmissionsQuery(problemId);
+    const { data: submissions, isLoading, isError, error } = useMySubmissionsQuery(problemId);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const showEmpty = !isLoading && !isError && submissions && submissions.length === 0;

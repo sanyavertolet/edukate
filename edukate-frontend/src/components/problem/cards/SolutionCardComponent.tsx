@@ -2,7 +2,7 @@ import { Problem } from "../../../types/problem/Problem";
 import { Card, CardContent, Stack, Typography } from "@mui/material";
 import { FileUploadComponent } from "../../files/FileUploadComponent";
 import { ResultAccordionComponent } from "../ResultAccordionComponent";
-import { useSubmitProblemMutation } from "../../../http/requests";
+import { useSubmitProblemMutation } from "../../../http/requests/submissions";
 import { useDeviceContext } from "../../topbar/DeviceContextProvider";
 import { MobileFileUploadComponent } from "../../files/MobileFileUploadComponent";
 import { toast } from "react-toastify";
