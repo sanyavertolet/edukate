@@ -5,6 +5,7 @@ import io.github.sanyavertolet.edukate.backend.repositories.CheckResultRepositor
 import io.github.sanyavertolet.edukate.backend.entities.CheckResult;
 import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,8 @@ public class CheckResultService {
     }
 
     public Flux<CheckResult> findAllBySubmissionId(String submissionId) {
-        return checkResultRepository.findBySubmissionId(submissionId);
+        return checkResultRepository.findBySubmissionId(
+                submissionId, Sort.by(Sort.Direction.DESC, "createdAt")
+        );
     }
 }
