@@ -40,7 +40,7 @@ public class CheckerController {
     private final SubmissionService submissionService;
 
     @PostMapping("/ai")
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @Operation(
             summary = "Schedule AI check",
             description = "Schedules an asynchronous AI check for the provided submission"

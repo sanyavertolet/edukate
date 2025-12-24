@@ -2,7 +2,7 @@ import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../auth/AuthContextProvider";
-import { useSignOutMutation } from "../../http/auth";
+import { useSignOutMutation } from "../../http/requests/auth";
 import { AccountCircle } from "@mui/icons-material";
 import { queryClient } from "../../http/queryClient";
 
