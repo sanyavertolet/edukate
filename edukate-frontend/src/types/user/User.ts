@@ -1,9 +1,9 @@
-import { SpringUserRole } from "./Role";
+import { Role } from "./Role";
 
 export interface User {
     name: string;
-    roles: SpringUserRole[];
-    status: SpringUserStatus;
+    roles: Role[];
+    status: UserStatus;
 }
 
-export type SpringUserStatus = "ACTIVE" | "PENDING" | "DELETED";
+export type UserStatus = "ACTIVE" | "PENDING" | "DELETED";
