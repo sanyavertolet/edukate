@@ -9,6 +9,7 @@ import BundleListView from "./views/BundleListView";
 import BundleView from "./views/BundleView";
 import BundleCreationView from "./views/BundleCreationView";
 import { AuthRequired } from "./components/auth/AuthRequired";
+import { SubmissionView } from "./views/SubmissionView";
 
 export const router = createBrowserRouter([
     {
@@ -57,6 +58,14 @@ export const router = createBrowserRouter([
                     </AuthRequired>
                 ),
             },
+            {
+                path: "/submissions/:id",
+                element: (
+                    <AuthRequired>
+                        <SubmissionView/>
+                    </AuthRequired>
+                )
+            }
         ],
     },
 ]);

@@ -5,6 +5,24 @@ import { Submission } from "../../types/submission/Submission";
 import { CreateSubmissionRequest } from "../../types/submission/CreateSubmissionRequest";
 import { useAuthContext } from "../../components/auth/AuthContextProvider";
 
+export function useSubmitProblemMutation() {
+    const { user } = useAuthContext();
+    return useMutation({
+        mutationKey: ['submission', user],
+        mutationFn: async (request: CreateSubmissionRequest) => {
+            if (!user) {
+                throw new Error("User not signed in");
+            }
+            try {
+                const response = await client.post<Submission>('/api/v1/submissions', request);
+                return response.data;
+            } catch (error) {
+                throw defaultErrorHandler(error);
+            }
+        },
+    });
+}
+
 export function useMySubmissionsQuery(problemId?: string) {
     const { isAuthorized } = useAuthContext();
     return useQuery({
@@ -26,20 +44,19 @@ export function useMySubmissionsQuery(problemId?: string) {
     })
 }
 
-export function useSubmitProblemMutation() {
-    const { user } = useAuthContext();
-    return useMutation({
-        mutationKey: ['submission', user],
-        mutationFn: async (request: CreateSubmissionRequest) => {
-            if (!user) {
-                throw new Error("User not signed in");
+export function useSubmissionQuery(submissionId: string | undefined) {
+    return useQuery({
+        queryKey: ['submission', submissionId],
+        queryFn: async () => {
+            if (!submissionId) {
+                return null;
             }
             try {
-                const response = await client.post<Submission>('/api/v1/submissions', request);
+                const response = await client.get<Submission>(`/api/v1/submissions/by-id/${submissionId}`);
                 return response.data;
             } catch (error) {
                 throw defaultErrorHandler(error);
             }
-        },
-    });
+        }
+    })
 }

@@ -1,6 +1,7 @@
 import { UtcIsoString } from "../common/DateTypes";
 
-export interface Submission {
+export type Submission = {
+    id: string;
     problemId: string;
     userName: string;
     status: SubmissionStatus;
