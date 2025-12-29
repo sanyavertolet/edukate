@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreateRequest;
+import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto;
@@ -27,12 +28,17 @@ import java.time.Instant;
         visible = true
 )
 @JsonSubTypes({
+        @JsonSubTypes.Type(value = BaseNotification.class, name = "base"),
         @JsonSubTypes.Type(value = SimpleNotification.class, name = "simple"),
-        @JsonSubTypes.Type(value = InviteNotification.class, name = "invite")
+        @JsonSubTypes.Type(value = InviteNotification.class, name = "invite"),
+        @JsonSubTypes.Type(value = CheckedNotification.class, name = "checked"),
 })
 @JsonTypeName("base")
 @NoArgsConstructor
-public sealed class BaseNotification permits SimpleNotification, InviteNotification {
+public sealed class BaseNotification permits
+        SimpleNotification,
+        InviteNotification,
+        CheckedNotification {
     @Id
     private String _id;
 
@@ -53,21 +59,22 @@ public sealed class BaseNotification permits SimpleNotification, InviteNotificat
         this.isRead = false;
     }
 
-    public static BaseNotification fromCreationRequest(BaseNotificationCreateRequest creationRequest) {
-        if (creationRequest instanceof SimpleNotificationCreateRequest simpleNotificationCreationRequest) {
-            return SimpleNotification.fromCreationRequest(simpleNotificationCreationRequest);
-        } else if (creationRequest instanceof InviteNotificationCreateRequest inviteNotificationCreationRequest) {
-            return InviteNotification.fromCreationRequest(inviteNotificationCreationRequest);
-        }
-        throw new UnsupportedOperationException("Unsupported DTO type: " + creationRequest.getClass().getName());
+    public static BaseNotification fromCreationRequest(BaseNotificationCreateRequest request) {
+        return switch (request) {
+            case SimpleNotificationCreateRequest req -> SimpleNotification.fromCreationRequest(req);
+            case InviteNotificationCreateRequest req -> InviteNotification.fromCreationRequest(req);
+            case CheckedNotificationCreateRequest req -> CheckedNotification.fromCreationRequest(req);
+            default -> throw new UnsupportedOperationException("Unsupported DTO type: " + request.getClass().getName());
+        };
     }
 
     public BaseNotificationDto toDto() {
-        if (this instanceof SimpleNotification simpleNotification) {
-            return simpleNotification.toDto();
-        } else if (this instanceof InviteNotification inviteNotification) {
-            return inviteNotification.toDto();
-        }
-        throw new UnsupportedOperationException("Unsupported Notification type: " + getClass().getName());
+        return switch (this) {
+            case SimpleNotification simpleNotification -> simpleNotification.toDto();
+            case InviteNotification inviteNotification -> inviteNotification.toDto();
+            case CheckedNotification checkedNotification -> checkedNotification.toDto();
+            default ->
+                    throw new UnsupportedOperationException("Unsupported Notification type: " + getClass().getName());
+        };
     }
 }
