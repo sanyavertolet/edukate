@@ -14,12 +14,17 @@ import java.time.Instant;
         visible = true
 )
 @JsonSubTypes({
+        @JsonSubTypes.Type(value = BaseNotificationDto.class, name = "base"),
         @JsonSubTypes.Type(value = SimpleNotificationDto.class, name = "simple"),
-        @JsonSubTypes.Type(value = InviteNotificationDto.class, name = "invite")
+        @JsonSubTypes.Type(value = InviteNotificationDto.class, name = "invite"),
+        @JsonSubTypes.Type(value = CheckedNotificationDto.class, name = "checked"),
 })
 @Getter
 @AllArgsConstructor
-public sealed class BaseNotificationDto permits SimpleNotificationDto, InviteNotificationDto {
+public sealed class BaseNotificationDto permits
+        SimpleNotificationDto,
+        InviteNotificationDto,
+        CheckedNotificationDto {
     private String uuid;
     private Boolean isRead;
     private Instant createdAt;

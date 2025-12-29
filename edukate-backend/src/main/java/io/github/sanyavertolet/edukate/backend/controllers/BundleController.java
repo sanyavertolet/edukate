@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.*;
 import io.github.sanyavertolet.edukate.backend.entities.Bundle;
 import io.github.sanyavertolet.edukate.backend.services.BundleService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
+import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest;
 import io.github.sanyavertolet.edukate.common.users.UserRole;
 import io.github.sanyavertolet.edukate.backend.entities.User;
 import io.github.sanyavertolet.edukate.common.services.Notifier;
@@ -254,15 +255,21 @@ public class BundleController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "User " + inviteeName +  " not found"
                 )))
-                .zipWhen(invitee -> bundleService.inviteUser(shareCode, AuthUtils.id(authentication), invitee.getId()))
-                .flatMap(tuple -> {
-                    User invitee = tuple.getT1();
-                    Bundle bundle = tuple.getT2();
-                    return notifier.notifyInvite(
-                            invitee.getId(), authentication.getName(), bundle.getName(), bundle.getShareCode()
-                    )
-                            .thenReturn("User " + inviteeName + " has been invited to bundle " + shareCode);
-                });
+                .zipWhen(
+                        invitee -> bundleService.inviteUser(shareCode, AuthUtils.id(authentication), invitee.getId()),
+                        (invitee, bundle) -> prepareNotification(invitee, bundle, authentication.getName())
+                )
+                .flatMap(notifier::notify)
+                .thenReturn("User " + inviteeName + " has been invited to bundle " + shareCode);
+    }
+
+    private InviteNotificationCreateRequest prepareNotification(User user, Bundle bundle, String inviterName) {
+        return InviteNotificationCreateRequest.builder()
+                .targetUserId(user.getId())
+                .inviterName(inviterName)
+                .bundleName(bundle.getName())
+                .bundleShareCode(bundle.getShareCode())
+                .build();
     }
 
     @PostMapping("/{shareCode}/expire-invite")

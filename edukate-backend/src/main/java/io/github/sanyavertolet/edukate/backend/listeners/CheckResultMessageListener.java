@@ -1,8 +1,11 @@
 package io.github.sanyavertolet.edukate.backend.listeners;
 
 import io.github.sanyavertolet.edukate.backend.entities.CheckResult;
+import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.services.CheckResultService;
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage;
+import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationCreateRequest;
+import io.github.sanyavertolet.edukate.common.services.Notifier;
 import io.github.sanyavertolet.edukate.messaging.RabbitTopology;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -16,6 +19,7 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class CheckResultMessageListener {
     private final CheckResultService checkResultService;
+    private final Notifier notifier;
 
     @RabbitListener(queues = RabbitTopology.Q_RESULT_BACKEND)
     public void onCheckResultMessage(@NonNull CheckResultMessage checkResultMessage) {
@@ -23,9 +27,21 @@ public class CheckResultMessageListener {
 
         buildCheckResult(checkResultMessage)
                 .flatMap(checkResultService::saveAndUpdateSubmission)
+                 .map(tuple -> prepareNotification(tuple.getT1(), tuple.getT2()))
+                .doOnSuccess(notifier::notify)
                 .doOnError(ex -> log.error("Failed to persist result {}", checkResultMessage.getSubmissionId(), ex))
-                // todo: notify user that the result is available
                 .block();
+    }
+
+    private CheckedNotificationCreateRequest prepareNotification(
+            CheckResult checkResult, Submission submission
+    ) {
+        return CheckedNotificationCreateRequest.builder()
+                .targetUserId(submission.getUserId())
+                .status(checkResult.getStatus())
+                .submissionId(submission.getId())
+                .problemId(submission.getProblemId())
+                .build();
     }
 
     private Mono<CheckResult> buildCheckResult(CheckResultMessage checkResultMessage) {

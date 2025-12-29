@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -17,17 +19,22 @@ import java.util.Objects;
         visible = true
 )
 @JsonSubTypes({
+        @JsonSubTypes.Type(value = BaseNotificationCreateRequest.class, name = "base"),
         @JsonSubTypes.Type(value = SimpleNotificationCreateRequest.class, name = "simple"),
-        @JsonSubTypes.Type(value = InviteNotificationCreateRequest.class, name = "invite")
+        @JsonSubTypes.Type(value = InviteNotificationCreateRequest.class, name = "invite"),
+        @JsonSubTypes.Type(value = CheckedNotificationCreateRequest.class, name = "checked"),
 })
 @Getter
 @ToString
 @SuperBuilder
 public sealed class BaseNotificationCreateRequest permits
         SimpleNotificationCreateRequest,
-        InviteNotificationCreateRequest {
+        InviteNotificationCreateRequest,
+        CheckedNotificationCreateRequest {
+
     @NotBlank
-    private final String uuid;
+    @Builder.Default
+    private final String uuid = UUID.randomUUID().toString();
     @NotBlank
     private final String targetUserId;
 
