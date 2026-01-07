@@ -8,6 +8,8 @@ import { SimpleNotificationComponent } from "./SimpleNotificationComponent";
 import { SimpleNotification } from "../../types/notification/SimpleNotification";
 import { InviteNotificationComponent } from "./InviteNotificationComponent";
 import { InviteNotification } from "../../types/notification/InviteNotification";
+import { CheckedNotificationComponent } from "./CheckedNotificationComponent";
+import { CheckedNotification } from "../../types/notification/CheckedNotification";
 
 interface NotificationListComponentProps {
     anchorEl?: HTMLElement;
@@ -92,6 +94,9 @@ const NotificationComponent: FC<NotificationComponentProps> = ({ notification, o
             )}
             { notification._type === "invite" && (
                 <InviteNotificationComponent notification={ notification as InviteNotification }/>
+            )}
+            { notification._type === "checked" && (
+                <CheckedNotificationComponent notification={ notification as CheckedNotification }/>
             )}
         </MenuItem>
     )
