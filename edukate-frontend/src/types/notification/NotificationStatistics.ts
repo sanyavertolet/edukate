@@ -1,4 +1,4 @@
 export type NotificationStatistics = {
-    unread: number;
-    total: number;
+    unread: number,
+    total: number,
 }
