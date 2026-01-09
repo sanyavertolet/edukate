@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { ScreenAdaptingTopBar } from "./topbar/ScreenAdaptingTopBar";
 import { Outlet } from "react-router-dom";
 import { ParticlesComponent } from "./animation/Particles";
@@ -15,17 +15,16 @@ export default function PageSkeleton() {
                 toast.info("Your account is pending approval. Some features are temporarily restricted.");
             }
         },
-        // eslint-disable-next-line
-        []
+        [user?.status]
     );
 
     return (
         <Box>
             <ScreenAdaptingTopBar/>
-            <Box sx={{ paddingY: "2rem" }}>
+            <Container maxWidth={"lg"} sx={{ pt: "120px", pb: "2rem" }}>
                 <Outlet/>
                 <ParticlesComponent/>
-            </Box>
+            </Container>
         </Box>
     );
 }

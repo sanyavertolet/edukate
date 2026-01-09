@@ -12,7 +12,7 @@ export default function SubmissionsCardComponent({ problemId }: SubmissionsCardC
                 <Typography color="secondary" variant="h6" paddingBottom={1}>
                     Submissions
                 </Typography>
-                <Paper elevation={0} variant={"outlined"} sx={{ width: "60%", justifyContent: "center", margin: "auto"}}>
+                <Paper elevation={0} variant={"outlined"} sx={{ width: "80%", justifyContent: "center", margin: "auto"}}>
                     <SubmissionListComponent problemId={problemId}/>
                 </Paper>
             </CardContent>

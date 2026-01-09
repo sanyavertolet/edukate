@@ -1,13 +1,5 @@
 import { useResultRequest } from "../../http/requests/problems";
-import {
-    Accordion,
-    AccordionActions,
-    AccordionDetails,
-    AccordionSummary,
-    Box,
-    Button,
-    Typography
-} from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from "react";
 import { Result } from "../../types/problem/Result";
@@ -16,13 +8,9 @@ import { useAuthContext } from "../auth/AuthContextProvider";
 import { Problem } from "../../types/problem/Problem";
 import { ImageListComponent } from "../images/ImageListComponent";
 
-interface ResultComponentProps {
-    problem: Problem;
-    refreshProblem: () => void;
-}
+type ResultComponentProps = { problem: Problem }
 
-// todo: fix Mark as done button when submissions are finished
-export function ResultAccordionComponent({ problem /*, refreshProblem */ }: ResultComponentProps) {
+export function ResultAccordionComponent({ problem }: ResultComponentProps) {
     const [result, setResult] = useState<Result>();
     const resultRequest = useResultRequest(problem.id);
     useEffect(
@@ -34,19 +22,9 @@ export function ResultAccordionComponent({ problem /*, refreshProblem */ }: Resu
         [resultRequest.data, resultRequest.isLoading, resultRequest.error]
     );
 
-    // fixme
-    // const submitMutation = useSubmitMutation(problem.id);
-    // useEffect(() => {
-    //     if (submitMutation.isSuccess && submitMutation.data) {
-    //         refreshProblem();
-    //     }
-    // }, [submitMutation.isSuccess, submitMutation.data, refreshProblem]);
-
-    const handleClick = () => { /* submitMutation.mutate() */ };
-
     const { isAuthorized } = useAuthContext();
     return (
-        <Box width="60%">
+        <Box width={"80%"}>
             <Accordion disabled={!isAuthorized}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon/>} aria-controls="result-content" id="result-header">
                     <Typography component="span">Show the result</Typography>
@@ -55,11 +33,6 @@ export function ResultAccordionComponent({ problem /*, refreshProblem */ }: Resu
                     { result?.text && <LatexComponent text={result?.text}/>}
                     { !!result?.images && result.images.length != 0 && <ImageListComponent images={result.images}/> }
                 </AccordionDetails>
-                { problem.status != "SOLVED" && (
-                    <AccordionActions>
-                        <Button disabled onClick={handleClick}>Mark as done</Button>
-                    </AccordionActions>
-                )}
             </Accordion>
         </Box>
     );

@@ -49,8 +49,7 @@ export default function SolutionCardComponent({ problem, refreshProblem }: Solut
                         ? <MobileFileUploadComponent accept="image/*" maxFiles={5} onSubmit={handleSubmit}/>
                         : <FileUploadComponent accept="image/*" maxFiles={5} onSubmit={handleSubmit}/>
                     }
-
-                    <ResultAccordionComponent problem={problem} refreshProblem={refreshProblem}/>
+                    <ResultAccordionComponent problem={problem}/>
                 </Stack>
             </CardContent>
         </Card>

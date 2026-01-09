@@ -20,7 +20,7 @@ export function FileUploadComponent(
         setUploadedFileNames(prevState => prevState.filter(key => key !== fileKey));
     };
     return (
-        <Paper elevation={2} sx={{p: 1, borderRadius: 2, width: "60%"}}>
+        <Paper elevation={2} sx={{p: 1, borderRadius: 2, width: "80%"}}>
             <Box gap={2}>
                 <FileInputComponent onTempFileUploaded={addFileKey} onTempFileDeleted={deleteFileKey} accept={accept}
                                     maxFiles={maxFiles} maxSize={maxSize}/>
