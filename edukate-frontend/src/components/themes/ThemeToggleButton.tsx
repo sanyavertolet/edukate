@@ -1,13 +1,13 @@
 import { useTheme } from "./ThemeContextProvider";
-import { IconButton } from "@mui/material";
+import { IconButton, IconButtonProps } from "@mui/material";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 
-export const ThemeToggleButton = () => {
+export default function ThemeToggleButton(props: IconButtonProps) {
     const { theme, toggleTheme } = useTheme();
 
     return (
-        <IconButton aria-label="theme toggle" color="primary" onClick={ toggleTheme }>
-            { theme == "dark" ? <Brightness7/> : <Brightness4/> }
+        <IconButton onClick={toggleTheme} color="primary" aria-label="Theme toggle" {...props }>
+            {theme === 'dark' ? <Brightness7 /> : <Brightness4 />}
         </IconButton>
     );
 }

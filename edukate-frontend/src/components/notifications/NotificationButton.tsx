@@ -10,10 +10,6 @@ import { toast } from "react-toastify";
 import { useMarkNotificationsAsReadMutation, useNotificationsCountRequest } from "../../http/requests/notifications";
 import { useBundleInvitationReplyMutation } from "../../http/requests/bundles";
 
-interface NotificationExpandableMenuProps {
-    px?: number;
-}
-
 type BundleInviteInfo = {
     bundleName: string;
     bundleShareCode: string;
@@ -21,7 +17,7 @@ type BundleInviteInfo = {
     notificationUuid: string;
 };
 
-export const NotificationButton: FC<NotificationExpandableMenuProps> = ({ px = 2 }) => {
+export const NotificationButton: FC = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
     const { isAuthorized } = useAuthContext();
     const { data: statistics } = useNotificationsCountRequest(false);
@@ -61,7 +57,7 @@ export const NotificationButton: FC<NotificationExpandableMenuProps> = ({ px = 2
     };
 
     return (
-        <Box px={px}>
+        <Box>
             <InvitationDialog bundleInfo={ bundleInviteInfo } onClose={onInvitationDialogClose}/>
             <NotificationMenuComponent
                 notificationStatistics={statistics} onNotificationClick={onNotificationClick}
