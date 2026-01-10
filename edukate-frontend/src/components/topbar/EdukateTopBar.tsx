@@ -1,7 +1,5 @@
-import { styled, alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Container from '@mui/material/Container';
@@ -14,22 +12,9 @@ import { useAuthContext } from "../auth/AuthContextProvider";
 import { NotificationButton } from "../notifications/NotificationButton";
 import ThemeToggleButton from "../themes/ThemeToggleButton";
 import { UserMenu } from "./UserMenu";
+import { TransparentToolbar } from "../Styled";
 
-const StyledToolbar = styled(Toolbar)(({ theme }) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexShrink: 0,
-    borderRadius: `calc(${theme.shape.borderRadius}px + 8px)`,
-    backdropFilter: 'blur(24px)',
-    border: '1px solid',
-    borderColor: theme.palette.divider,
-    backgroundColor: alpha(theme.palette.background.default, 0.4),
-    boxShadow: theme.shadows[1],
-    padding: '8px 12px',
-}));
-
-export function ScreenAdaptingTopBar() {
+export function EdukateTopBar() {
     const [open, setOpen] = useState(false);
 
     const toggleDrawer = (newOpen: boolean) => () => { setOpen(newOpen); };
@@ -46,7 +31,7 @@ export function ScreenAdaptingTopBar() {
     return (
         <AppBar position="fixed" enableColorOnDark sx={appBarSx}>
             <Container maxWidth="lg">
-                <StyledToolbar variant="regular" disableGutters>
+                <TransparentToolbar variant="regular" disableGutters>
                     <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
                         <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
                             <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
@@ -54,7 +39,7 @@ export function ScreenAdaptingTopBar() {
                             </IconButton>
                             <MobileDrawerComponent isOpen={open} setIsOpen={setOpen}/>
                         </Box>
-                        <SiteMark />
+                        <SiteMark onClick={() => navigate('/')}/>
                         <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
                             <TopBarLink text="Problems" onClick={() => navigate('/problems')} />
                             <TopBarLink text="Bundles" onClick={() => navigate('/bundles')} />
@@ -75,7 +60,7 @@ export function ScreenAdaptingTopBar() {
                             </Box>)
                         }
                     </Box>
-                </StyledToolbar>
+                </TransparentToolbar>
             </Container>
         </AppBar>
     );

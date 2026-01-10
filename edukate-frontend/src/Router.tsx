@@ -38,9 +38,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/bundles",
-                element: (
-                    <BundleListView/>
-                ),
+                element: <BundleListView/>,
             },
             {
                 path: "/bundles/new",

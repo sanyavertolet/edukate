@@ -1,5 +1,4 @@
-import { Avatar, Button, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import {Avatar, Button, Stack, Typography} from "@mui/material";
 import { FC } from "react";
 
 type SiteMarkProps = {
@@ -7,19 +6,25 @@ type SiteMarkProps = {
 };
 
 export const SiteMark: FC<SiteMarkProps> = ({onClick}) => {
-    const navigate = useNavigate();
-    const edukateTypographySx = {
-        display: 'flex',
-        fontWeight: 'bold',
-        ml: 1,
-    };
+    const edukateTypographySx = { display: 'flex', fontWeight: 'bold', ml: 1 };
+
+    if (onClick) {
+        return (
+            <Button color="primary" onClick={onClick}>
+                <Avatar alt="Edukate" src="/logo.png" sx={{ width: 32, height: 32 }} />
+                <Typography variant="h6" component="div" sx={edukateTypographySx}>
+                    Edukate
+                </Typography>
+            </Button>
+        );
+    }
 
     return (
-        <Button color="primary" onClick={onClick ?? (() => navigate("/"))}>
+        <Stack direction={"row"}>
             <Avatar alt="Edukate" src="/logo.png" sx={{ width: 32, height: 32 }} />
-            <Typography variant="h6" component="div" sx={edukateTypographySx}>
+            <Typography variant="h6" component="span" color={"primary"} sx={edukateTypographySx} textTransform={"uppercase"}>
                 Edukate
             </Typography>
-        </Button>
+        </Stack>
     );
 }

@@ -45,10 +45,6 @@ export function useSignUpMutation() {
     });
 }
 
-/**
- * Hook for signing out the current user
- * @returns A function that signs out the user
- */
 export function useSignOutMutation() {
     return useMutation({
         mutationFn: async () => {

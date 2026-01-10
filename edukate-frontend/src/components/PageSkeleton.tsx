@@ -1,5 +1,5 @@
 import { Box, Container } from "@mui/material";
-import { ScreenAdaptingTopBar } from "./topbar/ScreenAdaptingTopBar";
+import { EdukateTopBar } from "./topbar/EdukateTopBar";
 import { Outlet } from "react-router-dom";
 import { ParticlesComponent } from "./animation/Particles";
 import { useAuthContext } from "./auth/AuthContextProvider";
@@ -20,7 +20,7 @@ export default function PageSkeleton() {
 
     return (
         <Box>
-            <ScreenAdaptingTopBar/>
+            <EdukateTopBar/>
             <Container maxWidth={"lg"} sx={{ pt: "120px", pb: "2rem" }}>
                 <Outlet/>
                 <ParticlesComponent/>
