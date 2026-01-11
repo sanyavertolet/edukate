@@ -8,23 +8,23 @@ function getSearchParamAsInt(searchParams: URLSearchParams, key: string, default
     return searchParams.get(key) ? parseInt(searchParams.get(key)!, 10) : defaultValue;
 }
 
-export type StatusFilter = ProblemStatus | 'ALL' | undefined;
+export type StatusFilter = ProblemStatus | "ALL" | undefined;
 
 export function useProblemTableParams() {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [page, setPage] = useState(getSearchParamAsInt(searchParams, 'page', 0));
-    const [rowsPerPage, setRowsPerPage] = useState(getSearchParamAsInt(searchParams, 'pageSize', DEFAULT_PAGE_SIZE));
+    const [page, setPage] = useState(getSearchParamAsInt(searchParams, "page", 0));
+    const [rowsPerPage, setRowsPerPage] = useState(getSearchParamAsInt(searchParams, "pageSize", DEFAULT_PAGE_SIZE));
     const [status, setStatus] = useState<StatusFilter>(
-        (searchParams.get('status') as StatusFilter) || 'ALL'
+        (searchParams.get("status") as StatusFilter) || "ALL"
     );
-    const [prefix, setPrefix] = useState<string>(searchParams.get('prefix') || '');
+    const [prefix, setPrefix] = useState<string>(searchParams.get("prefix") || "");
 
     useEffect(() => {
-        setPage(getSearchParamAsInt(searchParams, 'page', 0));
-        setRowsPerPage(getSearchParamAsInt(searchParams, 'pageSize', DEFAULT_PAGE_SIZE));
-        setStatus((searchParams.get('status') as StatusFilter) || 'ALL');
-        setPrefix(searchParams.get('prefix') || '');
+        setPage(getSearchParamAsInt(searchParams, "page", 0));
+        setRowsPerPage(getSearchParamAsInt(searchParams, "pageSize", DEFAULT_PAGE_SIZE));
+        setStatus((searchParams.get("status") as StatusFilter) || "ALL");
+        setPrefix(searchParams.get('prefix') || "");
     }, [searchParams]);
 
     const updateSearchParams = (
@@ -33,16 +33,16 @@ export function useProblemTableParams() {
         const next = new URLSearchParams(searchParams);
 
         if (params.page !== undefined) {
-            if (params.page === 0) next.delete('page'); else next.set('page', String(params.page));
+            if (params.page === 0) next.delete("page"); else next.set("page", String(params.page));
         }
         if (params.pageSize !== undefined) {
-            if (params.pageSize === DEFAULT_PAGE_SIZE) next.delete('pageSize'); else next.set('pageSize', String(params.pageSize));
+            if (params.pageSize === DEFAULT_PAGE_SIZE) next.delete("pageSize"); else next.set("pageSize", String(params.pageSize));
         }
         if (params.status !== undefined) {
-            if (!params.status || params.status === 'ALL') next.delete('status'); else next.set('status', params.status);
+            if (!params.status || params.status === 'ALL') next.delete("status"); else next.set("status", params.status);
         }
         if (params.prefix !== undefined) {
-            if (!params.prefix) next.delete('prefix'); else next.set('prefix', params.prefix);
+            if (!params.prefix) next.delete("prefix"); else next.set("prefix", params.prefix);
         }
         setSearchParams(next);
     };
