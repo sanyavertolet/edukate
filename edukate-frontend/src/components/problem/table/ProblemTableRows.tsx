@@ -32,13 +32,13 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
                 <TableRow
                     key={item.name}
                     hover
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ cursor: "pointer" }}
                     onClick={() => onRowClick(item.name)}
                 >
                     <TableCell><ProblemStatusIcon status={item.status} /></TableCell>
-                    <TableCell>{item.name}{item.isHard ? '*' : ''}</TableCell>
+                    <TableCell>{item.name}{item.isHard ? '*' : ""}</TableCell>
                     <TableCell>
-                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 0.5, md: 1 }}>
+                        <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 0.5, md: 1 }}>
                             {item.tags.map((tag) => (
                                 <TagChip key={`${item.name}-${tag}`} label={tag} />
                             ))}

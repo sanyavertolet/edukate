@@ -6,7 +6,7 @@ export interface FileMetadata {
     lastModified: UtcIsoString;
     size: number;
 
-    status?: 'pending' | 'uploading' | 'success' | 'error';
+    status?: "pending" | "uploading" | "success" | "error";
     progress?: number;
     error?: Error;
     _file?: File;

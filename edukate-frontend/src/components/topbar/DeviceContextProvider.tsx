@@ -15,9 +15,9 @@ const DeviceContext = createContext<DeviceContextType>({
     setPageSpecificNavigation: () => {},
 });
 
-interface DeviceProviderProps {
-    children: ReactNode;
-}
+type DeviceProviderProps = {
+    children: ReactNode
+};
 
 export const usePageSpecificNavigation = (navigationElements: AdditionalNavigationElement[]) => {
     const { isMobile, pageSpecificNavigation, setPageSpecificNavigation } = useDeviceContext();

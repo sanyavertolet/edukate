@@ -35,7 +35,7 @@ export const useFileUpload = ({
 
                 const filesWithStatus = newFiles.map(file => ({
                     ...file,
-                    status: 'success' as const,
+                    status: "success" as const,
                     progress: 100
                 }));
 
@@ -66,10 +66,10 @@ export const useFileUpload = ({
 
         const newFiles: FileMetadata[] = Array.from(event.target.files).map(file => ({
             key: file.name,
-            authorName: '',
+            authorName: "",
             lastModified: nowUtcIso(),
             size: file.size,
-            status: 'pending',
+            status: "pending",
             progress: 0,
             _file: file
         }));
@@ -96,20 +96,20 @@ export const useFileUpload = ({
             const file = metadata._file;
             try {
                 setFileMetadataList(prev => prev.map(m =>
-                    m.key === metadata.key ? { ...m, status: 'uploading' } : m
+                    m.key === metadata.key ? { ...m, status: "uploading" } : m
                 ));
 
                 postTempFileMutation.mutate(
                     { file, onProgress: (progress) => {
                         setFileMetadataList(prev => prev.map(m =>
-                            m.key === metadata.key ? { ...m, progress, status: 'uploading' } : m
+                            m.key === metadata.key ? { ...m, progress, status: "uploading" } : m
                         ));
                     }},
                     {
                         onSuccess: (key) => {
                             setFileMetadataList(prev => prev.map(m =>
                                 m.key === metadata.key
-                                    ? { ...m, key, status: 'success', progress: 100 }
+                                    ? { ...m, key, status: "success", progress: 100 }
                                     : m
                             ));
 
@@ -118,7 +118,7 @@ export const useFileUpload = ({
                         onError: (error) => {
                             setFileMetadataList(prev => prev.map(m =>
                                 m.key === metadata.key
-                                    ? { ...m, status: 'error', error: error as Error, progress: 0 }
+                                    ? { ...m, status: "error", error: error as Error, progress: 0 }
                                     : m
                             ));
 
@@ -129,7 +129,7 @@ export const useFileUpload = ({
             } catch (error) {
                 setFileMetadataList(prev => prev.map(m =>
                     m.key === metadata.key
-                        ? { ...m, status: 'error', error: error as Error, progress: 0 }
+                        ? { ...m, status: "error", error: error as Error, progress: 0 }
                         : m
                 ));
 
@@ -144,7 +144,7 @@ export const useFileUpload = ({
 
     const handleRemoveFile = (key: string) => {
         const file = fileMetadataList.find(file => file.key === key);
-        if (file && file.status === 'success') {
+        if (file && file.status === "success") {
             deleteTempFileMutation.mutate(key, {
                 onSuccess: (serverKey) => {
                     onTempFileDeleted(serverKey);

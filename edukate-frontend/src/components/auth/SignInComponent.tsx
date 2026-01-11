@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { Box, TextField, Button, Typography, Link, FormControl, Divider } from '@mui/material';
+import { Box, TextField, Button, Typography, Link, FormControl } from '@mui/material';
 import { useSignInMutation } from "../../http/requests/auth";
 import { useNavigate } from "react-router-dom";
 import { queryClient } from "../../http/queryClient";
@@ -102,7 +102,6 @@ export const SignInComponent = ({onSignInSuccess, onSignUpRequest}: SignInCompon
                         Sign in
                     </Button>
                 </Box>
-                <Divider>or</Divider>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <Typography sx={{ textAlign: "center" }}>
                         Don't have an account?{" "}

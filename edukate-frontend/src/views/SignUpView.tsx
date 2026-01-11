@@ -1,15 +1,15 @@
 import { SignUpComponent } from "../components/auth/SignUpComponent";
-import { Container, Paper, Typography } from "@mui/material";
+import { Container } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUpView() {
+    const navigate = useNavigate();
     return (
         <Container maxWidth="sm">
-            <Paper sx={{ padding: 4 }}>
-                <Typography color="secondary" variant="h5">
-                    Sign Up
-                </Typography>
-                <SignUpComponent/>
-            </Paper>
+            <SignUpComponent
+                onSignUpSuccess={() => navigate("/problems", {replace: true})}
+                onSignInRequest={() => navigate("/sign-in", {replace: true})}
+            />
         </Container>
     );
 };
