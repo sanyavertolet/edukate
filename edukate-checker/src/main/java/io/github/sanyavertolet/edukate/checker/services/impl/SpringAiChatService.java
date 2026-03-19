@@ -31,7 +31,7 @@ public class SpringAiChatService implements ChatService {
     }
 
     private ModelResponse callModel(@NonNull RequestContext ctx) {
-        return structuredCallModel(ctx.problemText(), ctx.problemImages(), ctx.submissionImages());
+        return structuredCallModel(ctx.getProblemText(), ctx.getProblemImages(), ctx.getSubmissionImages());
     }
 
     private ModelResponse structuredCallModel(String problemText, List<Media> problemMedia, List<Media> submissionMedia) {

@@ -1,5 +1,6 @@
 plugins {
     java
+    kotlin("jvm")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -8,6 +9,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
     }
+}
+
+kotlin {
+    jvmToolchain(23)
 }
 
 configurations {
@@ -27,6 +32,8 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.springdoc.openapi.starter.webflux.ui)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.kotlin.reflect)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)

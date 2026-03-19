@@ -1,9 +1,10 @@
 package io.github.sanyavertolet.edukate.backend.utils;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Sort;
 
+@UtilityClass
 public final class Sorts {
-    private Sorts() {}
 
     public static Sort semVerSort() {
         return semVerSort(SemVerUtils.majorFieldName, SemVerUtils.minorFieldName, SemVerUtils.patchFieldName);

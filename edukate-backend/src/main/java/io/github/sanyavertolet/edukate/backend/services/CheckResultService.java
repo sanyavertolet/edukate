@@ -31,8 +31,10 @@ public class CheckResultService {
                     CheckResult saved = tuple.getT1();
                     Submission submission = tuple.getT2();
                     SubmissionStatus newStatus = SubmissionStatus.from(saved.getStatus());
-                    submission.setStatus(SubmissionStatus.best(submission.getStatus(), newStatus));
-                    return submissionService.update(submission).thenReturn(tuple);
+                    Submission updatedSubmission = submission.withStatus(
+                            SubmissionStatus.best(submission.getStatus(), newStatus)
+                    );
+                    return submissionService.update(updatedSubmission).thenReturn(tuple);
                 });
     }
 

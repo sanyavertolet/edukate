@@ -35,6 +35,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
@@ -264,12 +265,8 @@ public class BundleController {
     }
 
     private InviteNotificationCreateRequest prepareNotification(User user, Bundle bundle, String inviterName) {
-        return InviteNotificationCreateRequest.builder()
-                .targetUserId(user.getId())
-                .inviterName(inviterName)
-                .bundleName(bundle.getName())
-                .bundleShareCode(bundle.getShareCode())
-                .build();
+        String userId = Objects.requireNonNull(user.getId(), "User ID must not be null");
+        return InviteNotificationCreateRequest.from(userId, inviterName, bundle.getName(), bundle.getShareCode());
     }
 
     @PostMapping("/{shareCode}/expire-invite")

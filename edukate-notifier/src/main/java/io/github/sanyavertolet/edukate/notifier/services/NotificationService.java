@@ -33,6 +33,7 @@ public class NotificationService {
 
     @Transactional
     public Mono<BaseNotification> saveIfAbsent(BaseNotification notification) {
+        // TODO: this find-then-save flow is race-prone under concurrent same-UUID writes; replace with atomic upsert/duplicate-key recovery.
         return notificationRepository.findNotificationByUuid(notification.getUuid())
                 .doOnNext(existingNotification -> log.debug(
                         "Found existing notification with UUID {}: {}",
@@ -65,10 +66,7 @@ public class NotificationService {
     public Mono<Long> markAsRead(List<String> uuids, Authentication authentication) {
         return AuthUtils.monoId(authentication)
                 .flatMapMany(userId -> notificationRepository.findByTargetUserIdAndUuidIn(userId, uuids))
-                .map(notification -> {
-                    notification.setIsRead(Boolean.TRUE);
-                    return notification;
-                })
+                .map(BaseNotification::markAsRead)
                 .flatMap(notificationRepository::save)
                 .count();
     }
@@ -79,10 +77,7 @@ public class NotificationService {
                 .flatMapMany(userId ->
                         notificationRepository.findAllByTargetUserIdAndIsRead(userId, Boolean.FALSE, Pageable.unpaged())
                 )
-                .map(notification -> {
-                    notification.setIsRead(Boolean.TRUE);
-                    return notification;
-                })
+                .map(BaseNotification::markAsRead)
                 .flatMap(notificationRepository::save)
                 .count();
     }

@@ -1,6 +1,5 @@
 package io.github.sanyavertolet.edukate.common.security;
 
-import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails;
 import io.github.sanyavertolet.edukate.common.utils.HttpHeadersUtils;
 import io.github.sanyavertolet.edukate.common.utils.PublicEndpoints;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +49,7 @@ public class WebSecurityConfig {
         authenticationWebFilter.setServerAuthenticationConverter(exchange ->
                 Mono.just(exchange.getRequest().getHeaders())
                         .mapNotNull(HttpHeadersUtils::toEdukateUserDetails)
-                        .map(EdukateUserDetails::toPreAuthenticatedAuthenticationToken));
+                        .map(it -> it.toPreAuthenticatedAuthenticationToken()));
         return authenticationWebFilter;
     }
 }

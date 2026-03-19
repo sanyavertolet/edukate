@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -30,7 +31,7 @@ public class SubmissionAfterSaveListener extends AbstractMongoEventListener<Subm
         String userId = s.getUserId();
         String problemId = s.getProblemId();
         SubmissionStatus status = s.getStatus();
-        String submissionId = s.getId();
+        String submissionId = Objects.requireNonNull(s.getId(), "Submission ID must not be null");
 
         Instant createdAt = s.getCreatedAt();
         if (createdAt == null) {

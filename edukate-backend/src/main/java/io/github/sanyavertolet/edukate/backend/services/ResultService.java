@@ -14,39 +14,40 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
+/*
+ * todo: refactor Result entity in order to split the persistent result with human readable result (with correct pics)
+ */
 public class ResultService {
     private final ProblemRepository problemRepository;
     private final FileManager fileManager;
 
     public Mono<String> updateResult(Result result) {
-        return problemRepository.findById(result.id())
+        return problemRepository.findById(result.getId())
                 .map(problem -> problem.withResult(result))
                 .flatMap(problemRepository::save)
                 .map(Problem::getId);
     }
 
     public Flux<String> updateResultBatch(Flux<Result> results) {
-        return results.flatMap(result ->
-            problemRepository
-                    .findById(result.id())
-                    .map(problem -> problem.withResult(result))
-                    .flatMap(problemRepository::save)
-                    .map(Problem::getId));
+        return results.flatMap(result -> problemRepository
+                .findById(result.getId())
+                .map(problem -> problem.withResult(result))
+                .flatMap(problemRepository::save)
+                .map(Problem::getId));
     }
 
     public Mono<Result> findResultById(String id) {
-        return problemRepository.findById(id).map(Problem::getResult).flatMap(this::updateImagesInResult);
+        return problemRepository.findById(id).mapNotNull(Problem::getResult).flatMap(this::updateImagesInResult);
+    }
+
+    private Mono<List<String>> getResultImageList(Result result) {
+        return Flux.fromIterable(result.getImages())
+                .map(fileName -> ResultFileKey.of(result.getId(), fileName))
+                .flatMap(fileManager::getPresignedUrl)
+                .collectList();
     }
 
     private Mono<Result> updateImagesInResult(Result result) {
-        return Flux.fromIterable(result.images())
-                .map(fileName -> ResultFileKey.of(result.id(), fileName))
-                .flatMap(fileManager::getPresignedUrl)
-                .collectList()
-                .zipWith(Mono.justOrEmpty(result))
-                .map(tuple -> {
-                    List<String> urls = tuple.getT1();
-                    return tuple.getT2().withImages(urls);
-                });
+        return getResultImageList(result).defaultIfEmpty(List.of()).map(result::withImages);
     }
 }

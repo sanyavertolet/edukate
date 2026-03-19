@@ -14,6 +14,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 @Slf4j
 @Component
 @AllArgsConstructor
@@ -36,22 +38,16 @@ public class CheckResultMessageListener {
     private CheckedNotificationCreateRequest prepareNotification(
             CheckResult checkResult, Submission submission
     ) {
-        return CheckedNotificationCreateRequest.builder()
-                .targetUserId(submission.getUserId())
-                .status(checkResult.getStatus())
-                .submissionId(submission.getId())
-                .problemId(submission.getProblemId())
-                .build();
+        String submissionId = Objects.requireNonNull(submission.getId(), "Submission ID must not be null");
+        return CheckedNotificationCreateRequest.from(
+                submission.getUserId(),
+                submissionId,
+                submission.getProblemId(),
+                checkResult.getStatus()
+        );
     }
 
     private Mono<CheckResult> buildCheckResult(CheckResultMessage checkResultMessage) {
-        return Mono.fromCallable(() -> CheckResult.builder()
-                .submissionId(checkResultMessage.getSubmissionId())
-                .status(checkResultMessage.getStatus())
-                .trustLevel(checkResultMessage.getTrustLevel())
-                .errorType(checkResultMessage.getErrorType())
-                .explanation(checkResultMessage.getExplanation())
-                .build()
-        );
+        return Mono.fromCallable(() -> CheckResult.fromCheckResultMessage(checkResultMessage));
     }
 }

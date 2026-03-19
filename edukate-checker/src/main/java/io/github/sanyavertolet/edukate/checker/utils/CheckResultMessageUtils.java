@@ -15,29 +15,27 @@ public class CheckResultMessageUtils {
             @NonNull ModelResponse modelResponse,
             @NonNull SubmissionContext submissionContext
     ) {
-        return CheckResultMessage.builder()
-                .submissionId(submissionContext.getSubmissionId())
-                .status(modelResponse.getStatus())
-                .trustLevel(Math.max(
+        return new CheckResultMessage(
+                submissionContext.getSubmissionId(),
+                modelResponse.getStatus(),
+                Math.max(
                         0f,
                         Math.min(1f, modelResponse.getTrustLevel())
-                ))
-                .errorType(modelResponse.getStatus() == CheckStatus.SUCCESS
+                ),
+                modelResponse.getStatus() == CheckStatus.SUCCESS
                         ? CheckErrorType.NONE
-                        : modelResponse.getErrorType()
-                )
-                .explanation(modelResponse.getExplanation())
-                .build();
+                        : modelResponse.getErrorType(),
+                modelResponse.getExplanation()
+        );
     }
 
     public static CheckResultMessage error(@NonNull SubmissionContext submissionContext) {
-        return CheckResultMessage.builder()
-                .submissionId(submissionContext.getSubmissionId())
-                .errorType(CheckErrorType.NONE)
-                .status(CheckStatus.INTERNAL_ERROR)
-                .explanation("Automatic check failed. Please retry later or contact support.")
-                .trustLevel(0f)
-                .build()
-                ;
+        return new CheckResultMessage(
+                submissionContext.getSubmissionId(),
+                CheckStatus.INTERNAL_ERROR,
+                0f,
+                CheckErrorType.NONE,
+                "Automatic check failed. Please retry later or contact support."
+        );
     }
 }

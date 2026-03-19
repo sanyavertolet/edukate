@@ -27,7 +27,7 @@ public class BundlePermissionEvaluator {
     }
 
     public Boolean hasJoinPermission(Bundle bundle, String userId) {
-        return Boolean.TRUE.equals(bundle.getIsPublic()) || bundle.isUserInvited(userId);
+        return bundle.isPublic() || bundle.isUserInvited(userId);
     }
 
     public Boolean hasChangeRolePermission(Bundle bundle, String requesterId, String userId, UserRole requestedRole) {

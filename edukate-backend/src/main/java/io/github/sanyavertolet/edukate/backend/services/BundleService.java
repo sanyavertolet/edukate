@@ -52,8 +52,8 @@ public class BundleService {
 
     public Mono<Bundle> createBundle(CreateBundleRequest createBundleRequest, Authentication authentication) {
         return AuthUtils.monoId(authentication)
-                .map(userId -> Bundle.fromCreateRequest(createBundleRequest, userId))
-                .map(bundle -> bundle.withShareCode(shareCodeGenerator.generateShareCode()))
+                .map(userId ->
+                        Bundle.fromCreateRequest(createBundleRequest, userId, shareCodeGenerator.generateShareCode()))
                 .flatMap(bundleRepository::save);
     }
 
@@ -68,11 +68,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "You have already joined the bundle [" + shareCode + "]"
                 )))
-                .map(bundle -> {
-                    bundle.addUser(userId, UserRole.USER);
-                    bundle.removeInvitedUser(userId);
-                    return bundle;
-                })
+                .map(bundle -> bundle.withJoinedUser(userId, UserRole.USER))
                 .flatMap(bundleRepository::save);
     }
 
@@ -87,7 +83,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Last admin should delete bundle, not leave it"
                 )))
-                .doOnNext(bundle -> bundle.removeUser(userId))
+                .map(bundle -> bundle.withoutUser(userId))
                 .flatMap(bundleRepository::save);
     }
 
@@ -102,7 +98,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(
                         new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already in bundle")
                 ))
-                .doOnNext(bundle -> bundle.inviteUser(inviteeId))
+                .map(bundle -> bundle.withInvitedUser(inviteeId))
                 .flatMap(bundleRepository::save);
 
     }
@@ -118,15 +114,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "User is not invited to this bundle"
                 )))
-                .flatMap(bundle -> {
-                    if (!bundle.removeInvitedUser(inviteeId)) {
-                        return Mono.error(new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Cannot expire invitation due to internal error"
-                        ));
-                    }
-                    return Mono.just(bundle);
-                })
+                .map(bundle -> bundle.withoutInvitedUser(inviteeId))
                 .flatMap(bundleRepository::save);
     }
 
@@ -172,7 +160,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN, "Cannot set " + userId + " role to be " + requestedRole
                 )))
-                .doOnNext(bundle -> bundle.changeUserRole(userId, requestedRole))
+                .map(bundle -> bundle.withUserRole(userId, requestedRole))
                 .flatMap(bundleRepository::save)
                 .thenReturn(requestedRole);
     }
@@ -184,15 +172,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN, "You cannot decline the invitation as nobody has invited you yet"
                 )))
-                .flatMap(bundle -> {
-                    if (!bundle.removeInvitedUser(AuthUtils.id(authentication))) {
-                        return Mono.error(new ResponseStatusException(
-                                HttpStatus.INTERNAL_SERVER_ERROR,
-                                "Cannot decline invitation for user " + authentication.getName() + " due to internal error"
-                        ));
-                    }
-                    return Mono.just(bundle);
-                })
+                .map(bundle -> bundle.withoutInvitedUser(Objects.requireNonNull(AuthUtils.id(authentication))))
                 .flatMap(bundleRepository::save);
     }
 
@@ -203,7 +183,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN, "Cannot change visibility due to lack of permissions"
                 )))
-                .doOnNext(bundle -> bundle.setIsPublic(isPublic))
+                .map(bundle -> bundle.withVisibility(isPublic))
                 .flatMap(bundleRepository::save);
     }
 
@@ -219,7 +199,7 @@ public class BundleService {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.FORBIDDEN, "Cannot change problem list due to lack of permissions"
                 )))
-                .doOnNext(bundle -> bundle.setProblemIds(new ArrayList<>(problemIds)))
+                .map(bundle -> bundle.withProblemIds(problemIds))
                 .flatMap(bundleRepository::save);
     }
 
@@ -227,12 +207,11 @@ public class BundleService {
         return problemService.findProblemsByIds(bundle.getProblemIds())
                 .flatMap(problem -> problemService.prepareMetadata(problem, authentication))
                 .collectList()
-                .map(list -> bundle.toDto().withProblems(list))
-                .flatMap(dto -> getAdmins(bundle).map(dto::withAdmins));
+                .flatMap(metadataList -> getAdmins(bundle).map(admins -> bundle.toDto(metadataList, admins)));
     }
 
     public Mono<BundleMetadata> prepareMetadata(Bundle bundle) {
-        return getAdmins(bundle).map(admins -> bundle.toBundleMetadata().withAdmins(admins));
+        return getAdmins(bundle).map(bundle::toBundleMetadata);
     }
 
     private Mono<List<String>> getAdmins(Bundle bundle) {

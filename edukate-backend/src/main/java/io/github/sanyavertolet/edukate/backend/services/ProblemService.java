@@ -73,24 +73,13 @@ public class ProblemService {
     }
 
     public Mono<ProblemDto> prepareDto(@NonNull Problem problem, Authentication authentication) {
-        return Mono.fromCallable(problem::toProblemDto)
-                .flatMap(dto ->
-                        problemStatusDecisionManager.getStatus(problem.getId(), authentication)
-                                .map(dto::withStatus)
-                )
-                .flatMap(this::updateImagesInDto);
+        return problemStatusDecisionManager.getStatus(problem.getId(), authentication).zipWith(
+                problemImageDownloadUrls(problem.getId(), problem.getImages()).collectList(),
+                problem::toProblemDto
+        );
     }
 
     public Mono<ProblemMetadata> prepareMetadata(@NonNull Problem problem, Authentication authentication) {
-        return Mono.fromCallable(problem::toProblemMetadata)
-                .flatMap(metadata ->
-                        problemStatusDecisionManager.getStatus(problem.getId(), authentication)
-                                .map(metadata::withStatus)
-                );
-    }
-
-    private Mono<ProblemDto> updateImagesInDto(@NonNull ProblemDto problemDto) {
-        return problemImageDownloadUrls(problemDto.getId(), problemDto.getImages()).collectList()
-                .map(problemDto::withImages);
+        return problemStatusDecisionManager.getStatus(problem.getId(), authentication).map(problem::toProblemMetadata);
     }
 }

@@ -43,7 +43,7 @@ public class JwtTokenService {
                 .subject(userDetails.getId())
                 .issuedAt(now)
                 .claim("name", userDetails.getUsername())
-                .claim("roles", UserRole.toString(userDetails.getRoles()))
+                .claim("roles", UserRole.listToString(userDetails.getRoles()))
                 .claim("status", userDetails.getStatus().toString())
                 .expiration(getExpirationDate(now))
                 .signWith(key)
