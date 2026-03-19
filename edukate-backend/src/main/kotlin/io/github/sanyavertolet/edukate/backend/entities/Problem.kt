@@ -8,8 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("problems")
 data class Problem(
-    @field:Id
-    val id: String,
+    @field:Id val id: String,
     val isHard: Boolean,
     val tags: List<String>,
     val text: String,
@@ -17,29 +16,15 @@ data class Problem(
     val images: List<String>,
     val result: Result? = null,
 ) {
+    @Suppress("DataClassContainsFunctions")
     fun withResult(result: Result): Problem = copy(result = result)
 
     fun toProblemMetadata(status: Status): ProblemMetadata = ProblemMetadata(id, isHard, tags, status)
 
-    fun toProblemDto(
-        status: Status,
-        images: List<String>,
-    ): ProblemDto =
-        ProblemDto(
-            id,
-            isHard,
-            tags,
-            text,
-            subtasks,
-            images,
-            status,
-            result != null,
-        )
+    fun toProblemDto(status: Status, images: List<String>): ProblemDto =
+        ProblemDto(id, isHard, tags, text, subtasks, images, status, result != null)
 
-    data class Subtask(
-        val id: String,
-        val text: String,
-    )
+    data class Subtask(val id: String, val text: String)
 
     enum class Status {
         SOLVED,

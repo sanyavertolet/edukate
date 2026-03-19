@@ -16,7 +16,7 @@ public class RabbitNotifier implements Notifier {
 
     @Override
     public Mono<String> notify(BaseNotificationCreateRequest notificationCreationRequest) {
-        rabbitTemplate.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.RK_NOTIFY, notificationCreationRequest);
+        rabbitTemplate.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.NOTIFY, notificationCreationRequest);
         return Mono.just(notificationCreationRequest.getUuid());
     }
 }

@@ -10,8 +10,8 @@ public class RabbitConfig {
 
     @Bean
     public Declarables scheduleTopology(TopicExchange edukateExchange) {
-        Queue scheduleQueue = QueueBuilder.durable(RabbitTopology.Q_SCHEDULE_CHECKER).build();
-        Binding binding = BindingBuilder.bind(scheduleQueue).to(edukateExchange).with(RabbitTopology.RK_SCHEDULE);
+        Queue scheduleQueue = QueueBuilder.durable(RabbitTopology.Q.SCHEDULE_CHECKER).build();
+        Binding binding = BindingBuilder.bind(scheduleQueue).to(edukateExchange).with(RabbitTopology.Rk.SCHEDULE);
         return new Declarables(scheduleQueue, binding);
     }
 }

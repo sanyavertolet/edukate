@@ -1,16 +1,10 @@
 plugins {
-    java
-    id("org.jetbrains.kotlin.jvm")
+    kotlin("jvm")
+    kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 
     id("io.github.sanyavertolet.edukate.buildutils.spring-boot-app-configuration")
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
-    }
 }
 
 kotlin {
@@ -50,6 +44,6 @@ dependencies {
     annotationProcessor(libs.spring.boot.configuration.processor)
 }
 
-tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }

@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.services;
 
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
+import io.github.sanyavertolet.edukate.messaging.RabbitTopology;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -8,9 +9,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-
-import static io.github.sanyavertolet.edukate.messaging.RabbitTopology.EXCHANGE;
-import static io.github.sanyavertolet.edukate.messaging.RabbitTopology.RK_SCHEDULE;
 
 @Slf4j
 @Component
@@ -23,7 +21,7 @@ public class CheckerSchedulerService {
         return submissionService.prepareContext(submission)
                 .publishOn(Schedulers.boundedElastic())
                 .flatMap(ctx -> Mono.fromRunnable(() ->
-                        rabbitTemplate.convertAndSend(EXCHANGE, RK_SCHEDULE, ctx)
+                        rabbitTemplate.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.SCHEDULE, ctx)
                 ));
     }
 }

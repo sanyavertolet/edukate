@@ -10,8 +10,8 @@ public class RabbitConfig {
 
     @Bean
     public Declarables resultTopology(TopicExchange edukateExchange) {
-        Queue resultQueue = QueueBuilder.durable(RabbitTopology.Q_RESULT_BACKEND).build();
-        Binding binding = BindingBuilder.bind(resultQueue).to(edukateExchange).with(RabbitTopology.RK_RESULT);
+        Queue resultQueue = QueueBuilder.durable(RabbitTopology.Q.RESULT_BACKEND).build();
+        Binding binding = BindingBuilder.bind(resultQueue).to(edukateExchange).with(RabbitTopology.Rk.RESULT);
         return new Declarables(resultQueue, binding);
     }
 }

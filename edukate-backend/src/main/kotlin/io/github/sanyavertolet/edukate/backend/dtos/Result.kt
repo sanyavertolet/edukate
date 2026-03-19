@@ -1,12 +1,8 @@
 package io.github.sanyavertolet.edukate.backend.dtos
 
-data class Result(
-    val id: String,
-    val text: String,
-    val notes: String,
-    val type: ResultType,
-    val images: List<String>,
-) {
+data class Result(val id: String, val text: String, val notes: String, val type: ResultType, val images: List<String>) {
+    @Suppress("DataClassContainsFunctions")
+    // todo: will be removed when fully migrated to kotlin
     fun withImages(images: List<String>): Result = copy(images = images)
 
     enum class ResultType {

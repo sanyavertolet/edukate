@@ -5,20 +5,15 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher
 
 object PublicEndpoints {
-    private val publicEndpoints = listOf(
-        "/actuator/**",
-        "/internal/**",
-        "/api/v1/problems/**",
-        "/api/v1/auth/*",
-        "/swagger/**",
-        "/swagger-ui/**"
-    )
+    private val endpoints =
+        listOf("/actuator/**", "/internal/**", "/api/v1/problems/**", "/api/v1/auth/*", "/swagger/**", "/swagger-ui/**")
+
+    @JvmStatic fun asArray(): Array<String> = endpoints.toTypedArray<String>()
 
     @JvmStatic
-    fun asArray(): Array<String> = publicEndpoints.toTypedArray<String>()
-
-    @JvmStatic
-    fun asMatcher(): ServerWebExchangeMatcher = publicEndpoints.map { PathPatternParserServerWebExchangeMatcher(it) }
-        .map { it as ServerWebExchangeMatcher }
-        .let { OrServerWebExchangeMatcher(it) }
+    fun asMatcher(): ServerWebExchangeMatcher =
+        endpoints
+            .map { PathPatternParserServerWebExchangeMatcher(it) }
+            .map { it as ServerWebExchangeMatcher }
+            .let { OrServerWebExchangeMatcher(it) }
 }

@@ -10,17 +10,16 @@ import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("bundles")
+@Suppress("DataClassContainsFunctions", "TooManyFunctions")
 data class Bundle(
-    @field:Id
-    val id: String? = null,
+    @field:Id val id: String? = null,
     val name: String,
     val description: String,
     val isPublic: Boolean,
     val problemIds: List<String>,
     val userIdRoleMap: Map<String, UserRole>,
     val invitedUserIds: Set<String> = emptySet(),
-    @field:Indexed(unique = true)
-    val shareCode: String,
+    @field:Indexed(unique = true) val shareCode: String,
 ) {
     fun getUserRole(userId: String?): UserRole? = userIdRoleMap[userId]
 
@@ -32,10 +31,8 @@ data class Bundle(
 
     fun getAdminIds(): List<String> = userIdRoleMap.filterValues { it == UserRole.ADMIN }.keys.toList()
 
-    fun withJoinedUser(userId: String, role: UserRole): Bundle = copy(
-        userIdRoleMap = userIdRoleMap + (userId to role),
-        invitedUserIds = invitedUserIds - userId,
-    )
+    fun withJoinedUser(userId: String, role: UserRole): Bundle =
+        copy(userIdRoleMap = userIdRoleMap + (userId to role), invitedUserIds = invitedUserIds - userId)
 
     fun withUserRole(userId: String, role: UserRole): Bundle = copy(userIdRoleMap = userIdRoleMap + (userId to role))
 
@@ -49,33 +46,36 @@ data class Bundle(
 
     fun withProblemIds(problemIds: List<String>): Bundle = copy(problemIds = problemIds.toList())
 
-    fun toDto(problems: List<ProblemMetadata>, admins: List<String>): BundleDto = BundleDto(
-        name = name,
-        description = description,
-        isPublic = isPublic,
-        shareCode = shareCode,
-        admins = admins,
-        problems = problems,
-    )
+    fun toDto(problems: List<ProblemMetadata>, admins: List<String>): BundleDto =
+        BundleDto(
+            name = name,
+            description = description,
+            isPublic = isPublic,
+            shareCode = shareCode,
+            admins = admins,
+            problems = problems,
+        )
 
-    fun toBundleMetadata(admins: List<String>): BundleMetadata = BundleMetadata(
-        name = name,
-        description = description,
-        shareCode = shareCode,
-        isPublic = isPublic,
-        size = problemIds.size.toLong(),
-        admins = admins
-    )
+    fun toBundleMetadata(admins: List<String>): BundleMetadata =
+        BundleMetadata(
+            name = name,
+            description = description,
+            shareCode = shareCode,
+            isPublic = isPublic,
+            size = problemIds.size.toLong(),
+            admins = admins,
+        )
 
     companion object {
         @JvmStatic
-        fun fromCreateRequest(bundleRequest: CreateBundleRequest, adminId: String, shareCode: String) = Bundle(
-            name = bundleRequest.name,
-            description = bundleRequest.description,
-            isPublic = bundleRequest.isPublic,
-            problemIds = bundleRequest.problemIds.toList(),
-            userIdRoleMap = mapOf(adminId to UserRole.ADMIN),
-            shareCode = shareCode,
-        )
+        fun fromCreateRequest(bundleRequest: CreateBundleRequest, adminId: String, shareCode: String) =
+            Bundle(
+                name = bundleRequest.name,
+                description = bundleRequest.description,
+                isPublic = bundleRequest.isPublic,
+                problemIds = bundleRequest.problemIds.toList(),
+                userIdRoleMap = mapOf(adminId to UserRole.ADMIN),
+                shareCode = shareCode,
+            )
     }
 }

@@ -5,24 +5,21 @@ import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckResultInfo
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
+import java.time.Instant
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
-import java.time.Instant
 
 @Document("check_results")
 data class CheckResult(
-    @field:Id
-    val id: String? = null,
-    @field:Indexed
-    val submissionId: String,
+    @field:Id val id: String? = null,
+    @field:Indexed val submissionId: String,
     val status: CheckStatus,
     val trustLevel: Float,
     val errorType: CheckErrorType,
     val explanation: String,
-    @field:CreatedDate
-    val createdAt: Instant? = null,
+    @field:CreatedDate val createdAt: Instant? = null,
 ) {
     fun toCheckResultDto() =
         CheckResultDto(

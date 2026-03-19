@@ -8,6 +8,5 @@ object AuthUtils {
     @JvmStatic
     fun id(authentication: Authentication?): String? = authentication?.let { it.principal as EdukateUserDetails }?.id
 
-    @JvmStatic
-    fun monoId(authentication: Authentication?): Mono<String> = Mono.justOrEmpty(id(authentication))
+    @JvmStatic fun monoId(authentication: Authentication?): Mono<String> = Mono.justOrEmpty(id(authentication))
 }
