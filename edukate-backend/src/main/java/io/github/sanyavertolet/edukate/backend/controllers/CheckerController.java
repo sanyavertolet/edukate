@@ -27,6 +27,8 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
 
@@ -82,8 +84,7 @@ public class CheckerController {
             @RequestParam(name = "id") String submissionId, Authentication authentication
     ) {
         return submissionService.getSubmissionIfOwns(submissionId, AuthUtils.id(authentication))
-                .map(Submission::getId)
-                .map(id -> CheckResult.self().submissionId(id).build())
+                .map(submission -> CheckResult.self(Objects.requireNonNull(submission.getId())))
                 .flatMap(checkResultService::saveAndUpdateSubmission)
                 .map(_ -> ResponseEntity.status(HttpStatus.ACCEPTED).build());
     }

@@ -1,14 +1,14 @@
 package io.github.sanyavertolet.edukate.backend.utils;
 
+import lombok.experimental.UtilityClass;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
+@UtilityClass
 public final class SemVerUtils {
     public static String majorFieldName = "majorId";
     public static String minorFieldName = "minorId";
     public static String patchFieldName = "patchId";
-
-    private SemVerUtils() { }
 
     public static Tuple3<Integer, Integer, Integer> parse(String version) {
         String[] segments = version.split("\\.");

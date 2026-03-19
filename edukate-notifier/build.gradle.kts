@@ -1,5 +1,6 @@
 plugins {
     java
+    id("org.jetbrains.kotlin.jvm")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 
@@ -10,6 +11,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(23)
     }
+}
+
+kotlin {
+    jvmToolchain(23)
 }
 
 configurations {
@@ -34,6 +39,8 @@ dependencies {
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.mongodb.reactive)
     implementation(libs.springdoc.openapi.starter.webflux.ui)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.kotlin.reflect)
 
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
@@ -43,6 +50,6 @@ dependencies {
     annotationProcessor(libs.spring.boot.configuration.processor)
 }
 
-tasks.withType<Test> {
+tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
     useJUnitPlatform()
 }

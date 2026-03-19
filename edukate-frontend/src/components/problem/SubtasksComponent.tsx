@@ -4,7 +4,7 @@ import { LatexComponent } from "../LatexComponent";
 import { Subtask } from "../../types/problem/Problem";
 
 interface SubtasksComponentProps {
-    subtasks: Subtask[] | null
+    subtasks?: Subtask[]
 }
 
 export function SubtasksComponent({subtasks}: SubtasksComponentProps) {
@@ -17,7 +17,11 @@ export function SubtasksComponent({subtasks}: SubtasksComponentProps) {
         setCurrentTabIndex(newValue);
     };
 
-    return ( subtaskIds &&
+    if (subtaskIds == null || subtaskIds.length === 0) {
+        return null;
+    }
+
+    return (
         <Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={currentTabIndex} onChange={handleTabChange} aria-label="subtask tabs"

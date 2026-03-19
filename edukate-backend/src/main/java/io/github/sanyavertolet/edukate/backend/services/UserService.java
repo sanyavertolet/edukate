@@ -14,12 +14,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private static final String DEFAULT_USER_NAME = "UNKNOWN";
     private final UserRepository userRepository;
     private final Notifier notifier;
 
@@ -33,6 +35,10 @@ public class UserService {
 
     public Mono<User> findUserById(String userId) {
         return userRepository.findById(userId);
+    }
+
+    public Mono<String> findUserName(String userId) {
+        return userRepository.findById(userId).map(User::getName).defaultIfEmpty(DEFAULT_USER_NAME);
     }
 
     public Flux<User> findUsersByIds(Collection<String> userIds) {
@@ -55,7 +61,7 @@ public class UserService {
         return userRepository.findAllByStatus(status)
                 .map(user -> new SimpleNotificationCreateRequest(
                         UUID.randomUUID().toString(),
-                        user.getId(),
+                        Objects.requireNonNull(user.getId()),
                         title != null ? title : "edukate-talks",
                         message,
                         "edukate team"

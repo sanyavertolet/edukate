@@ -19,7 +19,7 @@ public class CheckerService {
     public Mono<CheckResultMessage> runCheck(SubmissionContext context) {
         return buildRequestContext(context)
                 .doOnNext(ctx -> log.debug("Got {} problem and {} submission images processed",
-                        ctx.problemImages().size(), ctx.submissionImages().size()))
+                        ctx.getProblemImages().size(), ctx.getSubmissionImages().size()))
                 .flatMap(chatService::makeRequest)
                 .switchIfEmpty(Mono.error(new IllegalStateException("No AI response received")))
                 .map(modelResponse -> CheckResultMessageUtils.success(modelResponse, context))

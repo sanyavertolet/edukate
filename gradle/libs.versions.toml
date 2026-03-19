@@ -46,6 +46,8 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 # utils
 reactor-core = { module = "io.projectreactor:reactor-core" }
 fasterxml-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 lombok = { module = "org.projectlombok:lombok" }
 snakeyaml = { module = "org.yaml:snakeyaml" }
 

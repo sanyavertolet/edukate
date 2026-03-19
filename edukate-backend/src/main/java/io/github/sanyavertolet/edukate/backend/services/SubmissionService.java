@@ -5,15 +5,14 @@ import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
 import io.github.sanyavertolet.edukate.backend.entities.Submission;
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObject;
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager;
+import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey;
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey;
 import io.github.sanyavertolet.edukate.backend.permissions.SubmissionPermissionEvaluator;
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository;
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository;
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService;
-import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import io.github.sanyavertolet.edukate.common.checks.SubmissionContext;
-import io.github.sanyavertolet.edukate.backend.entities.User;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +27,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class SubmissionService {
-    private static final String DEFAULT_USER_NAME = "UNKNOWN";
     private final SubmissionRepository submissionRepository;
     private final FileManager fileManager;
     private final SubmissionFileService submissionFileService;
@@ -52,6 +51,7 @@ public class SubmissionService {
 
     @Transactional
     public Mono<Submission> saveSubmission(String userId, CreateSubmissionRequest submissionRequest) {
+        //noinspection NullableProblems
         return Mono.just(Submission.of(submissionRequest.getProblemId(), userId))
                 .flatMap(submissionRepository::save)
                 .flatMap(submission ->
@@ -61,13 +61,10 @@ public class SubmissionService {
                                                 userId, submissionRequest.getProblemId(), submission.getId(), fileName
                                         ).toString())
                                         .flatMap(fileObjectRepository::findByKeyPath)
-                                        .map(FileObject::getId)
+                                        .mapNotNull(FileObject::getId)
                                         .collectList()
                                 )
-                                .flatMap(ids -> {
-                                    submission.setFileObjectIds(ids);
-                                    return submissionRepository.save(submission);
-                                })
+                                .flatMap(ids -> submissionRepository.save(submission.withFileObjectIds(ids)))
                 );
     }
 
@@ -101,24 +98,22 @@ public class SubmissionService {
     }
 
     public Mono<SubmissionDto> prepareDto(@NonNull Submission submission) {
-        return Mono.fromCallable(() -> SubmissionDto.builder()
-                        .id(submission.getId())
-                        .problemId(submission.getProblemId())
-                        .status(submission.getStatus())
-                        .createdAt(submission.getCreatedAt())
-                        .build()
-                )
-                .flatMap(dto -> fileObjectRepository.findAllById(submission.getFileObjectIds())
-                        .map(FileObject::getKey)
-                        .flatMapSequential(fileManager::getPresignedUrl)
-                        .collectList()
-                        .map(dto::withFileUrls)
-                )
-                .flatMap(dto -> userService.findUserById(submission.getUserId())
-                        .map(User::getName)
-                        .defaultIfEmpty(DEFAULT_USER_NAME)
-                        .map(dto::withUserName)
-                );
+        return collectFileUrls(submission).zipWith(
+                userService.findUserName(submission.getUserId()),
+                (fileUrls, userName) -> new SubmissionDto(
+                        Objects.requireNonNull(submission.getId(), "Submission ID cannot be null"),
+                        submission.getProblemId(),
+                        userName,
+                        submission.getStatus(),
+                        Objects.requireNonNull(submission.getCreatedAt(), "Submission creation timestamp cannot be null"),
+                        fileUrls));
+    }
+
+    private Mono<List<String>> collectFileUrls(Submission submission) {
+        return fileObjectRepository.findAllById(submission.getFileObjectIds())
+                .map(FileObject::getKey)
+                .flatMapSequential(fileManager::getPresignedUrl)
+                .collectList();
     }
 
     public Mono<SubmissionContext> prepareContext(@NonNull Submission submission) {
@@ -135,14 +130,13 @@ public class SubmissionService {
                     return fileManager.getFileObjectsByIds(submission.getFileObjectIds())
                             .map(FileObject::getKeyPath)
                             .collectList()
-                            .map(submissionRawKeys -> SubmissionContext.builder()
-                                    .submissionId(submission.getId())
-                                    .problemId(problem.getId())
-                                    .problemText(problemText)
-                                    .submissionImageRawKeys(submissionRawKeys)
-                                    .problemImageRawKeys(problemRawKeys)
-                                    .build()
-                            );
+                            .map(submissionRawKeys -> new SubmissionContext(
+                                    Objects.requireNonNull(submission.getId(), "Submission id must not be null"),
+                                    problem.getId(),
+                                    problemText,
+                                    submissionRawKeys,
+                                    problemRawKeys
+                            ));
                 });
     }
 }

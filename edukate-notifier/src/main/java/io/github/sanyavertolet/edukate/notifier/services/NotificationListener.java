@@ -23,6 +23,7 @@ public class NotificationListener {
     @RabbitListener(queues = RabbitTopology.Q_NOTIFY)
     public void scheduleCheck(BaseNotificationCreateRequest createRequest) {
         log.debug("received notification request={}", createRequest.getUuid());
+        // TODO: avoid manual subscribe() in listener; wire explicit reactive lifecycle/error handling instead.
         notificationService.saveIfAbsent(createRequest).subscribe();
     }
 }

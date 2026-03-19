@@ -2,13 +2,13 @@ package io.github.sanyavertolet.edukate.backend.controllers;
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest;
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto;
+import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import io.github.sanyavertolet.edukate.storage.keys.FileKey;
 import io.github.sanyavertolet.edukate.storage.keys.TempFileKey;
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager;
 import io.github.sanyavertolet.edukate.backend.services.ProblemService;
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService;
 import io.github.sanyavertolet.edukate.backend.services.UserService;
-import io.github.sanyavertolet.edukate.common.SubmissionStatus;
 import io.github.sanyavertolet.edukate.common.utils.AuthUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

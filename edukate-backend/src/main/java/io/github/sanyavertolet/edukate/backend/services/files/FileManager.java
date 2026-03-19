@@ -140,10 +140,10 @@ public class FileManager {
         Objects.requireNonNull(prefix, "prefix must not be null");
         return fileObjectRepository.findAllByKeyPathStartingWith(prefix)
                 .map(fo -> FileMetadata.of(
-                        fo.getKey() != null ? fo.getKey().getFileName() : fo.getKeyPath(),
+                        fo.getKey().getFileName(),
                         authorName,
-                        fo.getMetadata() != null ? fo.getMetadata().getLastModified() : null,
-                        fo.getMetadata() != null ? fo.getMetadata().getContentLength() : null
+                        fo.getMetadata().getLastModified(),
+                        fo.getMetadata().getContentLength()
                 ))
                 .timeout(DEFAULT_TIMEOUT)
                 .doOnError(e -> log.error("list metadata by prefix failed: prefix={} author={}", prefix, authorName, e));
@@ -156,24 +156,14 @@ public class FileManager {
 
         return fileObjectRepository.findByKeyPath(lookupKeyPath)
                 .flatMap(existing -> {
-                    existing.setKey(newKey);
-                    existing.setKeyPath(newPath);
-                    existing.setType(type);
-                    existing.setOwnerUserId(owner);
-                    existing.setMetadata(metadata);
-                    return fileObjectRepository.save(existing).doOnSuccess(updated -> log.trace(
-                            "Updated file object: lookupKeyPath={} -> key={}", lookupKeyPath, updated.getKey())
+                    FileObject updated = existing.withStorageState(newPath, newKey, type, owner, metadata);
+                    return fileObjectRepository.save(updated).doOnSuccess(saved -> log.trace(
+                            "Updated file object: lookupKeyPath={} -> key={}", saved.getKeyPath(), saved.getKey())
                     );
                 })
-                .switchIfEmpty(fileObjectRepository.save(FileObject.builder()
-                                .keyPath(newPath)
-                                .key(newKey)
-                                .type(type)
-                                .ownerUserId(owner)
-                                .metadata(metadata)
-                                .metaVersion(1)
-                                .build())
-                        .doOnSuccess(created -> log.debug("Created file object: key={}", created.getKey())))
+                .switchIfEmpty(
+                        fileObjectRepository.save(FileObject.fromStorageState(newPath, newKey, type, owner, metadata))
+                                .doOnSuccess(created -> log.debug("Created file object: key={}", created.getKey())))
                 .timeout(DEFAULT_TIMEOUT)
                 .doOnError(e -> log.error("saveOrUpdateByKeyPath failed: lookup={} newKey={}", lookupKeyPath, newKey, e));
     }

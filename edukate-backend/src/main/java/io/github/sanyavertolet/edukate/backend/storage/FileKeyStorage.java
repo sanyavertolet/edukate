@@ -25,10 +25,10 @@ public class FileKeyStorage extends AbstractStorage<FileKey, FileObjectMetadata>
 
     @Override
     protected FileObjectMetadata buildMetadata(HeadObjectResponse headObjectResponse) {
-        return FileObjectMetadata.builder()
-                .lastModified(headObjectResponse.lastModified())
-                .contentLength(headObjectResponse.contentLength())
-                .contentType(headObjectResponse.contentType())
-                .build();
+        return new FileObjectMetadata(
+                headObjectResponse.lastModified(),
+                headObjectResponse.contentLength(),
+                headObjectResponse.contentType()
+        );
     }
 }
