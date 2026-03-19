@@ -23,7 +23,7 @@ public class CheckResultMessageListener {
     private final CheckResultService checkResultService;
     private final Notifier notifier;
 
-    @RabbitListener(queues = RabbitTopology.Q_RESULT_BACKEND)
+    @RabbitListener(queues = RabbitTopology.Q.RESULT_BACKEND)
     public void onCheckResultMessage(@NonNull CheckResultMessage checkResultMessage) {
         log.debug("Received result for submission {}", checkResultMessage.getSubmissionId());
 

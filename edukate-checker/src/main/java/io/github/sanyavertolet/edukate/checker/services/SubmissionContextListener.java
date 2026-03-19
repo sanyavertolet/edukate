@@ -15,7 +15,7 @@ public class SubmissionContextListener {
     private final CheckerService checkerService;
     private final ResultPublisher resultPublisher;
 
-    @RabbitListener(queues = RabbitTopology.Q_SCHEDULE_CHECKER)
+    @RabbitListener(queues = RabbitTopology.Q.SCHEDULE_CHECKER)
     public void onSubmissionContext(SubmissionContext context) {
         Mono.just(context)
                 .doOnNext(submissionContext -> log.debug("received submissionContext={}", submissionContext))

@@ -10,14 +10,11 @@ import java.time.Instant
 
 @JsonTypeName("simple")
 data class SimpleNotification(
-    @field:Id
-    override val id: String? = null,
-    @field:Indexed(unique = true)
-    override val uuid: String,
+    @field:Id override val id: String? = null,
+    @field:Indexed(unique = true) override val uuid: String,
     override val targetUserId: String,
     override val isRead: Boolean = false,
-    @field:CreatedDate
-    override val createdAt: Instant? = null,
+    @field:CreatedDate override val createdAt: Instant? = null,
     val title: String,
     val message: String,
     val source: String,

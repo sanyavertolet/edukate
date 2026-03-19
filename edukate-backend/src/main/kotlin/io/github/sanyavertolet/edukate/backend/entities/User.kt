@@ -9,10 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document
 
 @Document("users")
 data class User(
-    @field:Id
-    val id: String? = null,
-    @field:Indexed(unique = true)
-    val name: String,
+    @field:Id val id: String? = null,
+    @field:Indexed(unique = true) val name: String,
     val email: String,
     val token: String,
     val roles: Set<UserRole>,

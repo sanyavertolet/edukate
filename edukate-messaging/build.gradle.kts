@@ -1,7 +1,13 @@
 plugins {
     java
+    kotlin("jvm")
+    kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+}
+
+kotlin {
+    jvmToolchain(23)
 }
 
 java {

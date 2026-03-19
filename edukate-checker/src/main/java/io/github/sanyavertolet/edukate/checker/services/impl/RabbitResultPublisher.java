@@ -18,7 +18,7 @@ public class RabbitResultPublisher implements ResultPublisher {
     @Override
     public Mono<Void> publish(@NonNull CheckResultMessage checkResultMessage) {
         return Mono.fromRunnable(() ->
-                        template.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.RK_RESULT, checkResultMessage)
+                        template.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.RESULT, checkResultMessage)
                 )
                 .retry(3)
                 .cast(Void.class)

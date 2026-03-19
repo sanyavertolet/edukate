@@ -12,22 +12,24 @@ class EdukateUserDetails(
     val name: String,
     val roles: Set<UserRole> = emptySet(),
     val status: UserStatus,
-    token: String
+    token: String,
 ) : UserDetails, CredentialsContainer {
-    constructor(userCredentials: UserCredentials) : this(
+    private var token: String = token
+
+    constructor(
+        userCredentials: UserCredentials
+    ) : this(
         requireNotNull(userCredentials.id) { "User id must not be null" },
         userCredentials.username,
         userCredentials.roles,
         userCredentials.status,
-        userCredentials.encodedPassword
+        userCredentials.encodedPassword,
     )
-
-    private var token: String = token
 
     fun toPreAuthenticatedAuthenticationToken() = PreAuthenticatedAuthenticationToken(this, null, authorities)
 
-    override fun getAuthorities(): MutableCollection<out GrantedAuthority?> = roles.map { it.asGrantedAuthority() }
-        .toMutableSet()
+    override fun getAuthorities(): MutableCollection<out GrantedAuthority?> =
+        roles.map { it.asGrantedAuthority() }.toMutableSet()
 
     override fun isEnabled(): Boolean = status == UserStatus.ACTIVE
 

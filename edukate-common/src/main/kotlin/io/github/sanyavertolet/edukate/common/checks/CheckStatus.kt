@@ -4,5 +4,4 @@ enum class CheckStatus {
     SUCCESS,
     MISTAKE,
     INTERNAL_ERROR,
-    ;
 }

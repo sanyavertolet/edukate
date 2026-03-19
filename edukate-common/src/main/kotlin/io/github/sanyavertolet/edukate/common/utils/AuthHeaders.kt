@@ -5,5 +5,4 @@ enum class AuthHeaders(val headerName: String) {
     AUTHORIZATION_ROLES("X-Authorization-Roles"),
     AUTHORIZATION_STATUS("X-Authorization-Status"),
     AUTHORIZATION_ID("X-Authorization-Id"),
-    ;
 }

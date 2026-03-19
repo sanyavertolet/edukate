@@ -10,12 +10,7 @@ import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "_type",
-    visible = true,
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_type", visible = true)
 @JsonSubTypes(
     JsonSubTypes.Type(value = SimpleNotification::class, name = "simple"),
     JsonSubTypes.Type(value = InviteNotification::class, name = "invite"),

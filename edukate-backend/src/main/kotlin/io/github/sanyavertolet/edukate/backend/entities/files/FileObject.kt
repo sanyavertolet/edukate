@@ -10,20 +10,17 @@ import java.time.Instant
 
 @Document("file_objects")
 data class FileObject(
-    @field:Id
-    val id: String? = null,
-    @field:Indexed(unique = true)
-    val keyPath: String,
+    @field:Id val id: String? = null,
+    @field:Indexed(unique = true) val keyPath: String,
     val key: FileKey,
     val type: String,
     val ownerUserId: String,
     val metadata: FileObjectMetadata,
-    @field:CreatedDate
-    val createdAt: Instant? = null,
-    @field:LastModifiedDate
-    val updatedAt: Instant? = null,
+    @field:CreatedDate val createdAt: Instant? = null,
+    @field:LastModifiedDate val updatedAt: Instant? = null,
     val metaVersion: Int = 1,
 ) {
+    @Suppress("DataClassContainsFunctions")
     fun withStorageState(
         keyPath: String,
         key: FileKey,
@@ -40,12 +37,6 @@ data class FileObject(
             type: String,
             ownerUserId: String,
             metadata: FileObjectMetadata,
-        ) = FileObject(
-            keyPath = keyPath,
-            key = key,
-            type = type,
-            ownerUserId = ownerUserId,
-            metadata = metadata,
-        )
+        ) = FileObject(keyPath = keyPath, key = key, type = type, ownerUserId = ownerUserId, metadata = metadata)
     }
 }

@@ -6,8 +6,7 @@ import java.util.EnumSet
 enum class UserRole {
     USER,
     MODERATOR,
-    ADMIN,
-    ;
+    ADMIN;
 
     fun asSpringSecurityRole(): String = ROLE_PREFIX + name
 
@@ -16,16 +15,12 @@ enum class UserRole {
     companion object {
         private const val ROLE_PREFIX = "ROLE_"
 
-        @JvmStatic
-        fun listToString(roles: Set<UserRole>): String = roles.joinToString(",") { it.name }
+        @JvmStatic fun listToString(roles: Set<UserRole>): String = roles.joinToString(",") { it.name }
 
         @JvmStatic
-        fun fromString(rolesString: String?): Set<UserRole> = rolesString?.split(",")
-            ?.map { UserRole.valueOf(it.trim()) }
-            ?.toSet()
-            ?: EnumSet.noneOf(UserRole::class.java)
+        fun fromString(rolesString: String?): Set<UserRole> =
+            rolesString?.split(",")?.map { UserRole.valueOf(it.trim()) }?.toSet() ?: EnumSet.noneOf(UserRole::class.java)
 
-        @JvmStatic
-        fun anyRole(): Set<UserRole> = EnumSet.allOf(UserRole::class.java)
+        @JvmStatic fun anyRole(): Set<UserRole> = EnumSet.allOf(UserRole::class.java)
     }
 }
