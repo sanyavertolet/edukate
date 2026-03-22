@@ -29,8 +29,10 @@ class NotificationService(private val notificationRepository: NotificationReposi
             .findNotificationByUuid(notification.uuid)
             .doOnNext { log.debug("Found existing notification with UUID {}: {}", it.uuid, it) }
             .switchIfEmpty(
-                notificationRepository.save(notification).doOnSuccess {
-                    log.debug("Saved new notification with UUID {}: {}", it.uuid, it)
+                Mono.defer {
+                    notificationRepository.save(notification).doOnSuccess {
+                        log.debug("Saved new notification with UUID {}: {}", it.uuid, it)
+                    }
                 }
             )
             .doOnError { log.error("Error saving notification: {}", notification.uuid, it) }
@@ -41,30 +43,36 @@ class NotificationService(private val notificationRepository: NotificationReposi
         page: Int,
         authentication: Authentication?,
     ): Flux<BaseNotification> =
-        monoId(authentication).flatMapMany { userId: String? ->
+        monoId(authentication).flatMapMany { userId: String ->
             val pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
-            isRead?.let { notificationRepository.findAllByTargetUserIdAndIsRead(userId!!, isRead, pageRequest) }
-                ?: notificationRepository.findAllByTargetUserId(userId!!, pageRequest)
+            isRead?.let { notificationRepository.findAllByTargetUserIdAndIsRead(userId, isRead, pageRequest) }
+                ?: notificationRepository.findAllByTargetUserId(userId, pageRequest)
         }
 
     fun gatherUserStatistics(authentication: Authentication?): Mono<NotificationStatistics> =
-        monoId(authentication).flatMap { notificationRepository.gatherStatistics(it) }
+        monoId(authentication)
+            .flatMap { notificationRepository.gatherStatistics(it) }
+            .defaultIfEmpty(NotificationStatistics())
 
     @Transactional
     fun markAsRead(uuids: List<String>, authentication: Authentication?): Mono<Long> =
-        monoId(authentication)
-            .flatMapMany { notificationRepository.findByTargetUserIdAndUuidIn(it, uuids) }
-            .map { it.markAsRead() }
-            .flatMap { notificationRepository.save(it) }
-            .count()
+        monoId(authentication).flatMap { userId ->
+            notificationRepository
+                .findByTargetUserIdAndUuidIn(userId, uuids)
+                .map { it.markAsRead() }
+                .flatMap { notificationRepository.save(it) }
+                .count()
+        }
 
     @Transactional
     fun markAllAsRead(authentication: Authentication?): Mono<Long> =
-        monoId(authentication)
-            .flatMapMany { notificationRepository.findAllByTargetUserIdAndIsRead(it, false, Pageable.unpaged()) }
-            .map { it.markAsRead() }
-            .flatMap { notificationRepository.save(it) }
-            .count()
+        monoId(authentication).flatMap { userId ->
+            notificationRepository
+                .findAllByTargetUserIdAndIsRead(userId, false, Pageable.unpaged())
+                .map { it.markAsRead() }
+                .flatMap { notificationRepository.save(it) }
+                .count()
+        }
 
     companion object {
         private val log = LoggerFactory.getLogger(NotificationService::class.java)

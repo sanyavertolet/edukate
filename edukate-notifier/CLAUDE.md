@@ -47,11 +47,36 @@ Polymorphic serialization via Jackson `@JsonTypeInfo`.
 - OpenAPI docs at `/swagger/notifier/api-docs`
 - Profiles: `dev`, `secure`
 
-## Testing Notes
+## Testing
 
-- Use `WebTestClient` for controller integration tests
-- Test `NotificationListener` by publishing to an embedded RabbitMQ or mock the listener directly
-- Test `saveIfAbsent()` idempotency: duplicate messages should not create duplicate documents
-- Test pagination and filtering in `getUserNotifications()`
-- Use `StepVerifier` for reactive service-layer unit tests
-- Test polymorphic serialization — all three notification subtypes must survive a round-trip through MongoDB
+Test dependencies: `spring-boot-starter-test`, `reactor-test`, `mockk`, `springmockk`, `flapdoodle-embed-mongo`.
+
+Run tests:
+```bash
+./gradlew :edukate-notifier:test
+```
+
+### Test layout
+
+```
+src/test/kotlin/.../notifier/
+├── NotificationFixtures.kt              — shared test data builders + mockAuthentication()
+├── entities/
+│   ├── BaseNotificationTest.kt          — fromCreationRequest, markAsRead, toDto (pure unit)
+│   └── NotificationSerializationTest.kt — Jackson polymorphic round-trips (pure unit)
+├── services/
+│   ├── NotificationServiceTest.kt       — business logic (MockK repository)
+│   └── NotificationListenerTest.kt      — RabbitMQ listener delegation (MockK service)
+├── controllers/
+│   └── NotificationControllerTest.kt    — @WebFluxTest + WebTestClient
+└── repositories/
+    └── NotificationRepositoryTest.kt    — @DataMongoTest + Flapdoodle embedded MongoDB
+```
+
+### Key testing patterns
+
+- **Unit tests** (`BaseNotificationTest`, `NotificationSerializationTest`): no Spring context, JUnit 5 + AssertJ only.
+- **Service tests** (`NotificationServiceTest`): `mockk()` for repository, `StepVerifier` for reactive assertions.
+- **Listener tests** (`NotificationListenerTest`): `mockk()` for service; the bare `.subscribe()` swallowing errors is explicitly documented as a known issue in the test.
+- **Controller tests** (`NotificationControllerTest`): `@WebFluxTest(NotificationController::class)` + `@Import(NoopWebSecurityConfig::class)` + `@MockkBean` (from `springmockk`).
+- **Repository tests** (`NotificationRepositoryTest`): `@DataMongoTest` + `@Import(MongoConfig::class)` for `@EnableReactiveMongoAuditing`; `@BeforeEach` deletes all documents for isolation.

@@ -27,6 +27,7 @@ dependencies {
     implementation(projects.edukateMessaging)
 
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.boot.starter.actuator)
@@ -42,6 +43,12 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation(libs.mockk)
+    testImplementation(libs.springmockk)
+    testImplementation(libs.flapdoodle.embed.mongo)
 }
 
 tasks.withType<Test>().configureEach {

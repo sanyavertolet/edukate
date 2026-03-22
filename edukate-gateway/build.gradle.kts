@@ -32,6 +32,8 @@ dependencies {
     implementation(projects.edukateAuth)
 
     implementation(libs.spring.boot.starter.webflux)
+    // TODO: uncomment after Kotlin rewrite
+    // implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.validation)

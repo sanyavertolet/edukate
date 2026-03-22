@@ -34,6 +34,8 @@ dependencies {
     implementation(projects.edukateStorage)
 
     implementation(libs.spring.boot.starter.webflux)
+    // TODO: uncomment after Kotlin rewrite
+    // implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.boot.starter.actuator)

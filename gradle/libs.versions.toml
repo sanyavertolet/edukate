@@ -1,5 +1,8 @@
 [versions]
 spring-boot = "3.4.2"
+mockk = "1.14.2"
+springmockk = "4.0.2"
+flapdoodle = "4.24.0"
 spring-cloud = "4.2.0"
 spring-ai = "1.1.0-RC1"
 spring-dependency = "1.1.7"
@@ -43,8 +46,14 @@ jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
+# testing
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+flapdoodle-embed-mongo = { module = "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring3x", version.ref = "flapdoodle" }
+
 # utils
 reactor-core = { module = "io.projectreactor:reactor-core" }
+reactor-kotlin-extensions = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }
 fasterxml-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
