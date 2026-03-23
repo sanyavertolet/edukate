@@ -1,5 +1,4 @@
 plugins {
-    java
     kotlin("jvm")
     kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
@@ -8,12 +7,6 @@ plugins {
 
 kotlin {
     jvmToolchain(23)
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
-    }
 }
 
 configurations {
@@ -28,8 +21,4 @@ repositories {
 
 dependencies {
     implementation(libs.spring.boot.starter.amqp)
-
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-    annotationProcessor(libs.spring.boot.configuration.processor)
 }

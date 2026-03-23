@@ -40,10 +40,6 @@ dependencies {
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-    annotationProcessor(libs.spring.boot.configuration.processor)
-
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation(libs.mockk)
