@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.gateway
 import io.github.sanyavertolet.edukate.gateway.configs.GatewayProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.runApplication
 
 @EnableConfigurationProperties(GatewayProperties::class)
 @SpringBootApplication(
@@ -14,3 +15,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
         ]
 )
 class EdukateGatewayApplication
+
+fun main(args: Array<String>) {
+    runApplication<EdukateGatewayApplication>(*args)
+}
+
