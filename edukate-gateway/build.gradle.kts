@@ -1,6 +1,6 @@
 plugins {
-    java
-    id("org.jetbrains.kotlin.jvm")
+    kotlin("jvm")
+    kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 
@@ -32,8 +32,7 @@ dependencies {
     implementation(projects.edukateAuth)
 
     implementation(libs.spring.boot.starter.webflux)
-    // TODO: uncomment after Kotlin rewrite
-    // implementation(libs.reactor.kotlin.extensions)
+    implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.validation)
@@ -47,9 +46,12 @@ dependencies {
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation(libs.mockk)
+    testImplementation(libs.springmockk)
 }
 
 tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
