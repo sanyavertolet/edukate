@@ -8,14 +8,14 @@ Core business logic service. Manages problems, bundles, submissions, users, and 
 
 ## Domain Entities (MongoDB documents)
 
-| Entity | Purpose |
-|---|---|
-| `Problem` | Educational problem with subtasks, images, results, status |
-| `Bundle` | Collection of problems; has user roles (ADMIN, USER) and visibility |
-| `Submission` | User's answer to a problem; statuses: PENDING, ACCEPTED, REJECTED |
-| `User` | Authentication data |
-| `CheckResult` | AI checker output for a submission |
-| `UserProblemStatus` | Junction — tracks per-user progress per problem |
+| Entity              | Purpose                                                             |
+|---------------------|---------------------------------------------------------------------|
+| `Problem`           | Educational problem with subtasks, images, results, status          |
+| `Bundle`            | Collection of problems; has user roles (ADMIN, USER) and visibility |
+| `Submission`        | User's answer to a problem; statuses: PENDING, ACCEPTED, REJECTED   |
+| `User`              | Authentication data                                                 |
+| `CheckResult`       | AI checker output for a submission                                  |
+| `UserProblemStatus` | Junction — tracks per-user progress per problem                     |
 
 ## Key DTOs
 

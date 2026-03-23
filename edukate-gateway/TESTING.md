@@ -1,11 +1,14 @@
 # edukate-gateway: Testing Plan
 
-Tests will be written after the Java → Kotlin migration is complete. This document specifies which classes get tests, which test methods are needed, and what each method verifies.
+Tests will be written after the Java → Kotlin migration is complete. This document specifies which classes get tests,
+which test methods are needed, and what each method verifies.
 
 ## Infrastructure
 
-- **Unit tests**: `StepVerifier` from `reactor-test` for reactive chains. Mock dependencies with MockK (`io.mockk:mockk`).
-- **Controller slice tests**: `@WebFluxTest` + `@Import(NoopWebSecurityConfig::class)` + `@MockkBean` from `com.ninja-squad:springmockk`. No Spring Security filter chain in these tests.
+- **Unit tests**: `StepVerifier` from `reactor-test` for reactive chains. Mock dependencies with MockK (
+  `io.mockk:mockk`).
+- **Controller slice tests**: `@WebFluxTest` + `@Import(NoopWebSecurityConfig::class)` + `@MockkBean` from
+  `com.ninja-squad:springmockk`. No Spring Security filter chain in these tests.
 - **Filter unit tests**: Construct `MockServerWebExchange` manually; no Spring context needed.
 - **Security integration tests**: `@SpringBootTest` with `secure` profile + `WebTestClient`.
 - **Authentication**: No MongoDB in gateway — no `@DataMongoTest` or Flapdoodle needed.
@@ -26,7 +29,8 @@ testImplementation(libs.springmockk)
 
 Location: `src/test/kotlin/io/github/sanyavertolet/edukate/gateway/GatewayFixtures.kt`
 
-A single `object` following the same pattern as `NotificationFixtures` in `edukate-notifier`. Factory functions use default parameters for easy customization per test.
+A single `object` following the same pattern as `NotificationFixtures` in `edukate-notifier`. Factory functions use
+default parameters for easy customization per test.
 
 | Function                                                               | Returns                                                                                                     |
 |------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
@@ -113,7 +117,8 @@ No Spring context. Construct `UserDetailsService` directly with a `mockk()` `Bac
 
 ### `JwtAuthenticationFilterTest`
 
-No Spring context. Build `MockServerWebExchange` from `MockServerHttpRequest`; assert mutations to the exchange's request headers and security context.
+No Spring context. Build `MockServerWebExchange` from `MockServerHttpRequest`; assert mutations to the exchange's
+request headers and security context.
 
 | Method                                                                           | What it tests                                                                                                                                                                                                      |
 |----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -132,9 +137,12 @@ No Spring context. Build `MockServerWebExchange` from `MockServerHttpRequest`; a
 @WebFluxTest(AuthController::class)
 @Import(NoopWebSecurityConfig::class)
 class AuthControllerTest {
-    @Autowired lateinit var webTestClient: WebTestClient
-    @MockkBean lateinit var authService: AuthService
-    @MockkBean lateinit var authCookieService: AuthCookieService
+    @Autowired
+    lateinit var webTestClient: WebTestClient
+    @MockkBean
+    lateinit var authService: AuthService
+    @MockkBean
+    lateinit var authCookieService: AuthCookieService
 }
 ```
 
@@ -174,7 +182,8 @@ class AuthControllerTest {
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("dev", "secure")
 class WebSecurityConfigTest {
-    @Autowired lateinit var webTestClient: WebTestClient
+    @Autowired
+    lateinit var webTestClient: WebTestClient
 }
 ```
 

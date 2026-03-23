@@ -6,13 +6,13 @@ Shared domain models, enums, security configuration, and utilities used across a
 
 ### Domain Enums
 
-| Class | Values |
-|---|---|
-| `UserRole` | `USER`, `MODERATOR`, `ADMIN` — integrates with Spring Security |
-| `UserStatus` | User account status |
-| `SubmissionStatus` | `PENDING`, `ACCEPTED`, `REJECTED` |
-| `CheckStatus` | Check operation state |
-| `CheckErrorType` | Classification of check failures |
+| Class              | Values                                                         |
+|--------------------|----------------------------------------------------------------|
+| `UserRole`         | `USER`, `MODERATOR`, `ADMIN` — integrates with Spring Security |
+| `UserStatus`       | User account status                                            |
+| `SubmissionStatus` | `PENDING`, `ACCEPTED`, `REJECTED`                              |
+| `CheckStatus`      | Check operation state                                          |
+| `CheckErrorType`   | Classification of check failures                               |
 
 ### User / Auth Models
 
@@ -26,12 +26,12 @@ Shared domain models, enums, security configuration, and utilities used across a
 
 Used by `edukate-backend` to send to `edukate-notifier` via RabbitMQ:
 
-| Class | Purpose |
-|---|---|
-| `BaseNotificationCreateRequest` | Sealed parent |
-| `SimpleNotificationCreateRequest` | Plain text |
-| `InviteNotificationCreateRequest` | Bundle invitation |
-| `CheckedNotificationCreateRequest` | Check result |
+| Class                              | Purpose           |
+|------------------------------------|-------------------|
+| `BaseNotificationCreateRequest`    | Sealed parent     |
+| `SimpleNotificationCreateRequest`  | Plain text        |
+| `InviteNotificationCreateRequest`  | Bundle invitation |
+| `CheckedNotificationCreateRequest` | Check result      |
 
 ### Security Configuration (Java)
 

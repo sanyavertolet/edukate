@@ -21,13 +21,13 @@ Shared library providing a generic S3/MinIO object storage abstraction. Used by 
 
 ## File Key Types
 
-| Class | Used for |
-|---|---|
-| `FileKey` | Generic files |
-| `ProblemFileKey` | Problem assets |
-| `SubmissionFileKey` | User submission files |
-| `ResultFileKey` | AI check result files |
-| `TempFileKey` | Temporary/staging files |
+| Class               | Used for                |
+|---------------------|-------------------------|
+| `FileKey`           | Generic files           |
+| `ProblemFileKey`    | Problem assets          |
+| `SubmissionFileKey` | User submission files   |
+| `ResultFileKey`     | AI check result files   |
+| `TempFileKey`       | Temporary/staging files |
 
 ## Configuration (`S3Properties`)
 

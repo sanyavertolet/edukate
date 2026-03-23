@@ -29,17 +29,17 @@ src/
 
 ## Routes
 
-| Path | View | Auth required |
-|---|---|---|
-| `/` | `IndexView` | No |
-| `/problems` | `ProblemListView` | No |
-| `/problems/:id` | `ProblemView` | No |
-| `/sign-in` | `SignInView` | No |
-| `/sign-up` | `SignUpView` | No |
-| `/bundles` | `BundleListView` | No |
-| `/bundles/new` | `BundleCreationView` | Yes |
-| `/bundles/:code` | `BundleView` | Yes |
-| `/submissions/:id` | `SubmissionView` | Yes |
+| Path               | View                 | Auth required |
+|--------------------|----------------------|---------------|
+| `/`                | `IndexView`          | No            |
+| `/problems`        | `ProblemListView`    | No            |
+| `/problems/:id`    | `ProblemView`        | No            |
+| `/sign-in`         | `SignInView`         | No            |
+| `/sign-up`         | `SignUpView`         | No            |
+| `/bundles`         | `BundleListView`     | No            |
+| `/bundles/new`     | `BundleCreationView` | Yes           |
+| `/bundles/:code`   | `BundleView`         | Yes           |
+| `/submissions/:id` | `SubmissionView`     | Yes           |
 
 ## Key Patterns
 

@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Edukate is a microservices-based educational platform. The backend is built with Kotlin/Spring Boot (WebFlux reactive), and the frontend is React 19 + TypeScript + Vite.
+Edukate is a microservices-based educational platform. The backend is built with Kotlin/Spring Boot (WebFlux reactive),
+and the frontend is React 19 + TypeScript + Vite.
 
 ## Commands
 
@@ -53,13 +54,13 @@ docker compose up -d
 
 ### Services
 
-| Module | Port | Role |
-|---|---|---|
-| `edukate-gateway` | 5810 | API Gateway — single entry point, routes to backend/notifier, aggregates Swagger at `/swagger` |
-| `edukate-backend` | 5800 | Core business logic — problems, submissions, bundles, file storage |
-| `edukate-notifier` | 5820 | Async notification delivery via RabbitMQ |
-| `edukate-checker` | — | AI-powered problem checking (Spring AI + OpenAI) |
-| `edukate-frontend` | 80 | React SPA |
+| Module             | Port | Role                                                                                           |
+|--------------------|------|------------------------------------------------------------------------------------------------|
+| `edukate-gateway`  | 5810 | API Gateway — single entry point, routes to backend/notifier, aggregates Swagger at `/swagger` |
+| `edukate-backend`  | 5800 | Core business logic — problems, submissions, bundles, file storage                             |
+| `edukate-notifier` | 5820 | Async notification delivery via RabbitMQ                                                       |
+| `edukate-checker`  | —    | AI-powered problem checking (Spring AI + OpenAI)                                               |
+| `edukate-frontend` | 80   | React SPA                                                                                      |
 
 ### Shared Libraries
 
@@ -72,7 +73,8 @@ docker compose up -d
 
 - All backend services use **Spring WebFlux** (reactive, non-blocking). Use `Mono`/`Flux` throughout, never block.
 - The gateway handles authentication; downstream services trust the forwarded user context.
-- Spring profiles control feature flags: `dev` (local env), `secure` (enable security), `local` (MinIO local endpoint), `notifier` (enable HTTP notifier bean).
+- Spring profiles control feature flags: `dev` (local env), `secure` (enable security), `local` (MinIO local endpoint),
+  `notifier` (enable HTTP notifier bean).
 - MongoDB is the data store for all services. Reactive MongoDB (`ReactiveMongoRepository`) is used.
 - Async operations between backend and notifier go through RabbitMQ.
 - Dependency versions are centralized in `gradle/libs.versions.toml`.
@@ -88,5 +90,6 @@ docker compose up -d
 ## Code Quality
 
 - **Detekt** enforces Kotlin code quality (max issues: 0). Config is in `detekt.yml`.
-- **ESLint** with TypeScript strict mode for the frontend. `tsconfig.app.json` has `noUnusedLocals` and `noUnusedParameters` enabled.
+- **ESLint** with TypeScript strict mode for the frontend. `tsconfig.app.json` has `noUnusedLocals` and
+  `noUnusedParameters` enabled.
 - Java toolchain is set to Java 23 across all modules.

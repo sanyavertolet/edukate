@@ -1,6 +1,7 @@
 # edukate-gateway
 
-API Gateway — a single entry point for all client requests. Handles authentication (sign-in, sign-up, sign-out) and routes traffic to downstream services.
+API Gateway — a single entry point for all client requests. Handles authentication (sign-in, sign-up, sign-out) and
+routes traffic to downstream services.
 
 ## Responsibilities
 
@@ -26,7 +27,8 @@ API Gateway — a single entry point for all client requests. Handles authentica
 ## Shared Dependencies
 
 - **`edukate-auth`**: `JwtTokenService` (generate/parse JWT), `AuthCookieService` (set/clear `X-Auth` cookie)
-- **`edukate-common`**: `EdukateUserDetails`, `UserCredentials`, `HttpHeadersUtils`, `PublicEndpoints`, `NoopWebSecurityConfig` (test utility)
+- **`edukate-common`**: `EdukateUserDetails`, `UserCredentials`, `HttpHeadersUtils`, `PublicEndpoints`,
+  `NoopWebSecurityConfig` (test utility)
 
 ## Configuration
 

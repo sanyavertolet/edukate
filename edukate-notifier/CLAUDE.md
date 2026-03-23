@@ -1,6 +1,7 @@
 # edukate-notifier
 
-Async notification delivery service. Consumes events from RabbitMQ, persists them in MongoDB, and exposes a REST API for users to read/manage their notifications.
+Async notification delivery service. Consumes events from RabbitMQ, persists them in MongoDB, and exposes a REST API for
+users to read/manage their notifications.
 
 ## Port
 
@@ -10,27 +11,28 @@ Async notification delivery service. Consumes events from RabbitMQ, persists the
 
 ### Notification types (sealed class hierarchy)
 
-| Type | Description |
-|---|---|
-| `SimpleNotification` | Plain text notification |
-| `InviteNotification` | Bundle invitation |
+| Type                  | Description             |
+|-----------------------|-------------------------|
+| `SimpleNotification`  | Plain text notification |
+| `InviteNotification`  | Bundle invitation       |
 | `CheckedNotification` | Problem checking result |
 
 Polymorphic serialization via Jackson `@JsonTypeInfo`.
 
 ### REST Endpoints (`NotificationController`)
 
-| Method | Path | Description |
-|---|---|---|
-| GET | `/api/v1/notifications` | Paginated list with optional filtering |
-| POST | `/api/v1/notifications/mark-as-read` | Mark specific notifications as read |
-| POST | `/api/v1/notifications/mark-all-as-read` | Mark all as read |
-| GET | `/api/v1/notifications/count` | Read/unread statistics |
+| Method | Path                                     | Description                            |
+|--------|------------------------------------------|----------------------------------------|
+| GET    | `/api/v1/notifications`                  | Paginated list with optional filtering |
+| POST   | `/api/v1/notifications/mark-as-read`     | Mark specific notifications as read    |
+| POST   | `/api/v1/notifications/mark-all-as-read` | Mark all as read                       |
+| GET    | `/api/v1/notifications/count`            | Read/unread statistics                 |
 
 ### Key Services
 
 - `NotificationService` — business logic: persist, retrieve, mark as read, statistics
-- `NotificationListener` — RabbitMQ consumer on `notifier.notify.v1.q`; receives `BaseNotificationCreateRequest`, calls `saveIfAbsent()`
+- `NotificationListener` — RabbitMQ consumer on `notifier.notify.v1.q`; receives `BaseNotificationCreateRequest`, calls
+  `saveIfAbsent()`
 
 ### Idempotency
 
@@ -52,6 +54,7 @@ Polymorphic serialization via Jackson `@JsonTypeInfo`.
 Test dependencies: `spring-boot-starter-test`, `reactor-test`, `mockk`, `springmockk`, `flapdoodle-embed-mongo`.
 
 Run tests:
+
 ```bash
 ./gradlew :edukate-notifier:test
 ```
@@ -77,6 +80,9 @@ src/test/kotlin/.../notifier/
 
 - **Unit tests** (`BaseNotificationTest`, `NotificationSerializationTest`): no Spring context, JUnit 5 + AssertJ only.
 - **Service tests** (`NotificationServiceTest`): `mockk()` for repository, `StepVerifier` for reactive assertions.
-- **Listener tests** (`NotificationListenerTest`): `mockk()` for service; the bare `.subscribe()` swallowing errors is explicitly documented as a known issue in the test.
-- **Controller tests** (`NotificationControllerTest`): `@WebFluxTest(NotificationController::class)` + `@Import(NoopWebSecurityConfig::class)` + `@MockkBean` (from `springmockk`).
-- **Repository tests** (`NotificationRepositoryTest`): `@DataMongoTest` + `@Import(MongoConfig::class)` for `@EnableReactiveMongoAuditing`; `@BeforeEach` deletes all documents for isolation.
+- **Listener tests** (`NotificationListenerTest`): `mockk()` for service; the bare `.subscribe()` swallowing errors is
+  explicitly documented as a known issue in the test.
+- **Controller tests** (`NotificationControllerTest`): `@WebFluxTest(NotificationController::class)` +
+  `@Import(NoopWebSecurityConfig::class)` + `@MockkBean` (from `springmockk`).
+- **Repository tests** (`NotificationRepositoryTest`): `@DataMongoTest` + `@Import(MongoConfig::class)` for
+  `@EnableReactiveMongoAuditing`; `@BeforeEach` deletes all documents for isolation.

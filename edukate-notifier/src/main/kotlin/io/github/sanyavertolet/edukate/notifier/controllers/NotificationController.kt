@@ -14,8 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
-import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,9 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-@Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/notifications")
 @Tag(name = "Notifications", description = "API for managing user notifications")
 class NotificationController(private val notificationService: NotificationService) {
