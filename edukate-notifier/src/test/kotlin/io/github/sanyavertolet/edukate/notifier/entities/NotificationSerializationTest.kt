@@ -13,9 +13,9 @@ import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto
 import io.github.sanyavertolet.edukate.notifier.dtos.CheckedNotificationDto
 import io.github.sanyavertolet.edukate.notifier.dtos.InviteNotificationDto
 import io.github.sanyavertolet.edukate.notifier.dtos.SimpleNotificationDto
+import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.Instant
 
 class NotificationSerializationTest {
 

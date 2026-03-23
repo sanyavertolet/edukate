@@ -3,10 +3,10 @@ package io.github.sanyavertolet.edukate.notifier.entities
 import com.fasterxml.jackson.annotation.JsonTypeName
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest
 import io.github.sanyavertolet.edukate.notifier.dtos.SimpleNotificationDto
+import java.time.Instant
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
-import java.time.Instant
 
 @JsonTypeName("simple")
 data class SimpleNotification(

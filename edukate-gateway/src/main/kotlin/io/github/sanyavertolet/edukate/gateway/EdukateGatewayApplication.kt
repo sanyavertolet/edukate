@@ -19,4 +19,3 @@ class EdukateGatewayApplication
 fun main(args: Array<String>) {
     runApplication<EdukateGatewayApplication>(*args)
 }
-

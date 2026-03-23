@@ -18,7 +18,8 @@ class NotificationListener(private val notificationService: NotificationService)
     @RabbitListener(queues = [RabbitTopology.Q.NOTIFY])
     fun scheduleCheck(createRequest: BaseNotificationCreateRequest) {
         log.debug("received notification request={}", createRequest.uuid)
-        // TODO: avoid manual subscribe() in listener; wire explicit reactive lifecycle/error handling instead.
+        // TODO: avoid manual subscribe() in listener; wire explicit reactive lifecycle/error
+        // handling instead.
         notificationService.saveIfAbsent(createRequest).subscribe()
     }
 

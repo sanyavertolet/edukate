@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
 import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationCreateRequest
 import io.github.sanyavertolet.edukate.notifier.dtos.CheckedNotificationDto
+import java.time.Instant
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
-import java.time.Instant
 
 @JsonTypeName("checked")
 data class CheckedNotification(

@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.common.users
 
-import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.util.EnumSet
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 
 enum class UserRole {
     USER,

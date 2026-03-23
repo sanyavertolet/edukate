@@ -21,8 +21,8 @@ class NotificationService(private val notificationRepository: NotificationReposi
     fun saveIfAbsent(createRequest: BaseNotificationCreateRequest): Mono<BaseNotification> =
         Mono.just(createRequest).map { BaseNotification.fromCreationRequest(it) }.flatMap { saveIfAbsent(it) }
 
-    // TODO: this find-then-save flow is race-prone under concurrent same-UUID writes; replace with atomic
-    // upsert/duplicate-key recovery.
+    // TODO: this find-then-save flow is race-prone under concurrent same-UUID writes; replace with
+    // atomic upsert/duplicate-key recovery
     @Transactional
     fun saveIfAbsent(notification: BaseNotification): Mono<BaseNotification> =
         notificationRepository

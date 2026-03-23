@@ -23,6 +23,7 @@ tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
 }
 
 ktfmt {
+    kotlinLangStyle()
     // Mirrors .idea/ktfmt.xml: Custom style, 125-char width, 4-space indent, trailing commas.
     // These values must stay in sync with detekt.yml style.MaxLineLength.
     maxWidth.set(125)

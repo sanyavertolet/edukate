@@ -5,6 +5,7 @@ import io.github.sanyavertolet.edukate.notifier.configs.MongoConfig
 import io.github.sanyavertolet.edukate.notifier.entities.CheckedNotification
 import io.github.sanyavertolet.edukate.notifier.entities.InviteNotification
 import io.github.sanyavertolet.edukate.notifier.entities.SimpleNotification
+import java.time.temporal.ChronoUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,7 +15,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import reactor.test.StepVerifier
-import java.time.temporal.ChronoUnit
 
 @DataMongoTest
 @Import(MongoConfig::class)

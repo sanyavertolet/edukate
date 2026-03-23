@@ -7,8 +7,8 @@ import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationC
 import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest
 import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto
-import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
+import org.springframework.data.mongodb.core.mapping.Document
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_type")
 @JsonSubTypes(

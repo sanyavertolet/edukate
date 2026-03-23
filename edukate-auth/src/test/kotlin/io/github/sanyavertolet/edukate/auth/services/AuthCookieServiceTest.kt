@@ -16,11 +16,7 @@ class AuthCookieServiceTest {
     private fun buildService(isDev: Boolean = false): AuthCookieService {
         val env = mockk<Environment>()
         every { env.matchesProfiles("dev") } returns isDev
-        return AuthCookieService(
-            expirationTimeSeconds = 3600L,
-            hostname = AuthFixtures.HOSTNAME,
-            environment = env,
-        )
+        return AuthCookieService(expirationTimeSeconds = 3600L, hostname = AuthFixtures.HOSTNAME, environment = env)
     }
 
     private fun exchangeWithCookie(name: String, value: String): ServerWebExchange {
@@ -48,9 +44,7 @@ class AuthCookieServiceTest {
         val service = buildService()
         val exchange = exchangeWithCookie("X-Auth", "my-token")
 
-        StepVerifier.create(service.ejectToken(exchange))
-            .expectNext("my-token")
-            .verifyComplete()
+        StepVerifier.create(service.ejectToken(exchange)).expectNext("my-token").verifyComplete()
     }
 
     @Test
@@ -58,8 +52,7 @@ class AuthCookieServiceTest {
         val service = buildService()
         val exchange = exchangeWithoutCookie()
 
-        StepVerifier.create(service.ejectToken(exchange))
-            .verifyComplete()
+        StepVerifier.create(service.ejectToken(exchange)).verifyComplete()
     }
 
     @Test
@@ -67,8 +60,7 @@ class AuthCookieServiceTest {
         val service = buildService()
         val exchange = exchangeWithCookie("Other-Cookie", "some-value")
 
-        StepVerifier.create(service.ejectToken(exchange))
-            .verifyComplete()
+        StepVerifier.create(service.ejectToken(exchange)).verifyComplete()
     }
 
     // --- respondWithToken ---
