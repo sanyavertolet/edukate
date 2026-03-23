@@ -1,6 +1,6 @@
 plugins {
     java
-    kotlin("plugin.spring") version "2.2.21" apply false
+    kotlin("plugin.spring") version "2.3.0" apply false
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.management) apply false
 

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.spring.dependency.management)
 
     id("io.github.sanyavertolet.edukate.buildutils.spring-boot-app-configuration")
+    id("io.github.sanyavertolet.edukate.buildutils.kotlin-quality-configuration")
 }
 
 java {

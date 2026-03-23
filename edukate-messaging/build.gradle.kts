@@ -3,6 +3,7 @@ plugins {
     kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    id("io.github.sanyavertolet.edukate.buildutils.kotlin-quality-configuration")
 }
 
 kotlin {

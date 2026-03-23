@@ -16,6 +16,9 @@ dependencies {
     implementation(libs.spring.boot.gradle.plugin)
     implementation(libs.kotlin.gradle.plugin)
     implementation(libs.docker.remote.api.gradle.plugin)
+    // String literals required: version catalog is not on the classpath inside included builds
+    implementation("dev.detekt:detekt-gradle-plugin:2.0.0-alpha.2")
+    implementation("com.ncorti.ktfmt.gradle:plugin:0.20.0")
 }
 
 tasks.withType<KotlinCompile> {

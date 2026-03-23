@@ -13,10 +13,9 @@ import reactor.core.publisher.Mono
 class AuthCookieService(
     @param:Value($$"${auth.jwt.expirationSeconds}") private val expirationTimeSeconds: Long,
     @param:Value($$"${auth.hostname}") private val hostname: String,
-    private val environment: Environment,
+    environment: Environment,
 ) {
-    private val isSecure
-        get() = !environment.matchesProfiles("dev")
+    private val isSecure = !environment.matchesProfiles("dev")
 
     private fun createTokenCookie(token: String): ResponseCookie =
         ResponseCookie.from(AUTHORIZATION_COOKIE, token)
