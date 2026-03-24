@@ -27,6 +27,12 @@ and the frontend is React 19 + TypeScript + Vite.
 # Detekt static analysis
 ./gradlew detekt
 
+# ktfmt formatting check (read-only)
+./gradlew ktfmtCheck
+
+# ktfmt auto-format (rewrites files)
+./gradlew ktfmtFormat
+
 # Run services locally
 ./gradlew :edukate-gateway:bootRun --args='--spring.profiles.active=dev,secure'
 ./gradlew :edukate-backend:bootRun --args='--spring.profiles.active=dev,secure,local,notifier'
@@ -89,7 +95,14 @@ docker compose up -d
 
 ## Code Quality
 
-- **Detekt** enforces Kotlin code quality (max issues: 0). Config is in `detekt.yml`.
+- **Detekt** enforces Kotlin code quality (zero-tolerance). Config is in `detekt.yml`. Applied to all Kotlin modules
+  via the `kotlin-quality-configuration` convention plugin.
+- **ktfmt** enforces Kotlin formatting (125-char width, 4-space indent). Run `./gradlew ktfmtFormat` to auto-fix.
+  Both tools are wired into CI — see `.github/workflows/detekt.yml` and `.github/workflows/ktfmt.yml`.
 - **ESLint** with TypeScript strict mode for the frontend. `tsconfig.app.json` has `noUnusedLocals` and
   `noUnusedParameters` enabled.
 - Java toolchain is set to Java 23 across all modules.
+
+## Java → Kotlin Migration
+
+Several modules still contain Java source files. See `MIGRATION.md` for the full status and migration guidelines.

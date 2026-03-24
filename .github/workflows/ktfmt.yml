@@ -1,0 +1,33 @@
+name: ktfmt
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+permissions:
+  pull-requests: write  # required to post PR comments
+
+jobs:
+  ktfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '23'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Check formatting
+        id: ktfmt
+        run: ./gradlew ktfmtCheck
+        continue-on-error: true
+      - name: Comment on PR
+        if: steps.ktfmt.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            @${{ github.actor }} formatting check failed. Please run `./gradlew ktfmtFormat`, commit the result, and push.
+      - name: Fail if formatting check failed
+        if: steps.ktfmt.outcome == 'failure'
+        run: exit 1
