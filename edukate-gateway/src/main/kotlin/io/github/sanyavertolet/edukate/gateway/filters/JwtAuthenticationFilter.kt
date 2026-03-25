@@ -3,7 +3,7 @@ package io.github.sanyavertolet.edukate.gateway.filters
 import io.github.sanyavertolet.edukate.auth.services.AuthCookieService
 import io.github.sanyavertolet.edukate.auth.services.JwtTokenService
 import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails
-import io.github.sanyavertolet.edukate.common.utils.HttpHeadersUtils
+import io.github.sanyavertolet.edukate.common.utils.populateHeaders
 import io.github.sanyavertolet.edukate.gateway.services.UserDetailsService
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.security.core.context.ReactiveSecurityContextHolder
@@ -22,7 +22,7 @@ class JwtAuthenticationFilter(
     private val authCookieService: AuthCookieService,
 ) : WebFilter {
     private fun getModifiedRequest(exchange: ServerWebExchange, userDetails: EdukateUserDetails): ServerHttpRequest =
-        exchange.request.mutate().headers { HttpHeadersUtils.populateHeaders(it, userDetails) }.build()
+        exchange.request.mutate().headers { populateHeaders(it, userDetails) }.build()
 
     private fun modifyRequestHeaders(exchange: ServerWebExchange, userDetails: EdukateUserDetails): ServerWebExchange =
         exchange.mutate().request(getModifiedRequest(exchange, userDetails)).build()

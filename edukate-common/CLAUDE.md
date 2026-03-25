@@ -33,13 +33,13 @@ Used by `edukate-backend` to send to `edukate-notifier` via RabbitMQ:
 | `InviteNotificationCreateRequest`  | Bundle invitation |
 | `CheckedNotificationCreateRequest` | Check result      |
 
-### Security Configuration (Java)
+### Security Configuration
 
 - `WebSecurityConfig` — base security config (override per-service)
 - `RoleHierarchyConfiguration` — `ADMIN > MODERATOR > USER` hierarchy
-- `NoopWebSecurityConfig` — permits all; use in tests via `@Import(NoopWebSecurityConfig.class)`
+- `NoopWebSecurityConfig` — permits all; use in tests via `@Import(NoopWebSecurityConfig::class)`
 
-### Notifier Abstraction (Java)
+### Notifier Abstraction
 
 - `Notifier` interface: `Mono<String> notify(BaseNotificationCreateRequest)`
 - `RabbitNotifier` — publishes to RabbitMQ; activated via `notifier` profile

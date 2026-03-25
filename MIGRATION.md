@@ -10,7 +10,7 @@ This document tracks the ongoing migration of Java source files to idiomatic Kot
 | `edukate-gateway`   | ✅ Complete     |                    0 | Fully Kotlin                                                     |
 | `edukate-notifier`  | ✅ Complete     |                    0 | Fully Kotlin                                                     |
 | `edukate-messaging` | ✅ Complete     |                    0 | Fully Kotlin                                                     |
-| `edukate-common`    | 🔄 In progress |                    7 | Security configs, Notifier hierarchy                             |
+| `edukate-common`    | ✅ Complete     |                    0 | Fully Kotlin                                                     |
 | `edukate-storage`   | 🔄 In progress |                   11 | Storage abstractions, `FileKey` hierarchy, S3 config             |
 | `edukate-checker`   | 🔄 In progress |                   13 | Chat services, Spring AI config, RabbitMQ publisher              |
 | `edukate-backend`   | 🔄 In progress |                   41 | Controllers, services, repositories, configs — largest remaining |

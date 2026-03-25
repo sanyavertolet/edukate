@@ -1,10 +1,10 @@
 plugins {
     java
-    kotlin("plugin.spring") version "2.3.0" apply false
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.management) apply false
 
     id("io.github.sanyavertolet.edukate.buildutils.frontend-image-build-configuration")
+    kotlin("plugin.spring") version "2.3.0"
 }
 
 group = "io.github.sanyavertolet.edukate"
@@ -27,3 +27,6 @@ repositories {
 }
 
 
+dependencies {
+    implementation(kotlin("stdlib"))
+}
