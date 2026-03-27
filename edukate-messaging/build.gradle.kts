@@ -7,8 +7,12 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
+
+tasks.bootJar { enabled = false }
+
+tasks.jar { enabled = true }
 
 configurations {
     compileOnly {

@@ -11,7 +11,7 @@ group = "io.github.sanyavertolet.edukate"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -28,5 +28,5 @@ repositories {
 
 
 dependencies {
-    implementation(kotlin("stdlib"))
+//    implementation(kotlin("stdlib"))
 }

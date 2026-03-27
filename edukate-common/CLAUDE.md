@@ -52,6 +52,29 @@ Used by `edukate-backend` to send to `edukate-notifier` via RabbitMQ:
 ## Testing Notes
 
 - No application context needed for most unit tests — pure model/utility tests
-- Test `EdukateUserDetails` role hierarchy via Spring Security's `RoleHierarchyVoter`
 - `NoopWebSecurityConfig` is the standard way to disable security in service-layer tests
 - `NoopNotifier` is the standard mock for `Notifier` in tests
+
+## Test Suite
+
+Run tests: `./gradlew :edukate-common:test`
+
+```
+src/test/kotlin/.../common/
+├── CommonFixtures.kt           — shared test data builders
+├── SubmissionStatusTest.kt     — from() and best() logic
+├── users/
+│   ├── UserRoleTest.kt         — asSpringSecurityRole, asGrantedAuthority, fromString, listToString, anyRole
+│   ├── UserCredentialsTest.kt  — newUser() factory, toString() hides encodedPassword
+│   └── EdukateUserDetailsTest.kt — authorities, isEnabled, eraseCredentials, toPreAuthenticatedAuthenticationToken
+└── utils/
+    ├── AuthUtilsTest.kt        — id() and monoId() with null/valid authentication
+    └── HttpHeadersUtilsTest.kt — populateHeaders, toEdukateUserDetails round-trip and null-header handling
+```
+
+### Key patterns
+
+- Instantiate classes directly — no Spring context required
+- MockK for `Authentication` mock in `AuthUtilsTest`
+- `StepVerifier` from `reactor-test` for `Mono` assertions
+- Group related assertions in one test method (one test per concept, not one per assertion)

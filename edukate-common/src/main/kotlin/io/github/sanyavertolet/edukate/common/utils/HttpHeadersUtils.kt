@@ -27,12 +27,13 @@ private fun getLastHeaderOrNull(headers: HttpHeaders, headerName: String): Strin
 }
 
 fun HttpHeaders.toEdukateUserDetails(): EdukateUserDetails? {
-    val id = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_ID.headerName) ?: return null
-    val name = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_NAME.headerName) ?: return null
-    val rolesString = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_ROLES.headerName) ?: return null
-    val statusString = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_STATUS.headerName) ?: return null
+    val id = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_ID.headerName)
+    val name = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_NAME.headerName)
+    val rolesString = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_ROLES.headerName)
+    val statusString = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_STATUS.headerName)
 
-    return EdukateUserDetails(id, name, UserRole.fromString(rolesString), UserStatus.valueOf(statusString), "")
+    if (listOf(id, name, rolesString, statusString).any { it == null }) return null
+    return EdukateUserDetails(id!!, name!!, UserRole.fromString(rolesString!!), UserStatus.valueOf(statusString!!), "")
 }
 
 private val logger = LoggerFactory.getLogger("HttpHeadersUtils")

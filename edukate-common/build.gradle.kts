@@ -7,7 +7,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 configurations {
@@ -19,6 +19,10 @@ configurations {
 repositories {
     mavenCentral()
 }
+
+tasks.bootJar { enabled = false }
+
+tasks.jar { enabled = true }
 
 dependencies {
     implementation(projects.edukateMessaging)
@@ -32,4 +36,13 @@ dependencies {
     implementation(libs.kotlin.reflect)
 
     annotationProcessor(libs.spring.boot.configuration.processor)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation(libs.mockk)
+    testImplementation(libs.springmockk)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
