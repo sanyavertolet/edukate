@@ -190,7 +190,7 @@ public class BundleService {
     @Transactional
     public Mono<Bundle> changeProblems(String shareCode, List<String> problemIds, Authentication authentication) {
         return Mono.just(shareCode)
-                .filter(_ -> problemIds != null && !problemIds.isEmpty())
+                .filter(code -> problemIds != null && !problemIds.isEmpty())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Bundle problem list cannot be empty"
                 )))

@@ -86,7 +86,7 @@ public class CheckerController {
         return submissionService.getSubmissionIfOwns(submissionId, AuthUtils.id(authentication))
                 .map(submission -> CheckResult.self(Objects.requireNonNull(submission.getId())))
                 .flatMap(checkResultService::saveAndUpdateSubmission)
-                .map(_ -> ResponseEntity.status(HttpStatus.ACCEPTED).build());
+                .map(tuple -> ResponseEntity.status(HttpStatus.ACCEPTED).build());
     }
 
     @SuppressWarnings("unused")

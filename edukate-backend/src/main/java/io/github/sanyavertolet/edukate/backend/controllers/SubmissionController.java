@@ -38,6 +38,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.PATH;
 import static io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY;
@@ -109,10 +110,10 @@ public class SubmissionController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
                 .filterWhen(userService::hasUserPermissionToSubmit)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
-                .filterWhen(_ -> problemService.findProblemById(submissionRequest.getProblemId()).hasElement())
+                .filterWhen(user -> problemService.findProblemById(submissionRequest.getProblemId()).hasElement())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.")))
                 .flatMap(user -> Flux.fromIterable(submissionRequest.getFileNames())
-                        .map(fileName -> TempFileKey.of(user.getId(), fileName))
+                        .map(fileName -> TempFileKey.of(Objects.requireNonNull(user.getId()), fileName))
                         .cast(FileKey.class)
                         .collectList()
                         .filterWhen(fileManager::doFilesExist)

@@ -23,7 +23,7 @@ public class CheckerService {
                 .flatMap(chatService::makeRequest)
                 .switchIfEmpty(Mono.error(new IllegalStateException("No AI response received")))
                 .map(modelResponse -> CheckResultMessageUtils.success(modelResponse, context))
-                .doOnSuccess(_ -> log.debug("Successfully checked submission {}", context.getSubmissionId()))
+                .doOnSuccess(checkResultMessage -> log.debug("Successfully checked submission {}", context.getSubmissionId()))
                 .doOnError(ex -> log.error("Failed to check submission {}", context.getSubmissionId(), ex))
                 .onErrorReturn(CheckResultMessageUtils.error(context));
     }

@@ -103,7 +103,7 @@ public class SubmissionAfterSaveListener extends AbstractMongoEventListener<Subm
                 db.getCollection(COLLECTION)
                     .updateOne(filter, updatePipeline, new UpdateOptions().upsert(true))
             ))
-                .doOnSuccess(_ -> log.debug("problem_status upserted for submission {}", submissionId))
+                .doOnSuccess(result -> log.debug("problem_status upserted for submission {}", submissionId))
                 .doOnError(ex -> log.error("problem_status upsert failed for submission {}", submissionId, ex))
                 .subscribe();
     }

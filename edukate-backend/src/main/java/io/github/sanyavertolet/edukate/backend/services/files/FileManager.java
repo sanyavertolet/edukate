@@ -41,7 +41,7 @@ public class FileManager {
         Objects.requireNonNull(key, "key must not be null");
         return storage.getContent(key)
                 .timeout(DEFAULT_TIMEOUT)
-                .doOnSubscribe(_ -> log.debug("Downloading content: key={}", key))
+                .doOnSubscribe(subscription -> log.debug("Downloading content: key={}", key))
                 .doOnError(e -> log.error("download failed for key={}", key, e));
     }
 
@@ -66,7 +66,7 @@ public class FileManager {
                         .flatMap(meta -> saveOrUpdateByKeyPath(k.toString(), k, meta))
                         .thenReturn(k))
                 .timeout(DEFAULT_TIMEOUT)
-                .doOnSubscribe(_ -> log.debug("Uploading: key={}", key))
+                .doOnSubscribe(subscription -> log.debug("Uploading: key={}", key))
                 .doOnSuccess(k -> log.debug("Uploaded: key={}", k))
                 .doOnError(e -> log.error("upload failed for key={}", key, e));
     }
@@ -130,7 +130,7 @@ public class FileManager {
                         .thenReturn(newKey)
                         : Mono.error(new IllegalStateException("Move failed: " + oldKey + " -> " + newKey)))
                 .timeout(DEFAULT_TIMEOUT)
-                .doOnSubscribe(_ -> log.debug("Moving: {} -> {}", oldKey, newKey))
+                .doOnSubscribe(subscription -> log.debug("Moving: {} -> {}", oldKey, newKey))
                 .doOnSuccess(k -> log.debug("Moved: {} -> {}", oldKey, k))
                 .doOnError(e -> log.error("move failed: {} -> {}", oldKey, newKey, e));
     }

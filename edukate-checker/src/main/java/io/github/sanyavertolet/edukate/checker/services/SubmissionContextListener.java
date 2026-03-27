@@ -21,7 +21,7 @@ public class SubmissionContextListener {
                 .doOnNext(submissionContext -> log.debug("received submissionContext={}", submissionContext))
                 .flatMap(checkerService::runCheck)
                 .flatMap(resultPublisher::publish)
-                .doOnSuccess(_ ->
+                .doOnSuccess(nothing ->
                         log.debug("Successfully published result for submission {}", context.getSubmissionId())
                 )
                 .doOnError(ex ->
