@@ -12,7 +12,7 @@ This document tracks the ongoing migration of Java source files to idiomatic Kot
 | `edukate-messaging` | ✅ Complete     |                    0 | Fully Kotlin                                                          |
 | `edukate-common`    | ✅ Complete     |                    0 | Fully Kotlin                                                          |
 | `edukate-storage`   | ✅ Complete     |                    0 | Fully Kotlin; `FileKey` → sealed class; `@PersistenceCreator` removed |
-| `edukate-checker`   | 🔄 In progress |                   13 | Chat services, Spring AI config, RabbitMQ publisher                   |
+| `edukate-checker`   | ✅ Complete     |                    0 | Fully Kotlin; Spring AI, RabbitMQ, S3; see `TECH_DEBT.md` for notes   |
 | `edukate-backend`   | 🔄 In progress |                   41 | Controllers, services, repositories, configs — largest remaining      |
 
 ## Migration Guidelines
