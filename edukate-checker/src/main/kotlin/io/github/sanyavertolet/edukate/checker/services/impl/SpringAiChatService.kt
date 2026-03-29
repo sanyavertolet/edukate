@@ -5,7 +5,6 @@ import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse
 import io.github.sanyavertolet.edukate.checker.services.ChatService
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
-import org.springframework.ai.chat.client.entity
 import org.springframework.ai.content.Media
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -23,6 +22,7 @@ class SpringAiChatService(private val chatClient: ChatClient) : ChatService {
     private fun callModel(ctx: RequestContext): ModelResponse =
         structuredCallModel(ctx.problemText, ctx.problemImages, ctx.submissionImages)
 
+    @Suppress("JavaStyleCallReplaceableByKotlinExtension")
     private fun structuredCallModel(
         problemText: String,
         problemMedia: List<Media>,
@@ -38,7 +38,7 @@ class SpringAiChatService(private val chatClient: ChatClient) : ChatService {
                         .media(*submissionMedia.toTypedArray())
                 }
                 .call()
-                .entity()
+                .entity(ModelResponse::class.java)
         ) {
             "AI returned null response"
         }
