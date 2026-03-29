@@ -65,11 +65,11 @@ private val authService = AuthService(userDetailsService, passwordEncoder, jwtTo
 
 #### `signUp`
 
-| Method                                                              | What it tests                                                                                            |
-|---------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| `signUp returns JWT when username is available and user is created` | `isNotUserPresent()` returns `Mono.just(true)`; `userDetailsService.create()` returns user; JWT returned |
-| `signUp returns empty Mono when username already exists`            | `isNotUserPresent()` returns `Mono.just(false)`; verifies complete without emission                      |
-| `signUp encodes password before persisting`                         | `verify(exactly = 1) { passwordEncoder.encode(any()) }`                                                  |
+| Method                                                              | What it tests                                                                                                |
+|---------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| `signUp returns JWT when username is available and user is created` | `isNotUserPresent()` returns `Mono.just(true)`; `userDetailsService.create()` returns user; JWT returned     |
+| `signUp emits CONFLICT error when username already exists`          | `isNotUserPresent()` returns `Mono.just(false)`; `StepVerifier` receives `ResponseStatusException(CONFLICT)` |
+| `signUp encodes password before persisting`                         | `verify(exactly = 1) { passwordEncoder.encode(any()) }`                                                      |
 
 ---
 
@@ -77,12 +77,12 @@ private val authService = AuthService(userDetailsService, passwordEncoder, jwtTo
 
 No Spring context. Inject a `MockWebServer` (OkHttp) or use `WebClient.Builder` with `ExchangeFunction` mock.
 
-#### `createUser`
+#### `saveUser`
 
-| Method                                                                         | What it tests                                       |
-|--------------------------------------------------------------------------------|-----------------------------------------------------|
-| `createUser sends POST to internal users endpoint and returns UserCredentials` | Response body maps correctly to `UserCredentials`   |
-| `createUser propagates WebClientResponseException on 4xx or 5xx`               | Backend returns 500 → `StepVerifier` receives error |
+| Method                                                                        | What it tests                                       |
+|-------------------------------------------------------------------------------|-----------------------------------------------------|
+| `saveUser sends POST to internal users endpoint and returns UserCredentials`  | Response body maps correctly to `UserCredentials`   |
+| `saveUser propagates WebClientResponseException on 5xx`                       | Backend returns 500 → `StepVerifier` receives error |
 
 #### `getUserByName`
 
@@ -111,7 +111,7 @@ No Spring context. Construct `UserDetailsService` directly with a `mockk()` `Bac
 | `findById maps UserCredentials to EdukateUserDetails`                                | `backendService.getUserById("user-id-1")` called; fields mapped correctly                                        |
 | `isNotUserPresent returns true when getUserByName emits empty`                       | `backendService.getUserByName()` returns `Mono.empty()` → `Mono.just(true)`                                      |
 | `isNotUserPresent returns false when user exists`                                    | `backendService.getUserByName()` returns `Mono.just(credentials)` → `Mono.just(false)`                           |
-| `create encodes password and calls BackendService createUser`                        | `passwordEncoder.encode()` called once; `backendService.createUser()` receives credentials with encoded password |
+| `create calls BackendService saveUser with new user credentials`                     | `backendService.saveUser()` called exactly once; returned `EdukateUserDetails` has correct `id`                  |
 
 ---
 
@@ -134,8 +134,13 @@ request headers and security context.
 ### `AuthControllerTest`
 
 ```kotlin
+// @ActiveProfiles("test") is required: application.yml sets spring.profiles.default=prod,secure,
+// which activates "secure" and prevents NoopWebSecurityConfig (@Profile("!secure")) from loading.
+// "test" profile overrides the defaults so NoopWebSecurityConfig is loaded correctly.
+// JwtAuthenticationFilter is a @Component WebFilter loaded by @WebFluxTest — mock it to pass through.
 @WebFluxTest(AuthController::class)
 @Import(NoopWebSecurityConfig::class)
+@ActiveProfiles("test")
 class AuthControllerTest {
     @Autowired
     lateinit var webTestClient: WebTestClient
@@ -143,6 +148,8 @@ class AuthControllerTest {
     lateinit var authService: AuthService
     @MockkBean
     lateinit var authCookieService: AuthCookieService
+    @MockkBean
+    lateinit var jwtAuthenticationFilter: JwtAuthenticationFilter
 }
 ```
 
@@ -187,13 +194,13 @@ class WebSecurityConfigTest {
 }
 ```
 
-| Method                                                  | What it tests                                                                                   |
-|---------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| `sign-in endpoint is accessible without authentication` | `POST /api/v1/auth/sign-in` with no cookie → not 401 (may be 400 for missing body, but not 401) |
-| `sign-up endpoint is accessible without authentication` | `POST /api/v1/auth/sign-up` with no cookie → not 401                                            |
-| `protected API endpoint returns 401 without token`      | `GET /api/v1/some-protected-path` → 401                                                         |
-| `internal endpoints return 403 to all callers`          | `GET /internal/users` with valid token → 403                                                    |
-| `CORS preflight returns 200 from configured origin`     | `OPTIONS` request with `Origin: http://localhost:3000` → 200 with CORS headers                  |
+| Method                                                                | What it tests                                                                                                                                                                              |
+|-----------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sign-in endpoint is accessible without authentication`               | `POST /api/v1/auth/sign-in` with no cookie → not 401 (may be 400 for missing body, but not 401)                                                                                            |
+| `sign-up endpoint is accessible without authentication`               | `POST /api/v1/auth/sign-up` with no cookie → not 401                                                                                                                                       |
+| `protected API endpoint returns 401 without token`                    | `GET /api/v1/some-protected-path` → 401                                                                                                                                                    |
+| `internal endpoints are not accessible from outside`                  | `GET /internal/users` → 404 (not 403): `/internal/**` is in `PublicEndpoints.asMatcher()` so `@Order(1)` `permitAll()` fires before `@Order(2)` `denyAll()`; no gateway route exists → 404 |
+| `cross-origin request to public endpoint is not rejected by security` | `POST /api/v1/auth/sign-in` with `Origin: http://localhost:3000` header → response is not 401                                                                                              |
 
 ---
 
