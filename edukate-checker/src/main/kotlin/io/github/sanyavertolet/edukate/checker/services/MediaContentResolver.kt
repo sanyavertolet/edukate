@@ -2,7 +2,6 @@ package io.github.sanyavertolet.edukate.checker.services
 
 import io.github.sanyavertolet.edukate.checker.storage.RawKeyReadOnlyStorage
 import java.nio.ByteBuffer
-import org.slf4j.LoggerFactory
 import org.springframework.ai.content.Media
 import org.springframework.core.io.buffer.DataBufferFactory
 import org.springframework.core.io.buffer.DataBufferUtils
