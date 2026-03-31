@@ -40,11 +40,10 @@ class RabbitResultPublisherTest {
     @Test
     fun `publish retries on transient failure then succeeds`() {
         val callCount = AtomicInteger(0)
-        every {
-            template.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.RESULT, message)
-        } answers {
-            if (callCount.incrementAndGet() == 1) throw IllegalStateException("transient")
-        }
+        every { template.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.RESULT, message) } answers
+            {
+                if (callCount.incrementAndGet() == 1) throw IllegalStateException("transient")
+            }
 
         StepVerifier.create(publisher.publish(message)).verifyComplete()
 
@@ -53,13 +52,12 @@ class RabbitResultPublisherTest {
 
     @Test
     fun `publish propagates error after 3 failures`() {
-        every {
-            template.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.RESULT, message)
-        } answers { throw IllegalStateException("always fails") }
+        every { template.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.RESULT, message) } answers
+            {
+                throw IllegalStateException("always fails")
+            }
 
-        StepVerifier.create(publisher.publish(message))
-            .expectError()
-            .verify()
+        StepVerifier.create(publisher.publish(message)).expectError().verify()
 
         // 1 initial attempt + 3 retries = 4 total calls
         verify(atLeast = 3) { template.convertAndSend(RabbitTopology.EXCHANGE, RabbitTopology.Rk.RESULT, message) }
@@ -71,9 +69,8 @@ class RabbitResultPublisherTest {
         val callingThread = Thread.currentThread().name
 
         var subscriberThread: String? = null
-        StepVerifier.create(
-            publisher.publish(message).doOnTerminate { subscriberThread = Thread.currentThread().name }
-        ).verifyComplete()
+        StepVerifier.create(publisher.publish(message).doOnTerminate { subscriberThread = Thread.currentThread().name })
+            .verifyComplete()
 
         assertThat(subscriberThread).isNotEqualTo(callingThread)
     }

@@ -22,7 +22,6 @@ class SpringAiChatService(private val chatClient: ChatClient) : ChatService {
     private fun callModel(ctx: RequestContext): ModelResponse =
         structuredCallModel(ctx.problemText, ctx.problemImages, ctx.submissionImages)
 
-    @Suppress("JavaStyleCallReplaceableByKotlinExtension")
     private fun structuredCallModel(
         problemText: String,
         problemMedia: List<Media>,

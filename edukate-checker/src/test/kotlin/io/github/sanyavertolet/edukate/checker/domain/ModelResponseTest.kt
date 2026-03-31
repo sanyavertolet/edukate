@@ -6,10 +6,10 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaField
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.javaField
 
 class ModelResponseTest {
     private val mapper = ObjectMapper().registerKotlinModule()
@@ -25,12 +25,13 @@ class ModelResponseTest {
 
     @Test
     fun `all fields survive Jackson round-trip`() {
-        val original = ModelResponse(
-            status = CheckStatus.MISTAKE,
-            trustLevel = 0.75f,
-            errorType = CheckErrorType.ALGEBRAIC,
-            explanation = "Wrong sign",
-        )
+        val original =
+            ModelResponse(
+                status = CheckStatus.MISTAKE,
+                trustLevel = 0.75f,
+                errorType = CheckErrorType.ALGEBRAIC,
+                explanation = "Wrong sign",
+            )
         val json = mapper.writeValueAsString(original)
         val result = mapper.readValue(json, ModelResponse::class.java)
         assertThat(result).isEqualTo(original)
@@ -46,9 +47,7 @@ class ModelResponseTest {
     fun `@JsonPropertyDescription is present on all fields`() {
         ModelResponse::class.memberProperties.forEach { prop ->
             val annotation = prop.javaField?.getAnnotation(JsonPropertyDescription::class.java)
-            assertThat(annotation)
-                .withFailMessage("Missing @JsonPropertyDescription on field: %s", prop.name)
-                .isNotNull
+            assertThat(annotation).withFailMessage("Missing @JsonPropertyDescription on field: %s", prop.name).isNotNull
             assertThat(annotation!!.value)
                 .withFailMessage("Empty @JsonPropertyDescription on field: %s", prop.name)
                 .isNotBlank()

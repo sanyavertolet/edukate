@@ -28,8 +28,7 @@ class MediaContentResolverTest {
 
     @Test
     fun `empty key list returns empty Flux`() {
-        StepVerifier.create(resolver.resolveMedia(emptyList()))
-            .verifyComplete()
+        StepVerifier.create(resolver.resolveMedia(emptyList())).verifyComplete()
     }
 
     @Test
@@ -53,9 +52,7 @@ class MediaContentResolverTest {
         every { storage.metadata("key1") } returns Mono.just(MediaType.IMAGE_PNG)
 
         StepVerifier.create(resolver.resolveMedia(listOf("key1")))
-            .assertNext { media ->
-                assertThat(media.mimeType).isEqualTo(MediaType.IMAGE_PNG)
-            }
+            .assertNext { media -> assertThat(media.mimeType).isEqualTo(MediaType.IMAGE_PNG) }
             .verifyComplete()
     }
 
@@ -67,9 +64,7 @@ class MediaContentResolverTest {
             every { storage.metadata(key) } returns Mono.just(MediaType.IMAGE_JPEG)
         }
 
-        StepVerifier.create(resolver.resolveMedia(keys))
-            .expectNextCount(3)
-            .verifyComplete()
+        StepVerifier.create(resolver.resolveMedia(keys)).expectNextCount(3).verifyComplete()
     }
 
     @Test
@@ -77,8 +72,6 @@ class MediaContentResolverTest {
         every { storage.getContent("key1") } returns Flux.error(RuntimeException("S3 unavailable"))
         every { storage.metadata("key1") } returns Mono.just(MediaType.IMAGE_JPEG)
 
-        StepVerifier.create(resolver.resolveMedia(listOf("key1")))
-            .expectError(RuntimeException::class.java)
-            .verify()
+        StepVerifier.create(resolver.resolveMedia(listOf("key1"))).expectError(RuntimeException::class.java).verify()
     }
 }

@@ -42,17 +42,13 @@ class SpringAiChatServiceTest {
     @Test
     fun `makeRequest emits the entity returned by ChatClient`() {
         StepVerifier.create(service.makeRequest(ctx))
-            .assertNext { response ->
-                assertThat(response).isEqualTo(expectedResponse)
-            }
+            .assertNext { response -> assertThat(response).isEqualTo(expectedResponse) }
             .verifyComplete()
     }
 
     @Test
     fun `makeRequest completes without error on happy path`() {
-        StepVerifier.create(service.makeRequest(ctx))
-            .expectNextCount(1)
-            .verifyComplete()
+        StepVerifier.create(service.makeRequest(ctx)).expectNextCount(1).verifyComplete()
     }
 
     @Test
@@ -101,8 +97,6 @@ class SpringAiChatServiceTest {
     fun `null entity response throws`() {
         every { callSpec.entity(ModelResponse::class.java) } returns null
 
-        StepVerifier.create(service.makeRequest(ctx))
-            .expectError()
-            .verify()
+        StepVerifier.create(service.makeRequest(ctx)).expectError().verify()
     }
 }

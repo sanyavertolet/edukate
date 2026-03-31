@@ -63,7 +63,6 @@ class SubmissionContextListenerTest {
         // swallow — this test documents that actual behavior.
         every { checkerService.runCheck(ctx) } returns Mono.error(RuntimeException("check failed"))
 
-        assertThatThrownBy { listener.onSubmissionContext(ctx) }
-            .isInstanceOf(RuntimeException::class.java)
+        assertThatThrownBy { listener.onSubmissionContext(ctx) }.isInstanceOf(RuntimeException::class.java)
     }
 }

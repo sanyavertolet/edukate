@@ -15,34 +15,25 @@ import reactor.test.StepVerifier
 
 class NoopChatServiceTest {
     private val svc = NoopChatService()
-    private val ctx = RequestContext(
-        "Solve x^2 = 4",
-        listOf(CheckerFixtures.mockMedia()),
-        listOf(CheckerFixtures.mockMedia()),
-    )
+    private val ctx =
+        RequestContext("Solve x^2 = 4", listOf(CheckerFixtures.mockMedia()), listOf(CheckerFixtures.mockMedia()))
 
     @Test
     fun `makeRequest emits exactly one item`() {
-        StepVerifier.create(svc.makeRequest(ctx))
-            .expectNextCount(1)
-            .verifyComplete()
+        StepVerifier.create(svc.makeRequest(ctx)).expectNextCount(1).verifyComplete()
     }
 
     @Test
     fun `returned status is SUCCESS`() {
         StepVerifier.create(svc.makeRequest(ctx))
-            .assertNext { response ->
-                assertThat(response.status).isEqualTo(CheckStatus.SUCCESS)
-            }
+            .assertNext { response -> assertThat(response.status).isEqualTo(CheckStatus.SUCCESS) }
             .verifyComplete()
     }
 
     @Test
     fun `trustLevel is in range 0 to 1`() {
         StepVerifier.create(svc.makeRequest(ctx))
-            .assertNext { response ->
-                assertThat(response.trustLevel).isBetween(0f, 1f)
-            }
+            .assertNext { response -> assertThat(response.trustLevel).isBetween(0f, 1f) }
             .verifyComplete()
     }
 

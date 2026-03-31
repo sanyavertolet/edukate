@@ -85,9 +85,7 @@ class CheckerServiceTest {
         every { chatService.makeRequest(any()) } returns Mono.error(RuntimeException("AI unavailable"))
 
         StepVerifier.create(service.runCheck(ctx))
-            .assertNext { result ->
-                assertThat(result.status).isEqualTo(CheckStatus.INTERNAL_ERROR)
-            }
+            .assertNext { result -> assertThat(result.status).isEqualTo(CheckStatus.INTERNAL_ERROR) }
             .verifyComplete()
     }
 
@@ -96,9 +94,7 @@ class CheckerServiceTest {
         every { resolver.resolveMedia(ctx.submissionImageRawKeys) } returns Flux.error(RuntimeException("S3 unavailable"))
 
         StepVerifier.create(service.runCheck(ctx))
-            .assertNext { result ->
-                assertThat(result.status).isEqualTo(CheckStatus.INTERNAL_ERROR)
-            }
+            .assertNext { result -> assertThat(result.status).isEqualTo(CheckStatus.INTERNAL_ERROR) }
             .verifyComplete()
     }
 
@@ -107,9 +103,7 @@ class CheckerServiceTest {
         every { chatService.makeRequest(any()) } returns Mono.empty()
 
         StepVerifier.create(service.runCheck(ctx))
-            .assertNext { result ->
-                assertThat(result.status).isEqualTo(CheckStatus.INTERNAL_ERROR)
-            }
+            .assertNext { result -> assertThat(result.status).isEqualTo(CheckStatus.INTERNAL_ERROR) }
             .verifyComplete()
     }
 }
