@@ -1,5 +1,7 @@
 package io.github.sanyavertolet.edukate.buildutils
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("dev.detekt")
     id("com.ncorti.ktfmt.gradle")
@@ -20,6 +22,12 @@ detekt {
 // SARIF output enables inline PR annotations via github/codeql-action/upload-sarif.
 tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
     reports.sarif.required.set(true)
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
+    }
 }
 
 ktfmt {
