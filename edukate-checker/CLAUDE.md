@@ -37,34 +37,34 @@ SubmissionContextListener
 
 ### Services
 
-| Class                       | Language                     | Responsibility                                                              |
-|-----------------------------|------------------------------|-----------------------------------------------------------------------------|
-| `CheckerService`            | Java                         | Orchestrates check: build context → call AI → map response → publish result |
-| `ChatService`               | Java (interface)             | Abstraction for AI calls; returns `Mono<ModelResponse>`                     |
-| `SpringAiChatService`       | Java (`@Profile("!silent")`) | Calls OpenAI via Spring AI ChatClient with structured output                |
-| `NoopChatService`           | Java (`@Profile("silent")`)  | Stub returning SUCCESS; used for dev/testing without OpenAI                 |
-| `ResultPublisher`           | Java (interface)             | Abstraction for publishing results to RabbitMQ                              |
-| `RabbitResultPublisher`     | Java                         | Publishes `CheckResultMessage` to exchange; retries 3× on failure           |
-| `MediaContentResolver`      | Java                         | Fetches images from S3 by raw key, converts to Spring AI `Media` objects    |
-| `SubmissionContextListener` | Java                         | RabbitMQ `@RabbitListener`; bridges reactive chain via `.block()`           |
+| Class                       | Responsibility                                                                       |
+|-----------------------------|--------------------------------------------------------------------------------------|
+| `CheckerService`            | Orchestrates check: build context → call AI → map response → publish result          |
+| `ChatService`               | `fun interface` abstraction for AI calls; returns `Mono<ModelResponse>`              |
+| `SpringAiChatService`       | Calls OpenAI via Spring AI ChatClient with structured output (`@Profile("!silent")`) |
+| `NoopChatService`           | Stub returning SUCCESS; used for dev/testing without OpenAI (`@Profile("silent")`)   |
+| `ResultPublisher`           | `fun interface` abstraction for publishing results to RabbitMQ                       |
+| `RabbitResultPublisher`     | Publishes `CheckResultMessage` to exchange; retries 3× on failure                    |
+| `MediaContentResolver`      | Fetches images from S3 by raw key, converts to Spring AI `Media` objects             |
+| `SubmissionContextListener` | RabbitMQ `@RabbitListener`; bridges reactive chain via `.block()`                    |
 
 ### Domain Models
 
-| Class            | Language | Purpose                                                                                                                                  |
-|------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `RequestContext` | Kotlin   | Bundles problem text + images for the AI call; validates non-blank text and non-empty submission images                                  |
-| `ModelResponse`  | Kotlin   | Structured OpenAI response: `status`, `trustLevel` (0–1), `errorType`, `explanation`; `@JsonPropertyDescription` drives Spring AI schema |
+| Class            | Purpose                                                                                                                                  |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `RequestContext` | Bundles problem text + images for the AI call; validates non-blank text and non-empty submission images                                  |
+| `ModelResponse`  | Structured OpenAI response: `status`, `trustLevel` (0–1), `errorType`, `explanation`; `@JsonPropertyDescription` drives Spring AI schema |
 
 ### Config & Utilities
 
-| Class                       | Language       | Responsibility                                                                                                         |
-|-----------------------------|----------------|------------------------------------------------------------------------------------------------------------------------|
-| `EdukateCheckerApplication` | Java           | Spring Boot entry point; scans `checker`, `common`, `storage` packages                                                 |
-| `ChatClientConfig`          | Java           | Creates `ChatClient` bean with system prompt from `checker.openai.system-prompt`                                       |
-| `RestClientConfig`          | Java           | Configures HTTP timeouts (connect: 5s, read: 2m) for Spring AI's OpenAI client                                         |
-| `RabbitConfig`              | Java           | Declares durable queue and binding for `checker.check.schedule.v1.q`                                                   |
-| `RawKeyReadOnlyStorage`     | Java           | `AbstractReadOnlyStorage<String, MediaType>`; fetches S3 objects by raw key                                            |
-| `CheckResultMessageUtils`   | Java (utility) | Converts `ModelResponse` → `CheckResultMessage`; clamps trust level to [0, 1]; enforces `errorType = NONE` for SUCCESS |
+| Class                       | Responsibility                                                                                                                                     |
+|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `EdukateCheckerApplication` | Spring Boot entry point; scans `checker`, `common`, `storage` packages                                                                             |
+| `ChatClientConfig`          | Creates `ChatClient` bean with system prompt from `checker.openai.system-prompt`                                                                   |
+| `RestClientConfig`          | Configures HTTP timeouts (connect: 5s, read: 2m) for Spring AI's OpenAI client                                                                     |
+| `RabbitConfig`              | Declares durable queue and binding for `checker.check.schedule.v1.q`                                                                               |
+| `RawKeyReadOnlyStorage`     | `AbstractReadOnlyStorage<String, MediaType>`; fetches S3 objects by raw key                                                                        |
+| `CheckResultMessageUtils`   | Top-level Kotlin functions; converts `ModelResponse` → `CheckResultMessage`; clamps trust level to [0, 1]; enforces `errorType = NONE` for SUCCESS |
 
 ## Configuration
 
@@ -82,52 +82,7 @@ SubmissionContextListener
 
 ---
 
-## Kotlin Rewrite Plan
-
-All Java files need to be converted to Kotlin. The two Kotlin data classes (`RequestContext`, `ModelResponse`) stay
-as-is.
-
-### File-by-file migration
-
-| Java file                        | Kotlin equivalent              | Notes                                                                          |
-|----------------------------------|--------------------------------|--------------------------------------------------------------------------------|
-| `EdukateCheckerApplication.java` | `EdukateCheckerApplication.kt` | `@SpringBootApplication` on an `object` or companion; use `runApplication<>()` |
-| `ChatClientConfig.java`          | `ChatClientConfig.kt`          | `@Configuration` class with `@Bean` fun                                        |
-| `RestClientConfig.java`          | `RestClientConfig.kt`          | `@Configuration` with `@Value` for timeout properties                          |
-| `RabbitConfig.java`              | `RabbitConfig.kt`              | `@Configuration`; `Queue` and `Binding` beans                                  |
-| `ChatService.java`               | `ChatService.kt`               | `fun interface` (single abstract method)                                       |
-| `ResultPublisher.java`           | `ResultPublisher.kt`           | `fun interface`                                                                |
-| `CheckerService.java`            | `CheckerService.kt`            | `@Service`; chains Mono operations                                             |
-| `MediaContentResolver.java`      | `MediaContentResolver.kt`      | `@Component`; idiomatic use of `map`, `flatMap`                                |
-| `SubmissionContextListener.java` | `SubmissionContextListener.kt` | `@Component` with `@RabbitListener`                                            |
-| `SpringAiChatService.java`       | `SpringAiChatService.kt`       | `@Service @Profile("!silent")`                                                 |
-| `NoopChatService.java`           | `NoopChatService.kt`           | `@Service @Profile("silent")`                                                  |
-| `RabbitResultPublisher.java`     | `RabbitResultPublisher.kt`     | `@Component`                                                                   |
-| `RawKeyReadOnlyStorage.java`     | `RawKeyReadOnlyStorage.kt`     | `@Component`                                                                   |
-| `CheckResultMessageUtils.java`   | `CheckResultMessageUtils.kt`   | Replace static utility class with top-level functions                          |
-
-### Migration notes
-
-- Remove all Lombok annotations (`@RequiredArgsConstructor`, `@Slf4j`, `@Value`): use constructor injection and
-  `private val log = LoggerFactory.getLogger(...)` or `KotlinLogging.logger {}`.
-- `CheckResultMessageUtils` static methods become top-level Kotlin functions (no wrapper class needed).
-- `ChatService` and `ResultPublisher` single-method interfaces become `fun interface` for SAM compatibility.
-- `RequestContext` init block validations (`require`) are already idiomatic Kotlin — keep them.
-- Delete the `src/main/java` source root after migration; keep only `src/main/kotlin`.
-- After migration run `./gradlew detekt` to catch style issues before committing.
-
----
-
 ## Testing
-
-### Setup
-
-Add to `build.gradle.kts` test dependencies (mirror `edukate-notifier`):
-
-- `spring-boot-starter-test`
-- `reactor-test`
-- `mockk`
-- `springmockk`
 
 ### Test layout
 

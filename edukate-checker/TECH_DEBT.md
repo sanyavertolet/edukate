@@ -1,6 +1,6 @@
 # Tech Debt & Improvement Notes — edukate-checker
 
-Observations made during the Java → Kotlin migration. These are not blockers but are worth addressing in follow-up work.
+Observations from the Java → Kotlin migration and ongoing development. These are not blockers but are worth addressing in follow-up work.
 
 ---
 
