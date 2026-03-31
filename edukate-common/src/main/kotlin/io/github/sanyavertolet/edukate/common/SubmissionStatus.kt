@@ -8,15 +8,13 @@ enum class SubmissionStatus {
     SUCCESS;
 
     companion object {
-        @JvmStatic
-        fun from(checkStatus: CheckStatus?) =
+        fun from(checkStatus: CheckStatus) =
             when (checkStatus) {
                 CheckStatus.SUCCESS -> SUCCESS
                 CheckStatus.INTERNAL_ERROR -> FAILED
                 CheckStatus.MISTAKE -> FAILED
-                else -> PENDING
             }
 
-        @JvmStatic fun best(lhs: SubmissionStatus, rhs: SubmissionStatus): SubmissionStatus = if (lhs < rhs) rhs else lhs
+        fun best(lhs: SubmissionStatus, rhs: SubmissionStatus): SubmissionStatus = if (lhs < rhs) rhs else lhs
     }
 }

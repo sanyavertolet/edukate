@@ -11,7 +11,6 @@ class SubmissionStatusTest {
         assertThat(SubmissionStatus.from(CheckStatus.SUCCESS)).isEqualTo(SubmissionStatus.SUCCESS)
         assertThat(SubmissionStatus.from(CheckStatus.MISTAKE)).isEqualTo(SubmissionStatus.FAILED)
         assertThat(SubmissionStatus.from(CheckStatus.INTERNAL_ERROR)).isEqualTo(SubmissionStatus.FAILED)
-        assertThat(SubmissionStatus.from(null)).isEqualTo(SubmissionStatus.PENDING)
     }
 
     @Test

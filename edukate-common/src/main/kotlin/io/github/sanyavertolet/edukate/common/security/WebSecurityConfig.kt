@@ -1,6 +1,5 @@
 package io.github.sanyavertolet.edukate.common.security
 
-import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails
 import io.github.sanyavertolet.edukate.common.utils.PublicEndpoints.asArray
 import io.github.sanyavertolet.edukate.common.utils.toEdukateUserDetails
 import org.springframework.context.annotation.Bean
@@ -44,7 +43,7 @@ class WebSecurityConfig {
         authenticationWebFilter.setServerAuthenticationConverter { exchange: ServerWebExchange ->
             exchange.request.headers
                 .toMono()
-                .mapNotNull<EdukateUserDetails> { it.toEdukateUserDetails() }
+                .mapNotNull { it.toEdukateUserDetails() }
                 .map { it.toPreAuthenticatedAuthenticationToken() }
         }
         return authenticationWebFilter
