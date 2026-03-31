@@ -15,17 +15,17 @@ class AuthUtilsTest {
 
     @Test
     fun `id extracts user id from authentication`() {
-        assertThat(AuthUtils.id(auth)).isEqualTo("user-1")
-        assertThat(AuthUtils.id(null)).isNull()
+        assertThat(auth.id()).isEqualTo("user-1")
+        assertThat(null.id()).isNull()
     }
 
     @Test
     fun `monoId emits user id for valid authentication`() {
-        StepVerifier.create(AuthUtils.monoId(auth)).expectNext("user-1").verifyComplete()
+        StepVerifier.create(auth.monoId()).expectNext("user-1").verifyComplete()
     }
 
     @Test
     fun `monoId emits nothing for null authentication`() {
-        StepVerifier.create(AuthUtils.monoId(null)).verifyComplete()
+        StepVerifier.create(null.monoId()).verifyComplete()
     }
 }
