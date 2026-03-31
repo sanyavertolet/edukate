@@ -18,7 +18,7 @@ interface NotificationRepository : ReactiveMongoRepository<BaseNotification, Str
     fun findAllByTargetUserIdAndIsRead(targetUserId: String, isRead: Boolean, pageable: Pageable): Flux<BaseNotification>
 
     @Query("{ 'targetUserId': ?0 }")
-    fun findAllByTargetUserId(targetUserId: String, pageable: Pageable): Flux<BaseNotification?>
+    fun findAllByTargetUserId(targetUserId: String, pageable: Pageable): Flux<BaseNotification>
 
     @Query($$"{ 'targetUserId': ?0, 'uuid': { $in: ?1 } }")
     fun findByTargetUserIdAndUuidIn(targetUserId: String, uuid: List<String>): Flux<BaseNotification>

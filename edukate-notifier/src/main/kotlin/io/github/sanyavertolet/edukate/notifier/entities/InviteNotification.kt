@@ -29,6 +29,8 @@ data class InviteNotification(
             bundleShareCode = bundleShareCode,
         )
 
+    override fun markAsRead() = copy(isRead = true)
+
     companion object {
         @JvmStatic
         fun fromCreationRequest(creationRequest: InviteNotificationCreateRequest) =

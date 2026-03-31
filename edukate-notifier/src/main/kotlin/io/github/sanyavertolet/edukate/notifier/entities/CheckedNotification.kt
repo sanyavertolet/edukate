@@ -30,6 +30,8 @@ data class CheckedNotification(
             status = status,
         )
 
+    override fun markAsRead() = copy(isRead = true)
+
     companion object {
         @JvmStatic
         fun fromCreationRequest(creationRequest: CheckedNotificationCreateRequest) =

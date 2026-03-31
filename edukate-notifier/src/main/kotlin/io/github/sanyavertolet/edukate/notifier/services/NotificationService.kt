@@ -50,7 +50,8 @@ class NotificationService(private val notificationRepository: NotificationReposi
         }
 
     fun gatherUserStatistics(authentication: Authentication?): Mono<NotificationStatistics> =
-        authentication.monoId()
+        authentication
+            .monoId()
             .flatMap { notificationRepository.gatherStatistics(it) }
             .defaultIfEmpty(NotificationStatistics())
 

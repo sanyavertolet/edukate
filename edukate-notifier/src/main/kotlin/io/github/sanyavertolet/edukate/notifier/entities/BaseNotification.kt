@@ -26,12 +26,7 @@ sealed class BaseNotification {
 
     abstract fun toDto(): BaseNotificationDto
 
-    fun markAsRead(): BaseNotification =
-        when (this) {
-            is SimpleNotification -> copy(isRead = true)
-            is InviteNotification -> copy(isRead = true)
-            is CheckedNotification -> copy(isRead = true)
-        }
+    abstract fun markAsRead(): BaseNotification
 
     companion object {
         @JvmStatic

@@ -29,6 +29,8 @@ data class SimpleNotification(
             source = source,
         )
 
+    override fun markAsRead() = copy(isRead = true)
+
     companion object {
         @JvmStatic
         fun fromCreationRequest(creationRequest: SimpleNotificationCreateRequest) =
