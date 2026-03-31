@@ -1,7 +1,8 @@
-# edukate-gateway: Testing Plan
+# edukate-gateway: Testing
 
-Tests will be written after the Java → Kotlin migration is complete. This document specifies which classes get tests,
-which test methods are needed, and what each method verifies.
+Unit and controller slice tests are implemented. `WebSecurityConfigTest` is a full-stack integration test that requires
+the backend, MongoDB, and RabbitMQ to be running — it is not part of the routine CI test run. This document covers
+both the implemented tests and their specifications.
 
 ## Infrastructure
 

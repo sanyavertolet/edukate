@@ -13,7 +13,6 @@ import org.springframework.web.server.WebFilter
 import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
 import reactor.util.context.Context
-import reactor.util.function.Tuples
 
 @Component
 class JwtAuthenticationFilter(
@@ -33,10 +32,10 @@ class JwtAuthenticationFilter(
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> =
         authCookieService
             .ejectToken(exchange)
-            .flatMap { Mono.justOrEmpty<EdukateUserDetails>(jwtTokenService.getUserDetailsFromToken(it)) }
+            .mapNotNull { jwtTokenService.getUserDetailsFromToken(it) }
             .map { it.id }
             .flatMap { userDetailsService.findById(it) }
-            .map { Tuples.of(modifyRequestHeaders(exchange, it), createAuthContext(it)) }
-            .defaultIfEmpty(Tuples.of(exchange, Context.empty()))
-            .flatMap { chain.filter(it.t1).contextWrite(it.t2) }
+            .map { modifyRequestHeaders(exchange, it) to createAuthContext(it) }
+            .defaultIfEmpty(exchange to Context.empty())
+            .flatMap { (exchange, context) -> chain.filter(exchange).contextWrite(context) }
 }
