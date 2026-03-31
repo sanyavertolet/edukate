@@ -3,16 +3,14 @@ package io.github.sanyavertolet.edukate.storage.keys
 import com.fasterxml.jackson.annotation.JsonTypeName
 
 @JsonTypeName("problem")
-class ProblemFileKey(val problemId: String, fileName: String) : FileKey(fileName) {
-    override fun equals(other: Any?) = other is ProblemFileKey && problemId == other.problemId
+data class ProblemFileKey(val problemId: String, override val fileName: String) : FileKey {
+    override fun toString() = prefix(problemId) + fileName
 
-    override fun hashCode() = problemId.hashCode()
+    override fun type() = "problem"
 
-    override fun toString() = "problems/$problemId/$fileName"
+    override fun owner(): String? = null
 
     companion object {
-        @JvmStatic fun of(problemId: String, fileName: String) = ProblemFileKey(problemId, fileName)
-
-        @JvmStatic fun prefix(problemId: String) = "problems/$problemId/"
+        fun prefix(problemId: String) = "problems/$problemId/"
     }
 }

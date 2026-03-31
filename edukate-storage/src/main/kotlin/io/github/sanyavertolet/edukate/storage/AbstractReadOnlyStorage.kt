@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 
 private const val HTTP_NOT_FOUND = 404
 
-abstract class AbstractReadOnlyStorage<Key : Any, Metadata>(
+abstract class AbstractReadOnlyStorage<Key : Any, Metadata : Any>(
     protected val s3AsyncClient: S3AsyncClient,
     protected val s3Presigner: S3Presigner,
     protected val s3Properties: S3Properties,

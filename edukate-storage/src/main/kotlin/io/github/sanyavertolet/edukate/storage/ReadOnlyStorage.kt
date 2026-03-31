@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-interface ReadOnlyStorage<Key : Any, Metadata> {
+interface ReadOnlyStorage<Key : Any, Metadata : Any> {
     fun metadata(key: Key): Mono<Metadata>
 
     fun getContent(key: Key): Flux<ByteBuffer>

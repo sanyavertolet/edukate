@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-interface Storage<Key : Any, Metadata> : ReadOnlyStorage<Key, Metadata> {
+interface Storage<Key : Any, Metadata : Any> : ReadOnlyStorage<Key, Metadata> {
     fun upload(key: Key, contentType: String, content: Flux<ByteBuffer>): Mono<Key> =
         content.collectList().flatMap { buffers ->
             val totalSize = buffers.sumOf { it.remaining() }.toLong()

@@ -12,12 +12,12 @@ class FileKeyTest {
     // Region 1 — FileKey.of() valid paths
     @Test
     fun `of() parses all valid path formats`() {
-        assertThat(FileKey.of("users/alice/tmp/report.pdf"))
+        assertThat(fileKey("users/alice/tmp/report.pdf"))
             .isInstanceOf(TempFileKey::class.java)
             .extracting({ (it as TempFileKey).userId }, { it.fileName })
             .containsExactly("alice", "report.pdf")
 
-        assertThat(FileKey.of("users/alice/submissions/prob1/sub1/answer.zip"))
+        assertThat(fileKey("users/alice/submissions/prob1/sub1/answer.zip"))
             .isInstanceOf(SubmissionFileKey::class.java)
             .satisfies({ key ->
                 val k = key as SubmissionFileKey
@@ -27,12 +27,12 @@ class FileKeyTest {
                 assertThat(k.fileName).isEqualTo("answer.zip")
             })
 
-        assertThat(FileKey.of("problems/prob1/statement.pdf"))
+        assertThat(fileKey("problems/prob1/statement.pdf"))
             .isInstanceOf(ProblemFileKey::class.java)
             .extracting({ (it as ProblemFileKey).problemId }, { it.fileName })
             .containsExactly("prob1", "statement.pdf")
 
-        assertThat(FileKey.of("results/prob1/result.json"))
+        assertThat(fileKey("results/prob1/result.json"))
             .isInstanceOf(ResultFileKey::class.java)
             .extracting({ (it as ResultFileKey).problemId }, { it.fileName })
             .containsExactly("prob1", "result.json")
@@ -40,30 +40,30 @@ class FileKeyTest {
 
     @Test
     fun `of() normalises leading slash and double slashes`() {
-        assertThat(FileKey.of("/users/alice/tmp/file.txt")).isInstanceOf(TempFileKey::class.java)
-        assertThat(FileKey.of("problems//prob1//file.txt")).isInstanceOf(ProblemFileKey::class.java)
+        assertThat(fileKey("/users/alice/tmp/file.txt")).isInstanceOf(TempFileKey::class.java)
+        assertThat(fileKey("problems//prob1//file.txt")).isInstanceOf(ProblemFileKey::class.java)
     }
 
     // Region 2 — FileKey.of() invalid paths
     @Test
     fun `of() throws for invalid paths`() {
-        assertThatIllegalArgumentException().isThrownBy { FileKey.of("") }
-        assertThatIllegalArgumentException().isThrownBy { FileKey.of("   ") }
-        assertThatIllegalArgumentException().isThrownBy { FileKey.of("users/alice/tmp") }
-        assertThatIllegalArgumentException().isThrownBy { FileKey.of("unknown/prob1/file.txt") }
+        assertThatIllegalArgumentException().isThrownBy { fileKey("") }
+        assertThatIllegalArgumentException().isThrownBy { fileKey("   ") }
+        assertThatIllegalArgumentException().isThrownBy { fileKey("users/alice/tmp") }
+        assertThatIllegalArgumentException().isThrownBy { fileKey("unknown/prob1/file.txt") }
     }
 
     // Region 3 — toString() and round-trip
     @Test
     fun `toString() produces correct paths and round-trip via of() preserves type and fields`() {
-        assertThat(TempFileKey.of("alice", "file.txt").toString()).isEqualTo("users/alice/tmp/file.txt")
-        assertThat(ProblemFileKey.of("prob1", "stmt.pdf").toString()).isEqualTo("problems/prob1/stmt.pdf")
-        assertThat(ResultFileKey.of("prob1", "res.json").toString()).isEqualTo("results/prob1/res.json")
-        assertThat(SubmissionFileKey.of("alice", "prob1", "sub1", "ans.zip").toString())
+        assertThat(TempFileKey("alice", "file.txt").toString()).isEqualTo("users/alice/tmp/file.txt")
+        assertThat(ProblemFileKey("prob1", "stmt.pdf").toString()).isEqualTo("problems/prob1/stmt.pdf")
+        assertThat(ResultFileKey("prob1", "res.json").toString()).isEqualTo("results/prob1/res.json")
+        assertThat(SubmissionFileKey("alice", "prob1", "sub1", "ans.zip").toString())
             .isEqualTo("users/alice/submissions/prob1/sub1/ans.zip")
 
-        val original = SubmissionFileKey.of("bob", "prob2", "sub2", "code.py")
-        val roundTripped = FileKey.of(original.toString())
+        val original = SubmissionFileKey("bob", "prob2", "sub2", "code.py")
+        val roundTripped = fileKey(original.toString())
         assertThat(roundTripped).isInstanceOf(SubmissionFileKey::class.java).isEqualTo(original)
     }
 
@@ -79,29 +79,29 @@ class FileKeyTest {
     // Region 5 — typeOf() and ownerOf()
     @Test
     fun `typeOf() and ownerOf() return correct values for each subtype`() {
-        assertThat(FileKey.typeOf(TempFileKey.of("alice", "f"))).isEqualTo("tmp")
-        assertThat(FileKey.typeOf(SubmissionFileKey.of("alice", "p", "s", "f"))).isEqualTo("submission")
-        assertThat(FileKey.typeOf(ProblemFileKey.of("prob1", "f"))).isEqualTo("problem")
-        assertThat(FileKey.typeOf(ResultFileKey.of("prob1", "f"))).isEqualTo("result")
+        assertThat(TempFileKey("alice", "f").type()).isEqualTo("tmp")
+        assertThat(SubmissionFileKey("alice", "p", "s", "f").type()).isEqualTo("submission")
+        assertThat(ProblemFileKey("prob1", "f").type()).isEqualTo("problem")
+        assertThat(ResultFileKey("prob1", "f").type()).isEqualTo("result")
 
-        assertThat(FileKey.ownerOf(TempFileKey.of("alice", "f"))).isEqualTo("alice")
-        assertThat(FileKey.ownerOf(SubmissionFileKey.of("alice", "p", "s", "f"))).isEqualTo("alice")
-        assertThat(FileKey.ownerOf(ProblemFileKey.of("prob1", "f"))).isNull()
-        assertThat(FileKey.ownerOf(ResultFileKey.of("prob1", "f"))).isNull()
+        assertThat(TempFileKey("alice", "f").owner()).isEqualTo("alice")
+        assertThat(SubmissionFileKey("alice", "p", "s", "f").owner()).isEqualTo("alice")
+        assertThat(ProblemFileKey("prob1", "f").owner()).isNull()
+        assertThat(ResultFileKey("prob1", "f").owner()).isNull()
     }
 
     // Region 6 — equals and hashCode
     @Test
     fun `equals() and hashCode() use identity fields only`() {
-        assertThat(ProblemFileKey.of("prob1", "a.pdf")).isEqualTo(ProblemFileKey.of("prob1", "b.pdf"))
-        assertThat(ProblemFileKey.of("prob1", "a.pdf")).hasSameHashCodeAs(ProblemFileKey.of("prob1", "b.pdf"))
-        assertThat(ProblemFileKey.of("prob1", "a.pdf")).isNotEqualTo(ProblemFileKey.of("prob2", "a.pdf"))
+        assertThat(ProblemFileKey("prob1", "a.pdf")).isEqualTo(ProblemFileKey("prob1", "b.pdf"))
+        assertThat(ProblemFileKey("prob1", "a.pdf")).hasSameHashCodeAs(ProblemFileKey("prob1", "b.pdf"))
+        assertThat(ProblemFileKey("prob1", "a.pdf")).isNotEqualTo(ProblemFileKey("prob2", "a.pdf"))
 
-        assertThat(TempFileKey.of("alice", "a.txt")).isEqualTo(TempFileKey.of("alice", "b.txt"))
-        assertThat(TempFileKey.of("alice", "a.txt")).isNotEqualTo(TempFileKey.of("bob", "a.txt"))
+        assertThat(TempFileKey("alice", "a.txt")).isEqualTo(TempFileKey("alice", "b.txt"))
+        assertThat(TempFileKey("alice", "a.txt")).isNotEqualTo(TempFileKey("bob", "a.txt"))
 
-        assertThat(SubmissionFileKey.of("u", "p", "s", "a")).isEqualTo(SubmissionFileKey.of("u", "p", "s", "b"))
-        assertThat(SubmissionFileKey.of("u", "p", "s", "a")).isNotEqualTo(SubmissionFileKey.of("u", "p", "x", "a"))
+        assertThat(SubmissionFileKey("u", "p", "s", "a")).isEqualTo(SubmissionFileKey("u", "p", "s", "b"))
+        assertThat(SubmissionFileKey("u", "p", "s", "a")).isNotEqualTo(SubmissionFileKey("u", "p", "x", "a"))
     }
 
     // Region 7 — Jackson polymorphic serialization
@@ -109,10 +109,10 @@ class FileKeyTest {
     fun `each subtype serializes with correct _type and survives polymorphic round-trip`() {
         val keys: List<FileKey> =
             listOf(
-                TempFileKey.of("alice", "file.txt"),
-                ProblemFileKey.of("prob1", "stmt.pdf"),
-                ResultFileKey.of("prob1", "res.json"),
-                SubmissionFileKey.of("alice", "prob1", "sub1", "ans.zip"),
+                TempFileKey("alice", "file.txt"),
+                ProblemFileKey("prob1", "stmt.pdf"),
+                ResultFileKey("prob1", "res.json"),
+                SubmissionFileKey("alice", "prob1", "sub1", "ans.zip"),
             )
         val expectedTypes = listOf("tmp", "problem", "result", "submission")
 

@@ -14,7 +14,7 @@ import software.amazon.awssdk.services.s3.model.ObjectIdentifier
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
-abstract class AbstractStorage<Key : Any, Metadata>(
+abstract class AbstractStorage<Key : Any, Metadata : Any>(
     s3AsyncClient: S3AsyncClient,
     s3Presigner: S3Presigner,
     s3Properties: S3Properties,
