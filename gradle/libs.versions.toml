@@ -1,10 +1,10 @@
 [versions]
-spring-boot = "3.4.2"
+spring-boot = "3.5.13"
 mockk = "1.14.2"
 springmockk = "4.0.2"
 flapdoodle = "4.24.0"
 spring-cloud = "4.2.0"
-spring-ai = "1.1.0-RC1"
+spring-ai = "1.1.4"
 spring-dependency = "1.1.7"
 aws = "2.25.6"
 jjwt = "0.12.6"
@@ -61,7 +61,6 @@ reactor-kotlin-extensions = { module = "io.projectreactor.kotlin:reactor-kotlin-
 fasterxml-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
-lombok = { module = "org.projectlombok:lombok" }
 snakeyaml = { module = "org.yaml:snakeyaml" }
 
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
