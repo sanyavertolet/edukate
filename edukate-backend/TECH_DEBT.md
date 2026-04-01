@@ -1,7 +1,7 @@
 # Tech Debt & Improvement Notes — edukate-backend
 
-This module has 41 Java files pending Kotlin migration. Issues specific to the Java→Kotlin
-conversion are noted separately from general design debt.
+This module is fully Kotlin. The items below are design, correctness, and observability issues
+identified during and after the Java → Kotlin migration.
 
 ---
 
@@ -9,7 +9,7 @@ conversion are noted separately from general design debt.
 
 ### 1. `.block()` in a reactive RabbitMQ listener
 
-**File:** `listeners/CheckResultMessageListener.java`
+**File:** `listeners/CheckResultMessageListener.kt`
 
 ```java
 .block(); // Blocks thread pool on RabbitMQ listener
@@ -22,7 +22,7 @@ handle it.
 
 ### 2. Fire-and-forget `.subscribe()` in save listener
 
-**File:** `savelisteners/SubmissionAfterSaveListener.java`
+**File:** `savelisteners/SubmissionAfterSaveListener.kt`
 
 ```java
 .subscribe(); // No error handling, fire-and-forget
@@ -40,7 +40,7 @@ listener that returns `Mono<Void>`.
 
 ### 3. Content-type hardcoded to `IMAGE_JPEG` for all temp uploads
 
-**File:** `controllers/files/TempFileController.java`
+**File:** `controllers/files/TempFileController.kt`
 
 ```java
 // TODO: detect content type???
@@ -53,7 +53,7 @@ when served. Parse the multipart `ContentType` header from the upload request.
 
 ### 4. Share code uniqueness is not guaranteed
 
-**File:** `services/ShareCodeGenerator.java`
+**File:** `services/ShareCodeGenerator.kt`
 
 The generator produces a random 10-character code but does not check if the code already exists
 in the database before returning it. Collisions are improbable but not impossible, and no retry
@@ -71,7 +71,7 @@ This magic value should be configurable or at least a named constant.
 
 ### 6. `BundlePermissionEvaluator` returns `Boolean?` instead of `Boolean`
 
-**File:** `permissions/BundlePermissionEvaluator.java`
+**File:** `permissions/BundlePermissionEvaluator.kt`
 
 Spring Security expects `boolean`; returning the boxed `Boolean` creates a potential
 `NullPointerException` if the method returns `null`. Change return types to primitive `boolean`.
@@ -82,7 +82,7 @@ Spring Security expects `boolean`; returning the boxed `Boolean` creates a poten
 
 ### 7. `SubmissionAfterSaveListener` has too many responsibilities
 
-**File:** `savelisteners/SubmissionAfterSaveListener.java`
+**File:** `savelisteners/SubmissionAfterSaveListener.kt`
 
 The listener handles MongoDB event subscription, builds an aggregation pipeline (90+ lines),
 performs an upsert, and dispatches notifications. The aggregation pipeline belongs in
@@ -90,7 +90,7 @@ performs an upsert, and dispatches notifications. The aggregation pipeline belon
 
 ### 8. `FileManager` mixes storage and metadata concerns
 
-**File:** `services/files/FileManager.java`
+**File:** `services/files/FileManager.kt`
 
 A single class handles S3 upload, S3 deletion, presigned URL generation, database metadata
 persistence, and batch existence checks. Split into a `StorageService` (S3 operations) and a
@@ -111,7 +111,7 @@ URLs), and generate the latter at query time.
 
 ### 10. Permission evaluators rely on `UserRole` enum declaration order
 
-**File:** `permissions/BundlePermissionEvaluator.java`, `permissions/SubmissionPermissionEvaluator.java`
+**File:** `permissions/BundlePermissionEvaluator.kt`, `permissions/SubmissionPermissionEvaluator.kt`
 
 Role comparison uses `.compareTo()`, which is positional. Inserting a new role between existing
 ones changes implicit permission levels silently. Use an explicit `weight: Int` property on
@@ -142,14 +142,14 @@ traced end-to-end from creation through checking to result delivery in logs.
 
 ### 13. Temp file upload has no size or type enforcement
 
-**File:** `controllers/files/TempFileController.java`
+**File:** `controllers/files/TempFileController.kt`
 
 No maximum file size is enforced server-side (beyond the global Spring codec limit). No MIME type
 whitelist. Accepting arbitrary content at this endpoint is a risk.
 
 ### 14. `changeProblems()` does not validate problem IDs exist
 
-**File:** `services/BundleService.java`
+**File:** `services/BundleService.kt`
 
 Non-existent problem IDs can be added to a bundle silently. Add a repository existence check
 before persisting the change.

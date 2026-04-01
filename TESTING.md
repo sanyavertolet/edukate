@@ -19,16 +19,16 @@
 
 ## Module Test Status
 
-| Module              | Tests | Status     | Scope                                                 |
-|:--------------------|------:|:-----------|:------------------------------------------------------|
-| `edukate-auth`      |    22 | ✅ Done     | Unit — services, cookie flags, JWT round-trips        |
-| `edukate-notifier`  |    74 | ✅ Done     | Unit + slice + repository                             |
-| `edukate-common`    |    25 | ✅ Done     | Unit — domain models, enums, security utils           |
-| `edukate-storage`   |     7 | ✅ Done     | Unit — `FileKey` parsing, serialization, equality     |
-| `edukate-backend`   |     0 | 🔲 Planned | Full suite planned; mirrors `edukate-notifier` layers |
-| `edukate-gateway`   |     0 | 🔲 Planned | Test plan in `edukate-gateway/TESTING.md`             |
-| `edukate-checker`   |     0 | 🔲 Planned | Test plan in `edukate-checker/TESTING.md`             |
-| `edukate-messaging` |     0 | —          | Topology constants only; tested via consumers         |
+| Module              | Tests | Status | Scope                                                          |
+|:--------------------|------:|:-------|:---------------------------------------------------------------|
+| `edukate-auth`      |    22 | ✅ Done | Unit — services, cookie flags, JWT round-trips                 |
+| `edukate-notifier`  |    74 | ✅ Done | Unit + slice + repository                                      |
+| `edukate-common`    |    25 | ✅ Done | Unit — domain models, enums, security utils                    |
+| `edukate-storage`   |     7 | ✅ Done | Unit — `FileKey` parsing, serialization, equality              |
+| `edukate-backend`   |    89 | ✅ Done | Unit + slice + repository; integration tests planned           |
+| `edukate-gateway`   |    35 | ✅ Done | Unit + slice — auth, JWT filter, services; integration planned |
+| `edukate-checker`   |    54 | ✅ Done | Pure unit + MockK — domain, services, components, config       |
+| `edukate-messaging` |     0 | —      | Topology constants only; tested via consumers                  |
 
 ---
 
@@ -92,9 +92,9 @@ Pure unit tests — no Spring context loaded.
 
 Pure unit tests — no Spring context, no real S3.
 
-| File             | Tests | What it covers                                                                                                                                                                                             |
-|:-----------------|------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `FileKeyTest.kt` |     7 | `FileKey.of()` valid/invalid paths, leading-slash normalisation, `toString()` round-trips, `prefix()`, `typeOf()`/`ownerOf()`, `equals`/`hashCode` identity fields, Jackson `_type` polymorphic round-trip |
+| File             | Tests | What it covers                                                                                                                                                                                                                                              |
+|:-----------------|------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `FileKeyTest.kt` |     7 | `fileKey()` parser for all valid/invalid path formats, leading-slash and double-slash normalisation, `toString()` round-trips, `prefix()` for all subtypes, `type()`/`owner()`, `equals`/`hashCode` identity fields, Jackson `_type` polymorphic round-trip |
 
 **Patterns:** Direct instantiation; `ObjectMapper` with `registerKotlinModule()`; AssertJ `extracting`, `satisfies`, `hasSameHashCodeAs`.
 
@@ -102,43 +102,65 @@ Pure unit tests — no Spring context, no real S3.
 
 ## edukate-backend
 
-No tests. Full suite is planned. Intended layers mirror `edukate-notifier`:
+Layered tests mirroring `edukate-notifier`: pure unit → Spring slice → embedded MongoDB.
 
-- Repository tests with Flapdoodle embedded MongoDB
-- Service tests with MockK
-- Controller tests with `@WebFluxTest` + `WebTestClient`
+| File                                   | Tests | What it covers                                                                                        |
+|:---------------------------------------|------:|:------------------------------------------------------------------------------------------------------|
+| `BackendFixtures.kt`                   |     — | Builders for `Bundle`, `Submission`, `CheckResult`, `User`, `mockAuthentication`                      |
+| `BundleTest.kt`                        |    15 | All `Bundle` entity methods: membership, invites, role mutation, DTO conversion                       |
+| `CheckResultTest.kt`                   |     7 | `self()`, `fromCheckResultMessage()`, `toCheckResultDto()`, `toCheckResultInfo()`                     |
+| `BundlePermissionEvaluatorTest.kt`     |    14 | `hasRole`, `hasRoleHigherThan`, `hasInvitePermission`, `hasJoinPermission`, `hasChangeRolePermission` |
+| `SubmissionPermissionEvaluatorTest.kt` |     3 | `isOwner` — owner match, mismatch, empty userId                                                       |
+| `BundleServiceTest.kt`                 |    15 | Join/leave/invite/visibility/problems — happy paths and error cases                                   |
+| `CheckResultServiceTest.kt`            |     6 | `saveAndUpdateSubmission`, `findById`, `findAllBySubmissionId`                                        |
+| `SubmissionControllerTest.kt`          |     8 | `GET /by-id/{id}`, `GET /my`, `GET /all` — WebFlux slice                                              |
+| `BundleRepositoryTest.kt`              |     9 | `findBundleByShareCode`, `findBundlesByIsPublic`, `findBundlesByUserRoleIn`                           |
+
+**Patterns:**
+
+- Entity/permission tests: no Spring context, direct instantiation.
+- Service tests: `mockk()` for all repositories and collaborators, `StepVerifier` for reactive assertions.
+- Controller tests: `@WebFluxTest` + `@Import(NoopWebSecurityConfig::class)` + `@MockkBean`.
+- Repository tests: `@DataMongoTest` + `@Import(MongoConfig::class)` + Flapdoodle embedded MongoDB; `@BeforeEach` deletes all documents for isolation.
 
 ---
 
 ## edukate-gateway
 
-No tests yet. Test plan is documented in `edukate-gateway/TESTING.md`. Planned coverage:
+Unit and controller slice tests. `WebSecurityConfigTest` requires full-stack infra (backend + MongoDB + RabbitMQ) and is not part of the routine CI run.
 
-- `JwtAuthenticationFilter` — valid/expired/missing token paths
-- `AuthController` — sign-in, sign-up, sign-out flows
-- Security integration via `@SpringBootTest` + `WebTestClient`
+| File                             | Tests | What it covers                                                                      |
+|:---------------------------------|------:|:------------------------------------------------------------------------------------|
+| `GatewayFixtures.kt`             |     — | Builders: `signInRequest`, `signUpRequest`, `userCredentials`, `mockAuthentication` |
+| `AuthServiceTest.kt`             |     6 | `signIn`/`signUp` — happy paths, wrong password, user not found, conflict           |
+| `BackendServiceTest.kt`          |     6 | `saveUser`, `getUserByName`, `getUserById` — success and 404/5xx cases              |
+| `UserDetailsServiceTest.kt`      |     6 | `findByUsername`, `findById`, `isNotUserPresent`, `create` delegations              |
+| `JwtAuthenticationFilterTest.kt` |     4 | Valid JWT → headers set; absent/invalid token → chain unchanged                     |
+| `AuthControllerTest.kt`          |    13 | `POST /auth/sign-in`, `/sign-up`, `/sign-out` — all status codes via `@WebFluxTest` |
+| `WebSecurityConfigTest.kt`       |     5 | Full-stack security rules — requires running infra                                  |
+
+**Patterns:** No Spring context in unit tests; `@WebFluxTest` + `@Import(NoopWebSecurityConfig::class)` + `@MockkBean`
+for controller slices; `MockServerWebExchange` for filter tests.
 
 ---
 
 ## edukate-checker
 
-No tests yet. Kotlin migration complete. Full test plan is in `edukate-checker/TESTING.md`.
+Pure unit tests, all passing. No Spring context in any test.
 
-Planned layers:
-
-| File                               | Strategy  | What it covers                                                          |
-|------------------------------------|-----------|-------------------------------------------------------------------------|
-| `CheckerFixtures.kt`               | —         | Shared builders for all test files                                      |
-| `RequestContextTest.kt`            | Pure unit | `init` validation — blank text, empty images                            |
-| `ModelResponseTest.kt`             | Pure unit | Default values, Jackson round-trip, `@JsonPropertyDescription` presence |
-| `CheckResultMessageUtilsTest.kt`   | Pure unit | Trust clamping, `errorType` enforcement on `SUCCESS`                    |
-| `NoopChatServiceTest.kt`           | Pure unit | Stub response values, `@PostConstruct` log                              |
-| `RabbitConfigTest.kt`              | Pure unit | Queue name, durability, binding routing key                             |
-| `CheckerServiceTest.kt`            | MockK     | Orchestration, error fallback via `onErrorReturn`                       |
-| `SpringAiChatServiceTest.kt`       | MockK     | `ChatClient` builder chain, null entity, `boundedElastic`               |
-| `RabbitResultPublisherTest.kt`     | MockK     | `convertAndSend` args, retry on transient failure                       |
-| `MediaContentResolverTest.kt`      | MockK     | Byte assembly, `MediaType` propagation, S3 error                        |
-| `SubmissionContextListenerTest.kt` | MockK     | Delegation, `.block()` completes, error does not throw                  |
+| File                               | Tests | What it covers                                                          |
+|:-----------------------------------|------:|:------------------------------------------------------------------------|
+| `CheckerFixtures.kt`               |     — | Shared builders for all test files                                      |
+| `RequestContextTest.kt`            |     5 | `init` validation — blank text, empty images                            |
+| `ModelResponseTest.kt`             |     4 | Default values, Jackson round-trip, `@JsonPropertyDescription` presence |
+| `CheckResultMessageUtilsTest.kt`   |    10 | Trust clamping, `errorType` enforcement on `SUCCESS`                    |
+| `NoopChatServiceTest.kt`           |     4 | Stub response values, `@PostConstruct` log                              |
+| `RabbitConfigTest.kt`              |     4 | Queue name, durability, binding routing key                             |
+| `CheckerServiceTest.kt`            |     7 | Orchestration, error fallback via `onErrorReturn`                       |
+| `SpringAiChatServiceTest.kt`       |     6 | `ChatClient` builder chain, null entity, `boundedElastic`               |
+| `RabbitResultPublisherTest.kt`     |     5 | `convertAndSend` args, retry on transient failure                       |
+| `MediaContentResolverTest.kt`      |     5 | Byte assembly, `MediaType` propagation, S3 error                        |
+| `SubmissionContextListenerTest.kt` |     4 | Delegation, `.block()` completes, error does not throw                  |
 
 **Patterns:** `StepVerifier` for all `Mono`/`Flux` assertions; MockK for all dependencies;
 no Spring context in unit tests; no real OpenAI or S3 calls.

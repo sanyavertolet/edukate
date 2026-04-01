@@ -1,7 +1,7 @@
-# edukate-backend: Testing Plan
+# edukate-backend: Testing
 
-Tests will be written after the Java → Kotlin migration is complete. This document specifies which classes get tests,
-which test methods are needed, and what each method verifies.
+Core unit, slice, and repository tests are implemented. Integration tests (full `@SpringBootTest` + Testcontainers) are
+planned but not yet written. This document covers both implemented tests and the integration test plan.
 
 ## Infrastructure
 

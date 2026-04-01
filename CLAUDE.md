@@ -101,8 +101,5 @@ docker compose up -d
   Both tools are wired into CI — see `.github/workflows/detekt.yml` and `.github/workflows/ktfmt.yml`.
 - **ESLint** with TypeScript strict mode for the frontend. `tsconfig.app.json` has `noUnusedLocals` and
   `noUnusedParameters` enabled.
-- Java toolchain is set to Java 23 across all modules.
-
-## Java → Kotlin Migration
-
-Several modules still contain Java source files. See `MIGRATION.md` for the full status and migration guidelines.
+- Java toolchain is set to Java 21 across all modules.
+- The entire codebase is Kotlin — no Java source files remain.
