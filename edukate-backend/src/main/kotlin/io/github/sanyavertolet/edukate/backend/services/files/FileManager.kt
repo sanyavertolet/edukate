@@ -78,7 +78,7 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
             .metadata(key)
             .timeout(DEFAULT_TIMEOUT)
             .doOnError { e -> log.error("exists check failed for key={}", key, e) }
-            .thenReturn(true)
+            .map { true }
             .defaultIfEmpty(false)
 
     fun doFilesExist(keys: List<FileKey>): Mono<Boolean> =

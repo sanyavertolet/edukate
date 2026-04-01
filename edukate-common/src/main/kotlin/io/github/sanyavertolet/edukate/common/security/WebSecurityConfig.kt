@@ -1,6 +1,6 @@
 package io.github.sanyavertolet.edukate.common.security
 
-import io.github.sanyavertolet.edukate.common.utils.PublicEndpoints.asArray
+import io.github.sanyavertolet.edukate.common.utils.PublicEndpoints
 import io.github.sanyavertolet.edukate.common.utils.toEdukateUserDetails
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,7 +26,9 @@ class WebSecurityConfig {
     @Bean
     fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain =
         http
-            .authorizeExchange { it.pathMatchers(*asArray()).permitAll().pathMatchers("/api/**").authenticated() }
+            .authorizeExchange {
+                it.pathMatchers(*PublicEndpoints.asArray()).permitAll().pathMatchers("/api/**").authenticated()
+            }
             .addFilterAt(edukateUserPreAuthenticatedProcessingWebFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
             .exceptionHandling { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }
             .csrf { it.disable() }
