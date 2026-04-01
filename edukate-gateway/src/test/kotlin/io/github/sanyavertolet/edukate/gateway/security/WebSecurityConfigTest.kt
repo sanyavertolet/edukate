@@ -18,14 +18,14 @@ class WebSecurityConfigTest {
 
     @Test
     fun `sign-in endpoint is accessible without authentication`() {
-        // Should not be 401; missing body yields 400
-        webTestClient.post().uri("/api/v1/auth/sign-in").exchange().expectStatus().isEqualTo(400)
+        // Should not be 401; missing body yields 400 (validation failure, not security rejection)
+        webTestClient.post().uri("/api/v1/auth/sign-in").exchange().expectStatus().isBadRequest
     }
 
     @Test
     fun `sign-up endpoint is accessible without authentication`() {
-        // Should not be 401; missing body yields 400
-        webTestClient.post().uri("/api/v1/auth/sign-up").exchange().expectStatus().isEqualTo(400)
+        // Should not be 401; missing body yields 400 (validation failure, not security rejection)
+        webTestClient.post().uri("/api/v1/auth/sign-up").exchange().expectStatus().isBadRequest
     }
 
     @Test

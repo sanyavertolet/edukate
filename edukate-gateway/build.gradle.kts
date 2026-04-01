@@ -55,6 +55,6 @@ dependencies {
     testImplementation(libs.springmockk)
 }
 
-tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
