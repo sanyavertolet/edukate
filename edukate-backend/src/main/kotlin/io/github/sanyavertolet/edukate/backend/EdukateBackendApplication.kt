@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @ConfigurationPropertiesScan(basePackages = ["io.github.sanyavertolet.edukate.storage.configs"])
 class EdukateBackendApplication
 
+@Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     runApplication<EdukateBackendApplication>(*args)
 }

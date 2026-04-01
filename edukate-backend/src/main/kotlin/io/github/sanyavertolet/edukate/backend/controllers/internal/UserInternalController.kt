@@ -38,5 +38,5 @@ class UserInternalController(private val userService: UserService) {
     fun notifyAllUsers(
         @RequestBody body: Map<String, String>,
         @RequestParam(required = false, defaultValue = "ACTIVE") status: UserStatus,
-    ): Mono<Long> = userService.notifyAllUsersWithStatus(body["title"], body["message"]!!, status)
+    ): Mono<Long> = userService.notifyAllUsersWithStatus(body["title"], requireNotNull(body["message"]), status)
 }

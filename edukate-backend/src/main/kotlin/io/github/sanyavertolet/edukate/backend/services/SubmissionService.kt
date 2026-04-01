@@ -42,7 +42,7 @@ class SubmissionService(
     fun saveSubmission(userId: String, submissionRequest: CreateSubmissionRequest): Mono<Submission> =
         submissionRepository.save(Submission.of(submissionRequest.problemId, userId)).flatMap { submission ->
             submissionFileService
-                .moveSubmissionFiles(userId, submission.id!!, submissionRequest)
+                .moveSubmissionFiles(userId, requireNotNull(submission.id), submissionRequest)
                 .then(
                     Flux.fromIterable(submissionRequest.fileNames)
                         .map { fileName ->

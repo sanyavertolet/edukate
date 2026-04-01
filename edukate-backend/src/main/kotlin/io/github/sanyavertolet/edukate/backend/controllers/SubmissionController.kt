@@ -189,7 +189,11 @@ class SubmissionController(
             .findUserByName(username)
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User $username not found")))
             .flatMapMany { user ->
-                submissionService.findSubmissionsByProblemIdAndUserId(problemId, user.id!!, sortedPageable(page, size))
+                submissionService.findSubmissionsByProblemIdAndUserId(
+                    problemId,
+                    requireNotNull(user.id),
+                    sortedPageable(page, size),
+                )
             }
             .flatMapSequential { submissionService.prepareDto(it) }
 

@@ -348,7 +348,7 @@ class BundleController(
             .zipWhen(
                 { invitee ->
                     val requesterId = requireNotNull(authentication.id())
-                    bundleService.inviteUser(shareCode, requesterId, invitee.id!!)
+                    bundleService.inviteUser(shareCode, requesterId, requireNotNull(invitee.id))
                 },
                 { invitee, bundle -> prepareNotification(invitee, bundle, authentication.name) },
             )
@@ -407,7 +407,7 @@ class BundleController(
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User $inviteeName not found")))
             .flatMap { invitee ->
                 val requesterId = requireNotNull(authentication.id())
-                bundleService.expireInvite(shareCode, requesterId, invitee.id!!)
+                bundleService.expireInvite(shareCode, requesterId, requireNotNull(invitee.id))
             }
             .thenReturn("Invitation for user $inviteeName has been expired in bundle $shareCode")
 
