@@ -29,8 +29,7 @@ class ProblemControllerTest {
 
     @MockkBean private lateinit var problemService: ProblemService
 
-    private fun metadata(id: String = "1.0.0") =
-        ProblemMetadata(id, false, emptyList(), Problem.Status.NOT_SOLVED)
+    private fun metadata(id: String = "1.0.0") = ProblemMetadata(id, false, emptyList(), Problem.Status.NOT_SOLVED)
 
     private fun dto(@Suppress("SameParameterValue") id: String = "1.0.0") =
         ProblemDto(id, false, emptyList(), "Problem text", emptyList(), emptyList(), Problem.Status.NOT_SOLVED, false)
@@ -48,8 +47,10 @@ class ProblemControllerTest {
             .get()
             .uri("/api/v1/problems")
             .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectStatus()
+            .isOk
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
             .expectBodyList<ProblemMetadata>()
             .hasSize(2)
     }
@@ -62,13 +63,7 @@ class ProblemControllerTest {
     fun `count returns problem count`() {
         every { problemService.countProblems() } returns Mono.just(7L)
 
-        webTestClient
-            .get()
-            .uri("/api/v1/problems/count")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody<Long>()
-            .isEqualTo(7L)
+        webTestClient.get().uri("/api/v1/problems/count").exchange().expectStatus().isOk.expectBody<Long>().isEqualTo(7L)
     }
 
     // endregion
@@ -83,10 +78,13 @@ class ProblemControllerTest {
             .get()
             .uri("/api/v1/problems/by-prefix?prefix=1.")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$[0]").isEqualTo("1.0.0")
-            .jsonPath("$[1]").isEqualTo("1.1.0")
+            .jsonPath("$[0]")
+            .isEqualTo("1.0.0")
+            .jsonPath("$[1]")
+            .isEqualTo("1.1.0")
     }
 
     // endregion
@@ -103,10 +101,13 @@ class ProblemControllerTest {
             .get()
             .uri("/api/v1/problems/1.0.0")
             .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectStatus()
+            .isOk
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
-            .jsonPath("$.id").isEqualTo("1.0.0")
+            .jsonPath("$.id")
+            .isEqualTo("1.0.0")
     }
 
     @Test
@@ -128,7 +129,8 @@ class ProblemControllerTest {
             .get()
             .uri("/api/v1/problems/random")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody<String>()
             .isEqualTo("2.3.4")
     }

@@ -75,9 +75,7 @@ class SubmissionRepositoryTest {
 
         val pageable = PageRequest.of(0, 10)
 
-        StepVerifier.create(repository.findAllByUserId("user-1", pageable))
-            .expectNextCount(2)
-            .verifyComplete()
+        StepVerifier.create(repository.findAllByUserId("user-1", pageable)).expectNextCount(2).verifyComplete()
     }
 
     @Test
@@ -101,7 +99,9 @@ class SubmissionRepositoryTest {
 
         val pageable = PageRequest.of(0, 10)
 
-        StepVerifier.create(repository.findAllByStatusIn(listOf(SubmissionStatus.SUCCESS, SubmissionStatus.FAILED), pageable))
+        StepVerifier.create(
+                repository.findAllByStatusIn(listOf(SubmissionStatus.SUCCESS, SubmissionStatus.FAILED), pageable)
+            )
             .expectNextCount(2)
             .verifyComplete()
     }

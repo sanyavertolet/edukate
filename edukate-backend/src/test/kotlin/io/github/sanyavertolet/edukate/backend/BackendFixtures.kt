@@ -100,8 +100,12 @@ object BackendFixtures {
         status: UserStatus = UserStatus.ACTIVE,
     ) = User(id = id, name = name, email = email, token = token, roles = roles, status = status)
 
-    fun mockAuthentication(userId: String = "user-1", username: String = "testuser"): Authentication {
-        val userDetails = EdukateUserDetails(userId, username, emptySet(), UserStatus.ACTIVE, "token")
+    fun mockAuthentication(
+        userId: String = "user-1",
+        username: String = "testuser",
+        roles: Set<UserRole> = setOf(UserRole.USER),
+    ): Authentication {
+        val userDetails = EdukateUserDetails(userId, username, roles, UserStatus.ACTIVE, "token")
         return userDetails.toPreAuthenticatedAuthenticationToken()
     }
 

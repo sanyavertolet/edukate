@@ -11,7 +11,7 @@ jjwt = "0.12.6"
 kotlin = "2.3.0"
 docker-remote = "9.4.0"
 springdoc = "2.8.9"
-jackson = "2.20"
+jackson = "2.21"
 detekt = "2.0.0-alpha.2"
 ktfmt-gradle = "0.26.0"
 

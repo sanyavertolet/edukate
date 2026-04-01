@@ -72,9 +72,8 @@ class SubmissionServiceTest {
             Mono.just(savedSubmission)
         every { submissionFileService.moveSubmissionFiles("user-1", "sub-new", request) } returns Flux.empty()
         every { fileObjectRepository.findByKeyPath(fileKey.toString()) } returns Mono.just(fileObject)
-        every {
-            submissionRepository.save(match { it.id == "sub-new" && it.fileObjectIds == listOf("fo-1") })
-        } returns Mono.just(savedSubmission.withFileObjectIds(listOf("fo-1")))
+        every { submissionRepository.save(match { it.id == "sub-new" && it.fileObjectIds == listOf("fo-1") }) } returns
+            Mono.just(savedSubmission.withFileObjectIds(listOf("fo-1")))
 
         StepVerifier.create(service.saveSubmission("user-1", request))
             .assertNext { sub -> assertThat(sub.fileObjectIds).containsExactly("fo-1") }
@@ -247,7 +246,8 @@ class SubmissionServiceTest {
                 assertThat(ctx.submissionId).isEqualTo("sub-1")
                 assertThat(ctx.problemId).isEqualTo("1.0.0")
                 assertThat(ctx.problemText).isEqualTo("Solve it")
-                // Note: SubmissionContext positional args 4 & 5 map submissionRawKeys -> problemImageRawKeys
+                // Note: SubmissionContext positional args 4 & 5 map submissionRawKeys ->
+                // problemImageRawKeys
                 // and problemRawKeys -> submissionImageRawKeys (as-coded, positional order)
                 assertThat(ctx.problemImageRawKeys).containsExactly(fileKey.toString())
                 assertThat(ctx.submissionImageRawKeys).containsExactly(ProblemFileKey("1.0.0", "img.png").toString())

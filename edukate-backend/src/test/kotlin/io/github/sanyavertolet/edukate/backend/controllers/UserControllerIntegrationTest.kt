@@ -25,9 +25,11 @@ class UserControllerIntegrationTest : AbstractBackendIntegrationTest() {
             .get()
             .uri("/api/v1/users/whoami")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.name").isEqualTo("testuser")
+            .jsonPath("$.name")
+            .isEqualTo("testuser")
     }
 
     // endregion

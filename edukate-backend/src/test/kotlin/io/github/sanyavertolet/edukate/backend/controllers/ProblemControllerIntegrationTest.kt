@@ -2,8 +2,8 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import io.github.sanyavertolet.edukate.backend.AbstractBackendIntegrationTest
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
-import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
+import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,7 +37,8 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
             .get()
             .uri("/api/v1/problems")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList<ProblemMetadata>()
             .hasSize(3)
     }
@@ -48,7 +49,8 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
             .get()
             .uri("/api/v1/problems?size=2")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList<ProblemMetadata>()
             .hasSize(2)
     }
@@ -59,13 +61,7 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
 
     @Test
     fun `count returns total number of problems`() {
-        webTestClient
-            .get()
-            .uri("/api/v1/problems/count")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody<Long>()
-            .isEqualTo(3L)
+        webTestClient.get().uri("/api/v1/problems/count").exchange().expectStatus().isOk.expectBody<Long>().isEqualTo(3L)
     }
 
     // endregion
@@ -79,9 +75,11 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
             .get()
             .uri("/api/v1/problems/by-prefix?prefix=2.&limit=10")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$[0]").isEqualTo("2.0.0")
+            .jsonPath("$[0]")
+            .isEqualTo("2.0.0")
     }
 
     // endregion
@@ -94,18 +92,16 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
             .get()
             .uri("/api/v1/problems/1.0.0")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.id").isEqualTo("1.0.0")
+            .jsonPath("$.id")
+            .isEqualTo("1.0.0")
     }
 
     @Test
     fun `getProblem returns 404 when problem not found`() {
-        webTestClient
-            .get()
-            .uri("/api/v1/problems/9.9.9")
-            .exchange()
-            .expectStatus().isNotFound
+        webTestClient.get().uri("/api/v1/problems/9.9.9").exchange().expectStatus().isNotFound
     }
 
     // endregion
@@ -114,13 +110,9 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
 
     @Test
     fun `getRandomProblem returns 200 with a problem id`() {
-        webTestClient
-            .get()
-            .uri("/api/v1/problems/random")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody<String>()
-            .value { id -> assert(id in listOf("1.0.0", "1.1.0", "2.0.0")) }
+        webTestClient.get().uri("/api/v1/problems/random").exchange().expectStatus().isOk.expectBody<String>().value { id ->
+            assert(id in listOf("1.0.0", "1.1.0", "2.0.0"))
+        }
     }
 
     // endregion

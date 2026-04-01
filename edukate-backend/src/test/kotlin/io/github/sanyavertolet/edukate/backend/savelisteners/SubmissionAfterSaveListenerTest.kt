@@ -32,17 +32,15 @@ class SubmissionAfterSaveListenerTest {
         every { db.getCollection("problem_status") } returns collection
     }
 
-    private fun setupUpdateOneCapture(
-        onCapture: (Document, List<Document>) -> Unit,
-    ) {
+    private fun setupUpdateOneCapture(onCapture: (Document, List<Document>) -> Unit) {
         every {
-            @Suppress("UNCHECKED_CAST")
-            collection.updateOne(any<Bson>(), any<List<Bson>>(), any<UpdateOptions>())
-        } answers {
-            @Suppress("UNCHECKED_CAST")
-            onCapture(firstArg<Bson>() as Document, secondArg<List<Bson>>() as List<Document>)
-            Mono.empty<UpdateResult>()
-        }
+            @Suppress("UNCHECKED_CAST") collection.updateOne(any<Bson>(), any<List<Bson>>(), any<UpdateOptions>())
+        } answers
+            {
+                @Suppress("UNCHECKED_CAST")
+                onCapture(firstArg<Bson>() as Document, secondArg<List<Bson>>() as List<Document>)
+                Mono.empty<UpdateResult>()
+            }
     }
 
     private fun fireEvent(submission: io.github.sanyavertolet.edukate.backend.entities.Submission) {
@@ -61,7 +59,12 @@ class SubmissionAfterSaveListenerTest {
         }
 
         val submission =
-            BackendFixtures.submission(id = "sub-1", userId = "user-1", problemId = "1.0.0", status = SubmissionStatus.SUCCESS)
+            BackendFixtures.submission(
+                id = "sub-1",
+                userId = "user-1",
+                problemId = "1.0.0",
+                status = SubmissionStatus.SUCCESS,
+            )
         fireEvent(submission)
 
         assertThat(capturedFilter?.get("userId")).isEqualTo("user-1")
@@ -79,7 +82,12 @@ class SubmissionAfterSaveListenerTest {
         setupUpdateOneCapture { _, pipeline -> capturedPipeline = pipeline }
 
         fireEvent(
-            BackendFixtures.submission(id = "sub-1", userId = "user-1", problemId = "1.0.0", status = SubmissionStatus.PENDING)
+            BackendFixtures.submission(
+                id = "sub-1",
+                userId = "user-1",
+                problemId = "1.0.0",
+                status = SubmissionStatus.PENDING,
+            )
         )
 
         // Pipeline should have at least a first $set stage
@@ -93,7 +101,12 @@ class SubmissionAfterSaveListenerTest {
         setupUpdateOneCapture { _, pipeline -> capturedPipeline = pipeline }
 
         fireEvent(
-            BackendFixtures.submission(id = "sub-1", userId = "user-1", problemId = "1.0.0", status = SubmissionStatus.SUCCESS)
+            BackendFixtures.submission(
+                id = "sub-1",
+                userId = "user-1",
+                problemId = "1.0.0",
+                status = SubmissionStatus.SUCCESS,
+            )
         )
 
         // Pipeline must have multiple stages (set, conditionals, unset)
@@ -144,8 +157,7 @@ class SubmissionAfterSaveListenerTest {
         // Event must complete without error; pipeline was built with Instant.now() as fallback
         assertThat(capturedPipeline).isNotEmpty()
         verify(exactly = 1) {
-            @Suppress("UNCHECKED_CAST")
-            collection.updateOne(any<Bson>(), any<List<Bson>>(), any<UpdateOptions>())
+            @Suppress("UNCHECKED_CAST") collection.updateOne(any<Bson>(), any<List<Bson>>(), any<UpdateOptions>())
         }
     }
 

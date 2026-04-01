@@ -40,23 +40,22 @@ class UserControllerTest {
             .get()
             .uri("/api/v1/users/whoami")
             .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectStatus()
+            .isOk
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
-            .jsonPath("$.name").isEqualTo("testuser")
-            .jsonPath("$.status").isEqualTo("ACTIVE")
+            .jsonPath("$.name")
+            .isEqualTo("testuser")
+            .jsonPath("$.status")
+            .isEqualTo("ACTIVE")
     }
 
     @Test
     fun `whoami returns empty when user not found by name`() {
         every { userService.findUserByName("testuser") } returns Mono.empty()
 
-        authenticatedClient()
-            .get()
-            .uri("/api/v1/users/whoami")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody().isEmpty
+        authenticatedClient().get().uri("/api/v1/users/whoami").exchange().expectStatus().isOk.expectBody().isEmpty
     }
 
     // endregion

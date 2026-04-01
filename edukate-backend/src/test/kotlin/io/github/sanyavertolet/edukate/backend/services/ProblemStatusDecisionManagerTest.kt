@@ -29,9 +29,7 @@ class ProblemStatusDecisionManagerTest {
         every { userProblemStatusRepository.findByUserIdAndProblemId("user-1", "1.0.0") } returns
             Mono.just(BackendFixtures.userProblemStatus(bestStatus = SubmissionStatus.SUCCESS))
 
-        StepVerifier.create(manager.getStatus("user-1", "1.0.0"))
-            .expectNext(Problem.Status.SOLVED)
-            .verifyComplete()
+        StepVerifier.create(manager.getStatus("user-1", "1.0.0")).expectNext(Problem.Status.SOLVED).verifyComplete()
     }
 
     @Test
@@ -39,9 +37,7 @@ class ProblemStatusDecisionManagerTest {
         every { userProblemStatusRepository.findByUserIdAndProblemId("user-1", "1.0.0") } returns
             Mono.just(BackendFixtures.userProblemStatus(bestStatus = SubmissionStatus.FAILED))
 
-        StepVerifier.create(manager.getStatus("user-1", "1.0.0"))
-            .expectNext(Problem.Status.FAILED)
-            .verifyComplete()
+        StepVerifier.create(manager.getStatus("user-1", "1.0.0")).expectNext(Problem.Status.FAILED).verifyComplete()
     }
 
     @Test
@@ -49,18 +45,14 @@ class ProblemStatusDecisionManagerTest {
         every { userProblemStatusRepository.findByUserIdAndProblemId("user-1", "1.0.0") } returns
             Mono.just(BackendFixtures.userProblemStatus(bestStatus = SubmissionStatus.PENDING))
 
-        StepVerifier.create(manager.getStatus("user-1", "1.0.0"))
-            .expectNext(Problem.Status.SOLVING)
-            .verifyComplete()
+        StepVerifier.create(manager.getStatus("user-1", "1.0.0")).expectNext(Problem.Status.SOLVING).verifyComplete()
     }
 
     @Test
     fun `getStatus returns not solved when no record`() {
         every { userProblemStatusRepository.findByUserIdAndProblemId("user-1", "1.0.0") } returns Mono.empty()
 
-        StepVerifier.create(manager.getStatus("user-1", "1.0.0"))
-            .expectNext(Problem.Status.NOT_SOLVED)
-            .verifyComplete()
+        StepVerifier.create(manager.getStatus("user-1", "1.0.0")).expectNext(Problem.Status.NOT_SOLVED).verifyComplete()
     }
 
     // endregion

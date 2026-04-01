@@ -40,8 +40,7 @@ class TempFileControllerTest {
 
     @Test
     fun `uploadTempFile returns 200 with fileName`() {
-        every { fileManager.uploadFile(any(), any(), any()) } returns
-            Mono.just(TempFileKey("user-1", "test-file.txt"))
+        every { fileManager.uploadFile(any(), any(), any()) } returns Mono.just(TempFileKey("user-1", "test-file.txt"))
 
         val body = MultipartBodyBuilder()
         body.part("content", "file content".toByteArray())
@@ -52,7 +51,8 @@ class TempFileControllerTest {
             .contentType(MediaType.MULTIPART_FORM_DATA)
             .body(BodyInserters.fromMultipartData(body.build()))
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody(String::class.java)
             .isEqualTo("test-file.txt")
     }
@@ -69,7 +69,8 @@ class TempFileControllerTest {
             .delete()
             .uri("/api/v1/files/temp?fileName=test-file.txt")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody(String::class.java)
             .isEqualTo("test-file.txt")
     }
@@ -82,7 +83,8 @@ class TempFileControllerTest {
             .delete()
             .uri("/api/v1/files/temp?fileName=test-file.txt")
             .exchange()
-            .expectStatus().is5xxServerError
+            .expectStatus()
+            .is5xxServerError
     }
 
     // endregion
@@ -91,25 +93,16 @@ class TempFileControllerTest {
 
     @Test
     fun `downloadTempFile returns 200 with file content`() {
-        every { fileManager.getFileContent(any()) } returns
-            Flux.just(ByteBuffer.wrap("file content".toByteArray()))
+        every { fileManager.getFileContent(any()) } returns Flux.just(ByteBuffer.wrap("file content".toByteArray()))
 
-        authenticatedClient()
-            .get()
-            .uri("/api/v1/files/temp/get?fileName=test-file.txt")
-            .exchange()
-            .expectStatus().isOk
+        authenticatedClient().get().uri("/api/v1/files/temp/get?fileName=test-file.txt").exchange().expectStatus().isOk
     }
 
     @Test
     fun `downloadTempFile returns 404 when file not found`() {
         every { fileManager.getFileContent(any()) } returns Flux.empty()
 
-        authenticatedClient()
-            .get()
-            .uri("/api/v1/files/temp/get?fileName=missing.txt")
-            .exchange()
-            .expectStatus().isNotFound
+        authenticatedClient().get().uri("/api/v1/files/temp/get?fileName=missing.txt").exchange().expectStatus().isNotFound
     }
 
     // endregion
@@ -125,7 +118,8 @@ class TempFileControllerTest {
             .get()
             .uri("/api/v1/files/temp")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList(FileMetadata::class.java)
             .hasSize(1)
     }

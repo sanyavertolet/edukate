@@ -62,10 +62,13 @@ class BundleControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(CreateBundleRequest("Test Bundle", "Description", false, listOf("1.0.0")))
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.shareCode").isEqualTo("SHARE123")
-            .jsonPath("$.name").isEqualTo("Test Bundle")
+            .jsonPath("$.shareCode")
+            .isEqualTo("SHARE123")
+            .jsonPath("$.name")
+            .isEqualTo("Test Bundle")
     }
 
     // endregion
@@ -82,7 +85,8 @@ class BundleControllerTest {
             .get()
             .uri("/api/v1/bundles/public")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList(BundleMetadata::class.java)
             .hasSize(1)
     }
@@ -101,7 +105,8 @@ class BundleControllerTest {
             .get()
             .uri("/api/v1/bundles/owned")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList(BundleMetadata::class.java)
             .hasSize(1)
     }
@@ -121,9 +126,11 @@ class BundleControllerTest {
             .get()
             .uri("/api/v1/bundles/SHARE123")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.shareCode").isEqualTo("SHARE123")
+            .jsonPath("$.shareCode")
+            .isEqualTo("SHARE123")
     }
 
     @Test
@@ -132,11 +139,7 @@ class BundleControllerTest {
         val bundle = BackendFixtures.bundle(userIdRoleMap = mapOf("admin-1" to UserRole.ADMIN))
         every { bundleService.findBundleByShareCode("SHARE123") } returns Mono.just(bundle)
 
-        authenticatedClient()
-            .get()
-            .uri("/api/v1/bundles/SHARE123")
-            .exchange()
-            .expectStatus().isForbidden
+        authenticatedClient().get().uri("/api/v1/bundles/SHARE123").exchange().expectStatus().isForbidden
     }
 
     // endregion
@@ -153,9 +156,11 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/join")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.shareCode").isEqualTo("SHARE123")
+            .jsonPath("$.shareCode")
+            .isEqualTo("SHARE123")
     }
 
     // endregion
@@ -172,7 +177,8 @@ class BundleControllerTest {
             .get()
             .uri("/api/v1/bundles/joined")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList(BundleMetadata::class.java)
             .hasSize(1)
     }
@@ -186,11 +192,7 @@ class BundleControllerTest {
         val bundle = BackendFixtures.bundle()
         every { bundleService.removeUser("SHARE123", "user-1") } returns Mono.just(bundle)
 
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/bundles/SHARE123/leave")
-            .exchange()
-            .expectStatus().isOk
+        authenticatedClient().post().uri("/api/v1/bundles/SHARE123/leave").exchange().expectStatus().isOk
     }
 
     @Test
@@ -198,11 +200,7 @@ class BundleControllerTest {
         every { bundleService.removeUser("SHARE123", "user-1") } returns
             Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot remove last admin"))
 
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/bundles/SHARE123/leave")
-            .exchange()
-            .expectStatus().isBadRequest
+        authenticatedClient().post().uri("/api/v1/bundles/SHARE123/leave").exchange().expectStatus().isBadRequest
     }
 
     // endregion
@@ -221,7 +219,8 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/invite?inviteeName=invitee")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
     }
 
     @Test
@@ -235,7 +234,8 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/invite?inviteeName=invitee")
             .exchange()
-            .expectStatus().isForbidden
+            .expectStatus()
+            .isForbidden
     }
 
     // endregion
@@ -253,7 +253,8 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/expire-invite?inviteeName=invitee")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
     }
 
     // endregion
@@ -269,7 +270,8 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/reply-invite?response=true")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
     }
 
     @Test
@@ -281,7 +283,8 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/reply-invite?response=false")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
     }
 
     // endregion
@@ -297,7 +300,8 @@ class BundleControllerTest {
             .get()
             .uri("/api/v1/bundles/SHARE123/users")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList(UserNameWithRole::class.java)
             .hasSize(1)
     }
@@ -314,7 +318,8 @@ class BundleControllerTest {
             .get()
             .uri("/api/v1/bundles/SHARE123/invited-users")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList(String::class.java)
             .hasSize(1)
     }
@@ -334,7 +339,8 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/role?username=target&requestedRole=MODERATOR")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
     }
 
     @Test
@@ -348,7 +354,8 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/role?username=target&requestedRole=ADMIN")
             .exchange()
-            .expectStatus().isForbidden
+            .expectStatus()
+            .isForbidden
     }
 
     // endregion
@@ -365,9 +372,11 @@ class BundleControllerTest {
             .post()
             .uri("/api/v1/bundles/SHARE123/visibility?isPublic=true")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.shareCode").isEqualTo("SHARE123")
+            .jsonPath("$.shareCode")
+            .isEqualTo("SHARE123")
     }
 
     // endregion
@@ -386,9 +395,11 @@ class BundleControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(ChangeBundleProblemsRequest(listOf("1.0.0", "2.0.0")))
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.shareCode").isEqualTo("SHARE123")
+            .jsonPath("$.shareCode")
+            .isEqualTo("SHARE123")
     }
 
     @Test
@@ -399,7 +410,8 @@ class BundleControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(ChangeBundleProblemsRequest(emptyList()))
             .exchange()
-            .expectStatus().isBadRequest
+            .expectStatus()
+            .isBadRequest
     }
 
     // endregion

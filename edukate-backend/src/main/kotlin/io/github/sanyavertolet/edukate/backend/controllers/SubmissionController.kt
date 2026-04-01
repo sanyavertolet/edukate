@@ -6,7 +6,6 @@ import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
-import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.github.sanyavertolet.edukate.common.utils.id
 import io.github.sanyavertolet.edukate.common.utils.monoId
 import io.github.sanyavertolet.edukate.storage.keys.FileKey
@@ -244,52 +243,6 @@ class SubmissionController(
             .monoId()
             .flatMapMany { userId -> submissionService.findUserSubmissions(userId, problemId, sortedPageable(page, size)) }
             .flatMapSequential { submissionService.prepareDto(it) }
-
-    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
-    @GetMapping("/all")
-    @Operation(
-        summary = "Get all successful submissions",
-        description = "Retrieves paginated list of all submissions with SUCCESS status",
-    )
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved submissions",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = SubmissionDto::class)))],
-                ),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Requires MODERATOR role",
-                    content = [Content()],
-                ),
-            ]
-    )
-    @Parameters(
-        value =
-            [
-                Parameter(
-                    name = "page",
-                    description = "Page number (zero-based)",
-                    `in` = ParameterIn.QUERY,
-                    schema = Schema(minimum = "0"),
-                ),
-                Parameter(
-                    name = "size",
-                    description = "Number of submissions per page",
-                    `in` = ParameterIn.QUERY,
-                    schema = Schema(minimum = "1", maximum = "100"),
-                ),
-            ]
-    )
-    fun getSubmissions(
-        @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
-        @RequestParam(defaultValue = "10") @Positive size: Int,
-    ): Flux<SubmissionDto> =
-        submissionService.findSubmissionsByStatusIn(listOf(SubmissionStatus.SUCCESS), sortedPageable(page, size)).flatMap {
-            submissionService.prepareDto(it)
-        }
 
     private fun sortedPageable(page: Int, size: Int): Pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
 }

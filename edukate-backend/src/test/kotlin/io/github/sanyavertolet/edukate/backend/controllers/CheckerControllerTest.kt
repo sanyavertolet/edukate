@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.backend.services.CheckerSchedulerService
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.common.checks.CheckResultInfo
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
+import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,9 +33,11 @@ class CheckerControllerTest {
     @MockkBean private lateinit var checkerSchedulerService: CheckerSchedulerService
     @MockkBean private lateinit var submissionService: SubmissionService
 
-    private fun authenticatedClient(): WebTestClient =
+    private fun authenticatedClient(role: UserRole = UserRole.USER): WebTestClient =
         webTestClient.mutateWith(
-            SecurityMockServerConfigurers.mockAuthentication(BackendFixtures.mockAuthentication(userId = "user-1"))
+            SecurityMockServerConfigurers.mockAuthentication(
+                BackendFixtures.mockAuthentication(userId = "user-1", roles = setOf(role))
+            )
         )
 
     // region POST /api/v1/checker/ai
@@ -45,11 +48,13 @@ class CheckerControllerTest {
         every { submissionService.getSubmissionIfOwns("sub-1", "user-1") } returns Mono.just(submission)
         every { checkerSchedulerService.scheduleCheck(submission) } returns Mono.empty()
 
-        authenticatedClient()
+        // currently for moderators only
+        authenticatedClient(UserRole.MODERATOR)
             .post()
             .uri("/api/v1/checker/ai?id=sub-1")
             .exchange()
-            .expectStatus().isAccepted
+            .expectStatus()
+            .isAccepted
     }
 
     @Test
@@ -57,11 +62,12 @@ class CheckerControllerTest {
         every { submissionService.getSubmissionIfOwns("missing", "user-1") } returns
             Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND))
 
-        authenticatedClient()
+        authenticatedClient(UserRole.MODERATOR)
             .post()
             .uri("/api/v1/checker/ai?id=missing")
             .exchange()
-            .expectStatus().isNotFound
+            .expectStatus()
+            .isNotFound
     }
 
     // endregion
@@ -75,11 +81,7 @@ class CheckerControllerTest {
         every { submissionService.getSubmissionIfOwns("sub-1", "user-1") } returns Mono.just(submission)
         every { checkResultService.saveAndUpdateSubmission(any()) } returns Mono.just(checkResult to submission)
 
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/checker/self?id=sub-1")
-            .exchange()
-            .expectStatus().isAccepted
+        authenticatedClient().post().uri("/api/v1/checker/self?id=sub-1").exchange().expectStatus().isAccepted
     }
 
     // endregion
@@ -92,7 +94,8 @@ class CheckerControllerTest {
             .post()
             .uri("/api/v1/checker/supervisor?id=sub-1")
             .exchange()
-            .expectStatus().isEqualTo(HttpStatus.NOT_IMPLEMENTED)
+            .expectStatus()
+            .isEqualTo(HttpStatus.NOT_IMPLEMENTED)
     }
 
     // endregion
@@ -111,9 +114,11 @@ class CheckerControllerTest {
             .get()
             .uri("/api/v1/checker/by-id/cr-1")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.status").isEqualTo("SUCCESS")
+            .jsonPath("$.status")
+            .isEqualTo("SUCCESS")
     }
 
     @Test
@@ -138,7 +143,8 @@ class CheckerControllerTest {
             .get()
             .uri("/api/v1/checker/submissions/sub-1")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBodyList<CheckResultInfo>()
             .hasSize(1)
     }

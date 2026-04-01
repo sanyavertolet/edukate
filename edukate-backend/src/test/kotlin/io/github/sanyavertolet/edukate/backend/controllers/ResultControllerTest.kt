@@ -34,11 +34,15 @@ class ResultControllerTest {
             .get()
             .uri("/api/v1/results/1.0.0")
             .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectStatus()
+            .isOk
+            .expectHeader()
+            .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
-            .jsonPath("$.id").isEqualTo("1.0.0")
-            .jsonPath("$.text").isEqualTo("42")
+            .jsonPath("$.id")
+            .isEqualTo("1.0.0")
+            .jsonPath("$.text")
+            .isEqualTo("42")
     }
 
     @Test

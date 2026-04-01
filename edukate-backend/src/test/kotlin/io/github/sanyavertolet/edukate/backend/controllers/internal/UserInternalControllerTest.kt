@@ -42,9 +42,11 @@ class UserInternalControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(credentials(id = null))
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.username").isEqualTo("testuser")
+            .jsonPath("$.username")
+            .isEqualTo("testuser")
     }
 
     // endregion
@@ -60,21 +62,18 @@ class UserInternalControllerTest {
             .get()
             .uri("/internal/users/by-name/testuser")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.username").isEqualTo("testuser")
+            .jsonPath("$.username")
+            .isEqualTo("testuser")
     }
 
     @Test
     fun `getUserByName returns 200 with empty body when user not found`() {
         every { userService.findUserByName("unknown") } returns Mono.empty()
 
-        webTestClient
-            .get()
-            .uri("/internal/users/by-name/unknown")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody().isEmpty
+        webTestClient.get().uri("/internal/users/by-name/unknown").exchange().expectStatus().isOk.expectBody().isEmpty
     }
 
     // endregion
@@ -90,21 +89,18 @@ class UserInternalControllerTest {
             .get()
             .uri("/internal/users/by-id/user-1")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody()
-            .jsonPath("$.id").isEqualTo("user-1")
+            .jsonPath("$.id")
+            .isEqualTo("user-1")
     }
 
     @Test
     fun `getUserById returns 200 with empty body when user not found`() {
         every { userService.findUserById("nonexistent") } returns Mono.empty()
 
-        webTestClient
-            .get()
-            .uri("/internal/users/by-id/nonexistent")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody().isEmpty
+        webTestClient.get().uri("/internal/users/by-id/nonexistent").exchange().expectStatus().isOk.expectBody().isEmpty
     }
 
     // endregion
@@ -119,7 +115,8 @@ class UserInternalControllerTest {
             .delete()
             .uri("/internal/users/by-id/user-1")
             .exchange()
-            .expectStatus().isOk
+            .expectStatus()
+            .isOk
             .expectBody(String::class.java)
             .isEqualTo("user-1")
     }

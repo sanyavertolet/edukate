@@ -38,14 +38,7 @@ class FileManagerTest {
         FileObjectMetadata(Instant.now(), size, contentType)
 
     private fun fileObject(key: ProblemFileKey, meta: FileObjectMetadata = meta()) =
-        FileObject(
-            id = "fo-1",
-            keyPath = key.toString(),
-            key = key,
-            type = "problem",
-            ownerUserId = "",
-            metadata = meta,
-        )
+        FileObject(id = "fo-1", keyPath = key.toString(), key = key, type = "problem", ownerUserId = "", metadata = meta)
 
     // region getFileObject
 
@@ -141,7 +134,8 @@ class FileManagerTest {
             .verifyComplete()
 
         // save(existingFo updated) is called in flatMap; save(newFo) is also called eagerly as the
-        // switchIfEmpty argument, but its returned Mono is never subscribed. We verify the update happened.
+        // switchIfEmpty argument, but its returned Mono is never subscribed. We verify the update
+        // happened.
         verify(exactly = 1) { fileObjectRepository.save(match { it.id == "fo-existing" }) }
     }
 

@@ -135,26 +135,4 @@ class SubmissionControllerTest {
 
     // endregion
 
-    // region GET /api/v1/submissions/all
-
-    @Test
-    fun `getSubmissions returns 200 with successful submissions`() {
-        val dto = submissionDto(status = SubmissionStatus.SUCCESS)
-        val submission = BackendFixtures.submission(status = SubmissionStatus.SUCCESS)
-
-        val statuses = listOf(SubmissionStatus.SUCCESS)
-        every { submissionService.findSubmissionsByStatusIn(statuses, any()) } returns Flux.just(submission)
-        every { submissionService.prepareDto(submission) } returns Mono.just(dto)
-
-        webTestClient
-            .get()
-            .uri("/api/v1/submissions/all")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBodyList<SubmissionDto>()
-            .hasSize(1)
-    }
-
-    // endregion
 }

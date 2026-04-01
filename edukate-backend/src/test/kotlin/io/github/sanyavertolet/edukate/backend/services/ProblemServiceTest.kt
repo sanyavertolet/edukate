@@ -120,7 +120,8 @@ class ProblemServiceTest {
         val auth = BackendFixtures.mockAuthentication(userId = "user-1")
         every { problemRepository.findRandomUnsolvedProblemId("user-1") } returns Mono.just("2.0.0")
         // switchIfEmpty evaluates its argument eagerly (chain construction, not subscription),
-        // so findRandomProblemId() must be stubbed even though its returned Mono is never subscribed.
+        // so findRandomProblemId() must be stubbed even though its returned Mono is never
+        // subscribed.
         every { problemRepository.findRandomProblemId() } returns Mono.just("fallback")
 
         StepVerifier.create(service.getRandomUnsolvedProblemId(auth)).expectNext("2.0.0").verifyComplete()
