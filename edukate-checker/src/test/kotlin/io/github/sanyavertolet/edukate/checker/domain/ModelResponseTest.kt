@@ -6,10 +6,10 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class ModelResponseTest {
     private val mapper = ObjectMapper().registerKotlinModule()

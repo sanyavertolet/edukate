@@ -13,7 +13,8 @@ object SemVerUtils {
         majorField: String = MAJOR_FIELD_NAME,
         minorField: String = MINOR_FIELD_NAME,
         patchField: String = PATCH_FIELD_NAME,
-    ): Sort = Sort.by(Sort.Order.asc(majorField), Sort.Order.asc(minorField), Sort.Order.asc(patchField), Sort.Order.asc("_id"))
+    ): Sort =
+        Sort.by(Sort.Order.asc(majorField), Sort.Order.asc(minorField), Sort.Order.asc(patchField), Sort.Order.asc("_id"))
 
     fun parse(version: String): Triple<Int, Int, Int> {
         val segments = version.split(".")

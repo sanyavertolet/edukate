@@ -58,7 +58,8 @@ class SubmissionContextListenerTest {
 
     @Test
     fun `CheckerService error propagates via block`() {
-        // Note: CheckerService.runCheck() always uses onErrorReturn so it never errors in production.
+        // Note: CheckerService.runCheck() always uses onErrorReturn so it never errors in
+        // production.
         // When directly mocked to Mono.error(), the .block() in the listener will throw rather than
         // swallow — this test documents that actual behavior.
         every { checkerService.runCheck(ctx) } returns Mono.error(RuntimeException("check failed"))
