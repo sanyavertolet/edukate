@@ -368,7 +368,7 @@ naming:
     active: true
     ignoreOverridden: true
   NoNameShadowing:
-    active: true
+    active: false
   NonBooleanPropertyPrefixedWithIs:
     active: false
   ObjectPropertyNaming:
