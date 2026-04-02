@@ -3,41 +3,47 @@ package io.github.sanyavertolet.edukate.backend.savelisteners
 import com.mongodb.client.model.UpdateOptions
 import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
-import java.time.Clock
 import java.time.Instant
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toJavaDuration
 import org.bson.Document
+import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener
-import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent
+import org.springframework.data.mongodb.core.mapping.event.ReactiveAfterSaveCallback
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
+import reactor.util.retry.Retry
 
 @Component
-class SubmissionAfterSaveListener(private val template: ReactiveMongoTemplate) : AbstractMongoEventListener<Submission>() {
-    override fun onAfterSave(event: AfterSaveEvent<Submission>) {
-        val s = event.source
-        val userId = s.userId
-        val problemId = s.problemId
-        val status = s.status
-        val submissionId = requireNotNull(s.id) { "Submission ID must not be null" }
-        val createdAt = s.createdAt ?: Instant.now(Clock.systemUTC())
+class SubmissionAfterSaveCallback(@Lazy private val template: ReactiveMongoTemplate) :
+    ReactiveAfterSaveCallback<Submission> {
+    override fun onAfterSave(entity: Submission, document: Document, collection: String): Publisher<Submission> =
+        doUpsert(entity).thenReturn(entity)
+
+    private fun doUpsert(submission: Submission): Mono<Void> {
+        val submissionId = requireNotNull(submission.id) { "Submission ID must not be null after save" }
+        val createdAt = requireNotNull(submission.createdAt) { "Submission createdAt must not be null after save" }
         val newRank =
-            when (status) {
+            when (submission.status) {
                 SubmissionStatus.SUCCESS -> RANK_SUCCESS
                 SubmissionStatus.FAILED -> RANK_FAILED
                 SubmissionStatus.PENDING -> RANK_PENDING
             }
-        val filter = Document("userId", userId).append("problemId", problemId)
-        val updatePipeline = buildUpdatePipeline(userId, problemId, submissionId, status, createdAt, newRank)
+        val filter = Document("userId", submission.userId).append("problemId", submission.problemId)
+        val update =
+            buildUpdatePipeline(submission.userId, submission.problemId, submissionId, submission.status, createdAt, newRank)
         // todo: implement the duplicate-key retry
-        template.mongoDatabase
+
+        return template.mongoDatabase
             .flatMap { db ->
-                Mono.from(db.getCollection(COLLECTION).updateOne(filter, updatePipeline, UpdateOptions().upsert(true)))
+                Mono.from(db.getCollection(COLLECTION).updateOne(filter, update, UpdateOptions().upsert(true)))
             }
-            .doOnSuccess { log.debug("problem_status upserted for submission {}", submissionId) }
+            .retryWhen(retryBackoff)
+            .doOnNext { log.debug("problem_status upserted for submission {}", submissionId) }
             .doOnError { ex -> log.error("problem_status upsert failed for submission {}", submissionId, ex) }
-            .subscribe()
+            .then()
     }
 
     @Suppress("LongMethod")
@@ -133,6 +139,7 @@ class SubmissionAfterSaveListener(private val template: ReactiveMongoTemplate) :
         private const val RANK_SUCCESS = 2
         private const val RANK_FAILED = 1
         private const val RANK_PENDING = 0
-        private val log = LoggerFactory.getLogger(SubmissionAfterSaveListener::class.java)
+        private val retryBackoff = Retry.backoff(3, 100.milliseconds.toJavaDuration())
+        private val log = LoggerFactory.getLogger(SubmissionAfterSaveCallback::class.java)
     }
 }

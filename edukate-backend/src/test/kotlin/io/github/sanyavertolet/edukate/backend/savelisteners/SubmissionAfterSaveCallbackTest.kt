@@ -5,30 +5,32 @@ import com.mongodb.client.result.UpdateResult
 import com.mongodb.reactivestreams.client.MongoCollection
 import com.mongodb.reactivestreams.client.MongoDatabase
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
+import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
-class SubmissionAfterSaveListenerTest {
+class SubmissionAfterSaveCallbackTest {
     private val template: ReactiveMongoTemplate = mockk()
     private val db: MongoDatabase = mockk()
     private val collection: MongoCollection<Document> = mockk()
-    private lateinit var listener: SubmissionAfterSaveListener
+    private lateinit var callback: SubmissionAfterSaveCallback
 
     @BeforeEach
     fun setUp() {
-        listener = SubmissionAfterSaveListener(template)
-        every { template.mongoDatabase } returns Mono.just(db)
+        callback = SubmissionAfterSaveCallback(template)
+        @Suppress("ReactiveStreamsUnusedPublisher")
+        every { template.mongoDatabase } returns db.toMono()
         every { db.getCollection("problem_status") } returns collection
     }
 
@@ -43,14 +45,14 @@ class SubmissionAfterSaveListenerTest {
             }
     }
 
-    private fun fireEvent(submission: io.github.sanyavertolet.edukate.backend.entities.Submission) {
-        listener.onAfterSave(AfterSaveEvent(submission, Document(), "submissions"))
+    private fun fireEvent(submission: Submission) {
+        Mono.from(callback.onAfterSave(submission, Document(), "submissions")).block()
     }
 
     // region filter correctness
 
     @Test
-    fun `onAfterSaveUpsertsNewRecord`() {
+    fun `onAfterSave upserts new record`() {
         var capturedFilter: Document? = null
         var capturedPipeline: List<Document>? = null
         setupUpdateOneCapture { filter, pipeline ->
@@ -77,7 +79,7 @@ class SubmissionAfterSaveListenerTest {
     // region rank values encoded in pipeline
 
     @Test
-    fun `onAfterSaveSetsPendingRankZero`() {
+    fun `onAfterSave sets pending rank zero`() {
         var capturedPipeline: List<Document>? = null
         setupUpdateOneCapture { _, pipeline -> capturedPipeline = pipeline }
 
@@ -91,12 +93,12 @@ class SubmissionAfterSaveListenerTest {
         )
 
         // Pipeline should have at least a first $set stage
-        val firstSet = capturedPipeline?.firstOrNull { it.containsKey("\$set") }
+        val firstSet = capturedPipeline?.firstOrNull { it.containsKey($$"$set") }
         assertThat(firstSet).isNotNull()
     }
 
     @Test
-    fun `onAfterSaveSetsSucessRankTwo`() {
+    fun `onAfterSave sets success rank two`() {
         var capturedPipeline: List<Document>? = null
         setupUpdateOneCapture { _, pipeline -> capturedPipeline = pipeline }
 
@@ -119,7 +121,7 @@ class SubmissionAfterSaveListenerTest {
     // region createdAt handling
 
     @Test
-    fun `onAfterSaveUsesCreatedAtFromSubmission`() {
+    fun `onAfterSave uses createdAt from Submission`() {
         var capturedFilter: Document? = null
         setupUpdateOneCapture { filter, _ -> capturedFilter = filter }
 
@@ -140,24 +142,17 @@ class SubmissionAfterSaveListenerTest {
     }
 
     @Test
-    fun `onAfterSaveFallsBackToNowWhenCreatedAtNull`() {
-        var capturedPipeline: List<Document>? = null
-        setupUpdateOneCapture { _, pipeline -> capturedPipeline = pipeline }
-
-        fireEvent(
-            BackendFixtures.submission(
-                id = "sub-1",
-                userId = "user-1",
-                problemId = "1.0.0",
-                status = SubmissionStatus.SUCCESS,
-                createdAt = null,
+    fun `onAfterSave throws when createdAt is null`() {
+        assertThrows<IllegalArgumentException> {
+            fireEvent(
+                BackendFixtures.submission(
+                    id = "sub-1",
+                    userId = "user-1",
+                    problemId = "1.0.0",
+                    status = SubmissionStatus.SUCCESS,
+                    createdAt = null,
+                )
             )
-        )
-
-        // Event must complete without error; pipeline was built with Instant.now() as fallback
-        assertThat(capturedPipeline).isNotEmpty()
-        verify(exactly = 1) {
-            @Suppress("UNCHECKED_CAST") collection.updateOne(any<Bson>(), any<List<Bson>>(), any<UpdateOptions>())
         }
     }
 
