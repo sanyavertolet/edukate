@@ -27,7 +27,7 @@ class WebSecurityConfig {
     fun securityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain =
         http
             .authorizeExchange {
-                it.pathMatchers(*PublicEndpoints.asArray()).permitAll().pathMatchers("/api/**").authenticated()
+                it.matchers(PublicEndpoints.exchangeMatcher).permitAll().pathMatchers("/api/**").authenticated()
             }
             .addFilterAt(edukateUserPreAuthenticatedProcessingWebFilter(), SecurityWebFiltersOrder.AUTHENTICATION)
             .exceptionHandling { it.authenticationEntryPoint(HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)) }

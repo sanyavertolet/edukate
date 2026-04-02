@@ -16,10 +16,7 @@ object PublicEndpoints {
             "/api/v1/bundles/public",
         )
 
-    @JvmStatic fun asArray(): Array<String> = endpoints.toTypedArray<String>()
-
-    @JvmStatic
-    fun asMatcher(): ServerWebExchangeMatcher =
+    val exchangeMatcher: ServerWebExchangeMatcher =
         endpoints
             .map { PathPatternParserServerWebExchangeMatcher(it) }
             .map { it as ServerWebExchangeMatcher }

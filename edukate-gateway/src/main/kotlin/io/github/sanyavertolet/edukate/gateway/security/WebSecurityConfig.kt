@@ -49,7 +49,7 @@ class WebSecurityConfig(
                 exchanges
                     .pathMatchers("/internal/**")
                     .denyAll()
-                    .pathMatchers(*PublicEndpoints.asArray())
+                    .matchers(PublicEndpoints.exchangeMatcher)
                     .permitAll()
                     .pathMatchers("/api/**")
                     .authenticated()
@@ -65,7 +65,7 @@ class WebSecurityConfig(
     @Order(1)
     fun publicEndpointsSecurityWebFilterChain(http: ServerHttpSecurity): SecurityWebFilterChain =
         http
-            .securityMatcher(PublicEndpoints.asMatcher())
+            .securityMatcher(PublicEndpoints.exchangeMatcher)
             .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .authorizeExchange { it.anyExchange().permitAll() }

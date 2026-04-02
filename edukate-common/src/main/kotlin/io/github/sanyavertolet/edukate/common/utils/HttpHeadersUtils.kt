@@ -6,34 +6,28 @@ import io.github.sanyavertolet.edukate.common.users.UserStatus
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 
-fun populateHeaders(httpHeaders: HttpHeaders?, edukateUserDetails: EdukateUserDetails) {
-    requireNotNull(httpHeaders) { "HttpHeaders must not be null" }
-        .apply {
-            set(AuthHeaders.AUTHORIZATION_ID.headerName, edukateUserDetails.id)
-            set(AuthHeaders.AUTHORIZATION_NAME.headerName, edukateUserDetails.username)
-            set(AuthHeaders.AUTHORIZATION_STATUS.headerName, edukateUserDetails.status.toString())
-            set(AuthHeaders.AUTHORIZATION_ROLES.headerName, UserRole.listToString(edukateUserDetails.roles))
-        }
-}
-
-private fun getLastHeaderOrNull(headers: HttpHeaders, headerName: String): String? {
-    val headerCandidates = headers[headerName] ?: return null
-    return if (headerCandidates.isNotEmpty()) {
-        headerCandidates.last()
-    } else {
-        logger.trace("Header {} is not provided: skipping pre-authenticated edukate-user authentication", headerName)
-        null
+fun populateHeaders(httpHeaders: HttpHeaders, edukateUserDetails: EdukateUserDetails) {
+    httpHeaders.apply {
+        set(AuthHeaders.AUTHORIZATION_ID.headerName, edukateUserDetails.id)
+        set(AuthHeaders.AUTHORIZATION_NAME.headerName, edukateUserDetails.username)
+        set(AuthHeaders.AUTHORIZATION_STATUS.headerName, edukateUserDetails.status.toString())
+        set(AuthHeaders.AUTHORIZATION_ROLES.headerName, UserRole.listToString(edukateUserDetails.roles))
     }
 }
 
 fun HttpHeaders.toEdukateUserDetails(): EdukateUserDetails? {
-    val id = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_ID.headerName)
-    val name = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_NAME.headerName)
-    val rolesString = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_ROLES.headerName)
-    val statusString = getLastHeaderOrNull(this, AuthHeaders.AUTHORIZATION_STATUS.headerName)
+    val id = get(AuthHeaders.AUTHORIZATION_ID.headerName)?.lastOrNull()
+    val name = get(AuthHeaders.AUTHORIZATION_NAME.headerName)?.lastOrNull()
+    val rolesString = get(AuthHeaders.AUTHORIZATION_ROLES.headerName)?.lastOrNull()
+    val statusString = get(AuthHeaders.AUTHORIZATION_STATUS.headerName)?.lastOrNull()
 
-    if (listOf(id, name, rolesString, statusString).any { it == null }) return null
-    return EdukateUserDetails(id!!, name!!, UserRole.fromString(rolesString!!), UserStatus.valueOf(statusString!!), "")
+    @Suppress("ComplexCondition")
+    if (id == null || name == null || rolesString == null || statusString == null) {
+        logger.trace("Authentication headers are is not provided: skipping pre-authenticated edukate user")
+        return null
+    }
+
+    return EdukateUserDetails(id, name, UserRole.fromString(rolesString), UserStatus.valueOf(statusString), "")
 }
 
 private val logger = LoggerFactory.getLogger("HttpHeadersUtils")

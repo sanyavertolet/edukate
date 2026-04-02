@@ -13,6 +13,7 @@ import org.springframework.boot.runApplication
 )
 class EdukateNotifierApplication
 
+@Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     runApplication<EdukateNotifierApplication>(*args)
 }

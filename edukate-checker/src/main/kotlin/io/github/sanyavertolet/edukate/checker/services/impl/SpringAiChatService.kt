@@ -32,6 +32,7 @@ class SpringAiChatService(private val chatClient: ChatClient) : ChatService {
                 .prompt()
                 .system { s -> s.param("problemText", problemText) }
                 .user { u ->
+                    @Suppress("SpreadOperator")
                     u.text("Here are the images for you to check as well as the problem image.")
                         .media(*problemMedia.toTypedArray())
                         .media(*submissionMedia.toTypedArray())

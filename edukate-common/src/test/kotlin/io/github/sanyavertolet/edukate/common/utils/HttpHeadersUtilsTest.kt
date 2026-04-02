@@ -4,7 +4,6 @@ import io.github.sanyavertolet.edukate.common.CommonFixtures
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.github.sanyavertolet.edukate.common.users.UserStatus
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpHeaders
 
@@ -21,12 +20,6 @@ class HttpHeadersUtilsTest {
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_NAME.headerName)).isEqualTo("alice")
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_STATUS.headerName)).isEqualTo("ACTIVE")
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_ROLES.headerName)).isEqualTo("USER")
-    }
-
-    @Test
-    fun `populateHeaders throws for null headers`() {
-        assertThatThrownBy { populateHeaders(null, CommonFixtures.userDetails()) }
-            .isInstanceOf(IllegalArgumentException::class.java)
     }
 
     @Test

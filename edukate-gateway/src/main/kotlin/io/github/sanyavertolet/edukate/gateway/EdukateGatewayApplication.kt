@@ -16,6 +16,7 @@ import org.springframework.boot.runApplication
 )
 class EdukateGatewayApplication
 
+@Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     runApplication<EdukateGatewayApplication>(*args)
 }

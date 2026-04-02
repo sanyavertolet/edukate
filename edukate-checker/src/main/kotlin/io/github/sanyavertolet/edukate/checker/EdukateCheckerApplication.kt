@@ -15,6 +15,7 @@ import org.springframework.boot.runApplication
 @ConfigurationPropertiesScan(basePackages = ["io.github.sanyavertolet.edukate.storage.configs"])
 class EdukateCheckerApplication
 
+@Suppress("SpreadOperator")
 fun main(args: Array<String>) {
     runApplication<EdukateCheckerApplication>(*args)
 }
