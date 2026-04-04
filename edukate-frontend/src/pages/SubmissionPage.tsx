@@ -1,10 +1,9 @@
-import { FC } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Stack, Typography } from "@mui/material";
 import { SubmissionComponent } from "@/features/submissions/components/SubmissionComponent";
 import { useSubmissionQuery } from "@/features/submissions/api";
 
-export const SubmissionPage: FC = () => {
+export default function SubmissionPage() {
     const { id: submissionId } = useParams();
 
     const submissionQuery = useSubmissionQuery(submissionId);
@@ -21,4 +20,4 @@ export const SubmissionPage: FC = () => {
             {submissionQuery.isError}
         </Box>
     );
-};
+}

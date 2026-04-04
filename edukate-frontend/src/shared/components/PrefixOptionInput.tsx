@@ -1,5 +1,5 @@
 import { Fragment, SyntheticEvent, useEffect, useState } from "react";
-import { useDebounce } from "@uidotdev/usehooks";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useOptionsRequest } from "@/shared/hooks/useOptionsRequest";
 import { Autocomplete, Chip, CircularProgress, TextField } from "@mui/material";
 
@@ -22,7 +22,8 @@ export function PrefixOptionInputForm({
 }: PrefixOptionInputFormProps) {
     const [search, setSearch] = useState("");
     const [options, setOptions] = useState<string[]>([]);
-    const { data, isLoading, error } = useDebounce(useOptionsRequest(optionsUrl, search), debounceTime);
+    const debouncedSearch = useDebounce(search, debounceTime);
+    const { data, isLoading, error } = useOptionsRequest(optionsUrl, debouncedSearch);
 
     useEffect(() => {
         if (data && !isLoading && !error) {

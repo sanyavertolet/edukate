@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { execSync } from "child_process";
+import { visualizer } from "rollup-plugin-visualizer";
 
 const gitCommit = (() => {
     try {
@@ -12,8 +13,8 @@ const gitCommit = (() => {
 })();
 
 // https://vite.dev/config/
-export default defineConfig({
-    plugins: [react()],
+export default defineConfig(({ mode }) => ({
+    plugins: [react(), mode === "analyze" && visualizer({ open: true, filename: "dist/stats.html", gzipSize: true })],
     define: {
         __GIT_COMMIT__: JSON.stringify(gitCommit),
     },
@@ -32,7 +33,20 @@ export default defineConfig({
             },
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    "vendor-react": ["react", "react-dom", "react-router-dom"],
+                    "vendor-query": ["@tanstack/react-query"],
+                    "vendor-mui": ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
+                    "vendor-misc": ["axios", "react-toastify", "react-cookie", "typescript-cookie", "react-error-boundary"],
+                    "vendor-particles": ["@tsparticles/react", "@tsparticles/slim"],
+                },
+            },
+        },
+    },
     optimizeDeps: {
         exclude: ["js-big-decimal"],
     },
-});
+}));

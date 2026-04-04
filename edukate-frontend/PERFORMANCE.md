@@ -7,7 +7,7 @@ Goal: minimize initial bundle size, time-to-interactive, and per-request transfe
 ## Estimated current bundle composition
 
 | Dependency                         | Est. size (minified)   | Notes                                     |
-| ---------------------------------- | ---------------------- | ----------------------------------------- |
+|------------------------------------|------------------------|-------------------------------------------|
 | `@tsparticles/slim` + engine       | ~200KB                 | Decorative only — highest-ROI replacement |
 | KaTeX (npm)                        | ~290KB JS + ~100KB CSS | Already npm; needs lazy-load              |
 | `@mui/material` + emotion          | ~250KB (tree-shaken)   | Depends on components used                |
@@ -58,8 +58,16 @@ If keeping `@tsparticles`, at minimum:
 
 ```ts
 fpsLimit: 144,       // ← excessive for decorative background; use 30
-value: 100,          // ← 100 particles with collision detection is CPU-heavy
-collisions: { enable: true, mode: "bounce" }  // ← O(n²) collision check every frame
+    value
+:
+100,          // ← 100 particles with collision detection is CPU-heavy
+    collisions
+:
+{
+    enable: true, mode
+:
+    "bounce"
+}  // ← O(n²) collision check every frame
 ```
 
 ---
@@ -81,7 +89,7 @@ removed — the npm package covers everything.
 
 ```tsx
 // src/features/problems/components/LazyLatex.tsx
-import { lazy, Suspense } from "react";
+import {lazy, Suspense} from "react";
 
 const LatexComponent = lazy(() =>
     import("@/shared/components/LatexComponent").then(async (m) => {
@@ -91,10 +99,10 @@ const LatexComponent = lazy(() =>
     }),
 );
 
-export function LazyLatex({ text }: { text: string }) {
+export function LazyLatex({text}: { text: string }) {
     return (
         <Suspense fallback={<span>{text}</span>}>
-            <LatexComponent text={text} />
+            <LatexComponent text={text}/>
         </Suspense>
     );
 }
@@ -108,7 +116,8 @@ users who only browse the index or bundle list pages.
 Delete these lines (they're a double-load with the npm package):
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@.../katex.min.css" ... />
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@.../katex.min.css" .../>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@.../katex.min.js" ...></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@.../auto-render.min.js" ...></script>
 ```
@@ -127,14 +136,14 @@ independently.
 ### `vite.config.ts` addition
 
 ```ts
-import { defineConfig } from "vite";
+import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
 export default defineConfig({
     plugins: [react()],
     resolve: {
-        alias: { "@": path.resolve(__dirname, "./src") },
+        alias: {"@": path.resolve(__dirname, "./src")},
     },
     build: {
         rollupOptions: {
@@ -153,7 +162,7 @@ export default defineConfig({
         host: "0.0.0.0",
         port: 80,
         proxy: {
-            "/api": { target: "http://localhost:5810", changeOrigin: true },
+            "/api": {target: "http://localhost:5810", changeOrigin: true},
         },
     },
     optimizeDeps: {
@@ -238,7 +247,7 @@ npm install --save-dev vite-plugin-compression
 ```ts
 import compression from "vite-plugin-compression";
 
-plugins: [react(), compression({ algorithm: "gzip" })];
+plugins: [react(), compression({algorithm: "gzip"})];
 // Or for brotli (better ratio, requires nginx brotli module):
 // compression({ algorithm: 'brotliCompress', ext: '.br' })
 ```
@@ -254,7 +263,7 @@ a namespace import defeats tree-shaking entirely.
 
 ```ts
 // ✅ fine — tree-shaken
-import { Add, Delete, ExpandMore } from "@mui/icons-material";
+import {Add, Delete, ExpandMore} from "@mui/icons-material";
 
 // ❌ pulls in all 2,000+ icons
 import * as Icons from "@mui/icons-material";
@@ -281,28 +290,24 @@ This is a low-priority, high-effort change. **Do §1 and §4 first** — they're
 
 ---
 
-## §7 — Audit `@uidotdev/usehooks`
+Let's ## §7 — ~~Audit `@uidotdev/usehooks`~~ ✓ Done
 
-`@uidotdev/usehooks` adds ~20KB. Check if it's actually used:
-
-```bash
-grep -r "@uidotdev/usehooks" src/
-```
-
-If usage is 1-2 hooks, copy those hooks inline (they're typically small) and drop the
-dependency entirely.
+`@uidotdev/usehooks` was used only for `useDebounce` in `PrefixOptionInput.tsx`.
+Replaced with an inline `src/shared/hooks/useDebounce.ts` (~10 lines) and the dependency
+was removed. Also fixed a bug: the old code debounced the query result object instead of
+the search string — the HTTP request now fires only after the debounce delay expires.
 
 ---
 
 ## Prioritised order
 
-| Priority | Action                                 | Effort  | Saving                     |
-| -------- | -------------------------------------- | ------- | -------------------------- |
-| 1        | nginx compression + cache headers (§4) | Low     | 60-70% transferred bytes   |
-| 2        | Remove KaTeX CDN from `index.html`     | Trivial | Eliminates double-load     |
-| 3        | Lazy-load KaTeX (§2)                   | Low     | ~390KB from initial bundle |
-| 4        | Replace `@tsparticles` with CSS (§1)   | Medium  | ~200KB + CPU               |
-| 5        | Vite `manualChunks` (§3)               | Low     | Better caching             |
-| 6        | Audit MUI icons (§5)                   | Low     | Variable                   |
-| 7        | Audit `@uidotdev/usehooks` (§7)        | Trivial | ~20KB                      |
-| 8        | Replace Axios with `fetch` (§6)        | High    | ~35KB                      |
+| Priority | Action                                 | Effort  | Saving                   |
+|----------|----------------------------------------|---------|--------------------------|
+| 1        | nginx compression + cache headers (§4) | Low     | 60-70% transferred bytes |
+| 2        | ~~Remove KaTeX CDN from `index.html`~~ | Trivial | ✓ Done                   |
+| 3        | ~~Lazy-load KaTeX (§2)~~               | Low     | ✓ Done                   |
+| 4        | Replace `@tsparticles` with CSS (§1)   | Medium  | ~200KB + CPU             |
+| 5        | Vite `manualChunks` (§3)               | Low     | Better caching           |
+| 6        | Audit MUI icons (§5)                   | Low     | Variable                 |
+| 7        | ~~Audit `@uidotdev/usehooks` (§7)~~    | Trivial | ✓ Done — ~20KB removed   |
+| 8        | Replace Axios with `fetch` (§6)        | High    | ~35KB                    |

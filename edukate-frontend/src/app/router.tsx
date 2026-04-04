@@ -1,15 +1,17 @@
 import { createBrowserRouter } from "react-router-dom";
+import { lazy } from "react";
 import PageSkeleton from "@/shared/components/layout/PageSkeleton";
-import ProblemPage from "@/pages/ProblemPage";
-import ProblemListPage from "@/pages/ProblemListPage";
-import IndexPage from "@/pages/IndexPage";
-import SignInPage from "@/pages/SignInPage";
-import SignUpPage from "@/pages/SignUpPage";
-import BundleListPage from "@/pages/BundleListPage";
-import BundlePage from "@/pages/BundlePage";
-import BundleCreationPage from "@/pages/BundleCreationPage";
 import { AuthRequired } from "@/features/auth/components/AuthRequired";
-import { SubmissionPage } from "@/pages/SubmissionPage";
+
+const IndexPage = lazy(() => import("@/pages/IndexPage"));
+const ProblemListPage = lazy(() => import("@/pages/ProblemListPage"));
+const ProblemPage = lazy(() => import("@/pages/ProblemPage"));
+const SignInPage = lazy(() => import("@/pages/SignInPage"));
+const SignUpPage = lazy(() => import("@/pages/SignUpPage"));
+const BundleListPage = lazy(() => import("@/pages/BundleListPage"));
+const BundlePage = lazy(() => import("@/pages/BundlePage"));
+const BundleCreationPage = lazy(() => import("@/pages/BundleCreationPage"));
+const SubmissionPage = lazy(() => import("@/pages/SubmissionPage"));
 
 export const router = createBrowserRouter([
     {

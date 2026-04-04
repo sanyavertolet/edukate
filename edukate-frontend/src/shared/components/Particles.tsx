@@ -5,7 +5,7 @@ import { loadSlim } from "@tsparticles/slim";
 import { useTheme } from "@/shared/context/ThemeContext";
 import themes from "@/shared/context/themes";
 
-export const ParticlesComponent = () => {
+export default function ParticlesComponent() {
     const [init, setInit] = useState(false);
     const { theme } = useTheme();
 
@@ -94,4 +94,4 @@ export const ParticlesComponent = () => {
         return <Particles id="tsparticles" options={options} />;
     }
     return <></>;
-};
+}
