@@ -19,6 +19,7 @@ dependencies {
     // String literals required: version catalog is not on the classpath inside included builds
     implementation("dev.detekt:detekt-gradle-plugin:2.0.0-alpha.2")
     implementation("com.ncorti.ktfmt.gradle:plugin:0.20.0")
+    implementation("org.springdoc:springdoc-openapi-gradle-plugin:1.9.0")
 }
 
 tasks.withType<KotlinCompile> {

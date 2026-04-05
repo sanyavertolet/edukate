@@ -4,9 +4,11 @@ import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCrea
 import io.github.sanyavertolet.edukate.messaging.RabbitTopology
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
+@Profile("!spec-gen")
 class NotificationListener(private val notificationService: NotificationService) {
     /**
      * Accepts any subclass of BaseNotificationCreationRequest and converts it to the appropriate entity.

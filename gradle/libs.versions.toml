@@ -11,6 +11,7 @@ jjwt = "0.12.6"
 kotlin = "2.3.0"
 docker-remote = "9.4.0"
 springdoc = "2.8.9"
+springdoc-plugin = "1.9.0"
 jackson = "2.21"
 detekt = "2.0.0-alpha.2"
 ktfmt-gradle = "0.26.0"
@@ -20,6 +21,7 @@ spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt-gradle" }
+springdoc-openapi = { id = "org.springdoc.openapi-gradle-plugin", version.ref = "springdoc-plugin" }
 
 [libraries]
 # spring

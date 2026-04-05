@@ -6,6 +6,7 @@ plugins {
 
     id("io.github.sanyavertolet.edukate.buildutils.spring-boot-app-configuration")
     id("io.github.sanyavertolet.edukate.buildutils.kotlin-quality-configuration")
+    id("io.github.sanyavertolet.edukate.buildutils.springdoc-spec-generation")
 }
 
 kotlin {

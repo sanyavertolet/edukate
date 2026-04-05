@@ -5,11 +5,12 @@ This is an included build — declared in the root `settings.gradle.kts` via `in
 
 ## Convention Plugins
 
-| Plugin ID suffix                     | File                                            | Applied to                                          |
-|:-------------------------------------|:------------------------------------------------|:----------------------------------------------------|
-| `spring-boot-app-configuration`      | `spring-boot-app-configuration.gradle.kts`      | All Spring Boot app modules                         |
-| `frontend-image-build-configuration` | `frontend-image-build-configuration.gradle.kts` | Root project — frontend Docker build and push tasks |
-| `kotlin-quality-configuration`       | `kotlin-quality-configuration.gradle.kts`       | All Kotlin modules — configures detekt and ktfmt    |
+| Plugin ID suffix                     | File                                            | Applied to                                                                               |
+|:-------------------------------------|:------------------------------------------------|:-----------------------------------------------------------------------------------------|
+| `spring-boot-app-configuration`      | `spring-boot-app-configuration.gradle.kts`      | All Spring Boot app modules                                                              |
+| `frontend-image-build-configuration` | `frontend-image-build-configuration.gradle.kts` | Root project — frontend Docker build and push tasks                                      |
+| `kotlin-quality-configuration`       | `kotlin-quality-configuration.gradle.kts`       | All Kotlin modules — configures detekt and ktfmt                                         |
+| `springdoc-spec-generation`          | `springdoc-spec-generation.gradle.kts`          | Spring services with a public API (backend, gateway, notifier) — generates OpenAPI specs |
 
 Full plugin ID prefix: `io.github.sanyavertolet.edukate.buildutils.<suffix>`
 

@@ -9,10 +9,12 @@ import io.github.sanyavertolet.edukate.common.services.Notifier
 import io.github.sanyavertolet.edukate.messaging.RabbitTopology
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import reactor.kotlin.core.publisher.toMono
 
 @Component
+@Profile("!spec-gen")
 class CheckResultMessageListener(private val checkResultService: CheckResultService, private val notifier: Notifier) {
     @RabbitListener(queues = [RabbitTopology.Q.RESULT_BACKEND])
     fun onCheckResultMessage(checkResultMessage: CheckResultMessage) {

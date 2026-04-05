@@ -1,0 +1,10 @@
+auth:
+  jwt:
+    # Dummy secret — only needs to satisfy the HMAC-SHA512 key length requirement (≥64 chars)
+    secret: spec-gen-dummy-secret-for-hmac-sha512-algorithm-do-not-use-in-production-padding
+  hostname: localhost
+
+springdoc:
+  api-docs:
+    # Override to a consistent path used by the generateOpenApiDocs Gradle task
+    path: /v3/api-docs
