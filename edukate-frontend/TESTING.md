@@ -94,8 +94,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **L** light (≤30 min)
 | #  | File                             | Status | Effort | Notes                                                                                                                   |
 |----|----------------------------------|--------|--------|-------------------------------------------------------------------------------------------------------------------------|
 | T1 | `src/shared/utils/validation.ts` | `[x]`  | **L**  | 27 tests — all branches covered                                                                                         |
-| T2 | `src/shared/utils/utils.ts`      | `[ ]`  | **L**  | `formatFileSize`, `sizeOf`, `getFirstLetters`, `getColorByStringHash`                                                   |
-| T3 | `src/shared/utils/date.ts`       | `[ ]`  | **L**  | `parseDate`, `formatDate`, `formatRelative`, `isUtcIsoString`, `toUtcIso` — use `vi.setSystemTime` for `formatRelative` |
+| T2 | `src/shared/utils/utils.ts`      | `[x]`  | **L**  | 12 tests — 100% coverage                                                                                                |
+| T3 | `src/shared/utils/date.ts`       | `[x]`  | **L**  | 18 tests — 100% coverage; `vi.setSystemTime` used for `formatRelative` and `nowUtcIso`                                  |
 
 ### Phase 2 — MSW infrastructure
 
