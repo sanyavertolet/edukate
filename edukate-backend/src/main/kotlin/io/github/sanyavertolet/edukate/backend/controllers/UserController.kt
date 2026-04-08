@@ -3,10 +3,9 @@ package io.github.sanyavertolet.edukate.backend.controllers
 import io.github.sanyavertolet.edukate.backend.dtos.UserDto
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,6 +17,7 @@ import reactor.kotlin.core.publisher.toMono
 @RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "Users", description = "API for managing user information")
+@SecurityRequirement(name = "cookieAuth")
 class UserController(private val userService: UserService) {
     @GetMapping("/whoami")
     @Operation(
@@ -28,13 +28,9 @@ class UserController(private val userService: UserService) {
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved user information",
-                    content = [Content(schema = Schema(implementation = UserDto::class))],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(responseCode = "404", description = "User not found by name from token", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved user information"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "404", description = "User not found by name from token"),
             ]
     )
     fun whoami(authentication: Authentication): Mono<UserDto> =

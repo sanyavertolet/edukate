@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -39,12 +38,8 @@ class ProblemController(private val problemService: ProblemService) {
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved problem list",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = ProblemMetadata::class)))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved problem list"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
             ]
     )
     @Parameters(
@@ -75,16 +70,7 @@ class ProblemController(private val problemService: ProblemService) {
 
     @GetMapping("/count")
     @Operation(summary = "Count problems", description = "Returns the total number of problems in the system")
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved problem count",
-                    content = [Content(schema = Schema(implementation = Long::class))],
-                )
-            ]
-    )
+    @ApiResponses(value = [ApiResponse(responseCode = "200", description = "Successfully retrieved problem count")])
     fun count(): Mono<Long> = problemService.countProblems()
 
     @GetMapping("/by-prefix")
@@ -95,12 +81,8 @@ class ProblemController(private val problemService: ProblemService) {
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved problem IDs",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = String::class)))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved problem IDs"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
             ]
     )
     @Parameters(
@@ -125,13 +107,9 @@ class ProblemController(private val problemService: ProblemService) {
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved problem",
-                    content = [Content(schema = Schema(implementation = ProblemDto::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "404", description = "Problem not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved problem"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "404", description = "Problem not found"),
             ]
     )
     @Parameters(value = [Parameter(name = "id", description = "Problem ID", `in` = ParameterIn.PATH, required = true)])

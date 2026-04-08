@@ -11,10 +11,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.factory.PasswordEncoderFactories
-import org.springframework.security.crypto.password.DelegatingPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint
 import org.springframework.web.cors.CorsConfiguration
@@ -72,14 +68,6 @@ class WebSecurityConfig(
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .build()
-
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        val delegatingPasswordEncoder =
-            PasswordEncoderFactories.createDelegatingPasswordEncoder() as DelegatingPasswordEncoder
-        delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(BCryptPasswordEncoder())
-        return delegatingPasswordEncoder
-    }
 
     companion object {
         private const val COOKIE_MAX_AGE = 3600L

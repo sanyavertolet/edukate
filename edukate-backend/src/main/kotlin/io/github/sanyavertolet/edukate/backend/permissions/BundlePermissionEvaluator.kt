@@ -23,6 +23,8 @@ class BundlePermissionEvaluator {
 
     fun hasInvitePermission(bundle: Bundle, userId: String): Boolean = hasRole(bundle, userId, UserRole.MODERATOR)
 
+    fun hasReadPermission(bundle: Bundle, userId: String?): Boolean = bundle.isPublic || bundle.isUserInBundle(userId)
+
     fun hasJoinPermission(bundle: Bundle, userId: String): Boolean = bundle.isPublic || bundle.isUserInvited(userId)
 
     fun hasChangeRolePermission(bundle: Bundle, requesterId: String, userId: String, requestedRole: UserRole): Boolean {

@@ -191,7 +191,7 @@ class BundleService(
             .map { it.withProblemIds(problemIds) }
             .flatMap { bundleRepository.save(it) }
 
-    fun prepareDto(bundle: Bundle, authentication: Authentication): Mono<BundleDto> =
+    fun prepareDto(bundle: Bundle, authentication: Authentication?): Mono<BundleDto> =
         problemService
             .findProblemsByIds(bundle.problemIds)
             .flatMap { problem -> problemService.prepareMetadata(problem, authentication) }

@@ -4,7 +4,34 @@ auth:
     secret: spec-gen-dummy-secret-for-hmac-sha512-algorithm-do-not-use-in-production-padding
   hostname: localhost
 
+spring:
+  docker:
+    compose:
+      enabled: false
+  devtools:
+    restart:
+      enabled: false
+  rabbitmq:
+    addresses: localhost:5672
+  cloud:
+    discovery:
+      enabled: false
+    loadbalancer:
+      enabled: false
+
+server:
+  port: 18080
+
+management:
+  server:
+    port: 18081
+  health:
+    rabbit:
+      enabled: false
+
 springdoc:
   api-docs:
     # Override to a consistent path used by the generateOpenApiDocs Gradle task
     path: /v3/api-docs
+  # Orval generates client<Blob> for '*/*' media type; use application/json as the default
+  default-produces-media-type: application/json

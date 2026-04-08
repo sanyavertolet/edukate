@@ -14,11 +14,11 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
@@ -54,6 +54,7 @@ class SubmissionController(
     private val fileManager: FileManager,
 ) {
     @GetMapping("/by-id/{id}")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Get submission by ID",
         description = "Retrieves a specific submission by its ID for the authenticated user",
@@ -61,19 +62,11 @@ class SubmissionController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved submission",
-                    content = [Content(schema = Schema(implementation = SubmissionDto::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - user id does not match",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Submission not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved submission"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - user id does not match"),
+                ApiResponse(responseCode = "404", description = "Submission not found"),
             ]
     )
     @Parameters(value = [Parameter(name = "id", description = "Submission ID", `in` = ParameterIn.PATH, required = true)])
@@ -86,6 +79,7 @@ class SubmissionController(
             .flatMap { submissionService.prepareDto(it) }
 
     @PostMapping
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Upload a submission",
         description = "Creates a new submission for a problem with the provided files",
@@ -93,18 +87,10 @@ class SubmissionController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully created submission",
-                    content = [Content(schema = Schema(implementation = SubmissionDto::class))],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - No submit permission",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "User, problem, or files not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully created submission"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - No submit permission"),
+                ApiResponse(responseCode = "404", description = "User, problem, or files not found"),
             ]
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -147,17 +133,9 @@ class SubmissionController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved submissions",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = SubmissionDto::class)))],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Requires MODERATOR role",
-                    content = [Content()],
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved submissions"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - Requires MODERATOR role"),
             ]
     )
     @Parameters(
@@ -199,6 +177,7 @@ class SubmissionController(
 
     @Suppress("MaxLineLength")
     @GetMapping("/my")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Get my submissions",
         description =
@@ -207,12 +186,8 @@ class SubmissionController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved submissions",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = SubmissionDto::class)))],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved submissions"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
     @Parameters(

@@ -6,6 +6,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.ChangeBundleProblemsRequest
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest
 import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole
 import io.github.sanyavertolet.edukate.backend.entities.Bundle
+import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.services.BundleService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest
@@ -17,11 +18,11 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
@@ -54,20 +55,18 @@ class BundleController(
     private val bundleService: BundleService,
     private val userService: UserService,
     private val notifier: Notifier,
+    private val bundlePermissionEvaluator: BundlePermissionEvaluator,
 ) {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Create a bundle", description = "Creates a new bundle with the specified properties")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully created bundle",
-                    content = [Content(schema = Schema(implementation = BundleDto::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully created bundle"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -87,6 +86,7 @@ class BundleController(
 
     @GetMapping("/owned")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Get owned bundles",
         description = "Retrieves a paginated list of bundles owned by the authenticated user",
@@ -94,13 +94,9 @@ class BundleController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved owned bundles",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = BundleMetadata::class)))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved owned bundles"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
     @Parameters(
@@ -131,6 +127,7 @@ class BundleController(
 
     @GetMapping("/joined")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Get joined bundles",
         description = "Retrieves a paginated list of bundles joined by the authenticated user",
@@ -138,13 +135,9 @@ class BundleController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved joined bundles",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = BundleMetadata::class)))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved joined bundles"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
     @Parameters(
@@ -178,12 +171,8 @@ class BundleController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved public bundles",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = BundleMetadata::class)))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved public bundles"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
             ]
     )
     @Parameters(
@@ -210,60 +199,47 @@ class BundleController(
         bundleService.getPublicBundles(PageRequest.of(page, size)).flatMap { bundleService.prepareMetadata(it) }
 
     @GetMapping("/{shareCode}")
-    @PreAuthorize("isAuthenticated()")
     @Operation(
         summary = "Get bundle by share code",
-        description = "Retrieves a bundle by its share code (user must be a member of the bundle)",
+        description =
+            "Retrieves a bundle by its share code. Public bundles are accessible to anyone; private bundles require membership.",
     )
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved bundle",
-                    content = [Content(schema = Schema(implementation = BundleDto::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved bundle"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
                 ApiResponse(
                     responseCode = "403",
-                    description = "Access denied - User is not a member of the bundle",
-                    content = [Content()],
+                    description = "Access denied - bundle is private and user is not a member",
                 ),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
     )
     @Parameters(
         value = [Parameter(name = "shareCode", description = "Bundle share code", `in` = ParameterIn.PATH, required = true)]
     )
-    fun getBundleByShareCode(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<BundleDto> =
+    fun getBundleByShareCode(@PathVariable @NotBlank shareCode: String, authentication: Authentication?): Mono<BundleDto> =
         bundleService
             .findBundleByShareCode(shareCode)
-            .filter { it.isUserInBundle(authentication.id()) }
+            .filter { bundlePermissionEvaluator.hasReadPermission(it, authentication?.id()) }
             .switchIfEmpty(
-                Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "You must be a member of the bundle to view it."))
+                Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Bundle is private and you are not a member."))
             )
             .flatMap { bundle -> bundleService.prepareDto(bundle, authentication) }
 
     @PostMapping("/{shareCode}/join")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Join a bundle", description = "Joins a bundle using its share code")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully joined bundle",
-                    content = [Content(schema = Schema(implementation = BundleMetadata::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "Already in bundle", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - invite is required to join",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully joined bundle"),
+                ApiResponse(responseCode = "400", description = "Already in bundle"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - invite is required to join"),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
     )
     @Parameters(
@@ -277,6 +253,7 @@ class BundleController(
 
     @PostMapping("/{shareCode}/leave")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Leave a bundle",
         description = "Leaves a bundle the user is currently a member of and returns bundle shareCode",
@@ -284,18 +261,10 @@ class BundleController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully left bundle",
-                    content = [Content(schema = Schema(implementation = String::class))],
-                ),
-                ApiResponse(
-                    responseCode = "400",
-                    description = "Either not a participant or last admin",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully left bundle"),
+                ApiResponse(responseCode = "400", description = "Either not a participant or last admin"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
     )
     @Parameters(
@@ -306,23 +275,16 @@ class BundleController(
 
     @PostMapping("/{shareCode}/invite")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Invite user to bundle", description = "Invites another user to join a bundle")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully invited user",
-                    content = [Content(schema = Schema(implementation = String::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "User is already in bundle", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Insufficient permissions in bundle",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle or user not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully invited user"),
+                ApiResponse(responseCode = "400", description = "User is already in bundle"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - Insufficient permissions in bundle"),
+                ApiResponse(responseCode = "404", description = "Bundle or user not found"),
             ]
     )
     @Parameters(
@@ -366,23 +328,16 @@ class BundleController(
 
     @PostMapping("/{shareCode}/expire-invite")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Expire bundle invitation", description = "Cancels an existing invitation for a specific user")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully expired invitation",
-                    content = [Content(schema = Schema(implementation = String::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "User is not invited", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Insufficient permissions in bundle",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle or user not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully expired invitation"),
+                ApiResponse(responseCode = "400", description = "User is not invited"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - Insufficient permissions in bundle"),
+                ApiResponse(responseCode = "404", description = "Bundle or user not found"),
             ]
     )
     @Parameters(
@@ -413,23 +368,16 @@ class BundleController(
 
     @PostMapping("/{shareCode}/reply-invite")
     @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Reply to bundle invitation", description = "Accepts or declines an invitation to join a bundle")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully replied to invitation",
-                    content = [Content(schema = Schema(implementation = String::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "User is already in bundle", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - User is not invited",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully replied to invitation"),
+                ApiResponse(responseCode = "400", description = "User is already in bundle"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - User is not invited"),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
     )
     @Parameters(
@@ -462,29 +410,26 @@ class BundleController(
         }
 
     @GetMapping("/{shareCode}/users")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Get users in bundle", description = "Retrieves a list of users in a bundle with their roles")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved users",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = UserNameWithRole::class)))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Insufficient bundle permissions",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved users"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions"),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
+    )
+    @Parameters(
+        value = [Parameter(name = "shareCode", description = "Bundle share code", `in` = ParameterIn.PATH, required = true)]
     )
     fun getUserRoles(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Flux<UserNameWithRole> =
         bundleService.getBundleUsers(shareCode, authentication)
 
     @GetMapping("/{shareCode}/invited-users")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Get invited user names in bundle",
         description = "Retrieves the list of invited (pending) user names",
@@ -492,41 +437,29 @@ class BundleController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved invited user names",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = String::class)))],
-                ),
-                ApiResponse(responseCode = "400", description = "Validation failed", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Insufficient bundle permissions",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved invited user names"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions"),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
+    )
+    @Parameters(
+        value = [Parameter(name = "shareCode", description = "Bundle share code", `in` = ParameterIn.PATH, required = true)]
     )
     fun getInvitedUsers(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<List<String>> =
         bundleService.getBundleInvitedUsers(shareCode, authentication).collectList()
 
     @PostMapping("/{shareCode}/role")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Change user role in bundle", description = "Changes user role in a bundle by their name")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully changed user role",
-                    content = [Content(schema = Schema(implementation = UserRole::class))],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Insufficient bundle permissions",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle or user not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully changed user role"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions"),
+                ApiResponse(responseCode = "404", description = "Bundle or user not found"),
             ]
     )
     @Parameters(
@@ -550,6 +483,7 @@ class BundleController(
             .flatMap { userId -> bundleService.changeUserRole(shareCode, userId, requestedRole, authentication) }
 
     @PostMapping("/{shareCode}/visibility")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(
         summary = "Change bundle visibility",
         description = "Changes bundle visibility allowing it to be public or private",
@@ -557,17 +491,9 @@ class BundleController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully changed visibility",
-                    content = [Content(schema = Schema(implementation = BundleDto::class))],
-                ),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Insufficient bundle permissions",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully changed visibility"),
+                ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions"),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
     )
     @Parameters(
@@ -587,22 +513,15 @@ class BundleController(
         }
 
     @PostMapping("/{shareCode}/problems")
+    @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Change bundle problems", description = "Changes problem list of a bundle")
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully changed problem list",
-                    content = [Content(schema = Schema(implementation = BundleDto::class))],
-                ),
-                ApiResponse(responseCode = "400", description = "Problem list should not be empty", content = [Content()]),
-                ApiResponse(
-                    responseCode = "403",
-                    description = "Access denied - Insufficient bundle permissions",
-                    content = [Content()],
-                ),
-                ApiResponse(responseCode = "404", description = "Bundle not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully changed problem list"),
+                ApiResponse(responseCode = "400", description = "Problem list should not be empty"),
+                ApiResponse(responseCode = "403", description = "Access denied - Insufficient bundle permissions"),
+                ApiResponse(responseCode = "404", description = "Bundle not found"),
             ]
     )
     @Parameters(

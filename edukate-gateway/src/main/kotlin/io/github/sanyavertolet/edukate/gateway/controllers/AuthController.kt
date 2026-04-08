@@ -6,11 +6,13 @@ import io.github.sanyavertolet.edukate.gateway.dtos.SignUpRequest
 import io.github.sanyavertolet.edukate.gateway.services.AuthService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -34,9 +36,14 @@ class AuthController(private val authService: AuthService, private val authCooki
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "204", description = "Successfully authenticated", content = [Content()]),
-                ApiResponse(responseCode = "403", description = "Authentication failed", content = [Content()]),
+                ApiResponse(responseCode = "204", description = "Successfully authenticated"),
+                ApiResponse(responseCode = "403", description = "Authentication failed"),
             ]
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        required = true,
+        content =
+            [Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = SignInRequest::class))],
     )
     fun signIn(@RequestBody @Valid signInRequest: SignInRequest): Mono<ResponseEntity<Void>> =
         authService
@@ -53,10 +60,15 @@ class AuthController(private val authService: AuthService, private val authCooki
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "204", description = "Successfully registered", content = [Content()]),
-                ApiResponse(responseCode = "403", description = "Registration failed", content = [Content()]),
-                ApiResponse(responseCode = "409", description = "User with this name already exists", content = [Content()]),
+                ApiResponse(responseCode = "204", description = "Successfully registered"),
+                ApiResponse(responseCode = "403", description = "Registration failed"),
+                ApiResponse(responseCode = "409", description = "User with this name already exists"),
             ]
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        required = true,
+        content =
+            [Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = Schema(implementation = SignUpRequest::class))],
     )
     fun signUp(@RequestBody @Valid signUpRequest: SignUpRequest): Mono<ResponseEntity<Void>> =
         authService
@@ -70,8 +82,6 @@ class AuthController(private val authService: AuthService, private val authCooki
         summary = "Sign user out",
         description = "Signs out the current user by expiring their authentication token",
     )
-    @ApiResponses(
-        value = [ApiResponse(responseCode = "204", description = "Successfully signed out", content = [Content()])]
-    )
+    @ApiResponses(value = [ApiResponse(responseCode = "204", description = "Successfully signed out")])
     fun signOut(): Mono<ResponseEntity<Void>> = authCookieService.respondWithExpiredToken()
 }

@@ -11,11 +11,10 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.media.ArraySchema
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -34,6 +33,7 @@ import reactor.core.publisher.Mono
 @RestController
 @RequestMapping("/api/v1/checker")
 @Tag(name = "Checker", description = "API for scheduling checks and retrieving check results")
+@SecurityRequirement(name = "cookieAuth")
 class CheckerController(
     private val checkResultService: CheckResultService,
     private val checkerSchedulerService: CheckerSchedulerService,
@@ -45,10 +45,10 @@ class CheckerController(
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "202", description = "Check scheduled", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(responseCode = "403", description = "Access denied", content = [Content()]),
-                ApiResponse(responseCode = "404", description = "Submission not found", content = [Content()]),
+                ApiResponse(responseCode = "202", description = "Check scheduled"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied"),
+                ApiResponse(responseCode = "404", description = "Submission not found"),
             ]
     )
     @Parameters(
@@ -80,10 +80,10 @@ class CheckerController(
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "202", description = "Self-check accepted", content = [Content()]),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(responseCode = "403", description = "Access denied", content = [Content()]),
-                ApiResponse(responseCode = "404", description = "Submission not found", content = [Content()]),
+                ApiResponse(responseCode = "202", description = "Self-check accepted"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied"),
+                ApiResponse(responseCode = "404", description = "Submission not found"),
             ]
     )
     @Parameters(
@@ -114,7 +114,7 @@ class CheckerController(
         summary = "Request supervisor check",
         description = "Requests a supervisor check for the provided submission (not implemented yet)",
     )
-    @ApiResponses(value = [ApiResponse(responseCode = "501", description = "Not implemented", content = [Content()])])
+    @ApiResponses(value = [ApiResponse(responseCode = "501", description = "Not implemented")])
     @Parameters(
         value =
             [
@@ -137,14 +137,10 @@ class CheckerController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved check result",
-                    content = [Content(schema = Schema(implementation = CheckResultDto::class))],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(responseCode = "403", description = "Access denied", content = [Content()]),
-                ApiResponse(responseCode = "404", description = "Check result not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved check result"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied"),
+                ApiResponse(responseCode = "404", description = "Check result not found"),
             ]
     )
     @Parameters(
@@ -177,13 +173,9 @@ class CheckerController(
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved check results",
-                    content = [Content(array = ArraySchema(schema = Schema(implementation = CheckResultInfo::class)))],
-                ),
-                ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
-                ApiResponse(responseCode = "403", description = "Access denied", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved check results"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied"),
             ]
     )
     @Parameters(

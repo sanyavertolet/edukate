@@ -6,8 +6,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -33,12 +31,8 @@ class ResultController(private val resultService: ResultService) {
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved result",
-                    content = [Content(schema = Schema(implementation = Result::class))],
-                ),
-                ApiResponse(responseCode = "404", description = "Result not found", content = [Content()]),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved result"),
+                ApiResponse(responseCode = "404", description = "Result not found"),
             ]
     )
     @Parameters(value = [Parameter(name = "id", description = "Result ID", `in` = ParameterIn.PATH, required = true)])

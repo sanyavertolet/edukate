@@ -7,13 +7,14 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.PositiveOrZero
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -36,11 +37,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully marked notifications as read",
-                    content = arrayOf(Content(schema = Schema(implementation = Long::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully marked notifications as read"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
@@ -58,11 +55,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully marked all notifications as read",
-                    content = arrayOf(Content(schema = Schema(implementation = Long::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully marked all notifications as read"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
@@ -76,11 +69,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved notifications",
-                    content = arrayOf(Content(schema = Schema(implementation = BaseNotificationDto::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved notifications"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
@@ -105,8 +94,8 @@ class NotificationController(private val notificationService: NotificationServic
         ),
     )
     fun getNotifications(
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
+        @RequestParam(defaultValue = "10") @Positive size: Int,
         @RequestParam(required = false) isRead: Boolean?,
         authentication: Authentication?,
     ): Flux<BaseNotificationDto> =
@@ -120,11 +109,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved notification statistics",
-                    content = arrayOf(Content(schema = Schema(implementation = NotificationStatistics::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved notification statistics"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
