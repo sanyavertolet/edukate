@@ -7,6 +7,7 @@ export default defineConfig({
             client: "react-query",
             httpClient: "axios",
             target: "./src/generated/backend.ts",
+            mock: true,
             override: {
                 mutator: { path: "./src/lib/axios.ts", name: "client" },
             },
@@ -18,6 +19,7 @@ export default defineConfig({
             client: "react-query",
             httpClient: "axios",
             target: "./src/generated/gateway.ts",
+            mock: true,
             override: {
                 mutator: { path: "./src/lib/axios.ts", name: "client" },
             },
@@ -29,6 +31,7 @@ export default defineConfig({
             client: "react-query",
             httpClient: "axios",
             target: "./src/generated/notifier.ts",
+            mock: true,
             override: {
                 mutator: { path: "./src/lib/axios.ts", name: "client" },
             },

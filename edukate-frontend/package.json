@@ -38,6 +38,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
+        "@faker-js/faker": "^10.4.0",
         "@microsoft/eslint-formatter-sarif": "^3.1.0",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",
