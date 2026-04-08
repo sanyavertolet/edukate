@@ -60,12 +60,12 @@ export function UserMenu() {
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                 open={isMenuOpen}
                 onClose={handleClose}
-                MenuListProps={{ "aria-labelledby": "basic-button" }}
+                MenuListProps={{ "aria-labelledby": "user-menu-button" }}
                 keepMounted
             >
                 {user ? signedInMenuItems : signedOutMenuItems}
             </Menu>
-            <Button aria-label="account of current user" aria-haspopup="true" color="primary" onClick={handleOpen}>
+            <Button id="user-menu-button" aria-label="account of current user" aria-haspopup="true" aria-expanded={isMenuOpen} color="primary" onClick={handleOpen}>
                 <Typography variant={"body2"} sx={{ display: { xs: "none", md: "flex" }, pr: "0.5rem" }}>
                     {user ? user.name : "Sign"}
                 </Typography>

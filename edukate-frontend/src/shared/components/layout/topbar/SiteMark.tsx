@@ -5,8 +5,9 @@ type SiteMarkProps = {
     onClick?: () => void;
 };
 
+const edukateTypographySx = { display: "flex", fontWeight: "bold", ml: 1 } as const;
+
 export const SiteMark: FC<SiteMarkProps> = ({ onClick }) => {
-    const edukateTypographySx = { display: "flex", fontWeight: "bold", ml: 1 };
 
     if (onClick) {
         return (

@@ -35,7 +35,14 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
     return (
         <>
             {items?.map((item) => (
-                <TableRow key={item.name} hover sx={{ cursor: "pointer" }} onClick={() => onRowClick(item.name)}>
+                <TableRow
+                    key={item.name}
+                    hover
+                    tabIndex={0}
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => onRowClick(item.name)}
+                    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onRowClick(item.name)}
+                >
                     <TableCell>
                         <ProblemStatusIcon status={item.status} />
                     </TableCell>

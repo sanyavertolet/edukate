@@ -21,6 +21,9 @@ export const queryKeys = {
     },
     notifications: {
         all: ["notifications"] as const,
+        // isRead/page/size are part of the key so each combination is cached independently
+        list: (isRead: boolean | undefined, page: number, size: number) =>
+            ["notifications", "list", isRead, page, size] as const,
         stats: ["notifications", "stats"] as const,
     },
     checks: {

@@ -31,7 +31,7 @@ export default function BundleCreationPage() {
             <Card>
                 <CardContent>
                     <Stack spacing={2}>
-                        <Typography color={"secondary"} variant={"h5"}>
+                        <Typography component="h1" color={"secondary"} variant={"h5"}>
                             Create Bundle
                         </Typography>
                         <TextField

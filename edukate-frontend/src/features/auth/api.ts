@@ -1,49 +1,33 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { client } from "@/lib/axios";
+import { whoami } from "@/generated/backend";
+import { signIn, signOut, signUp } from "@/generated/gateway";
 import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
-import { User } from "./types";
 
 export function useWhoamiQuery() {
     return useQuery({
         queryKey: queryKeys.auth.whoami,
-        queryFn: async () => {
-            const response = await client.get("/api/v1/users/whoami");
-            return response.status !== 401 ? (response.data as User) : null;
-        },
+        queryFn: ({ signal }) => whoami(signal),
+        staleTime: Infinity,
         retry: false,
+        meta: { silent: true },
     });
-}
-
-interface SignInMutationParams {
-    username: string;
-    password: string;
 }
 
 export function useSignInMutation() {
     return useMutation({
-        mutationFn: async (signInParams: SignInMutationParams) => {
-            const response = await client.post("/api/v1/auth/sign-in", signInParams);
-            return response.status === 204;
-        },
+        mutationFn: ({ username, password }: { username: string; password: string }) =>
+            signIn({ username, password }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami }).finally();
         },
     });
 }
 
-interface SignUpMutationParams {
-    username: string;
-    password: string;
-    email: string;
-}
-
 export function useSignUpMutation() {
     return useMutation({
-        mutationFn: async (signUpParams: SignUpMutationParams) => {
-            const response = await client.post("/api/v1/auth/sign-up", signUpParams);
-            return response.status === 204;
-        },
+        mutationFn: ({ username, password, email }: { username: string; password: string; email: string }) =>
+            signUp({ username, password, email }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami }).finally();
         },
@@ -52,10 +36,7 @@ export function useSignUpMutation() {
 
 export function useSignOutMutation() {
     return useMutation({
-        mutationFn: async () => {
-            const response = await client.post("/api/v1/auth/sign-out");
-            return response.status === 204;
-        },
+        mutationFn: () => signOut(),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami }).finally();
         },

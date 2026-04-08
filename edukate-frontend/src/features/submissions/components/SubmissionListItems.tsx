@@ -1,4 +1,5 @@
 import { Submission, SubmissionStatus } from "@/features/submissions/types";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { ReactNode, useMemo } from "react";
 import {
     Avatar,
@@ -56,7 +57,7 @@ export function AttachmentButtonList(attachments: string[] = [], openImage: (ima
     );
 }
 
-export function ErrorListItem({ error }: { error: Error }) {
+export function ErrorListItem({ error }: { error: unknown }) {
     return (
         <ListItem key={"error"}>
             <ListItemAvatar>
@@ -68,7 +69,7 @@ export function ErrorListItem({ error }: { error: Error }) {
                 primary="Failed to load submissions"
                 secondary={
                     <Typography variant="body2" color="text.secondary">
-                        {String(error?.message ?? "Please try again later.")}
+                        {getApiErrorMessage(error)}
                     </Typography>
                 }
             />

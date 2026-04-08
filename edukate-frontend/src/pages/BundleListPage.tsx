@@ -18,7 +18,7 @@ export default function BundleListPage() {
     return (
         <Box>
             <Container>
-                <Typography color="primary" variant="h5">
+                <Typography component="h1" color="primary" variant="h5">
                     Problem bundles
                 </Typography>
             </Container>

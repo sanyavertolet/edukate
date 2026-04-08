@@ -1,15 +1,27 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+    changeUserRole,
+    ChangeUserRoleRequestedRole,
+    createBundle,
+    expireInvite,
+    getBundleByShareCode,
+    getInvitedUsers,
+    getJoinedBundles,
+    getOwnedBundles,
+    getPublicBundles,
+    getUserRoles,
+    inviteToBundle,
+    joinBundle,
+    replyToInvite,
+} from "@/generated/backend";
 import { useAuthContext } from "@/features/auth/context";
-import { defaultErrorHandler } from "@/lib/error-handler";
-import { client } from "@/lib/axios";
+import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
-import { Bundle, BundleCategory, BundleMetadata, CreateBundleRequest } from "./types";
-import { UserNameWithRole } from "@/features/auth/types";
+import { BundleCategory, CreateBundleRequest } from "./types";
 
 export function useCreateBundleMutation(createBundleRequest: CreateBundleRequest) {
     return useMutation({
-        mutationKey: queryKeys.bundles.all,
-        mutationFn: async () => {
+        mutationFn: () => {
             if (
                 !createBundleRequest.name ||
                 createBundleRequest.problemIds.length == 0 ||
@@ -17,102 +29,70 @@ export function useCreateBundleMutation(createBundleRequest: CreateBundleRequest
             ) {
                 throw new Error("Invalid bundle request");
             }
-            try {
-                const response = await client.post<Bundle>(`/api/v1/bundles`, createBundleRequest);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
+            return createBundle(createBundleRequest);
         },
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("owned") }).finally(),
     });
 }
 
 export function useBundleRequest(bundleCode: string | undefined) {
     return useQuery({
         queryKey: queryKeys.bundles.detail(bundleCode ?? ""),
-        queryFn: async () => {
-            if (!bundleCode) {
-                return undefined;
-            }
-            try {
-                const response = await client.get<Bundle>(`/api/v1/bundles/${bundleCode}`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        queryFn: ({ signal }) => getBundleByShareCode(bundleCode!, signal),
+        enabled: !!bundleCode,
     });
 }
+
+const bundleListFn: Record<BundleCategory, typeof getPublicBundles> = {
+    public: getPublicBundles,
+    owned: getOwnedBundles,
+    joined: getJoinedBundles,
+};
 
 export function useBundlesRequest(category: BundleCategory) {
     return useQuery({
         queryKey: queryKeys.bundles.list(category),
-        queryFn: async () => {
-            try {
-                const response = await client.get<BundleMetadata[]>(`/api/v1/bundles/${category}`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        queryFn: ({ signal }) => bundleListFn[category](undefined, signal),
     });
 }
 
 export function useJoinBundleMutation() {
     return useMutation({
-        mutationKey: ["join-bundle"],
-        mutationFn: async (bundleCode: string) => {
-            try {
-                const response = await client.post<BundleMetadata>(`/api/v1/bundles/${bundleCode}/join`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
+        mutationFn: (shareCode: string) => joinBundle(shareCode),
+        onSuccess: (_data, shareCode) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("joined") }).finally();
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.detail(shareCode) }).finally();
         },
     });
 }
 
 export function useBundleInviteUserMutation() {
     return useMutation({
-        mutationKey: ["bundle", "user", "invite"],
-        mutationFn: async ({ username, shareCode }: { username: string; shareCode: string }) => {
-            try {
-                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/invite`, undefined, {
-                    params: { shareCode, inviteeName: username },
-                });
-                return response.status;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        mutationFn: ({ username, shareCode }: { username: string; shareCode: string }) =>
+            inviteToBundle(shareCode, { inviteeName: username }),
+        onSuccess: (_data, { shareCode }) =>
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.invitedUsers(shareCode) }).finally(),
     });
 }
 
 export function useBundleInvitationReplyMutation() {
     return useMutation({
-        mutationKey: ["bundle", "user", "reply-invite"],
-        mutationFn: async ({ shareCode, isAccepted }: { shareCode: string; isAccepted: boolean }) => {
-            const response = await client.post<string>(`/api/v1/bundles/${shareCode}/reply-invite`, undefined, {
-                params: { shareCode, response: isAccepted },
-            });
-            return response.status;
+        mutationFn: ({ shareCode, isAccepted }: { shareCode: string; isAccepted: boolean }) =>
+            replyToInvite(shareCode, { response: isAccepted }),
+        onSuccess: (_data, { shareCode }) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("joined") }).finally();
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.detail(shareCode) }).finally();
         },
     });
 }
 
 export function useBundleChangeUserRoleMutation() {
     return useMutation({
-        mutationKey: ["bundle", "user", "role"],
-        mutationFn: async ({ username, role, shareCode }: { username: string; role: string; shareCode: string }) => {
-            try {
-                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/role`, undefined, {
-                    params: { username, requestedRole: role },
-                });
-                return response.status;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        mutationFn: ({ username, role, shareCode }: { username: string; role: string; shareCode: string }) =>
+            changeUserRole(shareCode, { username, requestedRole: role as ChangeUserRoleRequestedRole }),
+        onSuccess: (_data, { shareCode }) =>
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.users(shareCode) }).finally(),
     });
 }
 
@@ -121,14 +101,7 @@ export function useBundleUserListQuery(shareCode: string) {
     return useQuery({
         queryKey: queryKeys.bundles.users(shareCode),
         enabled: isAuthorized,
-        queryFn: async () => {
-            try {
-                const response = await client.get<UserNameWithRole[]>(`/api/v1/bundles/${shareCode}/users`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        queryFn: ({ signal }) => getUserRoles(shareCode, signal),
     });
 }
 
@@ -137,29 +110,15 @@ export function useBundleInvitedUserListQuery(shareCode: string) {
     return useQuery({
         queryKey: queryKeys.bundles.invitedUsers(shareCode),
         enabled: isAuthorized,
-        queryFn: async () => {
-            try {
-                const response = await client.get<string[]>(`/api/v1/bundles/${shareCode}/invited-users`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        queryFn: ({ signal }) => getInvitedUsers(shareCode, signal),
     });
 }
 
 export function useBundleExpireInviteMutation() {
     return useMutation({
-        mutationKey: ["bundle", "user", "expire-invite"],
-        mutationFn: async ({ shareCode, username }: { shareCode: string; username: string }) => {
-            try {
-                const response = await client.post<string>(`/api/v1/bundles/${shareCode}/expire-invite`, undefined, {
-                    params: { shareCode, inviteeName: username },
-                });
-                return response.status;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        mutationFn: ({ shareCode, username }: { shareCode: string; username: string }) =>
+            expireInvite(shareCode, { inviteeName: username }),
+        onSuccess: (_data, { shareCode }) =>
+            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.invitedUsers(shareCode) }).finally(),
     });
 }

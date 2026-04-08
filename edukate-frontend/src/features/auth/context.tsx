@@ -1,12 +1,12 @@
 import { createContext, FC, ReactNode, useContext } from "react";
 import { useWhoamiQuery } from "./api";
-import { User } from "./types";
+import { UserDto } from "@/generated/backend";
 
 /**
  * Auth context interface that provides user information and methods to manage authentication
  */
 interface AuthContextType {
-    user: User | undefined;
+    user: UserDto | undefined;
     isAuthorized: boolean;
 }
 

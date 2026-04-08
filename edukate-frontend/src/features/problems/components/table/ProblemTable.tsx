@@ -8,8 +8,9 @@ type ProblemTableProps = {
     footer?: ReactNode;
 };
 
+const headerTableCellSx = { minWidth: 44, maxWidth: 44, width: 44, p: 0.5 } as const;
+
 export const ProblemTable: FC<ProblemTableProps> = ({ headerCells, toolbar, children, footer }) => {
-    const headerTableCellSx = { minWidth: 44, maxWidth: 44, width: 44, p: 0.5 };
     return (
         <TableContainer component={Paper}>
             {toolbar}

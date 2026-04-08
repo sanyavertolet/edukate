@@ -1,80 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
-import { client } from "@/lib/axios";
-import { defaultErrorHandler } from "@/lib/error-handler";
+import { count, getProblem, getProblemList, getRandomUnsolvedProblemId, getResultById } from "@/generated/backend";
 import { queryKeys } from "@/lib/query-keys";
-import { ProblemMetadata, Problem, Result } from "./types";
+
+const PROBLEM_STALE_TIME = 5 * 60_000;
 
 export function useProblemListRequest(page: number, size: number) {
     return useQuery({
         queryKey: queryKeys.problems.list(page, size),
-        queryFn: async () => {
-            try {
-                const response = await client.get(`/api/v1/problems?page=${page}&size=${size}`);
-                return response.data as ProblemMetadata[];
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        staleTime: PROBLEM_STALE_TIME,
+        queryFn: ({ signal }) => getProblemList({ page: String(page), size: String(size) }, signal),
     });
 }
 
 export function useProblemCountRequest() {
     return useQuery({
         queryKey: queryKeys.problems.count,
-        queryFn: async () => {
-            try {
-                const response = await client.get<number>("/api/v1/problems/count");
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        staleTime: PROBLEM_STALE_TIME,
+        queryFn: ({ signal }) => count(signal),
     });
 }
 
 export function useProblemRequest(id: string | undefined) {
     return useQuery({
         queryKey: queryKeys.problems.detail(id ?? ""),
-        queryFn: async () => {
-            if (id === undefined) {
-                return undefined;
-            }
-            try {
-                const response = await client.get<Problem>(`/api/v1/problems/${id}`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        staleTime: PROBLEM_STALE_TIME,
+        queryFn: ({ signal }) => getProblem(id!, signal),
         enabled: id !== undefined,
+        meta: { silent: true },
     });
 }
 
 export function useResultRequest(problemId: string) {
     return useQuery({
         queryKey: queryKeys.problems.result(problemId),
-        queryFn: async () => {
-            try {
-                const response = await client.get<Result>(`/api/v1/results/${problemId}`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        queryFn: ({ signal }) => getResultById(problemId, signal),
     });
 }
 
 export function useRandomProblemIdQuery() {
     return useQuery({
         queryKey: queryKeys.problems.random,
-        queryFn: async () => {
-            try {
-                const response = await client.get<string>(`/api/v1/problems/random`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        queryFn: ({ signal }) => getRandomUnsolvedProblemId(signal),
         enabled: false,
     });
 }

@@ -6,8 +6,6 @@ import { useSubmitProblemMutation } from "@/features/submissions/api";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
 import { MobileFileUpload } from "@/features/files/components/MobileFileUpload";
 import { toast } from "react-toastify";
-import { queryClient } from "@/lib/query-client";
-import { queryKeys } from "@/lib/query-keys";
 
 interface SolutionCardProps {
     problem: Problem;
@@ -26,13 +24,7 @@ export default function SolutionCard({ problem }: SolutionCardProps) {
         submitFilesMutation.mutate(
             { problemId: problem.id, fileNames },
             {
-                onSuccess: () => {
-                    toast.success("Your solution has been submitted successfully!");
-                    queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problem.id) }).finally();
-                },
-                onError: (error) => {
-                    toast.error(error.message);
-                },
+                onSuccess: () => toast.success("Your solution has been submitted successfully!"),
             },
         );
     };

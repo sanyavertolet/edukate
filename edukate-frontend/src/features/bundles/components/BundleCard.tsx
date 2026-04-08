@@ -70,6 +70,7 @@ export const BundleCard: FC<BundleCardProps> = ({ bundleMetadata, onCopy }) => {
                             variant={"outlined"}
                             icon={<ContentCopyIcon fontSize="small" />}
                             label={bundleMetadata.shareCode}
+                            aria-label={`Copy share code ${bundleMetadata.shareCode}`}
                             onClick={copyShareCode}
                         />
                     </Tooltip>

@@ -44,7 +44,7 @@ src/
 ## Routes
 
 | Path               | Page component       | Auth required |
-| ------------------ | -------------------- | ------------- |
+|--------------------|----------------------|---------------|
 | `/`                | `IndexPage`          | No            |
 | `/problems`        | `ProblemListPage`    | No            |
 | `/problems/:id`    | `ProblemPage`        | No            |
@@ -75,18 +75,33 @@ src/
 
 ## Type generation
 
+Types and React Query hooks are generated from the OpenAPI specs using **Orval** (axios + react-query client).
+
 ```bash
-# Requires gateway running on :5810
+# Regenerate specs first (each service starts briefly via the springdoc Gradle plugin)
+./gradlew :edukate-backend:generateOpenApiDocs
+./gradlew :edukate-gateway:generateOpenApiDocs
+./gradlew :edukate-notifier:generateOpenApiDocs
+# Writes: spec/openapi-edukate-{backend,gateway,notifier}.yaml at the repo root
+
+# Then generate TypeScript types + hooks
 npm run generate:types
-# Writes: src/types/api.d.ts  (auto-generated — never edit by hand)
+# Writes: src/generated/{backend,gateway,notifier}.ts  (auto-generated — never edit by hand)
 ```
 
-Re-export component schemas from `src/types/index.ts`:
+Generated files live in `src/generated/`. Feature API files (`features/*/api.ts`) are thin wrappers
+that add auth guards and cache-invalidation logic on top of the generated hooks:
 
 ```ts
-import type { components } from "./api";
-export type Problem = components["schemas"]["Problem"];
+// features/bundles/api.ts — example wrapper
+export function useBundleUserListQuery(shareCode: string) {
+    const { isAuthorized } = useAuthContext();
+    return useGetBundleUsers(shareCode, { query: { enabled: isAuthorized } });
+}
 ```
+
+`bootRun` for each service also triggers `generateOpenApiDocs` automatically, so the spec stays
+fresh whenever a backend service is started for local development.
 
 ## Dev environment setup
 

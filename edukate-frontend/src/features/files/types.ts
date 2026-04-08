@@ -1,21 +1,8 @@
-import { UtcIsoString } from "@/shared/utils/date-types";
+import type { FileMetadata as FileMetadataDto } from "@/generated/backend";
 
-export interface FileMetadata {
-    key: string;
-    authorName: string;
-    lastModified: UtcIsoString;
-    size: number;
-
+export interface FileMetadata extends FileMetadataDto {
     status?: "pending" | "uploading" | "success" | "error";
     progress?: number;
     error?: Error;
     _file?: File;
-}
-
-export interface ExtendedFile {
-    content: File;
-    status: "pending" | "uploading" | "success" | "error";
-    progress: number;
-    key?: string;
-    error?: Error;
 }

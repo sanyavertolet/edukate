@@ -17,6 +17,14 @@ type MobileFileInputProps = {
     accept?: string;
 };
 
+const listItemSx = {
+    backgroundColor: "background.paper",
+    mb: 1,
+    borderRadius: 1,
+    border: "1px solid",
+    borderColor: "divider",
+} as const;
+
 export const MobileFileInput: FC<MobileFileInputProps> = ({
     onTempFileUploaded,
     onTempFileDeleted,
@@ -38,14 +46,6 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const onUploadButtonClick = () => {
         fileInputRef.current?.click();
-    };
-
-    const listItemSx = {
-        backgroundColor: "background.paper",
-        mb: 1,
-        borderRadius: 1,
-        border: "1px solid",
-        borderColor: "divider",
     };
 
     const { primaryText, secondaryText } = useFileStatsDisplayValues({ files: fileMetadataList, maxFiles, maxSize });
@@ -78,7 +78,7 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
                     <IconButton
                         color={"primary"}
                         edge="end"
-                        aria-label="delete"
+                        aria-label="Upload files"
                         onClick={onUploadButtonClick}
                         disabled={fileMetadataList.length == maxFiles}
                     >
@@ -90,8 +90,11 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
             {fileMetadataList.map((file) => (
                 <ListItem
                     key={file.key}
+                    role={file.status === "success" ? "button" : undefined}
+                    tabIndex={file.status === "success" ? 0 : undefined}
                     sx={{ ...listItemSx, cursor: file.status === "success" ? "pointer" : "default" }}
                     onClick={() => file.status === "success" && handleFileClick(file.key)}
+                    onKeyDown={(e) => file.status === "success" && (e.key === "Enter" || e.key === " ") && handleFileClick(file.key)}
                     secondaryAction={
                         <IconButton
                             edge="end"

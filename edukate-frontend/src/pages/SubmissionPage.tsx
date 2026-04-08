@@ -10,7 +10,7 @@ export default function SubmissionPage() {
     return (
         <Box>
             <Stack direction="row" justifyContent="center" spacing={2} alignItems="center" paddingBottom="2rem">
-                <Typography variant="h5" color="primary">
+                <Typography component="h1" variant="h5" color="primary">
                     Submission {submissionId}
                 </Typography>
             </Stack>

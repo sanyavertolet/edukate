@@ -22,6 +22,13 @@ interface NotificationMenuProps {
 
 const defaultNotificationPageSize: number = 10;
 
+const notificationsMenuPrefixSx = {
+    p: 1,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+} as const;
+
 function calculateNumberOfPage(statistics: NotificationStatistics | undefined | null) {
     return statistics ? Math.ceil(statistics.total / defaultNotificationPageSize) : 1;
 }
@@ -50,7 +57,6 @@ export const NotificationMenu: FC<NotificationMenuProps> = ({
     };
     const isMenuOpen = Boolean(anchorEl);
     const numberOfPages = useMemo(() => calculateNumberOfPage(notificationStatistics), [notificationStatistics]);
-    const notificationsMenuPrefixSx = { p: 1, display: "flex", justifyContent: "space-between", alignItems: "center" };
     return (
         <Menu
             id="notifications-menu"

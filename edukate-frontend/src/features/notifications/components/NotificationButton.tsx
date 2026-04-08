@@ -19,7 +19,7 @@ type BundleInviteInfo = {
 export const NotificationButton: FC = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
     const { isAuthorized } = useAuthContext();
-    const { data: statistics } = useNotificationsCountRequest(false);
+    const { data: statistics } = useNotificationsCountRequest();
     const handleClose = () => setAnchorEl(undefined);
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -72,6 +72,7 @@ export const NotificationButton: FC = () => {
                 <IconButton
                     aria-label="show notifications"
                     aria-haspopup="true"
+                    aria-expanded={Boolean(anchorEl)}
                     color={"primary"}
                     edge="end"
                     onClick={handleOpen}

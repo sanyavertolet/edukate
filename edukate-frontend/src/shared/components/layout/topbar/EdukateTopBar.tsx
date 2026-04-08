@@ -14,18 +14,18 @@ import ThemeToggleButton from "./ThemeToggleButton";
 import { UserMenu } from "./UserMenu";
 import { BlurryToolbar } from "@/shared/components/Styled";
 
+const appBarSx = {
+    boxShadow: 0,
+    bgcolor: "transparent",
+    backgroundImage: "none",
+    mt: "calc(var(--template-frame-height, 0px) + 28px)",
+} as const;
+
 export function EdukateTopBar() {
     const [open, setOpen] = useState(false);
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
-    };
-
-    const appBarSx = {
-        boxShadow: 0,
-        bgcolor: "transparent",
-        backgroundImage: "none",
-        mt: "calc(var(--template-frame-height, 0px) + 28px)",
     };
 
     const { isAuthorized } = useAuthContext();

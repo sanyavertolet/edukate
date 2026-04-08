@@ -66,7 +66,7 @@ The app uses MUI `Container maxWidth="lg"` and MUI breakpoints throughout, so ba
 responsiveness is already there. Specific areas to audit and improve:
 
 | Area                   | Issue                                                     | Fix                                                          |
-| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------------ |
+|------------------------|-----------------------------------------------------------|--------------------------------------------------------------|
 | `ProblemTable`         | Full table on small screens is cramped                    | Collapse to card list on `xs`/`sm`                           |
 | `BundleComponent`      | Sidebar + content grid may stack awkwardly                | Audit at 375px width                                         |
 | `EdukateTopBar`        | Mobile drawer exists — verify all nav items are reachable | Smoke test on 375px                                          |

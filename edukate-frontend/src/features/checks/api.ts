@@ -1,23 +1,21 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { client } from "@/lib/axios";
-import { defaultErrorHandler } from "@/lib/error-handler";
+import { aiCheck, getCheckResultsBySubmissionId, selfCheck, supervisorCheck } from "@/generated/backend";
 import { useAuthContext } from "@/features/auth/context";
+import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
-import { CheckRequest, CheckResultInfo } from "./types";
+import { CheckRequest } from "./types";
+
+const checkFn = {
+    supervisor: supervisorCheck,
+    self: selfCheck,
+    ai: aiCheck,
+};
 
 export function useRequestCheckMutation() {
     return useMutation({
-        mutationKey: ["request-check"],
-        mutationFn: async ({ submissionId, checkType }: CheckRequest) => {
-            try {
-                const response = await client.post<null>(`/api/v1/checker/${checkType}`, undefined, {
-                    params: { id: submissionId },
-                });
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        mutationFn: ({ submissionId, checkType }: CheckRequest) => checkFn[checkType]({ id: submissionId }),
+        onSuccess: (_data, { submissionId }) =>
+            queryClient.invalidateQueries({ queryKey: queryKeys.checks.bySubmission(submissionId) }).finally(),
     });
 }
 
@@ -26,13 +24,6 @@ export function useCheckResultsRequest(submissionId: string) {
     return useQuery({
         queryKey: queryKeys.checks.bySubmission(submissionId),
         enabled: isAuthorized,
-        queryFn: async () => {
-            try {
-                const response = await client.get<CheckResultInfo[]>(`/api/v1/checker/submissions/${submissionId}`);
-                return response.data;
-            } catch (error) {
-                throw defaultErrorHandler(error);
-            }
-        },
+        queryFn: ({ signal }) => getCheckResultsBySubmissionId(submissionId, signal),
     });
 }

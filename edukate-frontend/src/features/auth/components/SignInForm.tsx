@@ -1,5 +1,5 @@
-import { FormEvent, useEffect, useState } from "react";
-import { Box, TextField, Button, Typography, Link, FormControl } from "@mui/material";
+import { FocusEvent, FormEvent, useState } from "react";
+import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useSignInMutation } from "@/features/auth/api";
 import { useNavigate } from "react-router-dom";
 import { queryClient } from "@/lib/query-client";
@@ -7,107 +7,100 @@ import { queryKeys } from "@/lib/query-keys";
 import { SiteMark } from "@/shared/components/layout/topbar/SiteMark";
 import { SignCard, SignContainer } from "@/shared/components/Styled";
 
-interface SignInComponentProps {
+const titleSx = { width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)", textAlign: "left" } as const;
+const formSx = { display: "flex", flexDirection: "column", width: "100%", gap: 2 } as const;
+const footerSx = { display: "flex", flexDirection: "column", gap: 2 } as const;
+
+interface SignInFormProps {
     onSignInSuccess?: () => void;
     onSignUpRequest?: () => void;
 }
 
-export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInComponentProps) => {
+export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps) => {
     const navigate = useNavigate();
     const signInMutation = useSignInMutation();
-    useEffect(() => {
-        if (signInMutation.isSuccess) {
-            queryClient
-                .refetchQueries({ queryKey: queryKeys.auth.whoami })
-                .finally(() => (onSignInSuccess ? onSignInSuccess() : navigate("/")));
-        }
-    }, [signInMutation.isSuccess]);
 
-    const [usernameErrorMessage, setUsernameErrorMessage] = useState("");
-    const [passwordErrorMessage, setPasswordErrorMessage] = useState("");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [usernameError, setUsernameError] = useState<string | null>(null);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+
+    const validateUsername = (value: string) => (value.trim() ? null : "Please enter your username.");
+    const validatePassword = (value: string) => (value.trim() ? null : "Please enter your password.");
+
+    const handleBlurUsername = (e: FocusEvent<HTMLInputElement>) => setUsernameError(validateUsername(e.target.value));
+    const handleBlurPassword = (e: FocusEvent<HTMLInputElement>) => setPasswordError(validatePassword(e.target.value));
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (!!usernameErrorMessage || !!passwordErrorMessage) {
-            return;
-        }
-        const data = new FormData(event.currentTarget);
-        signInMutation.mutate({ username: data.get("username") as string, password: data.get("password") as string });
+        const uErr = validateUsername(username);
+        const pErr = validatePassword(password);
+        setUsernameError(uErr);
+        setPasswordError(pErr);
+        if (uErr || pErr) return;
+
+        signInMutation.mutate(
+            { username, password },
+            {
+                onSuccess: () =>
+                    queryClient
+                        .refetchQueries({ queryKey: queryKeys.auth.whoami })
+                        .finally(() => (onSignInSuccess ? onSignInSuccess() : navigate("/"))),
+            },
+        );
     };
 
-    const validateInputs = () => {
-        const username = document.getElementById("username") as HTMLInputElement;
-        const password = document.getElementById("password") as HTMLInputElement;
-
-        let isValid = true;
-
-        if (!username.value /* isValidUsername(username) */) {
-            setUsernameErrorMessage("Please enter your username.");
-            isValid = false;
-        } else {
-            setUsernameErrorMessage("");
-        }
-
-        if (!password.value || password.value.length < 3 /* isValidPassword(password) */) {
-            setPasswordErrorMessage("Password must be at least 3 characters long.");
-            isValid = false;
-        } else {
-            setPasswordErrorMessage("");
-        }
-
-        return isValid;
-    };
-
-    const signInTypoSx = { width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)", textAlign: "left" };
-    const formSx = { display: "flex", flexDirection: "column", width: "100%", gap: 2 };
     return (
         <SignContainer direction="column" justifyContent="space-between">
             <SignCard variant="outlined">
                 <SiteMark />
-                <Typography component="h1" variant="h4" sx={signInTypoSx}>
+                <Typography component="h1" variant="h4" sx={titleSx}>
                     Sign in
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={formSx}>
-                    <FormControl>
-                        <TextField
-                            error={!!usernameErrorMessage}
-                            helperText={usernameErrorMessage}
-                            id="username"
-                            type="username"
-                            name="username"
-                            placeholder="username"
-                            autoComplete="username"
-                            label="Username"
-                            autoFocus
-                            required
-                            fullWidth
-                            variant="outlined"
-                            color={usernameErrorMessage ? "error" : "primary"}
-                        />
-                    </FormControl>
-                    <FormControl>
-                        <TextField
-                            error={!!passwordErrorMessage}
-                            helperText={passwordErrorMessage}
-                            name="password"
-                            placeholder="••••••"
-                            type="password"
-                            id="password"
-                            autoComplete="current-password"
-                            label="Password"
-                            required
-                            fullWidth
-                            variant="outlined"
-                            color={passwordErrorMessage ? "error" : "primary"}
-                        />
-                    </FormControl>
-                    <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
+                    <TextField
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        onBlur={handleBlurUsername}
+                        error={!!usernameError}
+                        helperText={usernameError ?? " "}
+                        name="username"
+                        type="text"
+                        placeholder="username"
+                        autoComplete="username"
+                        label="Username"
+                        autoFocus
+                        required
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <TextField
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onBlur={handleBlurPassword}
+                        error={!!passwordError}
+                        helperText={passwordError ?? " "}
+                        name="password"
+                        type="password"
+                        placeholder="••••••"
+                        autoComplete="current-password"
+                        label="Password"
+                        required
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        disabled={signInMutation.isPending}
+                    >
                         Sign in
                     </Button>
                 </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box sx={footerSx}>
                     <Typography sx={{ textAlign: "center" }}>
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <Link onClick={onSignUpRequest} variant="body2" sx={{ alignSelf: "center", cursor: "pointer" }}>
                             Sign up
                         </Link>

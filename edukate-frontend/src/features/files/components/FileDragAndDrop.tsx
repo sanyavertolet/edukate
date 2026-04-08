@@ -12,26 +12,26 @@ type FileDragAndDropProps = {
     onUploadButtonClick?: () => void;
 };
 
+const headerListItemSx = {
+    backgroundColor: "rgb(0,0,0,0.04)",
+    mb: 1,
+    borderRadius: 1,
+    border: "1px solid",
+    borderColor: "divider",
+} as const;
+
 export const FileDragAndDrop: FC<FileDragAndDropProps> = ({ files, maxFiles, maxSize, onUploadButtonClick }) => {
     const uploadSecondaryAction = useMemo(
         () =>
             onUploadButtonClick && (
                 <Tooltip title={"Upload files"} slotProps={defaultTooltipSlotProps}>
-                    <IconButton color={"primary"} edge="end" aria-label="delete" onClick={onUploadButtonClick}>
+                    <IconButton color={"primary"} edge="end" aria-label="Upload files" onClick={onUploadButtonClick}>
                         <UploadIcon />
                     </IconButton>
                 </Tooltip>
             ),
         [onUploadButtonClick],
     );
-
-    const headerListItemSx = {
-        backgroundColor: "rgb(0,0,0,0.04)",
-        mb: 1,
-        borderRadius: 1,
-        border: "1px solid",
-        borderColor: "divider",
-    };
 
     const { primaryText, secondaryText } = useFileStatsDisplayValues({ files, maxFiles, maxSize });
     return (

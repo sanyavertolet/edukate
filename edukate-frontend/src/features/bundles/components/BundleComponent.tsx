@@ -1,6 +1,6 @@
 import { useBundleRequest } from "@/features/bundles/api";
 import { useState } from "react";
-import { Box, Card } from "@mui/material";
+import { Box, Card, Typography } from "@mui/material";
 import { BundleProblemSelector } from "./BundleProblemSelector";
 import { ProblemMetadata } from "@/features/problems/types";
 import { ProblemComponent } from "@/features/problems/components/ProblemComponent";
@@ -21,6 +21,11 @@ export function BundleComponent({ bundleCode }: BundleComponentProps) {
     };
     return (
         <Box>
+            {bundle?.name && (
+                <Typography component="h1" variant="h5" color="primary">
+                    {bundle.name}
+                </Typography>
+            )}
             <Grid container spacing={1} paddingTop={"1rem"}>
                 <Grid sx={{ sm: "none", md: "block" }} key={"left-grid"} size={"grow"}>
                     <Card>

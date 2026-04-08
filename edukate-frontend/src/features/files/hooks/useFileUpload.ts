@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { usePostTempFileMutation, useDeleteTempFileMutation, useGetTempFiles } from "@/features/files/api";
 import { FileMetadata } from "@/features/files/types";
 import { formatFileSize } from "@/shared/utils/utils";
@@ -22,6 +22,14 @@ export const useFileUpload = ({
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
     const [errorText, setErrorText] = useState<string>();
 
+    // Keep refs to the latest callbacks so effects and async callbacks never close over stale values.
+    const onTempFileUploadedRef = useRef(onTempFileUploaded);
+    const onTempFileDeletedRef = useRef(onTempFileDeleted);
+    useEffect(() => {
+        onTempFileUploadedRef.current = onTempFileUploaded;
+        onTempFileDeletedRef.current = onTempFileDeleted;
+    });
+
     const { data: tempFiles, isLoading, error } = useGetTempFiles();
     const postTempFileMutation = usePostTempFileMutation();
     const deleteTempFileMutation = useDeleteTempFileMutation();
@@ -42,13 +50,12 @@ export const useFileUpload = ({
                 return [...prev, ...filesWithStatus];
             });
 
-            tempFiles.forEach((file) => {
+            for (const file of tempFiles) {
                 if (file.key) {
-                    onTempFileUploaded(file.key);
+                    onTempFileUploadedRef.current(file.key);
                 }
-            });
+            }
         }
-        // eslint-disable-next-line
     }, [tempFiles, isLoading, error]);
 
     const handleFileClick = (key: string) => {
@@ -91,54 +98,42 @@ export const useFileUpload = ({
 
         setFileMetadataList((prev) => [...prev, ...newFiles]);
 
-        newFiles.forEach(async (metadata) => {
-            if (!metadata._file) return;
+        for (const metadata of newFiles) {
+            if (!metadata._file) continue;
             const file = metadata._file;
-            try {
-                setFileMetadataList((prev) => prev.map((m) => (m.key === metadata.key ? { ...m, status: "uploading" } : m)));
 
-                postTempFileMutation.mutate(
-                    {
-                        file,
-                        onProgress: (progress) => {
-                            setFileMetadataList((prev) =>
-                                prev.map((m) => (m.key === metadata.key ? { ...m, progress, status: "uploading" } : m)),
-                            );
-                        },
+            setFileMetadataList((prev) => prev.map((m) => (m.key === metadata.key ? { ...m, status: "uploading" } : m)));
+
+            postTempFileMutation.mutate(
+                {
+                    file,
+                    onProgress: (progress) => {
+                        setFileMetadataList((prev) =>
+                            prev.map((m) => (m.key === metadata.key ? { ...m, progress, status: "uploading" } : m)),
+                        );
                     },
-                    {
-                        onSuccess: (key) => {
-                            setFileMetadataList((prev) =>
-                                prev.map((m) =>
-                                    m.key === metadata.key ? { ...m, key, status: "success", progress: 100 } : m,
-                                ),
-                            );
-
-                            onTempFileUploaded(key);
-                        },
-                        onError: (error) => {
-                            setFileMetadataList((prev) =>
-                                prev.map((m) =>
-                                    m.key === metadata.key
-                                        ? { ...m, status: "error", error: error as Error, progress: 0 }
-                                        : m,
-                                ),
-                            );
-
-                            console.error(`Failed to upload file ${file.name}:`, error);
-                        },
+                },
+                {
+                    onSuccess: (key) => {
+                        setFileMetadataList((prev) =>
+                            prev.map((m) =>
+                                m.key === metadata.key ? { ...m, key, status: "success", progress: 100 } : m,
+                            ),
+                        );
+                        onTempFileUploadedRef.current(key);
                     },
-                );
-            } catch (error) {
-                setFileMetadataList((prev) =>
-                    prev.map((m) =>
-                        m.key === metadata.key ? { ...m, status: "error", error: error as Error, progress: 0 } : m,
-                    ),
-                );
-
-                console.error(`Failed to upload file ${file.name}:`, error);
-            }
-        });
+                    onError: (error) => {
+                        setFileMetadataList((prev) =>
+                            prev.map((m) =>
+                                m.key === metadata.key
+                                    ? { ...m, status: "error", error: error as Error, progress: 0 }
+                                    : m,
+                            ),
+                        );
+                    },
+                },
+            );
+        }
 
         if (event.target) {
             event.target.value = "";
@@ -150,7 +145,7 @@ export const useFileUpload = ({
         if (file && file.status === "success") {
             deleteTempFileMutation.mutate(key, {
                 onSuccess: (serverKey) => {
-                    onTempFileDeleted(serverKey);
+                    onTempFileDeletedRef.current(serverKey);
                     setFileMetadataList((prev) => prev.filter((file) => file.key !== serverKey));
                 },
             });

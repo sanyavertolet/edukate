@@ -1,25 +1,13 @@
 import { Alert, Box, CircularProgress, Stack } from "@mui/material";
 import ProblemCard from "./cards/ProblemCard";
 import SolutionCard from "./cards/SolutionCard";
-import { useEffect } from "react";
 import { useProblemRequest } from "@/features/problems/api";
-import { Problem } from "@/features/problems/types";
 import SubmissionsCard from "./cards/SubmissionsCard";
 import { AuthRequired } from "@/features/auth/components/AuthRequired";
+import { getApiErrorMessage } from "@/lib/api-error";
 
-interface ProblemComponentProps {
-    problemId: string;
-    onLoaded?: (problem: Problem) => void;
-}
-
-export function ProblemComponent({ problemId, onLoaded }: ProblemComponentProps) {
+export function ProblemComponent({ problemId }: { problemId: string }) {
     const { data: problem, isLoading, error } = useProblemRequest(problemId);
-
-    useEffect(() => {
-        if (problem && onLoaded) {
-            onLoaded(problem);
-        }
-    }, [problem]);
 
     return (
         <Box>
@@ -41,7 +29,7 @@ export function ProblemComponent({ problemId, onLoaded }: ProblemComponentProps)
 
             {!isLoading && !error && !problem && <Alert severity="info">Problem not found.</Alert>}
 
-            {error && <Alert severity="error">{(error as Error).message}</Alert>}
+            {error && <Alert severity="error">{getApiErrorMessage(error)}</Alert>}
         </Box>
     );
 }
