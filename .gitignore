@@ -41,3 +41,6 @@ out/
 /rabbitmq-data/
 /pdf-cracker/data/
 /.claude/settings.local.json
+
+/edukate-problems/
+/edukate-data/
