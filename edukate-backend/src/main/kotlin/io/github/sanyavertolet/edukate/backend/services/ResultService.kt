@@ -40,5 +40,5 @@ class ResultService(private val problemRepository: ProblemRepository, private va
             .collectList()
 
     private fun updateImagesInResult(result: Result): Mono<Result> =
-        getResultImageList(result).defaultIfEmpty(emptyList()).map { result.withImages(it) }
+        getResultImageList(result).defaultIfEmpty(emptyList()).map { result.copy(images = it) }
 }
