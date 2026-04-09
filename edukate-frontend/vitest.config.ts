@@ -22,6 +22,12 @@ export default defineConfig({
                 "src/main.tsx",
                 "src/app/router.tsx",
             ],
+            thresholds: {
+                statements: 62,
+                branches: 61,
+                functions: 55,
+                lines: 63,
+            },
         },
     },
     resolve: {

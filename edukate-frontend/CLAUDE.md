@@ -123,9 +123,104 @@ Browser: `http://localhost` (port 80).
 
 ## Testing
 
-- Use **Vitest** (compatible with Vite) + **React Testing Library**
-- Mock HTTP with **MSW** (Mock Service Worker) — preferred over `axios-mock-adapter`
-- Wrap tests that need React Query with a fresh `QueryClientProvider` per test
-- Pure functions in `src/shared/utils/` need no React wrapper — test directly
-- Snapshot tests are discouraged — prefer behaviour assertions
-- See `TESTING.md` for full setup guide
+### Stack
+
+| Tool | Role |
+|---|---|
+| **Vitest** | Test runner — reuses `vite.config.ts` aliases, TypeScript config, env |
+| **React Testing Library** | Component testing — queries DOM by role/label, not implementation details |
+| **`@testing-library/user-event`** | Simulates real user input (full keydown/keyup/change sequences) |
+| **`@testing-library/jest-dom`** | DOM-specific `expect` matchers (`.toBeInTheDocument()`, `.toHaveValue()`, etc.) |
+| **MSW** | HTTP mocking — intercepts at the network level, full React Query + Axios stack runs for real |
+| **`@vitest/coverage-v8`** | V8-native coverage, zero instrumentation overhead |
+
+### Running tests
+
+```bash
+npm run test            # watch mode (re-runs on file change)
+npm run test:run        # single run, no watch
+npm run test:coverage   # single run + lcov/html coverage report → coverage/
+```
+
+Coverage HTML report: open `coverage/index.html` in a browser after `test:coverage`.
+
+### File conventions
+
+| Pattern | Purpose |
+|---|---|
+| `src/**/*.test.ts` | Pure logic tests (no React) |
+| `src/**/*.test.tsx` | Component / hook tests |
+| `src/test/setup.ts` | Global setup — extends `expect` with jest-dom matchers |
+| `src/test/server.ts` | MSW server — shared across all component/hook tests |
+| `src/test/render.tsx` | Custom `render()` and `renderAtPath()` helpers — wrap with QueryClient, Router, AuthProvider |
+
+### Writing a test
+
+**Pure function (no setup needed)**
+
+```ts
+import { myFn } from "./something";
+
+describe("myFn", () => {
+    it("returns X for input Y", () => {
+        expect(myFn("Y")).toBe("X");
+    });
+});
+```
+
+**Component (needs providers)**
+
+```tsx
+import { render, screen } from "@/test/render";
+import userEvent from "@testing-library/user-event";
+import { server } from "@/test/server";
+import { HttpResponse } from "msw";
+import { getSignInMockHandler } from "@/generated/gateway";
+import { SignInForm } from "./SignInForm";
+
+it("shows an error when credentials are wrong", async () => {
+    server.use(getSignInMockHandler(async () => HttpResponse.json(null, { status: 401 })));
+    render(<SignInForm onSignInSuccess={() => {}} />);
+    await userEvent.type(screen.getByLabelText("Username"), "alice");
+    await userEvent.type(screen.getByLabelText("Password"), "wrong");
+    await userEvent.click(screen.getByRole("button", { name: "Sign In" }));
+    expect(await screen.findByText(/invalid credentials/i)).toBeInTheDocument();
+});
+```
+
+**Hook (needs QueryClient wrapper)**
+
+```ts
+import { renderHook, waitFor } from "@testing-library/react";
+import { createWrapper } from "@/test/render";
+import { server } from "@/test/server";
+import { getGetProblemMockHandler, getGetProblemResponseMock } from "@/generated/backend";
+import { useProblemRequest } from "@/features/problems/api";
+
+it("returns problem data", async () => {
+    server.use(getGetProblemMockHandler(getGetProblemResponseMock({ id: "prob-1" })));
+    const { result } = renderHook(() => useProblemRequest("prob-1"), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.id).toBe("prob-1");
+});
+```
+
+**Page component using URL params** — use `renderAtPath` so `useParams()` resolves correctly:
+
+```tsx
+import { renderAtPath, screen } from "@/test/render";
+import ProblemPage from "./ProblemPage";
+
+it("renders heading with id from URL", () => {
+    renderAtPath("/problems/prob-123", "/problems/:id", <ProblemPage />);
+    expect(screen.getByRole("heading", { name: /prob-123/i })).toBeInTheDocument();
+});
+```
+
+### What NOT to test
+
+- **Generated files** (`src/generated/`) — auto-generated from OpenAPI spec; excluded from coverage
+- **`src/app/router.tsx`** — route wiring; covered by page smoke tests; excluded from coverage
+- **`src/main.tsx`** — app entry point; excluded from coverage
+- **MUI internals** — test your logic, not the library's rendering
+- **Snapshot tests** — prefer behaviour assertions; snapshots break on any visual change and give false confidence
