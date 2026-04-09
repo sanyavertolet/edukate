@@ -54,7 +54,7 @@ npm install
 Config lives in `.prettierrc.json`. Key settings:
 
 | Setting         | Value   | Reason                                                              |
-| --------------- | ------- | ------------------------------------------------------------------- |
+|-----------------|---------|---------------------------------------------------------------------|
 | `semi`          | `true`  | Existing codebase uses semicolons                                   |
 | `singleQuote`   | `false` | Consistent with JSX double-quote convention                         |
 | `trailingComma` | `"all"` | Cleaner diffs — adding a last item doesn't change the previous line |
@@ -157,13 +157,13 @@ npx lint-staged
 
 ```json
 "lint-staged": {
-  "src/**/*.{ts,tsx}": [
-    "prettier --write",
-    "eslint --fix --max-warnings 0"
-  ],
-  "src/**/*.{json,css,html}": [
-    "prettier --write"
-  ]
+"src/**/*.{ts,tsx}": [
+"prettier --write",
+"eslint --fix --max-warnings 0"
+],
+"src/**/*.{json,css,html}": [
+"prettier --write"
+]
 }
 ```
 
@@ -186,7 +186,11 @@ to contributors who open the project in VS Code:
 
 ```json
 {
-    "recommendations": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint", "bradlc.vscode-tailwindcss"]
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss"
+  ]
 }
 ```
 
@@ -194,11 +198,11 @@ And `.vscode/settings.json` (also allowed by `.gitignore`):
 
 ```json
 {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
-    }
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
 }
 ```
 
