@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:5810
+tags:
+- name: Notifications
+  description: API for managing user notifications
+paths:
+  /api/v1/notifications/mark-as-read:
+    post:
+      tags:
+      - Notifications
+      summary: Mark notifications as read
+      description: Marks the specified notifications as read for the authenticated
+        user
+      operationId: markAsRead
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+        required: true
+      responses:
+        "200":
+          description: Successfully marked notifications as read
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+  /api/v1/notifications/mark-all-as-read:
+    post:
+      tags:
+      - Notifications
+      summary: Mark all notifications as read
+      description: Marks all notifications as read for the authenticated user
+      operationId: markAsRead_1
+      responses:
+        "200":
+          description: Successfully marked all notifications as read
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+  /api/v1/notifications:
+    get:
+      tags:
+      - Notifications
+      summary: Get user notifications
+      description: Retrieves paginated notifications for the authenticated user
+      operationId: getNotifications
+      parameters:
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: string
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of notifications per page
+        required: false
+        schema:
+          type: string
+          exclusiveMinimum: 0
+          maximum: 100
+          minimum: 1
+      - name: isRead
+        in: query
+        description: Filter by read status (null for all notifications)
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successfully retrieved notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                  - $ref: "#/components/schemas/CheckedNotificationDto"
+                  - $ref: "#/components/schemas/InviteNotificationDto"
+                  - $ref: "#/components/schemas/SimpleNotificationDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                  - $ref: "#/components/schemas/CheckedNotificationDto"
+                  - $ref: "#/components/schemas/InviteNotificationDto"
+                  - $ref: "#/components/schemas/SimpleNotificationDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                  - $ref: "#/components/schemas/CheckedNotificationDto"
+                  - $ref: "#/components/schemas/InviteNotificationDto"
+                  - $ref: "#/components/schemas/SimpleNotificationDto"
+  /api/v1/notifications/count:
+    get:
+      tags:
+      - Notifications
+      summary: Get notification statistics
+      description: Retrieves notification statistics for the authenticated user
+      operationId: getNotificationsCount
+      responses:
+        "200":
+          description: Successfully retrieved notification statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationStatistics"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationStatistics"
+components:
+  schemas:
+    BaseNotificationDto:
+      type: object
+      discriminator:
+        propertyName: _type
+      properties:
+        uuid:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        isRead:
+          type: boolean
+        _type:
+          type: string
+      required:
+      - _type
+      - createdAt
+      - isRead
+      - uuid
+    CheckedNotificationDto:
+      allOf:
+      - $ref: "#/components/schemas/BaseNotificationDto"
+      - type: object
+        properties:
+          submissionId:
+            type: string
+          problemId:
+            type: string
+          status:
+            type: string
+            enum:
+            - SUCCESS
+            - MISTAKE
+            - INTERNAL_ERROR
+      required:
+      - createdAt
+      - isRead
+      - problemId
+      - status
+      - submissionId
+      - uuid
+    InviteNotificationDto:
+      allOf:
+      - $ref: "#/components/schemas/BaseNotificationDto"
+      - type: object
+        properties:
+          inviterName:
+            type: string
+          bundleName:
+            type: string
+          bundleShareCode:
+            type: string
+      required:
+      - bundleName
+      - bundleShareCode
+      - createdAt
+      - inviterName
+      - isRead
+      - uuid
+    SimpleNotificationDto:
+      allOf:
+      - $ref: "#/components/schemas/BaseNotificationDto"
+      - type: object
+        properties:
+          title:
+            type: string
+          message:
+            type: string
+          source:
+            type: string
+      required:
+      - createdAt
+      - isRead
+      - message
+      - source
+      - title
+      - uuid
+    NotificationStatistics:
+      type: object
+      properties:
+        unread:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+      required:
+      - total
+      - unread
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      description: JWT authentication cookie
+      name: X-Auth
+      in: cookie

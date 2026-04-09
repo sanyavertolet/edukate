@@ -1,0 +1,96 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: https://edukate.mooo.com
+tags:
+- name: Authentication
+  description: API for user authentication operations
+paths:
+  /api/v1/auth/sign-up:
+    post:
+      tags:
+      - Authentication
+      summary: Register new user
+      description: Registers a new user with provided information and returns a JWT
+        token in a cookie
+      operationId: sign-up
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUpRequest"
+        required: true
+      responses:
+        "204":
+          description: Successfully registered
+        "403":
+          description: Registration failed
+        "409":
+          description: User with this name already exists
+  /api/v1/auth/sign-out:
+    post:
+      tags:
+      - Authentication
+      summary: Sign user out
+      description: Signs out the current user by expiring their authentication token
+      operationId: sign-out
+      responses:
+        "204":
+          description: Successfully signed out
+  /api/v1/auth/sign-in:
+    post:
+      tags:
+      - Authentication
+      summary: Sign user in
+      description: Authenticates a user with provided credentials and returns a JWT
+        token in a cookie
+      operationId: sign-in
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInRequest"
+        required: true
+      responses:
+        "204":
+          description: Successfully authenticated
+        "403":
+          description: Authentication failed
+components:
+  schemas:
+    SignUpRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - password
+      - username
+    SignInRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      description: JWT authentication cookie
+      name: X-Auth
+      in: cookie
