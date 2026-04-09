@@ -2,7 +2,6 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { server } from "@/test/server";
 import {
     getGetMySubmissionsMockHandler,
-    getGetMySubmissionsResponseMock,
     getGetSubmissionByIdMockHandler,
     getGetSubmissionByIdResponseMock,
 } from "@/generated/backend";
@@ -17,11 +16,7 @@ describe("useMySubmissionsQuery", () => {
     });
 
     it("returns data when MSW responds", async () => {
-        server.use(
-            getGetMySubmissionsMockHandler(
-                getGetMySubmissionsResponseMock([{ id: "sub-1", problemId: "prob-1" }]),
-            ),
-        );
+        server.use(getGetMySubmissionsMockHandler([]));
         // We can't easily set isAuthorized=true without a full auth flow,
         // so just verify the hook exposes the query shape (doesn't throw)
         const { result } = renderHook(() => useMySubmissionsQuery(), { wrapper: createWrapper() });
@@ -37,11 +32,7 @@ describe("useSubmissionQuery", () => {
     });
 
     it("fetches submission when id is provided", async () => {
-        server.use(
-            getGetSubmissionByIdMockHandler(
-                getGetSubmissionByIdResponseMock({ id: "sub-42", problemId: "prob-1" }),
-            ),
-        );
+        server.use(getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: "sub-42", problemId: "prob-1" })));
         const { result } = renderHook(() => useSubmissionQuery("sub-42"), { wrapper: createWrapper() });
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
         expect(result.current.data?.id).toBe("sub-42");

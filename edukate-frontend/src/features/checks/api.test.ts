@@ -1,10 +1,7 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { server } from "@/test/server";
-import {
-    getGetCheckResultsBySubmissionIdMockHandler,
-    getGetCheckResultsBySubmissionIdResponseMock,
-} from "@/generated/backend";
+import { getGetCheckResultsBySubmissionIdMockHandler } from "@/generated/backend";
 import { createWrapper } from "@/test/render";
 import { useRequestCheckMutation, useCheckResultsRequest } from "./api";
 
@@ -15,11 +12,7 @@ describe("useCheckResultsRequest", () => {
     });
 
     it("exposes data property", () => {
-        server.use(
-            getGetCheckResultsBySubmissionIdMockHandler(
-                getGetCheckResultsBySubmissionIdResponseMock([]),
-            ),
-        );
+        server.use(getGetCheckResultsBySubmissionIdMockHandler([]));
         const { result } = renderHook(() => useCheckResultsRequest("sub-1"), { wrapper: createWrapper() });
         expect(result.current).toHaveProperty("data");
     });

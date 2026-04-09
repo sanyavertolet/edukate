@@ -12,7 +12,7 @@ const problem: Problem = {
     text: "Solve it",
     subtasks: [],
     images: [],
-    status: "UNSOLVED",
+    status: "NOT_SOLVED",
     hasResult: true,
 };
 
