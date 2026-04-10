@@ -37,9 +37,9 @@ describe("SubmissionList — empty", () => {
     it("shows 'No submissions yet' stub when the list is empty", async () => {
         server.use(getGetMySubmissionsMockHandler([]));
         render(<SubmissionList problemId="prob-1" />);
-        await waitFor(() =>
-            { expect(screen.getByText("No submissions yet")).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByText("No submissions yet")).toBeInTheDocument();
+        });
     });
 });
 
@@ -47,39 +47,43 @@ describe("SubmissionList — statuses", () => {
     it("renders PENDING submission as 'Pending review'", async () => {
         server.use(getGetMySubmissionsMockHandler([pendingSubmission]));
         render(<SubmissionList problemId="prob-1" />);
-        await waitFor(() => { expect(screen.getByText("Pending review")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("Pending review")).toBeInTheDocument();
+        });
     });
 
     it("renders SUCCESS submission as 'Success'", async () => {
         server.use(getGetMySubmissionsMockHandler([successSubmission]));
         render(<SubmissionList problemId="prob-1" />);
-        await waitFor(() => { expect(screen.getByText("Success")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("Success")).toBeInTheDocument();
+        });
     });
 
     it("renders FAILED submission as 'Failed'", async () => {
         server.use(getGetMySubmissionsMockHandler([failedSubmission]));
         render(<SubmissionList problemId="prob-1" />);
-        await waitFor(() => { expect(screen.getByText("Failed")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("Failed")).toBeInTheDocument();
+        });
     });
 
     it("renders attachment buttons for file URLs", async () => {
         server.use(getGetMySubmissionsMockHandler([successSubmission]));
         render(<SubmissionList problemId="prob-1" />);
-        await waitFor(() =>
-            { expect(screen.getByRole("button", { name: /open attachment 1/i })).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: /open attachment 1/i })).toBeInTheDocument();
+        });
     });
 });
 
 describe("SubmissionList — error state", () => {
     it("shows 'Failed to load submissions' on API error", async () => {
-        server.use(
-            http.get("*/api/v1/submissions/my", () => HttpResponse.json(null, { status: 500 })),
-        );
+        server.use(http.get("*/api/v1/submissions/my", () => HttpResponse.json(null, { status: 500 })));
         render(<SubmissionList problemId="prob-1" />);
-        await waitFor(() =>
-            { expect(screen.getByText("Failed to load submissions")).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByText("Failed to load submissions")).toBeInTheDocument();
+        });
     });
 });
 

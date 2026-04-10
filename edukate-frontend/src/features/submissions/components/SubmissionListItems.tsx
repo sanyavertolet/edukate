@@ -26,7 +26,11 @@ export function SubmissionListItem({ submission, setImage }: { submission: Submi
     const navigate = useNavigate();
     return (
         <ListItem disablePadding secondaryAction={AttachmentButtonList(attachments, setImage)}>
-            <ListItemButton onClick={() => { void navigate(`/submissions/${submission.id}`); }}>
+            <ListItemButton
+                onClick={() => {
+                    void navigate(`/submissions/${submission.id}`);
+                }}
+            >
                 <ListItemAvatar>
                     <Avatar sx={{ bgcolor: color, color: "common.white" }}>{icon}</Avatar>
                 </ListItemAvatar>

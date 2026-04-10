@@ -20,7 +20,9 @@ export const NotificationButton: FC = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
     const { isAuthorized } = useAuthContext();
     const { data: statistics } = useNotificationsCountRequest();
-    const handleClose = () => { setAnchorEl(undefined); };
+    const handleClose = () => {
+        setAnchorEl(undefined);
+    };
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };

@@ -11,9 +11,7 @@ describe("BundlePage", () => {
 
     it("renders the bundle name as a heading once MSW responds", async () => {
         server.use(
-            getGetBundleByShareCodeMockHandler(
-                getGetBundleByShareCodeResponseMock({ name: "Test Bundle", problems: [] }),
-            ),
+            getGetBundleByShareCodeMockHandler(getGetBundleByShareCodeResponseMock({ name: "Test Bundle", problems: [] })),
         );
         renderAtPath("/bundles/test-code", "/bundles/:code", <BundlePage />);
         await waitFor(() => {

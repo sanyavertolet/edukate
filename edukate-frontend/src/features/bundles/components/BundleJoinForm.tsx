@@ -26,8 +26,12 @@ export const BundleJoinForm: FC<BundleJoinFormProps> = ({ disabled = false }) =>
         },
     };
 
-    const onSearchClick = () => { joinBundleMutation.mutate(bundleCode, requestOptions); };
-    const onCreateClick = () => { void navigate("/bundles/new"); };
+    const onSearchClick = () => {
+        joinBundleMutation.mutate(bundleCode, requestOptions);
+    };
+    const onCreateClick = () => {
+        void navigate("/bundles/new");
+    };
     return (
         <ConditionalTooltip title={"Sign in to use bundles"} shown={disabled} placement={"right"}>
             <Paper component="form" sx={{ p: "0px 1px", display: "flex", alignItems: "center" }}>
@@ -37,7 +41,9 @@ export const BundleJoinForm: FC<BundleJoinFormProps> = ({ disabled = false }) =>
                     inputProps={{ "aria-label": "join by code" }}
                     value={bundleCode}
                     disabled={disabled}
-                    onChange={(e) => { setBundleCode(e.target.value); }}
+                    onChange={(e) => {
+                        setBundleCode(e.target.value);
+                    }}
                 />
                 <IconButton
                     color="default"

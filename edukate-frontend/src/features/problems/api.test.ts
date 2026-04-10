@@ -14,16 +14,18 @@ describe("useProblemRequest", () => {
     it("fetches problem data on mount", async () => {
         server.use(getGetProblemMockHandler(getGetProblemResponseMock({ id: "p1" })));
         const { result } = renderHook(() => useProblemRequest("p1"), { wrapper: createWrapper() });
-        await waitFor(() => { expect(result.current.isSuccess).toBe(true); });
+        await waitFor(() => {
+            expect(result.current.isSuccess).toBe(true);
+        });
         expect(result.current.data?.id).toBe("p1");
     });
 
     it("surfaces all pinned fields correctly", async () => {
-        server.use(
-            getGetProblemMockHandler(getGetProblemResponseMock({ id: "p2", isHard: true, tags: ["algebra"] })),
-        );
+        server.use(getGetProblemMockHandler(getGetProblemResponseMock({ id: "p2", isHard: true, tags: ["algebra"] })));
         const { result } = renderHook(() => useProblemRequest("p2"), { wrapper: createWrapper() });
-        await waitFor(() => { expect(result.current.isSuccess).toBe(true); });
+        await waitFor(() => {
+            expect(result.current.isSuccess).toBe(true);
+        });
         expect(result.current.data?.isHard).toBe(true);
         expect(result.current.data?.tags).toContain("algebra");
     });

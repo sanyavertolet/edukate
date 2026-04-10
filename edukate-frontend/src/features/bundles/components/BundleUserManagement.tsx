@@ -51,7 +51,9 @@ const UserRoleManager: FC<UserRoleManagerProps> = ({ shareCode }) => {
                                     id={`${username}-role`}
                                     value={role}
                                     label="Role"
-                                    onChange={(event) => { handleRoleChange(username, event.target.value); }}
+                                    onChange={(event) => {
+                                        handleRoleChange(username, event.target.value);
+                                    }}
                                     disabled={user?.name == username}
                                     size={"small"}
                                     sx={{ minWidth: { xs: 125, lg: 200 } }}

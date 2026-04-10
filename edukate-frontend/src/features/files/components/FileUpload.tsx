@@ -28,7 +28,14 @@ export function FileUpload({ accept = "*", maxSize = 50 * 1024 * 1024, maxFiles 
                     maxSize={maxSize}
                 />
                 {onSubmit && uploadedFileNames.length > 0 && (
-                    <Button variant={"text"} color={"secondary"} sx={{ mb: 1 }} onClick={() => { onSubmit(uploadedFileNames); }}>
+                    <Button
+                        variant={"text"}
+                        color={"secondary"}
+                        sx={{ mb: 1 }}
+                        onClick={() => {
+                            onSubmit(uploadedFileNames);
+                        }}
+                    >
                         Submit
                     </Button>
                 )}

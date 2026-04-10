@@ -8,7 +8,6 @@ type SiteMarkProps = {
 const edukateTypographySx = { display: "flex", fontWeight: "bold", ml: 1 } as const;
 
 export const SiteMark: FC<SiteMarkProps> = ({ onClick }) => {
-
     if (onClick) {
         return (
             <Button color="primary" onClick={onClick}>

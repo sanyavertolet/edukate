@@ -91,14 +91,14 @@ When ready to wire up runtime a11y feedback in dev:
 
 1. `npm install --save-dev @axe-core/react`
 2. In `src/main.tsx`, before `ReactDOM.createRoot(...)`:
-   ```ts
-   if (import.meta.env.DEV) {
-       const { default: axe } = await import("@axe-core/react");
-       const React = (await import("react")).default;
-       const ReactDOM = (await import("react-dom")).default;
-       axe(React, ReactDOM, 1000);
-   }
-   ```
+    ```ts
+    if (import.meta.env.DEV) {
+        const { default: axe } = await import("@axe-core/react");
+        const React = (await import("react")).default;
+        const ReactDOM = (await import("react-dom")).default;
+        axe(React, ReactDOM, 1000);
+    }
+    ```
 3. Open the app in dev, open DevTools console — axe logs violations as `console.error` with selector + description.
 4. Mark the checklist row `[x]` once the harness is running and no violations are logged.
 

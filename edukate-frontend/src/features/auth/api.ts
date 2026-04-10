@@ -16,8 +16,7 @@ export function useWhoamiQuery() {
 
 export function useSignInMutation() {
     return useMutation({
-        mutationFn: ({ username, password }: { username: string; password: string }) =>
-            signIn({ username, password }),
+        mutationFn: ({ username, password }: { username: string; password: string }) => signIn({ username, password }),
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
         },

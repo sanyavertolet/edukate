@@ -52,11 +52,18 @@ export function useProblemTableParams() {
 
     const handlers = useMemo(
         () => ({
-            onChangePage: (_: unknown, newPage: number) => { updateSearchParams({ page: newPage }); },
-            onChangeStatus: (newStatus: StatusFilter) => { updateSearchParams({ page: 0, status: newStatus }); },
-            onChangePrefix: (newPrefix: string) => { updateSearchParams({ page: 0, prefix: newPrefix }); },
-            onChangeRowsPerPage: (event: ChangeEvent<HTMLInputElement>) =>
-                { updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) }); },
+            onChangePage: (_: unknown, newPage: number) => {
+                updateSearchParams({ page: newPage });
+            },
+            onChangeStatus: (newStatus: StatusFilter) => {
+                updateSearchParams({ page: 0, status: newStatus });
+            },
+            onChangePrefix: (newPrefix: string) => {
+                updateSearchParams({ page: 0, prefix: newPrefix });
+            },
+            onChangeRowsPerPage: (event: ChangeEvent<HTMLInputElement>) => {
+                updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) });
+            },
         }),
         // eslint-disable-next-line react-hooks/exhaustive-deps -- updateSearchParams is recreated each render; using searchParams as the sole dep is correct
         [searchParams],

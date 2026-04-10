@@ -25,9 +25,17 @@ export function AuthRequired({ children, bypass = false }: AuthRequiredProps) {
             </Typography>
             <Box sx={{ width: "100%" }}>
                 {isSignUp ? (
-                    <SignUpForm onSignInRequest={() => { setIsSignUp(false); }} />
+                    <SignUpForm
+                        onSignInRequest={() => {
+                            setIsSignUp(false);
+                        }}
+                    />
                 ) : (
-                    <SignInForm onSignUpRequest={() => { setIsSignUp(true); }} />
+                    <SignInForm
+                        onSignUpRequest={() => {
+                            setIsSignUp(true);
+                        }}
+                    />
                 )}
             </Box>
         </Container>

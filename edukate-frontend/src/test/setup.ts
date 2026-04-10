@@ -14,7 +14,9 @@ const localStorageMock = (() => {
             Reflect.deleteProperty(store, key);
         },
         clear: () => {
-            Object.keys(store).forEach((k) => { Reflect.deleteProperty(store, k); });
+            Object.keys(store).forEach((k) => {
+                Reflect.deleteProperty(store, k);
+            });
         },
         get length() {
             return Object.keys(store).length;
@@ -25,6 +27,12 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, "localStorage", { value: localStorageMock });
 
-beforeAll(() => { server.listen({ onUnhandledRequest: "error" }); });
-afterEach(() => { server.resetHandlers(); });
-afterAll(() => { server.close(); });
+beforeAll(() => {
+    server.listen({ onUnhandledRequest: "error" });
+});
+afterEach(() => {
+    server.resetHandlers();
+});
+afterAll(() => {
+    server.close();
+});

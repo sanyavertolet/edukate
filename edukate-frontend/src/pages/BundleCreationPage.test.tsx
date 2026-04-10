@@ -85,15 +85,15 @@ describe("BundleCreationPage — full creation pipeline", () => {
         await userEvent.click(screen.getByRole("button", { name: /create bundle/i }));
 
         await waitFor(
-            () => { expect(screen.getByTestId("pathname")).toHaveTextContent("/bundles/bundle-xyz"); },
+            () => {
+                expect(screen.getByTestId("pathname")).toHaveTextContent("/bundles/bundle-xyz");
+            },
             { timeout: DEBOUNCE_TIMEOUT },
         );
     }, 10000);
 
     it("shows the selected problem as a chip in the autocomplete", async () => {
-        server.use(
-            http.get("*/api/v1/problems/by-prefix", () => HttpResponse.json(["algebra-01"])),
-        );
+        server.use(http.get("*/api/v1/problems/by-prefix", () => HttpResponse.json(["algebra-01"])));
 
         render(<BundleCreationPage />);
 

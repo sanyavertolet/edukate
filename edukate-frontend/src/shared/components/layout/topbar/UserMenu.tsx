@@ -66,7 +66,14 @@ export function UserMenu() {
             >
                 {user ? signedInMenuItems : signedOutMenuItems}
             </Menu>
-            <Button id="user-menu-button" aria-label="account of current user" aria-haspopup="true" aria-expanded={isMenuOpen} color="primary" onClick={handleOpen}>
+            <Button
+                id="user-menu-button"
+                aria-label="account of current user"
+                aria-haspopup="true"
+                aria-expanded={isMenuOpen}
+                color="primary"
+                onClick={handleOpen}
+            >
                 <Typography variant={"body2"} sx={{ display: { xs: "none", md: "flex" }, pr: "0.5rem" }}>
                     {user ? user.name : "Sign"}
                 </Typography>

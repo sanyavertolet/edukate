@@ -37,7 +37,13 @@ export default function PageSkeleton() {
             <EdukateTopBar />
             <Container maxWidth={"lg"} sx={{ pt: { xs: "80px", md: "120px" }, pb: "2rem" }}>
                 <ErrorBoundary FallbackComponent={RouteFallback}>
-                    <Suspense fallback={<Box sx={{ display: "flex", justifyContent: "center", pt: 4 }}><CircularProgress /></Box>}>
+                    <Suspense
+                        fallback={
+                            <Box sx={{ display: "flex", justifyContent: "center", pt: 4 }}>
+                                <CircularProgress />
+                            </Box>
+                        }
+                    >
                         <Outlet />
                     </Suspense>
                 </ErrorBoundary>

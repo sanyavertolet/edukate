@@ -62,17 +62,14 @@ describe("SolutionCard — static rendering", () => {
 
 describe("SolutionCard — submission pipeline", () => {
     it("Submit button appears after a file is successfully uploaded to temp storage", async () => {
-        server.use(
-            getGetTempFilesMockHandler([]),
-            getUploadTempFileMockHandler("temp-key-abc"),
-        );
+        server.use(getGetTempFilesMockHandler([]), getUploadTempFileMockHandler("temp-key-abc"));
         const { container } = render(<SolutionCard problem={problem} />);
 
         simulateFileSelect(container, [new File(["img"], "photo.jpg", { type: "image/jpeg" })]);
 
-        await waitFor(() =>
-            { expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument();
+        });
     });
 
     it("clicking Submit calls POST /api/v1/submissions with the temp file keys", async () => {
@@ -118,10 +115,12 @@ describe("SolutionCard — submission pipeline", () => {
             new File(["b"], "img2.jpg", { type: "image/jpeg" }),
         ]);
 
-        await waitFor(() => { expect(uploadedKeys).toHaveLength(2); });
-        await waitFor(() =>
-            { expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(uploadedKeys).toHaveLength(2);
+        });
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument();
+        });
     });
 });
 
@@ -133,8 +132,8 @@ describe("SolutionCard — pre-existing temp files", () => {
             ]),
         );
         render(<SolutionCard problem={problem} />);
-        await waitFor(() =>
-            { expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument();
+        });
     });
 });

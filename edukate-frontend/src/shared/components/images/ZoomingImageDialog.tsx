@@ -32,7 +32,6 @@ interface ZoomingImageDialogProps {
 }
 
 export function ZoomingImageDialog({ selectedImage, handleClose }: ZoomingImageDialogProps) {
-
     return (
         <Dialog
             open={!!selectedImage}

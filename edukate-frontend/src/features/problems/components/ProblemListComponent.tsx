@@ -10,7 +10,9 @@ import { RandomProblemButton } from "./table/RandomProblemButton";
 
 export default function ProblemListComponent() {
     const navigate = useNavigate();
-    const navigateToProblem = (problemName: string) => { void navigate(`/problems/${problemName}`); };
+    const navigateToProblem = (problemName: string) => {
+        void navigate(`/problems/${problemName}`);
+    };
 
     const { page, rowsPerPage, status, prefix, handlers } = useProblemTableParams();
 

@@ -21,11 +21,15 @@ function makeUnauthenticated() {
 }
 
 describe("ResultAccordionComponent — unauthenticated", () => {
-    beforeEach(() => { makeUnauthenticated(); });
+    beforeEach(() => {
+        makeUnauthenticated();
+    });
 
     it("renders the 'Show the result' label", async () => {
         render(<ResultAccordionComponent problem={problem} />);
-        await waitFor(() => { expect(screen.getByText("Show the result")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("Show the result")).toBeInTheDocument();
+        });
     });
 
     it("accordion is disabled when not logged in", async () => {
@@ -48,9 +52,7 @@ describe("ResultAccordionComponent — authenticated", () => {
     });
 
     it("shows result text after expanding when MSW returns result", async () => {
-        server.use(
-            getGetResultByIdMockHandler(getGetResultByIdResponseMock({ text: "The answer is 42", images: [] })),
-        );
+        server.use(getGetResultByIdMockHandler(getGetResultByIdResponseMock({ text: "The answer is 42", images: [] })));
         render(<ResultAccordionComponent problem={problem} />);
         await waitFor(() => screen.getByRole("button", { name: /show the result/i }));
         // The accordion is collapsed by default — just verify it renders without error

@@ -40,7 +40,9 @@ export const usePageSpecificNavigation = (navigationElements: AdditionalNavigati
         if (isMobile && !areNavigationsEqual(pageSpecificNavigation, navigationElements)) {
             setPageSpecificNavigation(navigationElements);
         }
-        return () => { setPageSpecificNavigation([]); };
+        return () => {
+            setPageSpecificNavigation([]);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps -- pageSpecificNavigation/setPageSpecificNavigation omitted to prevent infinite loop; equality is guarded by areNavigationsEqual
     }, [isMobile, navigationElements]);
 };

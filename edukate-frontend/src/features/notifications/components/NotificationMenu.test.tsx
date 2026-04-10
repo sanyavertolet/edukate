@@ -64,31 +64,37 @@ describe("NotificationMenu — notification types", () => {
     it("renders a simple notification title and message", async () => {
         server.use(getGetNotificationsMockHandler([simpleNotification]));
         renderMenu();
-        await waitFor(() => { expect(screen.getByText("System Update")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("System Update")).toBeInTheDocument();
+        });
         expect(screen.getByText("New features are live.")).toBeInTheDocument();
     });
 
     it("renders an invite notification with inviter name", async () => {
         server.use(getGetNotificationsMockHandler([inviteNotification]));
         renderMenu();
-        await waitFor(() => { expect(screen.getByText(/Alice invites you!/i)).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText(/Alice invites you!/i)).toBeInTheDocument();
+        });
         expect(screen.getByText(/Math Pack/)).toBeInTheDocument();
     });
 
     it("renders a checked notification with problem id and status", async () => {
         server.use(getGetNotificationsMockHandler([checkedNotification]));
         renderMenu();
-        await waitFor(() => { expect(screen.getByText("Submission Checked")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("Submission Checked")).toBeInTheDocument();
+        });
         expect(screen.getByText(/prob-7/)).toBeInTheDocument();
         expect(screen.getByText(/SUCCESS/)).toBeInTheDocument();
     });
 
     it("renders multiple notifications of mixed types", async () => {
-        server.use(
-            getGetNotificationsMockHandler([simpleNotification, inviteNotification, checkedNotification]),
-        );
+        server.use(getGetNotificationsMockHandler([simpleNotification, inviteNotification, checkedNotification]));
         renderMenu();
-        await waitFor(() => { expect(screen.getByText("System Update")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("System Update")).toBeInTheDocument();
+        });
         expect(screen.getByText(/Alice invites you!/i)).toBeInTheDocument();
         expect(screen.getByText("Submission Checked")).toBeInTheDocument();
     });
@@ -98,7 +104,9 @@ describe("NotificationMenu — read state", () => {
     it("renders an already-read notification as disabled MenuItem", async () => {
         server.use(getGetNotificationsMockHandler([readNotification]));
         renderMenu();
-        await waitFor(() => { expect(screen.getByText("Already Read")).toBeInTheDocument(); });
+        await waitFor(() => {
+            expect(screen.getByText("Already Read")).toBeInTheDocument();
+        });
         // MUI MenuItem with disabled prop renders with aria-disabled
         const item = screen.getByRole("menuitem");
         expect(item).toHaveAttribute("aria-disabled", "true");

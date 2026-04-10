@@ -29,7 +29,9 @@ export const BundleCard: FC<BundleCardProps> = ({ bundleMetadata, onCopy }) => {
         void navigator.clipboard.writeText(bundleMetadata.shareCode).finally(onCopy);
     };
     const navigate = useNavigate();
-    const navigateTo = (bundleMetadata: BundleMetadata) => { void navigate(`/bundles/${bundleMetadata.shareCode}`); };
+    const navigateTo = (bundleMetadata: BundleMetadata) => {
+        void navigate(`/bundles/${bundleMetadata.shareCode}`);
+    };
     return (
         <Card sx={{ display: "flex", flexDirection: "column" }} key={bundleMetadata.shareCode}>
             <CardContent sx={{ pb: 0 }}>
@@ -100,7 +102,13 @@ export const BundleCard: FC<BundleCardProps> = ({ bundleMetadata, onCopy }) => {
             </CardContent>
 
             <CardActions disableSpacing>
-                <Button sx={{ marginLeft: "auto" }} size="small" onClick={() => { navigateTo(bundleMetadata); }}>
+                <Button
+                    sx={{ marginLeft: "auto" }}
+                    size="small"
+                    onClick={() => {
+                        navigateTo(bundleMetadata);
+                    }}
+                >
                     View
                 </Button>
             </CardActions>

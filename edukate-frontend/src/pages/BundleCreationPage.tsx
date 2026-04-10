@@ -38,13 +38,17 @@ export default function BundleCreationPage() {
                             required
                             label={"Title"}
                             value={createBundleRequest.name}
-                            onChange={(e) => { setCreateBundleRequest({ ...createBundleRequest, name: e.target.value }); }}
+                            onChange={(e) => {
+                                setCreateBundleRequest({ ...createBundleRequest, name: e.target.value });
+                            }}
                         />
                         <TextField
                             required
                             label={"Description"}
                             value={createBundleRequest.description}
-                            onChange={(e) => { setCreateBundleRequest({ ...createBundleRequest, description: e.target.value }); }}
+                            onChange={(e) => {
+                                setCreateBundleRequest({ ...createBundleRequest, description: e.target.value });
+                            }}
                         />
                         <OptionPickerComponent
                             optionsUrl={"/api/v1/problems/by-prefix"}
@@ -52,15 +56,21 @@ export default function BundleCreationPage() {
                             label={"Problems"}
                             placeholderText={"Search problems"}
                             debounceTime={1000}
-                            onOptionsChange={(problemIds) =>
-                                { setCreateBundleRequest({ ...createBundleRequest, problemIds: problemIds }); }
-                            }
+                            onOptionsChange={(problemIds) => {
+                                setCreateBundleRequest({ ...createBundleRequest, problemIds: problemIds });
+                            }}
                         />
                     </Stack>
                 </CardContent>
 
                 <CardActions>
-                    <Button variant={"contained"} sx={{ mx: "auto" }} onClick={() => { createBundle(); }}>
+                    <Button
+                        variant={"contained"}
+                        sx={{ mx: "auto" }}
+                        onClick={() => {
+                            createBundle();
+                        }}
+                    >
                         Create Bundle
                     </Button>
                     {/*  todo: display errors  */}

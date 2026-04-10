@@ -7,8 +7,12 @@ export default function SignUpPage() {
     return (
         <Container maxWidth="sm">
             <SignUpForm
-                onSignUpSuccess={() => { void navigate("/problems", { replace: true }); }}
-                onSignInRequest={() => { void navigate("/sign-in", { replace: true }); }}
+                onSignUpSuccess={() => {
+                    void navigate("/problems", { replace: true });
+                }}
+                onSignInRequest={() => {
+                    void navigate("/sign-in", { replace: true });
+                }}
             />
         </Container>
     );

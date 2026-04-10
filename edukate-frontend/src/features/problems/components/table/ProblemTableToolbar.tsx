@@ -27,7 +27,9 @@ export const ProblemTableToolbar: FC<Props> = ({ status, onStatusChange, prefix,
                                 size={"small"}
                                 label="Status"
                                 value={status ?? "ALL"}
-                                onChange={(e) => { onStatusChange((e.target.value || "ALL") as StatusFilter); }}
+                                onChange={(e) => {
+                                    onStatusChange((e.target.value || "ALL") as StatusFilter);
+                                }}
                             >
                                 <MenuItem value="ALL">All</MenuItem>
                                 <MenuItem value="SOLVED">Solved</MenuItem>
@@ -46,7 +48,9 @@ export const ProblemTableToolbar: FC<Props> = ({ status, onStatusChange, prefix,
                             size="small"
                             value={prefix}
                             disabled
-                            onChange={(e) => { onPrefixChange(e.target.value); }}
+                            onChange={(e) => {
+                                onPrefixChange(e.target.value);
+                            }}
                         />
                     </span>
                 </Tooltip>

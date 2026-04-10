@@ -14,13 +14,26 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
     const { pageSpecificNavigation } = useDeviceContext();
 
     return (
-        <Drawer open={isOpen} onClose={() => { setIsOpen(false); }}>
-            <Box sx={{ width: 250 }} role="presentation" onClick={() => { setIsOpen(false); }}>
+        <Drawer
+            open={isOpen}
+            onClose={() => {
+                setIsOpen(false);
+            }}
+        >
+            <Box
+                sx={{ width: 250 }}
+                role="presentation"
+                onClick={() => {
+                    setIsOpen(false);
+                }}
+            >
                 <List>
                     {mobileNavigationElements.map((element) => (
                         <ListItem key={element.text} disablePadding>
                             <ListItemButton
-                                onClick={() => { void navigate(element.href); }}
+                                onClick={() => {
+                                    void navigate(element.href);
+                                }}
                                 selected={window.location.href.endsWith(element.href)}
                             >
                                 {element.icon && <ListItemIcon>{element.icon}</ListItemIcon>}
@@ -36,7 +49,12 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
                     <List>
                         {pageSpecificNavigation.map((element) => (
                             <ListItem key={element.text} disablePadding>
-                                <ListItemButton onClick={() => { element.onClick(); }} selected={element.isSelected}>
+                                <ListItemButton
+                                    onClick={() => {
+                                        element.onClick();
+                                    }}
+                                    selected={element.isSelected}
+                                >
                                     {element.icon && <ListItemIcon>{element.icon}</ListItemIcon>}
                                     <ListItemText primary={element.text} />
                                 </ListItemButton>

@@ -10,7 +10,9 @@ function makeUnauthenticated() {
 }
 
 describe("NotificationButton — unauthenticated", () => {
-    beforeEach(() => { makeUnauthenticated(); });
+    beforeEach(() => {
+        makeUnauthenticated();
+    });
 
     it("does not render the bell button when not logged in", async () => {
         render(<NotificationButton />);
@@ -22,23 +24,19 @@ describe("NotificationButton — unauthenticated", () => {
 
 describe("NotificationButton — authenticated", () => {
     it("renders the bell icon button", async () => {
-        server.use(
-            getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 0, total: 0 })),
-        );
+        server.use(getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 0, total: 0 })));
         render(<NotificationButton />);
-        await waitFor(() =>
-            { expect(screen.getByRole("button", { name: /show notifications/i })).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: /show notifications/i })).toBeInTheDocument();
+        });
     });
 
     it("shows unread badge count when there are unread notifications", async () => {
-        server.use(
-            getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 5, total: 10 })),
-        );
+        server.use(getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 5, total: 10 })));
         render(<NotificationButton />);
-        await waitFor(() =>
-            { expect(screen.getByText("5")).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByText("5")).toBeInTheDocument();
+        });
     });
 
     it("opens the notification menu on button click", async () => {
@@ -49,9 +47,9 @@ describe("NotificationButton — authenticated", () => {
         render(<NotificationButton />);
         const button = await screen.findByRole("button", { name: /show notifications/i });
         await userEvent.click(button);
-        await waitFor(() =>
-            { expect(screen.getByText("Notifications")).toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.getByText("Notifications")).toBeInTheDocument();
+        });
     });
 
     it("closes the menu after opening", async () => {
@@ -65,8 +63,8 @@ describe("NotificationButton — authenticated", () => {
         await waitFor(() => screen.getByText("Notifications"));
         // Close by pressing Escape
         await userEvent.keyboard("{Escape}");
-        await waitFor(() =>
-            { expect(screen.queryByText("Notifications")).not.toBeInTheDocument(); },
-        );
+        await waitFor(() => {
+            expect(screen.queryByText("Notifications")).not.toBeInTheDocument();
+        });
     });
 });

@@ -31,8 +31,7 @@ export function useCreateBundleMutation(createBundleRequest: CreateBundleRequest
             }
             return createBundle(createBundleRequest);
         },
-        onSuccess: () =>
-            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("owned") }),
+        onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("owned") }),
     });
 }
 

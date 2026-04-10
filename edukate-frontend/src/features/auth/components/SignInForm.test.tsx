@@ -48,6 +48,8 @@ describe("SignInForm", () => {
         await userEvent.type(screen.getByLabelText(/username/i), "alice");
         await userEvent.type(screen.getByLabelText(/password/i), "secret");
         await userEvent.click(screen.getByRole("button", { name: /sign in/i }));
-        await waitFor(() => { expect(onSignInSuccess).toHaveBeenCalledOnce(); });
+        await waitFor(() => {
+            expect(onSignInSuccess).toHaveBeenCalledOnce();
+        });
     });
 });

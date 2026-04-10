@@ -82,7 +82,9 @@ export const NotificationMenu: FC<NotificationMenuProps> = ({
                     <NotificationItem
                         key={notification.uuid}
                         notification={notification}
-                        onClick={() => { onNotificationClick(notification); }}
+                        onClick={() => {
+                            onNotificationClick(notification);
+                        }}
                     />
                 ))}
             {notifications && numberOfPages > 1 && (

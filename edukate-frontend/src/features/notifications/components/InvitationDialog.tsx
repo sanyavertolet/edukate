@@ -15,7 +15,9 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({ bundleInfo, onClos
     return (
         <Dialog
             open={bundleInfo != undefined}
-            onClose={() => { onClose(undefined); }}
+            onClose={() => {
+                onClose(undefined);
+            }}
             aria-labelledby="invitation-dialog-title"
             aria-describedby="invitation-dialog-description"
         >
@@ -26,9 +28,26 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({ bundleInfo, onClos
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => { onClose(undefined); }}>Close</Button>
-                <Button onClick={() => { onClose(false); }}>Decline</Button>
-                <Button onClick={() => { onClose(true); }} autoFocus>
+                <Button
+                    onClick={() => {
+                        onClose(undefined);
+                    }}
+                >
+                    Close
+                </Button>
+                <Button
+                    onClick={() => {
+                        onClose(false);
+                    }}
+                >
+                    Decline
+                </Button>
+                <Button
+                    onClick={() => {
+                        onClose(true);
+                    }}
+                    autoFocus
+                >
                     Accept
                 </Button>
             </DialogActions>

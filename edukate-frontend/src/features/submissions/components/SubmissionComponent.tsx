@@ -33,7 +33,9 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
                                 size="small"
                                 variant="text"
                                 disabled={isSelfCheckDisabled}
-                                onClick={() => { requestCheck("self"); }}
+                                onClick={() => {
+                                    requestCheck("self");
+                                }}
                             >
                                 Consider as Solved
                             </Button>
@@ -45,7 +47,9 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
                                 size="small"
                                 variant="text"
                                 disabled={isAiCheckDisabled}
-                                onClick={() => { requestCheck("ai"); }}
+                                onClick={() => {
+                                    requestCheck("ai");
+                                }}
                             >
                                 Request AI Check
                             </Button>

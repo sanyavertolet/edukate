@@ -28,9 +28,7 @@ describe("useGetNotificationsRequest", () => {
     });
 
     it("accepts isRead, page and size parameters without throwing", () => {
-        server.use(
-            getGetNotificationsMockHandler(getGetNotificationsResponseMock()),
-        );
+        server.use(getGetNotificationsMockHandler(getGetNotificationsResponseMock()));
         const { result } = renderHook(() => useGetNotificationsRequest(false, 5, 1), {
             wrapper: createWrapper(),
         });
@@ -56,11 +54,7 @@ describe("useMarkAllNotificationsAsReadMutation", () => {
 
 describe("useNotificationsCountRequest — MSW responds", () => {
     it("returns count data when MSW handler is active (coverage of queryFn path)", () => {
-        server.use(
-            getGetNotificationsCountMockHandler(
-                getGetNotificationsCountResponseMock({ count: 3 }),
-            ),
-        );
+        server.use(getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 3 })));
         // Hook is guarded by isAuthorized — hook stays idle in test context;
         // this test verifies the hook shape is correct and doesn't throw
         const { result } = renderHook(() => useNotificationsCountRequest(), { wrapper: createWrapper() });

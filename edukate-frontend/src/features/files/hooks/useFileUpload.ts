@@ -117,18 +117,14 @@ export const useFileUpload = ({
                 {
                     onSuccess: (key) => {
                         setFileMetadataList((prev) =>
-                            prev.map((m) =>
-                                m.key === metadata.key ? { ...m, key, status: "success", progress: 100 } : m,
-                            ),
+                            prev.map((m) => (m.key === metadata.key ? { ...m, key, status: "success", progress: 100 } : m)),
                         );
                         onTempFileUploadedRef.current(key);
                     },
                     onError: (error) => {
                         setFileMetadataList((prev) =>
                             prev.map((m) =>
-                                m.key === metadata.key
-                                    ? { ...m, status: "error", error: error, progress: 0 }
-                                    : m,
+                                m.key === metadata.key ? { ...m, status: "error", error: error, progress: 0 } : m,
                             ),
                         );
                     },

@@ -44,10 +44,24 @@ export function EdukateTopBar() {
                             </IconButton>
                             <MobileDrawerComponent isOpen={open} setIsOpen={setOpen} />
                         </Box>
-                        <SiteMark onClick={() => { void navigate("/"); }} />
+                        <SiteMark
+                            onClick={() => {
+                                void navigate("/");
+                            }}
+                        />
                         <Box sx={{ display: { xs: "none", md: "flex" } }}>
-                            <TopBarLink text="Problems" onClick={() => { void navigate("/problems"); }} />
-                            <TopBarLink text="Bundles" onClick={() => { void navigate("/bundles"); }} />
+                            <TopBarLink
+                                text="Problems"
+                                onClick={() => {
+                                    void navigate("/problems");
+                                }}
+                            />
+                            <TopBarLink
+                                text="Bundles"
+                                onClick={() => {
+                                    void navigate("/bundles");
+                                }}
+                            />
                         </Box>
                     </Box>
 
@@ -63,11 +77,15 @@ export function EdukateTopBar() {
                             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                                 <TopBarLink
                                     text={"Sign In"}
-                                    onClick={() => { void navigate("/sign-in", { replace: isSignUpPage || isSignInPage }); }}
+                                    onClick={() => {
+                                        void navigate("/sign-in", { replace: isSignUpPage || isSignInPage });
+                                    }}
                                 />
                                 <TopBarLink
                                     text={"Sign Up"}
-                                    onClick={() => { void navigate("/sign-up", { replace: isSignUpPage || isSignInPage }); }}
+                                    onClick={() => {
+                                        void navigate("/sign-up", { replace: isSignUpPage || isSignInPage });
+                                    }}
                                 />
                             </Box>
                         )}
