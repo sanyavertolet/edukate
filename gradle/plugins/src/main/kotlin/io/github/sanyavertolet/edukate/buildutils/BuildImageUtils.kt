@@ -84,7 +84,7 @@ fun DockerBuildImage.configureFrontendBuild(
     group = "docker"
     description = "Builds the frontend Docker image"
 
-    inputDir.set(project.layout.projectDirectory.dir(frontendName))
+    inputDir.set(project.layout.projectDirectory)
     if (shouldPublishLatest) {
         images.add(fullImageNameWithTag(frontendName, "latest"))
     }
