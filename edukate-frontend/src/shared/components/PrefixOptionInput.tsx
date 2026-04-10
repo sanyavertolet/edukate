@@ -26,9 +26,8 @@ export function PrefixOptionInputForm({
     const { data, isLoading, error } = useOptionsRequest(optionsUrl, debouncedSearch);
 
     useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- data is undefined before fetch completes
-        if (data && !isLoading && !error) {
-            setOptions(data);
+        if (!isLoading && !error) {
+            setOptions(data ?? []);
         }
     }, [data, isLoading, error]);
 

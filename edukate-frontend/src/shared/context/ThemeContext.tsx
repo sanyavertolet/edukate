@@ -40,5 +40,4 @@ export const ThemeProvider: FC<ThemeProviderProps> = ({ children }) => {
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components -- hook intentionally co-located with its provider
 export const useTheme = () => useContext(ThemeContext);

@@ -37,7 +37,6 @@ export function BundleProblemSelector({
                 isSelected: problem.name == selectedProblem?.name,
             })),
         ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- bundleName/onProblemSelect omitted; adding onProblemSelect would require useCallback at every call site
         [problems, selectedProblem],
     );
     usePageSpecificNavigation(pageSpecificNavigation);

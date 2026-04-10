@@ -30,13 +30,12 @@ export const useFileUpload = ({
         onTempFileDeletedRef.current = onTempFileDeleted;
     });
 
-    const { data: tempFiles, isLoading, error } = useGetTempFiles();
+    const { data: tempFiles = [], isLoading, error } = useGetTempFiles();
     const postTempFileMutation = usePostTempFileMutation();
     const deleteTempFileMutation = useDeleteTempFileMutation();
 
     useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- data may be undefined before first fetch
-        if (tempFiles && tempFiles.length > 0 && !isLoading && !error) {
+        if (tempFiles.length > 0 && !isLoading && !error) {
             setFileMetadataList((prev) => {
                 const newFiles = tempFiles.filter(
                     (tempFile) => !prev.some((existingFile) => existingFile.key === tempFile.key),

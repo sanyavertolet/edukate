@@ -3,8 +3,10 @@ import { createRoot } from "react-dom/client";
 
 import App from "./app/App";
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- standard React entry point
-createRoot(document.getElementById("root")!).render(
+const root = document.getElementById("root");
+if (!root) throw new Error("Root element #root not found in document");
+
+createRoot(root).render(
     <StrictMode>
         <App />
     </StrictMode>,

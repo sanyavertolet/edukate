@@ -26,4 +26,20 @@ export default tseslint.config(
             "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
         },
     },
+    {
+        // Context files intentionally co-locate provider components with their companion hooks.
+        // Fast-refresh concerns don't apply — these files are not hot-reloaded independently.
+        files: ["src/shared/context/**", "src/features/auth/context.tsx"],
+        rules: { "react-refresh/only-export-components": "off" },
+    },
+    {
+        // Hooks that intentionally omit deps to prevent infinite update loops.
+        // Each site documents the reason inline.
+        files: [
+            "src/shared/context/DeviceContext.tsx",
+            "src/features/bundles/components/BundleProblemSelector.tsx",
+            "src/features/problems/hooks/useProblemTableParams.ts",
+        ],
+        rules: { "react-hooks/exhaustive-deps": "off" },
+    },
 );

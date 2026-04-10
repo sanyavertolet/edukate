@@ -65,7 +65,6 @@ export function useProblemTableParams() {
                 updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) });
             },
         }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- updateSearchParams is recreated each render; using searchParams as the sole dep is correct
         [searchParams],
     );
 

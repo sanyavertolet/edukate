@@ -32,7 +32,6 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
  * @returns The auth context
  * @throws Error if used outside AuthProvider
  */
-// eslint-disable-next-line react-refresh/only-export-components -- hook intentionally co-located with its provider
 export const useAuthContext = (): AuthContextType => {
     const context = useContext(AuthContext);
     if (context === undefined) {
