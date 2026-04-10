@@ -1,8 +1,11 @@
-FROM node:20 AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
+FROM node:22 AS build
+# Build context must be the repo root so that ../spec/ resolves correctly for Orval
+WORKDIR /app/edukate-frontend
+COPY edukate-frontend/package*.json ./
+RUN npm ci
+COPY edukate-frontend/ .
+COPY spec/ /app/spec/
+RUN npm run generate:types
 RUN npm run build
 
 FROM nginx:alpine AS production
@@ -17,11 +20,10 @@ RUN mkdir -p /var/cache/nginx \
     && chown -R nginx:nginx /var/cache/nginx \
     && chmod -R 755 /var/cache/nginx
 
-
 RUN rm -rf /usr/share/nginx/html/*
 
-COPY --from=build /app/dist .
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/edukate-frontend/dist .
+COPY edukate-frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80 5801
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
