@@ -18,7 +18,7 @@ export function BundleCategoryList({ tab }: BundleCategoryListProps) {
                 {(!bundles || bundles.length == 0) && <BundleEmptyList />}
 
                 {bundles?.map((bundle, index) => (
-                    <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={`grid-${index}`}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={`grid-${String(index)}`}>
                         <BundleCard bundleMetadata={bundle} onCopy={() => toast.info("Copied to clipboard.")} />
                     </Grid>
                 ))}

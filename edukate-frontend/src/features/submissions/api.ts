@@ -9,8 +9,8 @@ export function useSubmitProblemMutation() {
     return useMutation({
         mutationFn: (request: CreateSubmissionRequest) => uploadSubmission(request),
         onSuccess: (_data, { problemId }) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(problemId) }).finally();
-            queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problemId) }).finally();
+            void queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(problemId) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problemId) });
         },
     });
 }
@@ -27,7 +27,7 @@ export function useMySubmissionsQuery(problemId?: string) {
 export function useSubmissionQuery(submissionId: string | undefined) {
     return useQuery({
         queryKey: queryKeys.submissions.detail(submissionId ?? ""),
-        queryFn: ({ signal }) => getSubmissionById(submissionId!, signal),
+        queryFn: ({ signal }) => getSubmissionById(submissionId as string, signal),
         enabled: !!submissionId,
     });
 }

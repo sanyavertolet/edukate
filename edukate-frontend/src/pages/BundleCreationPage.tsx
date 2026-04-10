@@ -17,10 +17,10 @@ export default function BundleCreationPage() {
 
     const navigate = useNavigate();
     useEffect(() => {
-        if (bundleMutation.isSuccess && bundleMutation.data) {
-            navigate(`/bundles/${bundleMutation.data.shareCode}`);
+        if (bundleMutation.isSuccess) {
+            void navigate(`/bundles/${bundleMutation.data.shareCode}`);
         }
-    }, [bundleMutation.isSuccess, bundleMutation.data, bundleMutation.error]);
+    }, [bundleMutation.isSuccess, bundleMutation.data, bundleMutation.error, navigate]);
 
     const createBundle = () => {
         bundleMutation.mutate();
@@ -38,13 +38,13 @@ export default function BundleCreationPage() {
                             required
                             label={"Title"}
                             value={createBundleRequest.name}
-                            onChange={(e) => setCreateBundleRequest({ ...createBundleRequest, name: e.target.value })}
+                            onChange={(e) => { setCreateBundleRequest({ ...createBundleRequest, name: e.target.value }); }}
                         />
                         <TextField
                             required
                             label={"Description"}
                             value={createBundleRequest.description}
-                            onChange={(e) => setCreateBundleRequest({ ...createBundleRequest, description: e.target.value })}
+                            onChange={(e) => { setCreateBundleRequest({ ...createBundleRequest, description: e.target.value }); }}
                         />
                         <OptionPickerComponent
                             optionsUrl={"/api/v1/problems/by-prefix"}
@@ -53,14 +53,14 @@ export default function BundleCreationPage() {
                             placeholderText={"Search problems"}
                             debounceTime={1000}
                             onOptionsChange={(problemIds) =>
-                                setCreateBundleRequest({ ...createBundleRequest, problemIds: problemIds })
+                                { setCreateBundleRequest({ ...createBundleRequest, problemIds: problemIds }); }
                             }
                         />
                     </Stack>
                 </CardContent>
 
                 <CardActions>
-                    <Button variant={"contained"} sx={{ mx: "auto" }} onClick={() => createBundle()}>
+                    <Button variant={"contained"} sx={{ mx: "auto" }} onClick={() => { createBundle(); }}>
                         Create Bundle
                     </Button>
                     {/*  todo: display errors  */}

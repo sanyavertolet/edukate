@@ -32,14 +32,14 @@ export function useCreateBundleMutation(createBundleRequest: CreateBundleRequest
             return createBundle(createBundleRequest);
         },
         onSuccess: () =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("owned") }).finally(),
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("owned") }),
     });
 }
 
 export function useBundleRequest(bundleCode: string | undefined) {
     return useQuery({
         queryKey: queryKeys.bundles.detail(bundleCode ?? ""),
-        queryFn: ({ signal }) => getBundleByShareCode(bundleCode!, signal),
+        queryFn: ({ signal }) => getBundleByShareCode(bundleCode as string, signal),
         enabled: !!bundleCode,
     });
 }
@@ -61,8 +61,8 @@ export function useJoinBundleMutation() {
     return useMutation({
         mutationFn: (shareCode: string) => joinBundle(shareCode),
         onSuccess: (_data, shareCode) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("joined") }).finally();
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.detail(shareCode) }).finally();
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("joined") });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.detail(shareCode) });
         },
     });
 }
@@ -72,7 +72,7 @@ export function useBundleInviteUserMutation() {
         mutationFn: ({ username, shareCode }: { username: string; shareCode: string }) =>
             inviteToBundle(shareCode, { inviteeName: username }),
         onSuccess: (_data, { shareCode }) =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.invitedUsers(shareCode) }).finally(),
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.invitedUsers(shareCode) }),
     });
 }
 
@@ -81,8 +81,8 @@ export function useBundleInvitationReplyMutation() {
         mutationFn: ({ shareCode, isAccepted }: { shareCode: string; isAccepted: boolean }) =>
             replyToInvite(shareCode, { response: isAccepted }),
         onSuccess: (_data, { shareCode }) => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("joined") }).finally();
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.detail(shareCode) }).finally();
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("joined") });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.detail(shareCode) });
         },
     });
 }
@@ -92,7 +92,7 @@ export function useBundleChangeUserRoleMutation() {
         mutationFn: ({ username, role, shareCode }: { username: string; role: string; shareCode: string }) =>
             changeUserRole(shareCode, { username, requestedRole: role as ChangeUserRoleRequestedRole }),
         onSuccess: (_data, { shareCode }) =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.users(shareCode) }).finally(),
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.users(shareCode) }),
     });
 }
 
@@ -119,6 +119,6 @@ export function useBundleExpireInviteMutation() {
         mutationFn: ({ shareCode, username }: { shareCode: string; username: string }) =>
             expireInvite(shareCode, { inviteeName: username }),
         onSuccess: (_data, { shareCode }) =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.bundles.invitedUsers(shareCode) }).finally(),
+            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.invitedUsers(shareCode) }),
     });
 }

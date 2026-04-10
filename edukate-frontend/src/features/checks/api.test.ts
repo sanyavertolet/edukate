@@ -29,10 +29,10 @@ describe("useRequestCheckMutation", () => {
             http.post("*/api/v1/checker/supervisor", () => HttpResponse.json({})),
         );
         const { result } = renderHook(() => useRequestCheckMutation(), { wrapper: createWrapper() });
-        await act(async () => {
+        act(() => {
             result.current.mutate({ submissionId: "sub-1", checkType: "supervisor" });
         });
-        await waitFor(() => expect(result.current.isIdle || result.current.isSuccess).toBe(true));
+        await waitFor(() => { expect(result.current.isIdle || result.current.isSuccess).toBe(true); });
     });
 
     it("calls selfCheck endpoint when checkType is self", async () => {
@@ -40,9 +40,9 @@ describe("useRequestCheckMutation", () => {
             http.post("*/api/v1/checker/self", () => HttpResponse.json({})),
         );
         const { result } = renderHook(() => useRequestCheckMutation(), { wrapper: createWrapper() });
-        await act(async () => {
+        act(() => {
             result.current.mutate({ submissionId: "sub-1", checkType: "self" });
         });
-        await waitFor(() => expect(result.current.isIdle || result.current.isSuccess).toBe(true));
+        await waitFor(() => { expect(result.current.isIdle || result.current.isSuccess).toBe(true); });
     });
 });

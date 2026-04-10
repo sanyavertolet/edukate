@@ -71,7 +71,7 @@ describe("SolutionCard — submission pipeline", () => {
         simulateFileSelect(container, [new File(["img"], "photo.jpg", { type: "image/jpeg" })]);
 
         await waitFor(() =>
-            expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(),
+            { expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(); },
         );
     });
 
@@ -105,8 +105,8 @@ describe("SolutionCard — submission pipeline", () => {
         server.use(
             getGetTempFilesMockHandler([]),
             // Return a different key for each upload call
-            http.post("*/api/v1/files/temp", async () => {
-                const key = `key-${uploadedKeys.length + 1}`;
+            http.post("*/api/v1/files/temp", () => {
+                const key = `key-${String(uploadedKeys.length + 1)}`;
                 uploadedKeys.push(key);
                 return HttpResponse.text(key);
             }),
@@ -118,9 +118,9 @@ describe("SolutionCard — submission pipeline", () => {
             new File(["b"], "img2.jpg", { type: "image/jpeg" }),
         ]);
 
-        await waitFor(() => expect(uploadedKeys).toHaveLength(2));
+        await waitFor(() => { expect(uploadedKeys).toHaveLength(2); });
         await waitFor(() =>
-            expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(),
+            { expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(); },
         );
     });
 });
@@ -134,7 +134,7 @@ describe("SolutionCard — pre-existing temp files", () => {
         );
         render(<SolutionCard problem={problem} />);
         await waitFor(() =>
-            expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(),
+            { expect(screen.getByRole("button", { name: /submit/i })).toBeInTheDocument(); },
         );
     });
 });

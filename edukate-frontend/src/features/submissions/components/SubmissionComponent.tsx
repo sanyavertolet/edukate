@@ -20,7 +20,7 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
     const { user } = useAuthContext();
 
     const isSelfCheckDisabled = submission.status == "SUCCESS";
-    const isAiCheckDisabled = !["MODERATOR" as Role, "ADMIN" as Role].some((role) => user?.roles?.includes(role));
+    const isAiCheckDisabled = !["MODERATOR" as Role, "ADMIN" as Role].some((role) => user?.roles.includes(role));
     return (
         <Box sx={{ p: 2 }}>
             <SubmissionDetails submission={submission} />
@@ -33,7 +33,7 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
                                 size="small"
                                 variant="text"
                                 disabled={isSelfCheckDisabled}
-                                onClick={() => requestCheck("self")}
+                                onClick={() => { requestCheck("self"); }}
                             >
                                 Consider as Solved
                             </Button>
@@ -45,7 +45,7 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
                                 size="small"
                                 variant="text"
                                 disabled={isAiCheckDisabled}
-                                onClick={() => requestCheck("ai")}
+                                onClick={() => { requestCheck("ai"); }}
                             >
                                 Request AI Check
                             </Button>

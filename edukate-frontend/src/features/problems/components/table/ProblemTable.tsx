@@ -19,7 +19,7 @@ export const ProblemTable: FC<ProblemTableProps> = ({ headerCells, toolbar, chil
                     <TableRow>
                         {headerCells.map((h, i) => (
                             <TableCell
-                                key={`header-${i}`}
+                                key={`header-${String(i)}`}
                                 align={i === 0 ? "center" : undefined}
                                 sx={i === 0 ? headerTableCellSx : undefined}
                             >

@@ -71,6 +71,6 @@ describe("SignUpForm", () => {
         await userEvent.type(screen.getByLabelText(/email/i), "alice@example.com");
         await userEvent.type(screen.getByLabelText(/password/i), "secret123");
         await userEvent.click(screen.getByRole("button", { name: /sign up/i }));
-        await waitFor(() => expect(onSignUpSuccess).toHaveBeenCalledOnce());
+        await waitFor(() => { expect(onSignUpSuccess).toHaveBeenCalledOnce(); });
     });
 });

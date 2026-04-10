@@ -15,20 +15,20 @@ export const InvitationDialog: FC<InvitationDialogProps> = ({ bundleInfo, onClos
     return (
         <Dialog
             open={bundleInfo != undefined}
-            onClose={() => onClose(undefined)}
+            onClose={() => { onClose(undefined); }}
             aria-labelledby="invitation-dialog-title"
             aria-describedby="invitation-dialog-description"
         >
-            <DialogTitle id="invitation-dialog-title">{`${bundleInfo?.bundleName} invite`}</DialogTitle>
+            <DialogTitle id="invitation-dialog-title">{`${bundleInfo?.bundleName ?? ""} invite`}</DialogTitle>
             <DialogContent>
                 <DialogContentText id="invitation-dialog-description">
-                    {`${bundleInfo?.inviterName} has invited you to ${bundleInfo?.bundleName} bundle. Do you wish to join the bundle?`}
+                    {`${bundleInfo?.inviterName ?? ""} has invited you to ${bundleInfo?.bundleName ?? ""} bundle. Do you wish to join the bundle?`}
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => onClose(undefined)}>Close</Button>
-                <Button onClick={() => onClose(false)}>Decline</Button>
-                <Button onClick={() => onClose(true)} autoFocus>
+                <Button onClick={() => { onClose(undefined); }}>Close</Button>
+                <Button onClick={() => { onClose(false); }}>Decline</Button>
+                <Button onClick={() => { onClose(true); }} autoFocus>
                     Accept
                 </Button>
             </DialogActions>

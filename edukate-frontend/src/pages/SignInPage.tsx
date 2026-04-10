@@ -7,8 +7,8 @@ export default function SignInPage() {
     return (
         <Container maxWidth="sm">
             <SignInForm
-                onSignUpRequest={() => navigate("/sign-up", { replace: true })}
-                onSignInSuccess={() => navigate(-1)}
+                onSignUpRequest={() => { void navigate("/sign-up", { replace: true }); }}
+                onSignInSuccess={() => { void navigate(-1); }}
             />
         </Container>
     );

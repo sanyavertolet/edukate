@@ -14,12 +14,12 @@ export const SubmissionList: FC<SubmissionListProps> = ({ problemId }) => {
     const showEmpty = !isLoading && !isError && submissions && submissions.length === 0;
     return (
         <Box>
-            <ZoomingImageDialog selectedImage={selectedImage} handleClose={() => setSelectedImage(null)} />
+            <ZoomingImageDialog selectedImage={selectedImage} handleClose={() => { setSelectedImage(null); }} />
             <List disablePadding>
                 {isLoading && (
                     <>
                         {Array.from({ length: 3 }).map((_, i) => (
-                            <StubListItem key={`stub-${i}`} />
+                            <StubListItem key={`stub-${String(i)}`} />
                         ))}
                     </>
                 )}

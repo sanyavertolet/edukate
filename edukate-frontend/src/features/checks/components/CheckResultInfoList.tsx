@@ -36,7 +36,7 @@ function CheckResultInfoItem(resultInfo: CheckResultInfo) {
                 </Tooltip>
             </ListItemAvatar>
             <ListItemText
-                primary={`Trust Level: ${resultInfo.trustLevel}`}
+                primary={`Trust Level: ${String(resultInfo.trustLevel)}`}
                 secondary={new Date(resultInfo.createdAt).toLocaleString()}
             />
         </ListItem>

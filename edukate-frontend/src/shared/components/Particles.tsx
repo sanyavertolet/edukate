@@ -10,7 +10,7 @@ export default function ParticlesComponent() {
     const { theme } = useTheme();
 
     useEffect(() => {
-        initParticlesEngine(async (engine) => {
+        void initParticlesEngine(async (engine) => {
             await loadSlim(engine);
         }).then(() => {
             setInit(true);

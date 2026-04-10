@@ -26,7 +26,7 @@ const UserRoleManager: FC<UserRoleManagerProps> = ({ shareCode }) => {
     const { data: userNameWithRoleList, refetch: refetchUserList } = useBundleUserListQuery(shareCode);
 
     useEffect(() => {
-        refetchUserList().then();
+        void refetchUserList();
     }, [changeUserRoleMutation.isSuccess, refetchUserList]);
     const handleRoleChange = (username: string, newRole: string) => {
         changeUserRoleMutation.mutate({ shareCode, username, role: newRole });
@@ -51,7 +51,7 @@ const UserRoleManager: FC<UserRoleManagerProps> = ({ shareCode }) => {
                                     id={`${username}-role`}
                                     value={role}
                                     label="Role"
-                                    onChange={(event) => handleRoleChange(username, event.target.value)}
+                                    onChange={(event) => { handleRoleChange(username, event.target.value); }}
                                     disabled={user?.name == username}
                                     size={"small"}
                                     sx={{ minWidth: { xs: 125, lg: 200 } }}

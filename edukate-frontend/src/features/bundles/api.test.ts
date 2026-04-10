@@ -14,7 +14,7 @@ describe("useBundleRequest", () => {
     it("fetches bundle data on mount", async () => {
         server.use(getGetBundleByShareCodeMockHandler(getGetBundleByShareCodeResponseMock({ name: "my-bundle" })));
         const { result } = renderHook(() => useBundleRequest("code-abc"), { wrapper: createWrapper() });
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        await waitFor(() => { expect(result.current.isSuccess).toBe(true); });
         expect(result.current.data?.name).toBe("my-bundle");
     });
 
@@ -25,7 +25,7 @@ describe("useBundleRequest", () => {
             ),
         );
         const { result } = renderHook(() => useBundleRequest("code-xyz"), { wrapper: createWrapper() });
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        await waitFor(() => { expect(result.current.isSuccess).toBe(true); });
         expect(result.current.data?.shareCode).toBe("code-xyz");
         expect(result.current.data?.isPublic).toBe(true);
     });

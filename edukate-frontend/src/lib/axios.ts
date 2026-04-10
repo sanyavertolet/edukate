@@ -15,7 +15,7 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
         if (error.response?.status === 401) {
-            queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
         }
         return Promise.reject(error);
     },

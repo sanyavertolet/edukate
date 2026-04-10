@@ -54,7 +54,7 @@ export const UserSearchInput: FC<UserSearchInputProps> = ({ bundleShareCode, onI
                 sx={{ ml: 1, flex: 1 }}
                 placeholder="Username"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => { setUsername(e.target.value); }}
                 onKeyDown={onKeyDown}
                 inputProps={{ "aria-label": "username" }}
             />

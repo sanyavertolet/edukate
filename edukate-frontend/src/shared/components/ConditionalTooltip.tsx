@@ -1,9 +1,9 @@
 import { FC, ReactElement } from "react";
 import { defaultTooltipSlotProps } from "@/shared/utils/utils";
-import { SlotProps, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 
 interface ConditionalTooltipProps {
-    slotProps?: SlotProps<never, never, never>;
+    slotProps?: typeof defaultTooltipSlotProps;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     children: ReactElement<unknown, any>;
     title: string;

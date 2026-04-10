@@ -15,7 +15,7 @@ describe("useMySubmissionsQuery", () => {
         expect(result.current.fetchStatus).toBe("idle");
     });
 
-    it("returns data when MSW responds", async () => {
+    it("returns data when MSW responds", () => {
         server.use(getGetMySubmissionsMockHandler([]));
         // We can't easily set isAuthorized=true without a full auth flow,
         // so just verify the hook exposes the query shape (doesn't throw)
@@ -34,7 +34,7 @@ describe("useSubmissionQuery", () => {
     it("fetches submission when id is provided", async () => {
         server.use(getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: "sub-42", problemId: "prob-1" })));
         const { result } = renderHook(() => useSubmissionQuery("sub-42"), { wrapper: createWrapper() });
-        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        await waitFor(() => { expect(result.current.isSuccess).toBe(true); });
         expect(result.current.data?.id).toBe("sub-42");
     });
 });

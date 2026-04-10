@@ -49,7 +49,7 @@ export const NotificationMenu: FC<NotificationMenuProps> = ({
     const markAllAsReadMutation = useMarkAllNotificationsAsReadMutation();
     const handleMarkAllAsRead = () => {
         markAllAsReadMutation.mutate();
-        refetchNotifications().then();
+        void refetchNotifications();
     };
 
     const onPaginationChange = (_: ChangeEvent<unknown>, newPage: number) => {
@@ -82,7 +82,7 @@ export const NotificationMenu: FC<NotificationMenuProps> = ({
                     <NotificationItem
                         key={notification.uuid}
                         notification={notification}
-                        onClick={() => onNotificationClick(notification)}
+                        onClick={() => { onNotificationClick(notification); }}
                     />
                 ))}
             {notifications && numberOfPages > 1 && (

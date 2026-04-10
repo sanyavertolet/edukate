@@ -29,11 +29,11 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
     const [passwordError, setPasswordError] = useState<string | null>(null);
 
     const handleBlurUsername = (e: FocusEvent<HTMLInputElement>) =>
-        setUsernameError(validate("username", e.target.value));
+        { setUsernameError(validate("username", e.target.value)); };
     const handleBlurEmail = (e: FocusEvent<HTMLInputElement>) =>
-        setEmailError(validate("email", e.target.value));
+        { setEmailError(validate("email", e.target.value)); };
     const handleBlurPassword = (e: FocusEvent<HTMLInputElement>) =>
-        setPasswordError(validate("password", e.target.value));
+        { setPasswordError(validate("password", e.target.value)); };
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -48,10 +48,11 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
         signUpMutation.mutate(
             { username, email, password },
             {
-                onSuccess: () =>
-                    queryClient
+                onSuccess: () => {
+                    void queryClient
                         .refetchQueries({ queryKey: queryKeys.auth.whoami })
-                        .finally(() => (onSignUpSuccess ? onSignUpSuccess() : navigate("/"))),
+                        .finally(() => { if (onSignUpSuccess) onSignUpSuccess(); else void navigate("/"); });
+                },
             },
         );
     };
@@ -66,7 +67,7 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={formSx}>
                     <TextField
                         value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => { setUsername(e.target.value); }}
                         onBlur={handleBlurUsername}
                         error={!!usernameError}
                         helperText={usernameError ?? " "}
@@ -82,7 +83,7 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                     />
                     <TextField
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => { setEmail(e.target.value); }}
                         onBlur={handleBlurEmail}
                         error={!!emailError}
                         helperText={emailError ?? " "}
@@ -97,7 +98,7 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                     />
                     <TextField
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => { setPassword(e.target.value); }}
                         onBlur={handleBlurPassword}
                         error={!!passwordError}
                         helperText={passwordError ?? " "}

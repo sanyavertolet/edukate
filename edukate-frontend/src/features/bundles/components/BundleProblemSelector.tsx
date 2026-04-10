@@ -20,16 +20,16 @@ export function BundleProblemSelector({
 }: BundleProblemSelectorProps) {
     const { isMobile } = useDeviceContext();
 
-    // noinspection com.intellij.reactbuddy.ExhaustiveDepsInspection
     const pageSpecificNavigation: AdditionalNavigationElement[] = useMemo(
         () => [
-            { text: bundleName, onClick: () => onProblemSelect(undefined), isSelected: selectedProblem === undefined },
+            { text: bundleName, onClick: () => { onProblemSelect(undefined); }, isSelected: selectedProblem === undefined },
             ...problems.map((problem) => ({
                 text: problem.name,
-                onClick: () => onProblemSelect(problem),
+                onClick: () => { onProblemSelect(problem); },
                 isSelected: problem.name == selectedProblem?.name,
             })),
         ],
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- bundleName/onProblemSelect omitted; adding onProblemSelect would require useCallback at every call site
         [problems, selectedProblem],
     );
     usePageSpecificNavigation(pageSpecificNavigation);
@@ -39,7 +39,7 @@ export function BundleProblemSelector({
             <Box>
                 <List>
                     <ListItem key={bundleName} disablePadding>
-                        <ListItemButton onClick={() => onProblemSelect(undefined)}>
+                        <ListItemButton onClick={() => { onProblemSelect(undefined); }}>
                             <ListItemText primary={bundleName} />
                         </ListItemButton>
                     </ListItem>
@@ -50,7 +50,7 @@ export function BundleProblemSelector({
                         <ListItemButton
                             key={problem.name}
                             selected={problem.name == selectedProblem?.name}
-                            onClick={() => onProblemSelect(problem)}
+                            onClick={() => { onProblemSelect(problem); }}
                         >
                             <ListItemIcon>
                                 <ProblemStatusIcon status={problem.status} />

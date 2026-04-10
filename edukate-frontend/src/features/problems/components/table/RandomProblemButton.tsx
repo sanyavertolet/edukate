@@ -9,10 +9,10 @@ export const RandomProblemButton: FC = () => {
     const randomProblemQuery = useRandomProblemIdQuery();
     const navigate = useNavigate();
     const onClick = () => {
-        randomProblemQuery.refetch().then(
+        void randomProblemQuery.refetch().then(
             (result) => {
                 const problemId = result.data;
-                navigate(`/problems/${problemId}`);
+                void navigate(`/problems/${problemId ?? ""}`);
             },
             () => {
                 toast.error("Could not randomize the problem");

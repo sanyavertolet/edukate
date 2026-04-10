@@ -10,7 +10,7 @@ function makeUnauthenticated() {
 }
 
 describe("NotificationButton — unauthenticated", () => {
-    beforeEach(() => makeUnauthenticated());
+    beforeEach(() => { makeUnauthenticated(); });
 
     it("does not render the bell button when not logged in", async () => {
         render(<NotificationButton />);
@@ -27,7 +27,7 @@ describe("NotificationButton — authenticated", () => {
         );
         render(<NotificationButton />);
         await waitFor(() =>
-            expect(screen.getByRole("button", { name: /show notifications/i })).toBeInTheDocument(),
+            { expect(screen.getByRole("button", { name: /show notifications/i })).toBeInTheDocument(); },
         );
     });
 
@@ -37,7 +37,7 @@ describe("NotificationButton — authenticated", () => {
         );
         render(<NotificationButton />);
         await waitFor(() =>
-            expect(screen.getByText("5")).toBeInTheDocument(),
+            { expect(screen.getByText("5")).toBeInTheDocument(); },
         );
     });
 
@@ -50,7 +50,7 @@ describe("NotificationButton — authenticated", () => {
         const button = await screen.findByRole("button", { name: /show notifications/i });
         await userEvent.click(button);
         await waitFor(() =>
-            expect(screen.getByText("Notifications")).toBeInTheDocument(),
+            { expect(screen.getByText("Notifications")).toBeInTheDocument(); },
         );
     });
 
@@ -66,7 +66,7 @@ describe("NotificationButton — authenticated", () => {
         // Close by pressing Escape
         await userEvent.keyboard("{Escape}");
         await waitFor(() =>
-            expect(screen.queryByText("Notifications")).not.toBeInTheDocument(),
+            { expect(screen.queryByText("Notifications")).not.toBeInTheDocument(); },
         );
     });
 });

@@ -19,14 +19,14 @@ function makeChangeEvent(files: File[]): ChangeEvent<HTMLInputElement> {
 }
 
 describe("useFileUpload", () => {
-    it("adds files to the list on handleAddFiles", async () => {
+    it("adds files to the list on handleAddFiles", () => {
         server.use(getGetTempFilesMockHandler([]));
         const { result } = renderHook(
             () => useFileUpload({ onTempFileUploaded: vi.fn(), onTempFileDeleted: vi.fn() }),
             { wrapper: createWrapper() },
         );
         const file = new File(["content"], "test.txt", { type: "text/plain" });
-        act(() => result.current.handleAddFiles(makeChangeEvent([file])));
+        act(() => { result.current.handleAddFiles(makeChangeEvent([file])); });
         expect(result.current.fileMetadataList).toHaveLength(1);
         expect(result.current.fileMetadataList[0].key).toBe("test.txt");
     });
@@ -38,7 +38,7 @@ describe("useFileUpload", () => {
             { wrapper: createWrapper() },
         );
         const files = [new File(["a"], "a.txt"), new File(["b"], "b.txt")];
-        act(() => result.current.handleAddFiles(makeChangeEvent(files)));
+        act(() => { result.current.handleAddFiles(makeChangeEvent(files)); });
         expect(result.current.errorText).toMatch(/no more than 1/i);
         expect(result.current.fileMetadataList).toHaveLength(0);
     });
@@ -50,7 +50,7 @@ describe("useFileUpload", () => {
             { wrapper: createWrapper() },
         );
         const file = new File(["more than five bytes"], "big.txt");
-        act(() => result.current.handleAddFiles(makeChangeEvent([file])));
+        act(() => { result.current.handleAddFiles(makeChangeEvent([file])); });
         expect(result.current.errorText).toMatch(/no more than/i);
         expect(result.current.fileMetadataList).toHaveLength(0);
     });
@@ -63,8 +63,8 @@ describe("useFileUpload", () => {
             { wrapper: createWrapper() },
         );
         const file = new File(["content"], "upload.txt", { type: "text/plain" });
-        act(() => result.current.handleAddFiles(makeChangeEvent([file])));
-        await waitFor(() => expect(onTempFileUploaded).toHaveBeenCalledWith("server-key-123"));
+        act(() => { result.current.handleAddFiles(makeChangeEvent([file])); });
+        await waitFor(() => { expect(onTempFileUploaded).toHaveBeenCalledWith("server-key-123"); });
     });
 
     it("calls onTempFileDeleted after removing a success-state file", async () => {
@@ -79,9 +79,9 @@ describe("useFileUpload", () => {
             () => useFileUpload({ onTempFileUploaded: vi.fn(), onTempFileDeleted }),
             { wrapper: createWrapper() },
         );
-        await waitFor(() => expect(result.current.fileMetadataList).toHaveLength(1));
-        act(() => result.current.handleRemoveFile("existing-key"));
-        await waitFor(() => expect(onTempFileDeleted).toHaveBeenCalledWith("existing-key"));
+        await waitFor(() => { expect(result.current.fileMetadataList).toHaveLength(1); });
+        act(() => { result.current.handleRemoveFile("existing-key"); });
+        await waitFor(() => { expect(onTempFileDeleted).toHaveBeenCalledWith("existing-key"); });
     });
 
     it("uses the latest onTempFileUploaded callback after a re-render", async () => {
@@ -95,8 +95,8 @@ describe("useFileUpload", () => {
         const newCb = vi.fn();
         rerender({ cb: newCb });
         const file = new File(["content"], "ref.txt", { type: "text/plain" });
-        act(() => result.current.handleAddFiles(makeChangeEvent([file])));
-        await waitFor(() => expect(newCb).toHaveBeenCalledWith("key-abc"));
+        act(() => { result.current.handleAddFiles(makeChangeEvent([file])); });
+        await waitFor(() => { expect(newCb).toHaveBeenCalledWith("key-abc"); });
         expect(initialCb).not.toHaveBeenCalled();
     });
 });

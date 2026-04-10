@@ -19,19 +19,20 @@ export function UserMenu() {
     };
     const handleSignOut = () => {
         signOutMutation.mutate(undefined, {
-            onSuccess: () =>
-                queryClient.refetchQueries({ queryKey: ["whoami"] }).finally(() => {
+            onSuccess: () => {
+                void queryClient.refetchQueries({ queryKey: ["whoami"] }).finally(() => {
                     handleClose();
                     window.location.reload();
-                }),
+                });
+            },
         });
     };
     const handleSignIn = () => {
-        navigate("/sign-in");
+        void navigate("/sign-in");
         handleClose();
     };
     const handleSignUp = () => {
-        navigate("/sign-up");
+        void navigate("/sign-up");
         handleClose();
     };
 

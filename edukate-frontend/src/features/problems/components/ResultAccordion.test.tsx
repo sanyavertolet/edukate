@@ -21,11 +21,11 @@ function makeUnauthenticated() {
 }
 
 describe("ResultAccordionComponent — unauthenticated", () => {
-    beforeEach(() => makeUnauthenticated());
+    beforeEach(() => { makeUnauthenticated(); });
 
     it("renders the 'Show the result' label", async () => {
         render(<ResultAccordionComponent problem={problem} />);
-        await waitFor(() => expect(screen.getByText("Show the result")).toBeInTheDocument());
+        await waitFor(() => { expect(screen.getByText("Show the result")).toBeInTheDocument(); });
     });
 
     it("accordion is disabled when not logged in", async () => {

@@ -28,8 +28,8 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
     const validateUsername = (value: string) => (value.trim() ? null : "Please enter your username.");
     const validatePassword = (value: string) => (value.trim() ? null : "Please enter your password.");
 
-    const handleBlurUsername = (e: FocusEvent<HTMLInputElement>) => setUsernameError(validateUsername(e.target.value));
-    const handleBlurPassword = (e: FocusEvent<HTMLInputElement>) => setPasswordError(validatePassword(e.target.value));
+    const handleBlurUsername = (e: FocusEvent<HTMLInputElement>) => { setUsernameError(validateUsername(e.target.value)); };
+    const handleBlurPassword = (e: FocusEvent<HTMLInputElement>) => { setPasswordError(validatePassword(e.target.value)); };
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -42,10 +42,11 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
         signInMutation.mutate(
             { username, password },
             {
-                onSuccess: () =>
-                    queryClient
+                onSuccess: () => {
+                    void queryClient
                         .refetchQueries({ queryKey: queryKeys.auth.whoami })
-                        .finally(() => (onSignInSuccess ? onSignInSuccess() : navigate("/"))),
+                        .finally(() => { if (onSignInSuccess) onSignInSuccess(); else void navigate("/"); });
+                },
             },
         );
     };
@@ -60,7 +61,7 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={formSx}>
                     <TextField
                         value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => { setUsername(e.target.value); }}
                         onBlur={handleBlurUsername}
                         error={!!usernameError}
                         helperText={usernameError ?? " "}
@@ -76,7 +77,7 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
                     />
                     <TextField
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => { setPassword(e.target.value); }}
                         onBlur={handleBlurPassword}
                         error={!!passwordError}
                         helperText={passwordError ?? " "}

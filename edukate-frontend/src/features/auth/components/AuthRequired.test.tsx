@@ -21,7 +21,7 @@ describe("AuthRequired — bypass", () => {
 });
 
 describe("AuthRequired — unauthenticated", () => {
-    beforeEach(() => makeUnauthenticated());
+    beforeEach(() => { makeUnauthenticated(); });
 
     it("shows 'Authentication Required' heading", async () => {
         render(
@@ -30,7 +30,7 @@ describe("AuthRequired — unauthenticated", () => {
             </AuthRequired>,
         );
         await waitFor(() =>
-            expect(screen.getByText("Authentication Required")).toBeInTheDocument(),
+            { expect(screen.getByText("Authentication Required")).toBeInTheDocument(); },
         );
         expect(screen.queryByText("Secret")).not.toBeInTheDocument();
     });
@@ -42,7 +42,7 @@ describe("AuthRequired — unauthenticated", () => {
             </AuthRequired>,
         );
         await waitFor(() =>
-            expect(screen.getByRole("heading", { name: /sign in/i })).toBeInTheDocument(),
+            { expect(screen.getByRole("heading", { name: /sign in/i })).toBeInTheDocument(); },
         );
     });
 

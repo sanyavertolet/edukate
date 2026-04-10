@@ -33,13 +33,15 @@ type DeviceProviderProps = {
     children: ReactNode;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook intentionally co-located with its provider
 export const usePageSpecificNavigation = (navigationElements: AdditionalNavigationElement[]) => {
     const { isMobile, pageSpecificNavigation, setPageSpecificNavigation } = useDeviceContext();
     useEffect(() => {
         if (isMobile && !areNavigationsEqual(pageSpecificNavigation, navigationElements)) {
-            setPageSpecificNavigation(navigationElements || []);
+            setPageSpecificNavigation(navigationElements);
         }
-        return () => setPageSpecificNavigation([]);
+        return () => { setPageSpecificNavigation([]); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- pageSpecificNavigation/setPageSpecificNavigation omitted to prevent infinite loop; equality is guarded by areNavigationsEqual
     }, [isMobile, navigationElements]);
 };
 
@@ -55,4 +57,5 @@ export const DeviceProvider: FC<DeviceProviderProps> = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook intentionally co-located with its provider
 export const useDeviceContext = () => useContext(DeviceContext);

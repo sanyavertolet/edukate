@@ -26,6 +26,7 @@ export function PrefixOptionInputForm({
     const { data, isLoading, error } = useOptionsRequest(optionsUrl, debouncedSearch);
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- data is undefined before fetch completes
         if (data && !isLoading && !error) {
             setOptions(data);
         }
@@ -42,7 +43,7 @@ export function PrefixOptionInputForm({
     return (
         <Autocomplete
             id="option-select-multiple"
-            value={selectedOptions || null}
+            value={selectedOptions}
             options={options}
             onChange={handleOptionSelect}
             loading={isLoading}

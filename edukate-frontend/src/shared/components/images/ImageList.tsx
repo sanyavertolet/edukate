@@ -34,10 +34,10 @@ export function ImageListComponent({ images }: ImageListComponentProps) {
                         role="button"
                         tabIndex={0}
                         sx={imageListItemSx}
-                        onClick={() => handleImageClick(imageUrl)}
-                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleImageClick(imageUrl)}
+                        onClick={() => { handleImageClick(imageUrl); }}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleImageClick(imageUrl); }}
                     >
-                        <img srcSet={imageUrl} alt={`Image ${index + 1}`} loading="lazy" style={{ maxWidth: "25rem" }} />
+                        <img srcSet={imageUrl} alt={`Image ${String(index + 1)}`} loading="lazy" style={{ maxWidth: "25rem" }} />
                     </ImageListItem>
                 ))}
             </ImageList>

@@ -24,7 +24,7 @@ export function useProblemRequest(id: string | undefined) {
     return useQuery({
         queryKey: queryKeys.problems.detail(id ?? ""),
         staleTime: PROBLEM_STALE_TIME,
-        queryFn: ({ signal }) => getProblem(id!, signal),
+        queryFn: ({ signal }) => getProblem(id as string, signal),
         enabled: id !== undefined,
         meta: { silent: true },
     });

@@ -19,9 +19,7 @@ export function OptionPickerComponent({
     label,
 }: OptionPickerComponentProps) {
     const onSelectedOptionsChange = (options: string[]) => {
-        if (onOptionsChange != null) {
-            onOptionsChange(options);
-        }
+        onOptionsChange(options);
     };
 
     return (

@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { server } from "@/test/server";
 import {
     getGetNotificationsCountMockHandler,
@@ -55,7 +55,7 @@ describe("useMarkAllNotificationsAsReadMutation", () => {
 });
 
 describe("useNotificationsCountRequest — MSW responds", () => {
-    it("returns count data when MSW handler is active (coverage of queryFn path)", async () => {
+    it("returns count data when MSW handler is active (coverage of queryFn path)", () => {
         server.use(
             getGetNotificationsCountMockHandler(
                 getGetNotificationsCountResponseMock({ count: 3 }),

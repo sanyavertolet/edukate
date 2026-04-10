@@ -5,7 +5,8 @@ import { ProblemStatus } from "@/features/problems/types";
 export const DEFAULT_PAGE_SIZE = 10;
 
 function getSearchParamAsInt(searchParams: URLSearchParams, key: string, defaultValue: number) {
-    return searchParams.get(key) ? parseInt(searchParams.get(key)!, 10) : defaultValue;
+    const value = searchParams.get(key);
+    return value ? parseInt(value, 10) : defaultValue;
 }
 
 export type StatusFilter = ProblemStatus | "ALL" | undefined;
@@ -39,7 +40,7 @@ export function useProblemTableParams() {
             else next.set("pageSize", String(params.pageSize));
         }
         if (params.status !== undefined) {
-            if (!params.status || params.status === "ALL") next.delete("status");
+            if (params.status === "ALL") next.delete("status");
             else next.set("status", params.status);
         }
         if (params.prefix !== undefined) {
@@ -51,12 +52,13 @@ export function useProblemTableParams() {
 
     const handlers = useMemo(
         () => ({
-            onChangePage: (_: unknown, newPage: number) => updateSearchParams({ page: newPage }),
-            onChangeStatus: (newStatus: StatusFilter) => updateSearchParams({ page: 0, status: newStatus }),
-            onChangePrefix: (newPrefix: string) => updateSearchParams({ page: 0, prefix: newPrefix }),
+            onChangePage: (_: unknown, newPage: number) => { updateSearchParams({ page: newPage }); },
+            onChangeStatus: (newStatus: StatusFilter) => { updateSearchParams({ page: 0, status: newStatus }); },
+            onChangePrefix: (newPrefix: string) => { updateSearchParams({ page: 0, prefix: newPrefix }); },
             onChangeRowsPerPage: (event: ChangeEvent<HTMLInputElement>) =>
-                updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) }),
+                { updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) }); },
         }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- updateSearchParams is recreated each render; using searchParams as the sole dep is correct
         [searchParams],
     );
 

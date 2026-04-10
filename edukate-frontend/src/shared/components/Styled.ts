@@ -7,7 +7,7 @@ export const BlurryToolbar = styled(Toolbar)(({ theme }) => ({
     alignItems: "center",
     justifyContent: "space-between",
     flexShrink: 0,
-    borderRadius: `calc(${theme.shape.borderRadius}px + 8px)`,
+    borderRadius: `calc(${String(theme.shape.borderRadius)}px + 8px)`,
     backdropFilter: "blur(24px)",
     border: "1px solid",
     borderColor: theme.palette.divider,

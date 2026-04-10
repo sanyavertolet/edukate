@@ -85,7 +85,7 @@ describe("BundleCreationPage — full creation pipeline", () => {
         await userEvent.click(screen.getByRole("button", { name: /create bundle/i }));
 
         await waitFor(
-            () => expect(screen.getByTestId("pathname")).toHaveTextContent("/bundles/bundle-xyz"),
+            () => { expect(screen.getByTestId("pathname")).toHaveTextContent("/bundles/bundle-xyz"); },
             { timeout: DEBOUNCE_TIMEOUT },
         );
     }, 10000);

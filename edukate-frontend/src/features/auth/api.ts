@@ -19,7 +19,7 @@ export function useSignInMutation() {
         mutationFn: ({ username, password }: { username: string; password: string }) =>
             signIn({ username, password }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami }).finally();
+            void queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
         },
     });
 }
@@ -29,7 +29,7 @@ export function useSignUpMutation() {
         mutationFn: ({ username, password, email }: { username: string; password: string; email: string }) =>
             signUp({ username, password, email }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami }).finally();
+            void queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
         },
     });
 }
@@ -38,7 +38,7 @@ export function useSignOutMutation() {
     return useMutation({
         mutationFn: () => signOut(),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami }).finally();
+            void queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
         },
     });
 }

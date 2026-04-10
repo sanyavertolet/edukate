@@ -93,8 +93,8 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
                     role={file.status === "success" ? "button" : undefined}
                     tabIndex={file.status === "success" ? 0 : undefined}
                     sx={{ ...listItemSx, cursor: file.status === "success" ? "pointer" : "default" }}
-                    onClick={() => file.status === "success" && handleFileClick(file.key)}
-                    onKeyDown={(e) => file.status === "success" && (e.key === "Enter" || e.key === " ") && handleFileClick(file.key)}
+                    onClick={() => { if (file.status === "success") handleFileClick(file.key); }}
+                    onKeyDown={(e) => { if (file.status === "success" && (e.key === "Enter" || e.key === " ")) handleFileClick(file.key); }}
                     secondaryAction={
                         <IconButton
                             edge="end"

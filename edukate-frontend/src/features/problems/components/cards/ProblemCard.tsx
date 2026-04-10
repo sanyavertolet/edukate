@@ -20,7 +20,7 @@ export default function ProblemCard({ problem }: ProblemCardProps) {
 
                 <SubtasksComponent subtasks={problem.subtasks} />
 
-                {problem.images?.length > 0 && <ImageListComponent images={problem.images} />}
+                {problem.images.length > 0 && <ImageListComponent images={problem.images} />}
             </CardContent>
         </Card>
     );

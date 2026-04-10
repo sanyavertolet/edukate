@@ -35,6 +35,7 @@ export const useFileUpload = ({
     const deleteTempFileMutation = useDeleteTempFileMutation();
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- data may be undefined before first fetch
         if (tempFiles && tempFiles.length > 0 && !isLoading && !error) {
             setFileMetadataList((prev) => {
                 const newFiles = tempFiles.filter(
@@ -83,7 +84,7 @@ export const useFileUpload = ({
 
         const currentFilesLength = fileMetadataList.length + event.target.files.length;
         if (currentFilesLength > maxFiles) {
-            setErrorText(`You can upload no more than ${maxFiles} files. You got ${currentFilesLength}.`);
+            setErrorText(`You can upload no more than ${String(maxFiles)} files. You got ${String(currentFilesLength)}.`);
             return;
         }
 
@@ -126,7 +127,7 @@ export const useFileUpload = ({
                         setFileMetadataList((prev) =>
                             prev.map((m) =>
                                 m.key === metadata.key
-                                    ? { ...m, status: "error", error: error as Error, progress: 0 }
+                                    ? { ...m, status: "error", error: error, progress: 0 }
                                     : m,
                             ),
                         );
@@ -135,9 +136,7 @@ export const useFileUpload = ({
             );
         }
 
-        if (event.target) {
-            event.target.value = "";
-        }
+        event.target.value = "";
     };
 
     const handleRemoveFile = (key: string) => {

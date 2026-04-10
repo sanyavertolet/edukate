@@ -16,7 +16,7 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
         return (
             <>
                 {Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={`placeholder-${i}`}>
+                    <TableRow key={`placeholder-${String(i)}`}>
                         <TableCell>
                             <Skeleton variant="rounded" />
                         </TableCell>
@@ -40,8 +40,8 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
                     hover
                     tabIndex={0}
                     sx={{ cursor: "pointer" }}
-                    onClick={() => onRowClick(item.name)}
-                    onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onRowClick(item.name)}
+                    onClick={() => { onRowClick(item.name); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onRowClick(item.name); }}
                 >
                     <TableCell>
                         <ProblemStatusIcon status={item.status} />

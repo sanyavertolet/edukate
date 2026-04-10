@@ -21,7 +21,7 @@ export const InvitedUserManagement: FC<InvitedUserManagementProps> = ({ shareCod
             {
                 onSuccess: () => {
                     toast.info(`Invitation to ${username} has been removed`);
-                    refetchInvitedUsers().then();
+                    void refetchInvitedUsers();
                 },
                 onError: () => {
                     toast.error(`Failed to remove invitation to ${username}`);
@@ -32,7 +32,7 @@ export const InvitedUserManagement: FC<InvitedUserManagementProps> = ({ shareCod
 
     return (
         <Paper variant="outlined" sx={{ borderRadius: 0 }}>
-            <UserSearchInput bundleShareCode={shareCode} onInvited={() => refetchInvitedUsers()} />
+            <UserSearchInput bundleShareCode={shareCode} onInvited={() => { void refetchInvitedUsers(); }} />
             <Divider />
             <List sx={{ width: "100%", bgcolor: "background.paper" }}>
                 {invitedUsers?.length === 0 && (
@@ -48,7 +48,7 @@ export const InvitedUserManagement: FC<InvitedUserManagementProps> = ({ shareCod
                                 <IconButton
                                     edge="end"
                                     aria-label="remove-invitation"
-                                    onClick={() => handleRemoveInvitation(username)}
+                                    onClick={() => { handleRemoveInvitation(username); }}
                                 >
                                     <DeleteOutlineIcon />
                                 </IconButton>

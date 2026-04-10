@@ -1,8 +1,6 @@
-import { SlotProps } from "@mui/material";
 import { tooltipClasses } from "@mui/material/Tooltip";
 
-// eslint-disable-next-line
-export const defaultTooltipSlotProps: SlotProps<any, any, any> = {
+export const defaultTooltipSlotProps = {
     popper: {
         sx: {
             [`&.${tooltipClasses.popper}[data-popper-placement*="bottom"] .${tooltipClasses.tooltip}`]: {
@@ -34,7 +32,7 @@ export function formatFileSize(bytes: number) {
     const dm = 2;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+    return `${String(parseFloat((bytes / Math.pow(k, i)).toFixed(dm)))} ${sizes[i]}`;
 }
 
 export function getColorByStringHash(str: string) {

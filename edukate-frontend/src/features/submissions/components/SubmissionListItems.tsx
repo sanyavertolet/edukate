@@ -22,11 +22,11 @@ import { useNavigate } from "react-router-dom";
 export function SubmissionListItem({ submission, setImage }: { submission: Submission; setImage: (image: string) => void }) {
     const { icon, color } = getStatusVisuals(submission.status);
 
-    const attachments = useMemo(() => submission.fileUrls ?? [], [submission.fileUrls]);
+    const attachments = useMemo(() => submission.fileUrls, [submission.fileUrls]);
     const navigate = useNavigate();
     return (
         <ListItem disablePadding secondaryAction={AttachmentButtonList(attachments, setImage)}>
-            <ListItemButton onClick={() => navigate(`/submissions/${submission.id}`)}>
+            <ListItemButton onClick={() => { void navigate(`/submissions/${submission.id}`); }}>
                 <ListItemAvatar>
                     <Avatar sx={{ bgcolor: color, color: "common.white" }}>{icon}</Avatar>
                 </ListItemAvatar>
@@ -44,7 +44,7 @@ export function AttachmentButtonList(attachments: string[] = [], openImage: (ima
                     key={i}
                     variant="text"
                     size="small"
-                    aria-label={`Open attachment ${i + 1}`}
+                    aria-label={`Open attachment ${String(i + 1)}`}
                     onClick={(e) => {
                         e.stopPropagation();
                         openImage(fileUrl);

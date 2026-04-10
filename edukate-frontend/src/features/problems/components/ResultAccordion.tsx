@@ -19,7 +19,7 @@ export function ResultAccordionComponent({ problem }: ResultComponentProps) {
                     <Typography component="span">Show the result</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    {result?.text && <LazyLatexComponent text={result?.text} />}
+                    {result?.text && <LazyLatexComponent text={result.text} />}
                     {!!result?.images && result.images.length != 0 && <ImageListComponent images={result.images} />}
                 </AccordionDetails>
             </Accordion>

@@ -15,7 +15,7 @@ export const BundleIndexCard: FC<BundleIndexCardProps> = ({ bundle }: BundleInde
     const [tab, setTab] = useState<BundleIndexTabs>("description");
     const { user } = useAuthContext();
     const isAdmin = useMemo(
-        () => (user && bundle && bundle.admins.find((value) => value == user?.name)) || false,
+        () => (user && bundle && bundle.admins.find((value) => value == user.name)) || false,
         [user, bundle],
     );
     const onTabChange = (_: React.SyntheticEvent, newValue: BundleIndexTabs) => {

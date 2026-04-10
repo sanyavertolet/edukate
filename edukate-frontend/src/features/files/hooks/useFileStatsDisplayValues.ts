@@ -9,7 +9,7 @@ type UseFileStatsDisplayValuesProps = {
 };
 
 function displayValue(current: string | number, maximum?: string | number, postfix?: string) {
-    return `${current}${maximum ? `/${maximum}` : ""}${postfix ? ` ${postfix}` : ""}`;
+    return `${String(current)}${maximum ? `/${String(maximum)}` : ""}${postfix ? ` ${postfix}` : ""}`;
 }
 
 export const useFileStatsDisplayValues = ({ files, maxFiles, maxSize }: UseFileStatsDisplayValuesProps) => {

@@ -44,10 +44,10 @@ export function EdukateTopBar() {
                             </IconButton>
                             <MobileDrawerComponent isOpen={open} setIsOpen={setOpen} />
                         </Box>
-                        <SiteMark onClick={() => navigate("/")} />
+                        <SiteMark onClick={() => { void navigate("/"); }} />
                         <Box sx={{ display: { xs: "none", md: "flex" } }}>
-                            <TopBarLink text="Problems" onClick={() => navigate("/problems")} />
-                            <TopBarLink text="Bundles" onClick={() => navigate("/bundles")} />
+                            <TopBarLink text="Problems" onClick={() => { void navigate("/problems"); }} />
+                            <TopBarLink text="Bundles" onClick={() => { void navigate("/bundles"); }} />
                         </Box>
                     </Box>
 
@@ -63,11 +63,11 @@ export function EdukateTopBar() {
                             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                                 <TopBarLink
                                     text={"Sign In"}
-                                    onClick={() => navigate("/sign-in", { replace: isSignUpPage || isSignInPage })}
+                                    onClick={() => { void navigate("/sign-in", { replace: isSignUpPage || isSignInPage }); }}
                                 />
                                 <TopBarLink
                                     text={"Sign Up"}
-                                    onClick={() => navigate("/sign-up", { replace: isSignUpPage || isSignInPage })}
+                                    onClick={() => { void navigate("/sign-up", { replace: isSignUpPage || isSignInPage }); }}
                                 />
                             </Box>
                         )}
