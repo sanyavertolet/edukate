@@ -1,0 +1,30 @@
+# Backend — not needed for the frontend image
+edukate-auth/
+edukate-backend/
+edukate-checker/
+edukate-common/
+edukate-gateway/
+edukate-messaging/
+edukate-notifier/
+edukate-storage/
+gradle/
+gradlew
+gradlew.bat
+*.gradle
+*.gradle.kts
+
+# Frontend build artifacts and dev-only files
+edukate-frontend/node_modules/
+edukate-frontend/dist/
+edukate-frontend/coverage/
+edukate-frontend/src/generated/
+
+# IDE and Claude
+.github/
+.idea/
+.claude/
+
+# Misc
+*.md
+edukate-problems/
+edukate-data/
