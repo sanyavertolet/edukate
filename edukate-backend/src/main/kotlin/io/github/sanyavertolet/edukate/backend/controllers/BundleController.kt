@@ -202,7 +202,8 @@ class BundleController(
     @Operation(
         summary = "Get bundle by share code",
         description =
-            "Retrieves a bundle by its share code. Public bundles are accessible to anyone; private bundles require membership.",
+            "Retrieves a bundle by its share code. " +
+                "Public bundles are accessible to anyone; private bundles require membership.",
     )
     @ApiResponses(
         value =
