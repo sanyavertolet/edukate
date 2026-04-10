@@ -4,9 +4,11 @@ import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCrea
 import io.github.sanyavertolet.edukate.messaging.RabbitTopology
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
+@Profile("!spec-gen")
 class NotificationListener(private val notificationService: NotificationService) {
     /**
      * Accepts any subclass of BaseNotificationCreationRequest and converts it to the appropriate entity.
@@ -18,7 +20,8 @@ class NotificationListener(private val notificationService: NotificationService)
     @RabbitListener(queues = [RabbitTopology.Q.NOTIFY])
     fun scheduleCheck(createRequest: BaseNotificationCreateRequest) {
         log.debug("received notification request={}", createRequest.uuid)
-        // TODO: avoid manual subscribe() in listener; wire explicit reactive lifecycle/error handling instead.
+        // TODO: avoid manual subscribe() in listener; wire explicit reactive lifecycle/error
+        // handling instead.
         notificationService.saveIfAbsent(createRequest).subscribe()
     }
 

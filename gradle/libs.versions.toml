@@ -1,18 +1,27 @@
 [versions]
-spring-boot = "3.4.2"
-spring-cloud = "4.2.0"
-spring-ai = "1.1.0-RC1"
+spring-boot = "3.5.13"
+mockk = "1.14.2"
+springmockk = "4.0.2"
+flapdoodle = "4.24.0"
+spring-cloud = "4.3.0"
+spring-ai = "1.1.4"
 spring-dependency = "1.1.7"
 aws = "2.25.6"
 jjwt = "0.12.6"
-kotlin = "2.1.20"
+kotlin = "2.3.0"
 docker-remote = "9.4.0"
 springdoc = "2.8.9"
-jackson = "2.20"
+springdoc-plugin = "1.9.0"
+jackson = "2.21"
+detekt = "2.0.0-alpha.2"
+ktfmt-gradle = "0.26.0"
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt-gradle" }
+springdoc-openapi = { id = "org.springdoc.openapi-gradle-plugin", version.ref = "springdoc-plugin" }
 
 [libraries]
 # spring
@@ -43,12 +52,17 @@ jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
 jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 
+# testing
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+flapdoodle-embed-mongo = { module = "de.flapdoodle.embed:de.flapdoodle.embed.mongo.spring3x", version.ref = "flapdoodle" }
+
 # utils
 reactor-core = { module = "io.projectreactor:reactor-core" }
+reactor-kotlin-extensions = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }
 fasterxml-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
-lombok = { module = "org.projectlombok:lombok" }
 snakeyaml = { module = "org.yaml:snakeyaml" }
 
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

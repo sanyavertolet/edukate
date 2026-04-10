@@ -1,20 +1,18 @@
 plugins {
-    java
     kotlin("jvm")
     kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    id("io.github.sanyavertolet.edukate.buildutils.kotlin-quality-configuration")
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
-    }
-}
+tasks.bootJar { enabled = false }
+
+tasks.jar { enabled = true }
 
 configurations {
     compileOnly {
@@ -28,8 +26,4 @@ repositories {
 
 dependencies {
     implementation(libs.spring.boot.starter.amqp)
-
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-    annotationProcessor(libs.spring.boot.configuration.processor)
 }

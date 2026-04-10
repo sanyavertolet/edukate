@@ -1,20 +1,22 @@
 plugins {
-    java
-    id("org.jetbrains.kotlin.jvm")
+    kotlin("jvm")
+    kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 
     id("io.github.sanyavertolet.edukate.buildutils.spring-boot-app-configuration")
+    id("io.github.sanyavertolet.edukate.buildutils.kotlin-quality-configuration")
+    id("io.github.sanyavertolet.edukate.buildutils.springdoc-spec-generation")
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 configurations {
@@ -32,6 +34,7 @@ dependencies {
     implementation(projects.edukateAuth)
 
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.validation)
@@ -45,11 +48,14 @@ dependencies {
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation(libs.mockk)
+    testImplementation(libs.springmockk)
 }
 
-tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }

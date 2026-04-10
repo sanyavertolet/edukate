@@ -5,10 +5,12 @@ plugins {
     alias(libs.plugins.spring.dependency.management)
 
     id("io.github.sanyavertolet.edukate.buildutils.spring-boot-app-configuration")
+    id("io.github.sanyavertolet.edukate.buildutils.kotlin-quality-configuration")
+    id("io.github.sanyavertolet.edukate.buildutils.springdoc-spec-generation")
 }
 
 kotlin {
-    jvmToolchain(23)
+    jvmToolchain(21)
 }
 
 configurations {
@@ -27,6 +29,7 @@ dependencies {
     implementation(projects.edukateMessaging)
 
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.boot.starter.actuator)
@@ -39,9 +42,11 @@ dependencies {
     developmentOnly(libs.spring.boot.devtools)
     developmentOnly(libs.spring.boot.docker.compose)
 
-    compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
-    annotationProcessor(libs.spring.boot.configuration.processor)
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation(libs.mockk)
+    testImplementation(libs.springmockk)
+    testImplementation(libs.flapdoodle.embed.mongo)
 }
 
 tasks.withType<Test>().configureEach {

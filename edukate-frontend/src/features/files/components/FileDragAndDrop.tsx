@@ -1,0 +1,42 @@
+import { FC, useMemo } from "react";
+import { defaultTooltipSlotProps } from "@/shared/utils/utils";
+import { IconButton, ListItem, ListItemText, Tooltip } from "@mui/material";
+import UploadIcon from "@mui/icons-material/Upload";
+import { FileMetadata } from "@/features/files/types";
+import { useFileStatsDisplayValues } from "@/features/files/hooks/useFileStatsDisplayValues";
+
+type FileDragAndDropProps = {
+    files: FileMetadata[];
+    maxFiles?: number;
+    maxSize?: number;
+    onUploadButtonClick?: () => void;
+};
+
+const headerListItemSx = {
+    backgroundColor: "rgb(0,0,0,0.04)",
+    mb: 1,
+    borderRadius: 1,
+    border: "1px solid",
+    borderColor: "divider",
+} as const;
+
+export const FileDragAndDrop: FC<FileDragAndDropProps> = ({ files, maxFiles, maxSize, onUploadButtonClick }) => {
+    const uploadSecondaryAction = useMemo(
+        () =>
+            onUploadButtonClick && (
+                <Tooltip title={"Upload files"} slotProps={defaultTooltipSlotProps}>
+                    <IconButton color={"primary"} edge="end" aria-label="Upload files" onClick={onUploadButtonClick}>
+                        <UploadIcon />
+                    </IconButton>
+                </Tooltip>
+            ),
+        [onUploadButtonClick],
+    );
+
+    const { primaryText, secondaryText } = useFileStatsDisplayValues({ files, maxFiles, maxSize });
+    return (
+        <ListItem sx={headerListItemSx} secondaryAction={uploadSecondaryAction}>
+            <ListItemText primary={primaryText} secondary={secondaryText} />
+        </ListItem>
+    );
+};

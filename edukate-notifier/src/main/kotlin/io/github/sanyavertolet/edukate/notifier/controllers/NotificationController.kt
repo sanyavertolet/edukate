@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
 import io.swagger.v3.oas.annotations.enums.ParameterIn
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
@@ -16,10 +15,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
-import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import org.springframework.security.core.Authentication
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -29,10 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
-@Slf4j
 @RestController
-@RequiredArgsConstructor
-@Validated
 @RequestMapping("/api/v1/notifications")
 @Tag(name = "Notifications", description = "API for managing user notifications")
 class NotificationController(private val notificationService: NotificationService) {
@@ -44,11 +37,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully marked notifications as read",
-                    content = arrayOf(Content(schema = Schema(implementation = Long::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully marked notifications as read"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
@@ -66,11 +55,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully marked all notifications as read",
-                    content = arrayOf(Content(schema = Schema(implementation = Long::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully marked all notifications as read"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
@@ -84,11 +69,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved notifications",
-                    content = arrayOf(Content(schema = Schema(implementation = BaseNotificationDto::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved notifications"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
@@ -113,14 +94,12 @@ class NotificationController(private val notificationService: NotificationServic
         ),
     )
     fun getNotifications(
-        @RequestParam(defaultValue = "0") @PositiveOrZero page: @PositiveOrZero Int,
-        @RequestParam(defaultValue = "10") @Positive size: @Positive Int,
+        @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
+        @RequestParam(defaultValue = "10") @Positive size: Int,
         @RequestParam(required = false) isRead: Boolean?,
         authentication: Authentication?,
     ): Flux<BaseNotificationDto> =
-        Mono.justOrEmpty(authentication)
-            .flatMapMany { notificationService.getUserNotifications(isRead, size, page, it) }
-            .map { it.toDto() }
+        notificationService.getUserNotifications(isRead, size, page, authentication).map { it.toDto() }
 
     @GetMapping("/count")
     @Operation(
@@ -130,11 +109,7 @@ class NotificationController(private val notificationService: NotificationServic
     @ApiResponses(
         value =
             [
-                ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully retrieved notification statistics",
-                    content = arrayOf(Content(schema = Schema(implementation = NotificationStatistics::class))),
-                ),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved notification statistics"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )

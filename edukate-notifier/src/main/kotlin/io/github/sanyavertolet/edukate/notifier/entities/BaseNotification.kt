@@ -7,10 +7,10 @@ import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationC
 import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest
 import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto
-import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
+import org.springframework.data.mongodb.core.mapping.Document
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_type", visible = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = SimpleNotification::class, name = "simple"),
     JsonSubTypes.Type(value = InviteNotification::class, name = "invite"),
@@ -26,12 +26,7 @@ sealed class BaseNotification {
 
     abstract fun toDto(): BaseNotificationDto
 
-    fun markAsRead(): BaseNotification =
-        when (this) {
-            is SimpleNotification -> copy(isRead = true)
-            is InviteNotification -> copy(isRead = true)
-            is CheckedNotification -> copy(isRead = true)
-        }
+    abstract fun markAsRead(): BaseNotification
 
     companion object {
         @JvmStatic

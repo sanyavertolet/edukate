@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.notifier
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
 
 @SpringBootApplication(
     scanBasePackages =
@@ -11,3 +12,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
         ]
 )
 class EdukateNotifierApplication
+
+@Suppress("SpreadOperator")
+fun main(args: Array<String>) {
+    runApplication<EdukateNotifierApplication>(*args)
+}

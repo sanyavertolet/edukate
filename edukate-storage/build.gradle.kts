@@ -1,24 +1,20 @@
 plugins {
-    java
+    kotlin("jvm")
+    kotlin("plugin.spring")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    id("io.github.sanyavertolet.edukate.buildutils.kotlin-quality-configuration")
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(23)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
-    }
+kotlin {
+    jvmToolchain(21)
 }
 
 repositories {
     mavenCentral()
 }
+
+tasks.bootJar { enabled = false }
 
 tasks.jar {
     enabled = true
@@ -30,9 +26,19 @@ dependencies {
     apiElements(libs.awssdk.s3)
     implementation(libs.awssdk.s3.transfer.manager)
     implementation(libs.reactor.core)
+    implementation(libs.reactor.kotlin.extensions)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.fasterxml.jackson.annotations)
 
-    compileOnly(libs.lombok)
-    compileOnly(libs.fasterxml.jackson.annotations)
-    annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(libs.jackson.module.kotlin)
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation(libs.mockk)
+    testImplementation(libs.springmockk)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }

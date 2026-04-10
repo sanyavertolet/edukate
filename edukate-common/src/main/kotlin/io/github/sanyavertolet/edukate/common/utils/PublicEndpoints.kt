@@ -6,12 +6,17 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 
 object PublicEndpoints {
     private val endpoints =
-        listOf("/actuator/**", "/internal/**", "/api/v1/problems/**", "/api/v1/auth/*", "/swagger/**", "/swagger-ui/**")
+        listOf(
+            "/actuator/**",
+            "/internal/**",
+            "/api/v1/problems/**",
+            "/api/v1/auth/*",
+            "/swagger/**",
+            "/swagger-ui/**",
+            "/api/v1/bundles/public",
+        )
 
-    @JvmStatic fun asArray(): Array<String> = endpoints.toTypedArray<String>()
-
-    @JvmStatic
-    fun asMatcher(): ServerWebExchangeMatcher =
+    val exchangeMatcher: ServerWebExchangeMatcher =
         endpoints
             .map { PathPatternParserServerWebExchangeMatcher(it) }
             .map { it as ServerWebExchangeMatcher }

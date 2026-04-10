@@ -1,8 +1,5 @@
 package io.github.sanyavertolet.edukate.messaging
 
-import lombok.experimental.UtilityClass
-
-@UtilityClass
 object RabbitTopology {
     const val EXCHANGE: String = "edukate.exchange"
 

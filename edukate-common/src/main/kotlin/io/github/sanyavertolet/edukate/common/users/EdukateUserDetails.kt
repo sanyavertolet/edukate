@@ -1,12 +1,10 @@
 package io.github.sanyavertolet.edukate.common.users
 
-import lombok.AllArgsConstructor
 import org.springframework.security.core.CredentialsContainer
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
-@AllArgsConstructor
 class EdukateUserDetails(
     val id: String,
     val name: String,

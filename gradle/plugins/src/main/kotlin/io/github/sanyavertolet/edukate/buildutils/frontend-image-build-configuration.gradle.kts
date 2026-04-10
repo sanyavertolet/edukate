@@ -9,8 +9,18 @@ plugins {
 
 configureDockerExtension()
 
+private val generateFrontendEnvTask = tasks.register("generateFrontendEnv") {
+    group = "frontend"
+    description = "Writes .env.production.local with the reckon version for the Vite build"
+    doLast {
+        file("edukate-frontend/.env.production.local")
+            .writeText("VITE_APP_VERSION=${project.version}\n")
+    }
+}
+
 private val buildTask = tasks.register<DockerBuildImage>("buildFrontendImage") {
     configureFrontendBuild()
+    dependsOn(generateFrontendEnvTask)
 }
 
 private val pushTask = tasks.register<DockerPushImage>("pushFrontendImage") {

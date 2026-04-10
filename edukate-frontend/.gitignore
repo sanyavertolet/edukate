@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Generated reports
+eslint-results.sarif
+
+# Orval-generated API types
+src/generated/
+
+coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

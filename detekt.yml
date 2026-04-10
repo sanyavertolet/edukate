@@ -1,523 +1,681 @@
-build:
-  maxIssues: 0
-  excludeCorrectable: false
-  weights:
-  # complexity: 2
-  # LongParameterList: 1
-  # style: 1
-  # comments: 1
+# Formatting is owned by ktfmt (Gradle plugin com.ncorti.ktfmt.gradle).
+# Detekt handles semantic/logic/naming rules only.
+# Rules that duplicate ktfmt's formatting (NoTabs, TrailingWhitespace, MaxLineLength indent) are disabled.
+# MaxLineLength is kept in sync with ktfmt maxWidth (125).
 
 config:
   validation: true
-  # when writing own rules with new properties, exclude the property path e.g.: 'my_rule_set,.*>.*>[my_property]'
-  excludes: ''
+  warningsAsErrors: false
+  checkExhaustiveness: false
+  # when writing own rules with new properties, exclude the property path e.g.: ['my_rule_set', '.*>.*>[my_property]']
+  excludes: []
 
 processors:
   active: true
   exclude:
     - 'DetektProgressListener'
+  # - 'KtFileCountProcessor'
+  # - 'PackageCountProcessor'
+  # - 'ClassCountProcessor'
   # - 'FunctionCountProcessor'
   # - 'PropertyCountProcessor'
-  # - 'ClassCountProcessor'
-  # - 'PackageCountProcessor'
-  # - 'KtFileCountProcessor'
+  # - 'ProjectComplexityProcessor'
+  # - 'ProjectCognitiveComplexityProcessor'
+  # - 'ProjectLLOCProcessor'
+  # - 'ProjectCLOCProcessor'
+  # - 'ProjectLOCProcessor'
+  # - 'ProjectSLOCProcessor'
+  # - 'LicenseHeaderLoaderExtension'
 
 console-reports:
   active: true
   exclude:
-#    - 'ProjectStatisticsReport'
-#    - 'ComplexityReport'
-#    - 'NotificationReport'
-#    #  - 'FindingsReport'
-#    - 'FileBasedFindingsReport'
+     - 'ProjectStatisticsReport'
+     - 'ComplexityReport'
+     - 'NotificationReport'
+     - 'IssuesReport'
+     - 'FileBasedIssuesReport'
+  #  - 'LiteIssuesReport'
 
 comments:
   active: true
-  excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
   AbsentOrWrongFileLicense:
-    excludes: ['**/resources/**']
     active: false
-
-    licenseTemplateFile: 'license.template'
-  CommentOverPrivateFunction:
-    excludes: ['**/resources/**']
+    licenseTemplateIsRegex: false
+    licenseTemplate: ''
+  DeprecatedBlockTag:
     active: false
-  CommentOverPrivateProperty:
-    excludes: ['**/resources/**']
+  DocumentationOverPrivateFunction:
+    active: false
+  DocumentationOverPrivateProperty:
     active: false
   EndOfSentenceFormat:
-    excludes: ['**/resources/**']
-    active: true
-    endOfSentenceFormat: '([.?!][ \t\n\r\f<])|([.?!:]$)'
-  UndocumentedPublicClass:
-    excludes: ['**/resources/**']
     active: false
+    endOfSentenceFormat: '([.?!][ \t\n\r\f<])|([.?!:]$)'
+  KDocReferencesNonPublicProperty:
+    active: false
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  OutdatedDocumentation:
+    active: false
+    matchTypeParameters: true
+    matchDeclarationsOrder: true
+    allowParamOnConstructorProperties: false
+  UndocumentedPublicClass:
+    active: false
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
     searchInNestedClass: true
     searchInInnerClass: true
     searchInInnerObject: true
     searchInInnerInterface: true
+    searchInProtectedClass: false
+    ignoreDefaultCompanionObject: false
   UndocumentedPublicFunction:
-    excludes: ['**/resources/**']
     active: false
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    searchProtectedFunction: false
   UndocumentedPublicProperty:
-    excludes: ['**/resources/**']
     active: false
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    searchProtectedProperty: false
+    ignoreEnumEntries: false
 
 complexity:
   active: true
+  CognitiveComplexMethod:
+    active: false
+    allowedComplexity: 15
   ComplexCondition:
-    excludes: ['**/resources/**']
     active: true
-    threshold: 4
+    allowedConditions: 3
   ComplexInterface:
-    excludes: ['**/resources/**']
-    active: true
-    threshold: 10
+    active: false
+    allowedDefinitions: 10
     includeStaticDeclarations: false
     includePrivateDeclarations: false
-  ComplexMethod:
-    excludes: ['**/resources/**']
+    ignoreOverloaded: false
+  CyclomaticComplexMethod:
     active: true
-    threshold: 15
+    allowedComplexity: 12  # Tightened from default 14; reactive chains can be refactored before this
     ignoreSingleWhenExpression: false
     ignoreSimpleWhenEntries: false
     ignoreNestingFunctions: false
-    nestingFunctions: [run, let, apply, with, also, use, forEach, isNotNull, ifNull]
+    ignoreLocalFunctions: false
+    nestingFunctions:
+      - 'also'
+      - 'apply'
+      - 'forEach'
+      - 'isNotNull'
+      - 'ifNull'
+      - 'let'
+      - 'run'
+      - 'use'
+      - 'with'
   LabeledExpression:
-    excludes: ['**/resources/**']
     active: false
     ignoredLabels: []
   LargeClass:
-    excludes: ['**/resources/**']
     active: true
-    threshold: 600
+    allowedLines: 600
   LongMethod:
-    excludes: ['**/resources/**']
     active: true
-    threshold: 60
+    allowedLines: 40  # Tightened from default 60; reactive chains should be broken up earlier
   LongParameterList:
-    excludes: ['**/resources/**']
     active: true
-    functionThreshold: 6
-    constructorThreshold: 7
+    allowedFunctionParameters: 6    # +1 from default: Spring beans often inject multiple collaborators
+    allowedConstructorParameters: 7  # +1 from default: same reason
     ignoreDefaultParameters: false
     ignoreDataClasses: true
-    ignoreAnnotated: []
+    ignoreAnnotatedParameter: []
   MethodOverloading:
-    excludes: ['**/resources/**']
-    active: true
-    threshold: 6
+    active: false
+    allowedOverloads: 6
+  NamedArguments:
+    active: false
+    allowedArguments: 3
+    ignoreMethods: []
+    ignoreArgumentsMatchingNames: false
   NestedBlockDepth:
-    excludes: ['**/resources/**']
     active: true
-    threshold: 5
+    allowedDepth: 4
+  NestedScopeFunctions:
+    active: false
+    allowedDepth: 1
+    functions:
+      - 'kotlin.apply'
+      - 'kotlin.run'
+      - 'kotlin.with'
+      - 'kotlin.let'
+      - 'kotlin.also'
   ReplaceSafeCallChainWithRun:
     active: false
   StringLiteralDuplication:
     active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    threshold: 3
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    allowedDuplications: 2
     ignoreAnnotation: true
-    excludeStringsWithLessThan5Characters: true
+    allowedWithLengthLessThan: 5
     ignoreStringsRegex: '$^'
   TooManyFunctions:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    thresholdInFiles: 11
-    thresholdInClasses: 11
-    thresholdInInterfaces: 11
-    thresholdInObjects: 11
-    thresholdInEnums: 11
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    allowedFunctionsPerFile: 11
+    allowedFunctionsPerClass: 11
+    allowedFunctionsPerInterface: 11
+    allowedFunctionsPerObject: 11
+    allowedFunctionsPerEnum: 11
     ignoreDeprecated: false
     ignorePrivate: false
+    ignoreInternal: false
     ignoreOverridden: false
+    ignoreAnnotatedFunctions: []
 
 coroutines:
   active: true
+  CoroutineLaunchedInTestWithoutRunTest:
+    active: false
   GlobalCoroutineUsage:
-    excludes: ['**/resources/**']
+    active: true  # GlobalScope bypasses structured concurrency; use coroutineScope/lifecycleScope instead
+  InjectDispatcher:
     active: true
+    dispatcherNames:
+      - 'IO'
+      - 'Default'
+      - 'Unconfined'
   RedundantSuspendModifier:
-    excludes: ['**/resources/**']
     active: true
+  SleepInsteadOfDelay:
+    active: true
+  SuspendFunInFinallySection:
+    active: false
+  SuspendFunSwallowedCancellation:
+    active: false
+  SuspendFunWithCoroutineScopeReceiver:
+    active: false
+    aliases: ['SuspendFunctionOnCoroutineScope']
   SuspendFunWithFlowReturnType:
     active: true
 
 empty-blocks:
   active: true
   EmptyCatchBlock:
-    excludes: ['**/resources/**']
     active: true
     allowedExceptionNameRegex: '_|(ignore|expected).*'
   EmptyClassBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyDefaultConstructor:
-    excludes: ['**/resources/**']
     active: true
   EmptyDoWhileBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyElseBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyFinallyBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyForBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyFunctionBlock:
-    excludes: ['**/resources/**']
     active: true
     ignoreOverridden: false
   EmptyIfBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyInitBlock:
-    excludes: ['**/resources/**']
     active: true
-  EmptyKtFile:
-    excludes: ['**/resources/**']
+  EmptyKotlinFile:
     active: true
   EmptySecondaryConstructor:
-    excludes: ['**/resources/**']
     active: true
   EmptyTryBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyWhenBlock:
-    excludes: ['**/resources/**']
     active: true
   EmptyWhileBlock:
-    excludes: ['**/resources/**']
     active: true
 
 exceptions:
   active: true
+  ErrorUsageWithThrowable:
+    active: false
   ExceptionRaisedInUnexpectedLocation:
-    excludes: ['**/resources/**']
-    active: false
-    methodNames: [toString, hashCode, equals, finalize]
+    active: true
+    methodNames:
+      - 'equals'
+      - 'finalize'
+      - 'hashCode'
+      - 'toString'
   InstanceOfCheckForException:
-    active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   NotImplementedDeclaration:
-    excludes: ['**/resources/**']
+    active: false
+  ObjectExtendsThrowable:
     active: false
   PrintStackTrace:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   RethrowCaughtException:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   ReturnFromFinally:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
     ignoreLabeled: false
   SwallowedException:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
     ignoredExceptionTypes:
-      - InterruptedException
-      - NumberFormatException
-      - ParseException
-      - MalformedURLException
+      - 'InterruptedException'
+      - 'MalformedURLException'
+      - 'NumberFormatException'
+      - 'ParseException'
     allowedExceptionNameRegex: '_|(ignore|expected).*'
   ThrowingExceptionFromFinally:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   ThrowingExceptionInMain:
-    excludes: ['**/resources/**']
     active: false
   ThrowingExceptionsWithoutMessageOrCause:
-    active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
     exceptions:
-      - IllegalArgumentException
-      - IllegalStateException
-      - IOException
+      - 'ArrayIndexOutOfBoundsException'
+      - 'Exception'
+      - 'IllegalArgumentException'
+      - 'IllegalMonitorStateException'
+      - 'IllegalStateException'
+      - 'IndexOutOfBoundsException'
+      - 'NullPointerException'
+      - 'RuntimeException'
+      - 'Throwable'
   ThrowingNewInstanceOfSameException:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   TooGenericExceptionCaught:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
     exceptionNames:
-      - ArrayIndexOutOfBoundsException
-      - Error
-      - Exception
-      - IllegalMonitorStateException
-      - NullPointerException
-      - IndexOutOfBoundsException
-      - RuntimeException
-      - Throwable
+      - 'ArrayIndexOutOfBoundsException'
+      - 'Error'
+      - 'Exception'
+      - 'IllegalMonitorStateException'
+      - 'IndexOutOfBoundsException'
+      - 'NullPointerException'
+      - 'RuntimeException'
+      - 'Throwable'
     allowedExceptionNameRegex: '_|(ignore|expected).*'
   TooGenericExceptionThrown:
-    excludes: ['**/resources/**']
     active: true
     exceptionNames:
-      - Error
-      - Exception
-      - Throwable
-      - RuntimeException
+      - 'Error'
+      - 'Exception'
+      - 'RuntimeException'
+      - 'Throwable'
 
 naming:
   active: true
+  BooleanPropertyNaming:
+    active: false
+    allowedPattern: '^(is|has|are)'
   ClassNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    aliases: ['ClassName']
     classPattern: '[A-Z][a-zA-Z0-9]*'
   ConstructorParameterNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     parameterPattern: '[a-z][A-Za-z0-9]*'
     privateParameterPattern: '[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
   EnumNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    aliases: ['EnumEntryName']
     enumEntryPattern: '[A-Z][_a-zA-Z0-9]*'
   ForbiddenClassName:
     active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     forbiddenName: []
-  FunctionMaxLength:
+  FunctionNameMaxLength:
     active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    aliases: ['FunctionMaxNameLength']
     maximumFunctionNameLength: 30
-  FunctionMinLength:
+  FunctionNameMinLength:
     active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    aliases: ['FunctionMinNameLength']
     minimumFunctionNameLength: 3
   FunctionNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    functionPattern: '([a-z][a-zA-Z0-9]*)|(`.*`)'
+    aliases: ['FunctionName']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    functionPattern: '[a-z][a-zA-Z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
-    ignoreAnnotated: ['Composable']
   FunctionParameterNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     parameterPattern: '[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
   InvalidPackageDeclaration:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
+    aliases: ['PackageDirectoryMismatch']
     rootPackage: ''
+    requireRootInDeclaration: false
+  LambdaParameterNaming:
+    active: false
+    parameterPattern: '[a-z][A-Za-z0-9]*|_'
   MatchingDeclarationName:
-    excludes: ['**/resources/**']
     active: true
     mustBeFirst: true
+    multiplatformTargets:
+      - 'ios'
+      - 'android'
+      - 'js'
+      - 'jvm'
+      - 'native'
+      - 'iosArm64'
+      - 'iosX64'
+      - 'macosX64'
+      - 'mingwX64'
+      - 'linuxX64'
   MemberNameEqualsClassName:
-    excludes: ['**/resources/**']
     active: true
     ignoreOverridden: true
   NoNameShadowing:
-    active: true
+    active: false
   NonBooleanPropertyPrefixedWithIs:
-    active: true
+    active: false
   ObjectPropertyNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    aliases: ['ObjectPropertyName']
     constantPattern: '[A-Za-z][_A-Za-z0-9]*'
     propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
     privatePropertyPattern: '(_)?[A-Za-z][_A-Za-z0-9]*'
   PackageNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    aliases: ['PackageName']
     packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
   TopLevelPropertyNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     constantPattern: '[A-Z][_A-Z0-9]*'
     propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
     privatePropertyPattern: '_?[A-Za-z][_A-Za-z0-9]*'
   VariableMaxLength:
     active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     maximumVariableNameLength: 64
   VariableMinLength:
-    active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    minimumVariableNameLength: 2
+    active: false
+    minimumVariableNameLength: 1
   VariableNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    aliases: ['PropertyName']
     variablePattern: '[a-z][A-Za-z0-9]*'
     privateVariablePattern: '(_)?[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
-    ignoreOverridden: true
 
 performance:
   active: true
   ArrayPrimitive:
-    excludes: ['**/resources/**']
     active: true
+  CouldBeSequence:
+    active: false
+    allowedOperations: 2
   ForEachOnRange:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   SpreadOperator:
-    active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-  UnnecessaryTemporaryInstantiation:
-    excludes: ['**/resources/**']
     active: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+  UnnecessaryInitOnArray:
+    active: false
+  UnnecessaryPartOfBinaryExpression:
+    active: false
+  UnnecessaryTemporaryInstantiation:
+    active: true
+  UnnecessaryTypeCasting:
+    active: false
 
 potential-bugs:
   active: true
-  Deprecation:
-    excludes: ['**/resources/**']
-    active: false
-  DuplicateCaseInWhenExpression:
-    excludes: ['**/resources/**']
+  AvoidReferentialEquality:
     active: true
+    forbiddenTypePatterns:
+      - 'kotlin.String'
+  CastNullableToNonNullableType:
+    active: false
+    ignorePlatformTypes: true
+  CastToNullableType:
+    active: false
+  CharArrayToStringCall:
+    active: false
+  Deprecation:
+    active: false
+    aliases: ['DEPRECATION']
+    excludeImportStatements: false
+  DontDowncastCollectionTypes:
+    active: false
+  DoubleMutabilityForCollection:
+    active: true
+    aliases: ['DoubleMutability']
+    mutableTypes:
+      - 'kotlin.collections.MutableList'
+      - 'kotlin.collections.MutableMap'
+      - 'kotlin.collections.MutableSet'
+      - 'java.util.ArrayList'
+      - 'java.util.LinkedHashSet'
+      - 'java.util.HashSet'
+      - 'java.util.LinkedHashMap'
+      - 'java.util.HashMap'
+  ElseCaseInsteadOfExhaustiveWhen:
+    active: false
+    ignoredSubjectTypes: []
   EqualsAlwaysReturnsTrueOrFalse:
-    excludes: ['**/resources/**']
     active: true
   EqualsWithHashCodeExist:
-    excludes: ['**/resources/**']
     active: true
+  ExitOutsideMain:
+    active: false
   ExplicitGarbageCollectionCall:
-    excludes: ['**/resources/**']
     active: true
   HasPlatformType:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   IgnoredReturnValue:
-    excludes: ['**/resources/**']
-    active: false
-    restrictToAnnotatedMethods: true
-    returnValueAnnotations: ['*.CheckReturnValue', '*.CheckResult']
+    active: true
+    restrictToConfig: true
+    returnValueAnnotations:
+      - 'CheckResult'
+      - '*.CheckResult'
+      - 'CheckReturnValue'
+      - '*.CheckReturnValue'
+    ignoreReturnValueAnnotations:
+      - 'CanIgnoreReturnValue'
+      - '*.CanIgnoreReturnValue'
+    returnValueTypes:
+      - 'kotlin.Function*'
+      - 'kotlin.sequences.Sequence'
+      - 'kotlinx.coroutines.flow.*Flow'
+      - 'java.util.stream.*Stream'
+    ignoreFunctionCall: []
   ImplicitDefaultLocale:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   ImplicitUnitReturnType:
-    excludes: ['**/resources/**']
     active: false
     allowExplicitReturnType: true
   InvalidRange:
-    excludes: ['**/resources/**']
     active: true
   IteratorHasNextCallsNextMethod:
-    excludes: ['**/resources/**']
     active: true
   IteratorNotThrowingNoSuchElementException:
-    excludes: ['**/resources/**']
     active: true
   LateinitUsage:
     active: false
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    ignoreAnnotated: []
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
     ignoreOnClassesPattern: ''
   MapGetWithNotNullAssertionOperator:
-    excludes: ['**/resources/**']
-    active: false
-  MissingWhenCase:
-    excludes: ['**/resources/**']
     active: true
+  MissingPackageDeclaration:
+    active: false
+    excludes: ['**/*.kts']
+  MissingSuperCall:
+    active: false
+    mustInvokeSuperAnnotations:
+      - 'androidx.annotation.CallSuper'
+      - 'javax.annotation.OverridingMethodsMustInvokeSuper'
+  MissingUseCall:
+    active: false
+  NullCheckOnMutableProperty:
+    active: false
   NullableToStringCall:
     active: false
-  RedundantElseInWhen:
-    excludes: ['**/resources/**']
-    active: true
+  PropertyUsedBeforeDeclaration:
+    active: false
   UnconditionalJumpStatementInLoop:
-    excludes: ['**/resources/**']
+    active: false
+  UnnamedParameterUse:
+    active: false
+    allowAdjacentDifferentTypeParams: true
+    allowSingleParamUse: true
+    ignoreArgumentsMatchingNames: true
+    ignoreFunctionCall: []
+  UnnecessaryNotNullCheck:
     active: false
   UnnecessaryNotNullOperator:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   UnnecessarySafeCall:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
+  UnreachableCatchBlock:
+    active: true
   UnreachableCode:
-    excludes: ['**/resources/**']
     active: true
   UnsafeCallOnNullableType:
-    excludes: ['**/resources/**']
     active: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   UnsafeCast:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
+    aliases: ['UNCHECKED_CAST']
+  UnusedUnaryOperator:
+    active: true
   UselessPostfixExpression:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   WrongEqualsTypeParameter:
-    excludes: ['**/resources/**']
     active: true
 
 style:
   active: true
+  AbstractClassCanBeConcreteClass:
+    active: true
+  AbstractClassCanBeInterface:
+    active: true
+  AlsoCouldBeApply:
+    active: false
+  BracesOnIfStatements:
+    active: false
+    singleLine: 'never'
+    multiLine: 'always'
+  BracesOnWhenStatements:
+    active: false
+    singleLine: 'necessary'
+    multiLine: 'consistent'
+  CanBeNonNullable:
+    active: false
+  CascadingCallWrapping:
+    active: false
+    includeElvis: true
   ClassOrdering:
-    active: true
+    active: false
   CollapsibleIfStatements:
-    excludes: ['**/resources/**']
-    active: true
+    active: false
   DataClassContainsFunctions:
-    excludes: ['**/resources/**']
-    active: true
-    conversionFunctionPrefix: 'to'
+    active: false
+    conversionFunctionPrefix:
+      - 'to'
+    allowOperators: false
   DataClassShouldBeImmutable:
-    excludes: ['**/resources/**']
+    active: false
+  DestructuringDeclarationWithTooManyEntries:
     active: true
+    maxDestructuringEntries: 3
+  DoubleNegativeExpression:
+    active: false
+  DoubleNegativeLambda:
+    active: false
+    negativeFunctions:
+      - reason: 'Use `takeIf` instead.'
+        value: 'takeUnless'
+      - reason: 'Use `all` instead.'
+        value: 'none'
+    negativeFunctionNameParts:
+      - 'not'
+      - 'non'
   EqualsNullCall:
-    excludes: ['**/resources/**']
     active: true
   EqualsOnSignatureLine:
-    excludes: ['**/resources/**']
-    active: true
+    active: false
   ExplicitCollectionElementAccessMethod:
-    excludes: ['**/resources/**']
+    active: false
+  ExplicitItLambdaMultipleParameters:
     active: true
   ExplicitItLambdaParameter:
-    excludes: ['**/resources/**']
     active: true
   ExpressionBodySyntax:
-    excludes: ['**/resources/**']
-    active: true
+    active: false
     includeLineWrapping: false
+  ForbiddenAnnotation:
+    active: false
+    annotations:
+      - reason: 'it is a java annotation. Use `Suppress` instead.'
+        value: 'java.lang.SuppressWarnings'
+      - reason: 'it is a java annotation. Use `kotlin.Deprecated` instead.'
+        value: 'java.lang.Deprecated'
+      - reason: 'it is a java annotation. Use `kotlin.annotation.MustBeDocumented` instead.'
+        value: 'java.lang.annotation.Documented'
+      - reason: 'it is a java annotation. Use `kotlin.annotation.Target` instead.'
+        value: 'java.lang.annotation.Target'
+      - reason: 'it is a java annotation. Use `kotlin.annotation.Retention` instead.'
+        value: 'java.lang.annotation.Retention'
+      - reason: 'it is a java annotation. Use `kotlin.annotation.Repeatable` instead.'
+        value: 'java.lang.annotation.Repeatable'
+      - reason: 'Kotlin does not support @Inherited annotation, see https://youtrack.jetbrains.com/issue/KT-22265'
+        value: 'java.lang.annotation.Inherited'
   ForbiddenComment:
-    active: false
-  ForbiddenImport:
-    excludes: ['**/resources/**']
-    active: false
-    imports: []
-    forbiddenPatterns: ''
-  ForbiddenMethodCall:
-    excludes: ['**/resources/**', '**/src/test/**']
     active: true
-    methods: ['kotlin.io.println', 'kotlin.io.print', 'react.fc']
-  ForbiddenPublicDataClass:
-    excludes: ['**/resources/**']
+    comments:
+      - reason: 'Forbidden FIXME marker in comment, please fix the problem before committing.'
+        value: 'FIXME:'
+      - reason: 'Forbidden STOPSHIP marker in comment, please address before shipping the code.'
+        value: 'STOPSHIP:'
+      # TODO comments are allowed — they are tracked in the issue tracker
+    allowedPatterns: ''
+  ForbiddenImport:
     active: false
-    ignorePackages: ['*.internal', '*.internal.*']
+    forbiddenImports: []
+    allowedImports: []
+  ForbiddenMethodCall:
+    active: true  # Prevent debug print statements from leaking into production code
+    methods:
+      - reason: 'print does not allow you to configure the output stream. Use a logger instead.'
+        value: 'kotlin.io.print'
+      - reason: 'println does not allow you to configure the output stream. Use a logger instead.'
+        value: 'kotlin.io.println'
+      - reason: 'using `BigDecimal(Double)` can result in unexpected floating point precision behavior. Use `BigDecimal.valueOf(Double)` or `String.toBigDecimalOrNull()` instead.'
+        value: 'java.math.BigDecimal.<init>(kotlin.Double)'
+      - reason: 'using `BigDecimal(String)` can result in a `NumberFormatException`. Use `String.toBigDecimalOrNull()`'
+        value: 'java.math.BigDecimal.<init>(kotlin.String)'
+      - reason: 'It is marked as obsolete. Use `kotlin.time.measureTime` instead.'
+        value: 'kotlin.system.measureTimeMillis'
+  ForbiddenNamedParam:
+    active: false
+    methods: []
+  ForbiddenOptIn:
+    active: false
+    markerClasses: []
+  ForbiddenSuppress:
+    active: false
+    rules: []
   ForbiddenVoid:
-    excludes: ['**/resources/**']
-    active: false
-    ignoreOverridden: false
-    ignoreUsageInGenerics: false
+    active: false  # Disabled: WebFlux reactive code and Java interop legitimately use Void/Unit
   FunctionOnlyReturningConstant:
-    excludes: ['**/resources/**']
     active: true
     ignoreOverridableFunction: true
-    excludedFunctions: 'describeContents'
-    ignoreAnnotated: ['dagger.Provides']
-  LibraryCodeMustSpecifyReturnType:
-    excludes: ['**/resources/**']
-    active: false
-  LibraryEntitiesShouldNotBePublic:
-    active: false
+    ignoreActualFunction: true
+    excludedFunctions: []
   LoopWithTooManyJumpStatements:
-    excludes: ['**/resources/**']
     active: true
     maxJumpCount: 1
   MagicNumber:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**', '**.kts']
-    ignoreNumbers: ['-1', '0', '1', '2']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/*.kts']
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: false
     ignoreLocalVariableDeclaration: false
@@ -527,152 +685,174 @@ style:
     ignoreNamedArgument: true
     ignoreEnums: false
     ignoreRanges: false
-  MandatoryBracesIfStatements:
-    excludes: ['**/resources/**']
-    active: false
+    ignoreExtensionFunctions: true
   MandatoryBracesLoops:
-    excludes: ['**/resources/**']
-    active: true
+    active: false
+  MaxChainedCallsOnSameLine:
+    active: false
+    maxChainedCalls: 5
   MaxLineLength:
-    excludes: ['**/resources/**']
     active: true
-    maxLineLength: 125
+    maxLineLength: 125  # Must stay in sync with ktfmt maxWidth in kotlin-quality-configuration.gradle.kts
     excludePackageStatements: true
     excludeImportStatements: true
     excludeCommentStatements: false
-  MayBeConst:
-    excludes: ['**/resources/**']
+    excludeRawStrings: true
+  MayBeConstant:
     active: true
   ModifierOrder:
-    excludes: ['**/resources/**']
     active: true
-  NestedClassesVisibility:
-    excludes: ['**/resources/**']
+  MultilineLambdaItParameter:
     active: false
+  MultilineRawStringIndentation:
+    active: false
+    indentSize: 4
+    trimmingMethods:
+      - 'trimIndent'
+      - 'trimMargin'
+  NestedClassesVisibility:
+    active: true
   NewLineAtEndOfFile:
-    excludes: ['**/resources/**']
     active: true
   NoTabs:
-    excludes: ['**/resources/**']
+    active: false  # Disabled: ktfmt enforces 4-space indentation
+  NullableBooleanCheck:
     active: false
+  ObjectLiteralToLambda:
+    active: true
   OptionalAbstractKeyword:
-    excludes: ['**/resources/**']
     active: true
   OptionalUnit:
-    excludes: ['**/resources/**']
     active: false
-  OptionalWhenBraces:
-    excludes: ['**/resources/**']
-    active: false
-  PreferToOverPairSyntax:
-    excludes: ['**/resources/**']
-    active: true
   ProtectedMemberInFinalClass:
-    excludes: ['**/resources/**']
     active: true
+  RangeUntilInsteadOfRangeTo:
+    active: false
+  RedundantConstructorKeyword:
+    active: false
   RedundantExplicitType:
-    excludes: ['**/resources/**']
-    active: true
+    active: false
   RedundantHigherOrderMapUsage:
     active: true
-  RedundantVisibilityModifierRule:
-    excludes: ['**/resources/**']
-    active: true
+  RedundantVisibilityModifier:
+    active: false
   ReturnCount:
-    excludes: ['**/resources/**']
     active: true
-    max: 4
-    excludedFunctions: 'equals'
+    max: 4  # Relaxed from default 2: guard clauses and reactive error paths legitimately use multiple returns
+    excludedFunctions:
+      - 'equals'
     excludeLabeled: false
     excludeReturnFromLambda: true
     excludeGuardClauses: false
   SafeCast:
-    excludes: ['**/resources/**']
     active: true
   SerialVersionUIDInSerializableClass:
-    excludes: ['**/resources/**']
-    active: false
-  SpacingBetweenPackageAndImports:
-    excludes: ['**/resources/**']
     active: true
+  SpacingAfterPackageDeclaration:
+    active: false
+  StringShouldBeRawString:
+    active: false
+    maxEscapedCharacterCount: 2
+    ignoredCharacters: []
   ThrowsCount:
-    excludes: ['**/resources/**']
     active: true
     max: 2
+    excludeGuardClauses: false
   TrailingWhitespace:
-    excludes: ['**/resources/**']
+    active: false  # Disabled: ktfmt owns all whitespace formatting
+  TrimMultilineRawString:
     active: false
+    trimmingMethods:
+      - 'trimIndent'
+      - 'trimMargin'
   UnderscoresInNumericLiterals:
-    excludes: ['**/resources/**']
     active: false
-    acceptableLength: 5
-  UnnecessaryAbstractClass:
-    excludes: ['**/resources/**']
-    active: true
-    ignoreAnnotated: ['dagger.Module']
-  UnnecessaryAnnotationUseSiteTarget:
-    excludes: ['**/resources/**']
+    acceptableLength: 4
+    allowNonStandardGrouping: false
+  UnnecessaryAny:
     active: false
   UnnecessaryApply:
-    excludes: ['**/resources/**']
     active: true
+  UnnecessaryBackticks:
+    active: false
+  UnnecessaryBracesAroundTrailingLambda:
+    active: false
+  UnnecessaryFilter:
+    active: true
+  UnnecessaryFullyQualifiedName:
+    active: false
   UnnecessaryInheritance:
-    excludes: ['**/resources/**']
     active: true
+  UnnecessaryInnerClass:
+    active: false
   UnnecessaryLet:
-    excludes: ['**/resources/**']
-    active: true
+    active: false
   UnnecessaryParentheses:
-    excludes: ['**/resources/**']
     active: false
-  UntilInsteadOfRangeTo:
-    excludes: ['**/resources/**']
+    allowForUnclearPrecedence: false
+  UnnecessaryReversed:
     active: false
-  UnusedImports:
-    excludes: ['**/resources/**']
+  UnusedImport:
+    active: false
+    additionalOperatorSet: []
+  UnusedParameter:
     active: true
+    aliases: ['UNUSED_PARAMETER', 'unused']
+    allowedNames: 'ignored|expected'
   UnusedPrivateClass:
-    excludes: ['**/resources/**']
     active: true
-  UnusedPrivateMember:
-    excludes: ['**/resources/**']
-    active: false
-    allowedNames: '(_|ignored|expected|serialVersionUID)'
+    aliases: ['unused']
+  UnusedPrivateFunction:
+    active: true
+    aliases: ['unused']
+    allowedNames: ''
+  UnusedPrivateProperty:
+    active: true
+    aliases: ['unused']
+    allowedNames: 'ignored|expected|serialVersionUID'
+  UnusedVariable:
+    active: true
+    aliases: ['UNUSED_VARIABLE', 'unused']
+    allowedNames: 'ignored|_'
+  UseAnyOrNoneInsteadOfFind:
+    active: true
   UseArrayLiteralsInAnnotations:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   UseCheckNotNull:
     active: true
   UseCheckOrError:
-    excludes: ['**/resources/**']
-    active: false
-  UseDataClass:
-    excludes: ['**/resources/**']
     active: true
-    ignoreAnnotated: []
+  UseDataClass:
+    active: false
     allowVars: false
   UseEmptyCounterpart:
-    active: true
+    active: false
   UseIfEmptyOrIfBlank:
-    active: true
+    active: false
   UseIfInsteadOfWhen:
-    excludes: ['**/resources/**']
     active: false
+    ignoreWhenContainingVariableDeclaration: false
+  UseIsNullOrEmpty:
+    active: true
+  UseLet:
+    active: false
+  UseOrEmpty:
+    active: true
   UseRequire:
-    excludes: ['**/resources/**']
-    active: false
+    active: true
   UseRequireNotNull:
     active: true
+  UseSumOfInsteadOfFlatMapSize:
+    active: false
   UselessCallOnNotNull:
-    excludes: ['**/resources/**']
     active: true
   UtilityClassWithPublicConstructor:
-    excludes: ['**/resources/**']
     active: true
   VarCouldBeVal:
-    excludes: ['**/resources/**']
     active: true
+    aliases: ['CanBeVal']
+    ignoreLateinitVar: false
   WildcardImport:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
-    excludeImports: ['java.util.*', 'kotlinx.android.synthetic.*', 'kotlinx.serialization']
+    excludeImports:
+      - 'java.util.*'
