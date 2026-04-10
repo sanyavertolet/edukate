@@ -19,8 +19,7 @@ edukate-frontend/dist/
 edukate-frontend/coverage/
 edukate-frontend/src/generated/
 
-# Git and IDE
-.git/
+# IDE and Claude
 .github/
 .idea/
 .claude/
