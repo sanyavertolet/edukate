@@ -3,8 +3,28 @@ import { queryKeys } from "./query-keys";
 describe("queryKeys", () => {
     describe("problems", () => {
         it("list includes page, size and optional filters", () => {
-            expect(queryKeys.problems.list(0, 20)).toEqual(["problems", "list", 0, 20, undefined, undefined, undefined, undefined, undefined]);
-            expect(queryKeys.problems.list(1, 10, "1.", "SOLVED", true, false, true)).toEqual(["problems", "list", 1, 10, "1.", "SOLVED", true, false, true]);
+            expect(queryKeys.problems.list(0, 20)).toEqual([
+                "problems",
+                "list",
+                0,
+                20,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+            ]);
+            expect(queryKeys.problems.list(1, 10, "1.", "SOLVED", true, false, true)).toEqual([
+                "problems",
+                "list",
+                1,
+                10,
+                "1.",
+                "SOLVED",
+                true,
+                false,
+                true,
+            ]);
         });
 
         it("detail includes id", () => {
@@ -16,8 +36,24 @@ describe("queryKeys", () => {
         });
 
         it("count includes optional filters", () => {
-            expect(queryKeys.problems.count()).toEqual(["problems", "count", undefined, undefined, undefined, undefined, undefined]);
-            expect(queryKeys.problems.count("1.", "SOLVED", true)).toEqual(["problems", "count", "1.", "SOLVED", true, undefined, undefined]);
+            expect(queryKeys.problems.count()).toEqual([
+                "problems",
+                "count",
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+            ]);
+            expect(queryKeys.problems.count("1.", "SOLVED", true)).toEqual([
+                "problems",
+                "count",
+                "1.",
+                "SOLVED",
+                true,
+                undefined,
+                undefined,
+            ]);
         });
 
         it("random is a static array", () => {

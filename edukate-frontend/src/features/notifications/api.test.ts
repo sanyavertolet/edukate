@@ -38,4 +38,3 @@ describe("useMarkAllNotificationsAsReadMutation", () => {
         expect(typeof result.current.mutate).toBe("function");
     });
 });
-

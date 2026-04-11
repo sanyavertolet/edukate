@@ -3,91 +3,1841 @@ info:
   title: OpenAPI definition
   version: v0
 servers:
-- url: https://edukate.mooo.com
+- url: http://localhost:5810
 tags:
-- name: Authentication
-  description: API for user authentication operations
+- name: Checker
+  description: API for scheduling checks and retrieving check results
+- name: Users
+  description: API for managing user information
+- name: Bundles
+  description: API for managing problem bundles and user collaborations
+- name: Problems
+  description: API for managing and retrieving problems
+- name: Submissions
+  description: API for managing problem submissions
+- name: Temporary Files
+  description: API for managing temporary files
+- name: Results
+  description: API for retrieving problem results
 paths:
-  /api/v1/auth/sign-up:
+  /api/v1/submissions:
     post:
       tags:
-      - Authentication
-      summary: Register new user
-      description: Registers a new user with provided information and returns a JWT
-        token in a cookie
-      operationId: sign-up
+      - Submissions
+      summary: Upload a submission
+      description: Creates a new submission for a problem with the provided files
+      operationId: uploadSubmission
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SignUpRequest"
+              $ref: "#/components/schemas/CreateSubmissionRequest"
         required: true
       responses:
-        "204":
-          description: Successfully registered
+        "200":
+          description: Successfully created submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
         "403":
-          description: Registration failed
-        "409":
-          description: User with this name already exists
-  /api/v1/auth/sign-out:
-    post:
+          description: Access denied - No submit permission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+        "404":
+          description: "User, problem, or files not found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+      security:
+      - cookieAuth: []
+  /api/v1/files/temp:
+    get:
       tags:
-      - Authentication
-      summary: Sign user out
-      description: Signs out the current user by expiring their authentication token
-      operationId: sign-out
+      - Temporary Files
+      summary: Get temporary files
+      description: Retrieves a list of temporary files for the authenticated user
+      operationId: getTempFiles
       responses:
-        "204":
-          description: Successfully signed out
-  /api/v1/auth/sign-in:
+        "200":
+          description: Successfully retrieved temporary files
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileMetadata"
+        "401":
+          description: Unauthorized
+      security:
+      - cookieAuth: []
     post:
       tags:
-      - Authentication
-      summary: Sign user in
-      description: Authenticates a user with provided credentials and returns a JWT
-        token in a cookie
-      operationId: sign-in
+      - Temporary Files
+      summary: Upload temporary file
+      description: Uploads a temporary file for the authenticated user
+      operationId: uploadTempFile
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        "200":
+          description: Successfully uploaded temporary file
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to uploadDeprecated file
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Temporary Files
+      summary: Delete temporary file
+      description: Deletes a temporary file for the authenticated user
+      operationId: deleteTempFile
+      parameters:
+      - name: fileName
+        in: query
+        description: Name of a file to delete
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully deleted temporary file
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+        "404":
+          description: File not found
+        "500":
+          description: Failed to delete file
+      security:
+      - cookieAuth: []
+  /api/v1/checker/supervisor:
+    post:
+      tags:
+      - Checker
+      summary: Request supervisor check
+      description: Requests a supervisor check for the provided submission (not implemented
+        yet)
+      operationId: supervisorCheck
+      parameters:
+      - name: id
+        in: query
+        description: Submission identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        "501":
+          description: Not implemented
+      security:
+      - cookieAuth: []
+  /api/v1/checker/self:
+    post:
+      tags:
+      - Checker
+      summary: Mark submission as self-checked
+      description: Creates a self-check result for the provided submission
+      operationId: selfCheck
+      parameters:
+      - name: id
+        in: query
+        description: Submission identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        "202":
+          description: Self-check accepted
+        "401":
+          description: Unauthorized
+        "403":
+          description: Access denied
+        "404":
+          description: Submission not found
+      security:
+      - cookieAuth: []
+  /api/v1/checker/ai:
+    post:
+      tags:
+      - Checker
+      summary: Schedule AI check
+      description: Schedules an asynchronous AI check for the provided submission
+      operationId: aiCheck
+      parameters:
+      - name: id
+        in: query
+        description: Submission identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        "202":
+          description: Check scheduled
+        "401":
+          description: Unauthorized
+        "403":
+          description: Access denied
+        "404":
+          description: Submission not found
+      security:
+      - cookieAuth: []
+  /api/v1/bundles:
+    post:
+      tags:
+      - Bundles
+      summary: Create a bundle
+      description: Creates a new bundle with the specified properties
+      operationId: createBundle
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SignInRequest"
+              $ref: "#/components/schemas/CreateBundleRequest"
         required: true
       responses:
-        "204":
-          description: Successfully authenticated
+        "200":
+          description: Successfully created bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/visibility:
+    post:
+      tags:
+      - Bundles
+      summary: Change bundle visibility
+      description: Changes bundle visibility allowing it to be public or private
+      operationId: changeVisibility
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: isPublic
+        in: query
+        description: Visibility flag
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successfully changed visibility
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
         "403":
-          description: Authentication failed
+          description: Access denied - Insufficient bundle permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/role:
+    post:
+      tags:
+      - Bundles
+      summary: Change user role in bundle
+      description: Changes user role in a bundle by their name
+      operationId: changeUserRole
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: username
+        in: query
+        description: Username
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: requestedRole
+        in: query
+        description: Role to set
+        required: true
+        schema:
+          type: string
+          enum:
+          - USER
+          - MODERATOR
+          - ADMIN
+      responses:
+        "200":
+          description: Successfully changed user role
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "403":
+          description: Access denied - Insufficient bundle permissions
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "404":
+          description: Bundle or user not found
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/reply-invite:
+    post:
+      tags:
+      - Bundles
+      summary: Reply to bundle invitation
+      description: Accepts or declines an invitation to join a bundle
+      operationId: replyToInvite
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: response
+        in: query
+        description: "True to accept, false to decline"
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successfully replied to invitation
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: User is already in bundle
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "403":
+          description: Access denied - User is not invited
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/problems:
+    post:
+      tags:
+      - Bundles
+      summary: Change bundle problems
+      description: Changes problem list of a bundle
+      operationId: changeProblems
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeBundleProblemsRequest"
+        required: true
+      responses:
+        "200":
+          description: Successfully changed problem list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "400":
+          description: Problem list should not be empty
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "403":
+          description: Access denied - Insufficient bundle permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/leave:
+    post:
+      tags:
+      - Bundles
+      summary: Leave a bundle
+      description: Leaves a bundle the user is currently a member of and returns bundle
+        shareCode
+      operationId: leaveBundle
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully left bundle
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: Either not a participant or last admin
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/join:
+    post:
+      tags:
+      - Bundles
+      summary: Join a bundle
+      description: Joins a bundle using its share code
+      operationId: joinBundle
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully joined bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleMetadata"
+        "400":
+          description: Already in bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleMetadata"
+        "403":
+          description: Access denied - invite is required to join
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleMetadata"
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleMetadata"
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/invite:
+    post:
+      tags:
+      - Bundles
+      summary: Invite user to bundle
+      description: Invites another user to join a bundle
+      operationId: inviteToBundle
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: inviteeName
+        in: query
+        description: Username of the user to invite
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully invited user
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: User is already in bundle
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "403":
+          description: Access denied - Insufficient permissions in bundle
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Bundle or user not found
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/expire-invite:
+    post:
+      tags:
+      - Bundles
+      summary: Expire bundle invitation
+      description: Cancels an existing invitation for a specific user
+      operationId: expireInvite
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: inviteeName
+        in: query
+        description: Username of the user whose invitation to cancel
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully expired invitation
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          description: User is not invited
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "403":
+          description: Access denied - Insufficient permissions in bundle
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Bundle or user not found
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - cookieAuth: []
+  /api/v1/users/whoami:
+    get:
+      tags:
+      - Users
+      summary: Get current user information
+      description: Retrieves information about the currently authenticated user
+      operationId: whoami
+      responses:
+        "200":
+          description: Successfully retrieved user information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "404":
+          description: User not found by name from token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+      security:
+      - cookieAuth: []
+  /api/v1/submissions/{problemId}/{username}:
+    get:
+      tags:
+      - Submissions
+      summary: Get submissions by username and problem ID
+      description: Retrieves paginated submissions for a specific user and problem
+      operationId: getSubmissionsByUsernameAndProblemId
+      parameters:
+      - name: problemId
+        in: path
+        description: Problem ID
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: username
+        in: path
+        description: Username
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: string
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of submissions per page
+        required: false
+        schema:
+          type: string
+          exclusiveMinimum: 0
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubmissionDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubmissionDto"
+        "403":
+          description: Access denied - Requires MODERATOR role
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubmissionDto"
+  /api/v1/submissions/my:
+    get:
+      tags:
+      - Submissions
+      summary: Get my submissions
+      description: "Requires an authenticated session via the gateway cookie. Returns\
+        \ the authenticated user's submissions, optionally filtered by problemId.\
+        \ Results are paginated (page, size) and sorted by createdAt in descending\
+        \ order."
+      operationId: getMySubmissions
+      parameters:
+      - name: problemId
+        in: query
+        description: Optional problem ID to filter the user's submissions
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: string
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of submissions per page (max 100)
+        required: false
+        schema:
+          type: string
+          exclusiveMinimum: 0
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubmissionDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubmissionDto"
+      security:
+      - cookieAuth: []
+  /api/v1/submissions/by-id/{id}:
+    get:
+      tags:
+      - Submissions
+      summary: Get submission by ID
+      description: Retrieves a specific submission by its ID for the authenticated
+        user
+      operationId: getSubmissionById
+      parameters:
+      - name: id
+        in: path
+        description: Submission ID
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved submission
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+        "403":
+          description: Access denied - user id does not match
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+        "404":
+          description: Submission not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionDto"
+      security:
+      - cookieAuth: []
+  /api/v1/results/{id}:
+    get:
+      tags:
+      - Results
+      summary: Get result by ID
+      description: Retrieves a specific result by its ID
+      operationId: getResultById
+      parameters:
+      - name: id
+        in: path
+        description: Result ID
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Result"
+        "404":
+          description: Result not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Result"
+  /api/v1/problems:
+    get:
+      tags:
+      - Problems
+      summary: Get problem list
+      description: Retrieves a paginated list of problem metadata
+      operationId: getProblemList
+      parameters:
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: string
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of problems per page
+        required: false
+        schema:
+          type: string
+          exclusiveMinimum: 0
+          maximum: 100
+          minimum: 1
+      - name: prefix
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+      - name: isHard
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasPictures
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasResult
+        in: query
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successfully retrieved problem list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemMetadata"
+        "401":
+          description: Authentication required when filtering by status (other than
+            NOT_SOLVED)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemMetadata"
+  /api/v1/problems/{id}:
+    get:
+      tags:
+      - Problems
+      summary: Get problem by ID
+      description: Retrieves a specific problem by its ID
+      operationId: getProblem
+      parameters:
+      - name: id
+        in: path
+        description: Problem ID
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved problem
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDto"
+        "404":
+          description: Problem not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDto"
+  /api/v1/problems/random:
+    get:
+      tags:
+      - Problems
+      summary: Get random problem ID
+      description: "Returns a random problem ID. If the user is authenticated, prioritizes\
+        \ problems the user hasn't solved yet; otherwise returns any random problem."
+      operationId: getRandomUnsolvedProblemId
+      responses:
+        "200":
+          description: Successfully retrieved random problem ID
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/problems/count:
+    get:
+      tags:
+      - Problems
+      summary: Count problems
+      description: Returns the total number of problems in the system
+      operationId: count
+      parameters:
+      - name: prefix
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+      - name: isHard
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasPictures
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasResult
+        in: query
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Successfully retrieved problem count
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        "401":
+          description: Authentication required when filtering by status (other than
+            NOT_SOLVED)
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+  /api/v1/problems/by-prefix:
+    get:
+      tags:
+      - Problems
+      summary: Get problem IDs by prefix
+      description: Retrieves a list of problem IDs that match the given prefix
+      operationId: getProblemIdsByPrefix
+      parameters:
+      - name: prefix
+        in: query
+        description: The prefix to match problem IDs against
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        description: Maximum number of results to return
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 5
+          exclusiveMinimum: 0
+      responses:
+        "200":
+          description: Successfully retrieved problem IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /api/v1/files/temp/get:
+    get:
+      tags:
+      - Temporary Files
+      summary: Download temporary file
+      description: Downloads a temporary file for the authenticated user
+      operationId: downloadTempFile
+      parameters:
+      - name: fileName
+        in: query
+        description: File name to download
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully downloaded temporary file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: Unauthorized
+        "404":
+          description: File not found
+      security:
+      - cookieAuth: []
+  /api/v1/checker/submissions/{submissionId}:
+    get:
+      tags:
+      - Checker
+      summary: Get check results for submission
+      description: Retrieves all check results (lightweight info) for a submission
+        owned by the user
+      operationId: getCheckResultsBySubmissionId
+      parameters:
+      - name: submissionId
+        in: path
+        description: Submission identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved check results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckResultInfo"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckResultInfo"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckResultInfo"
+      security:
+      - cookieAuth: []
+  /api/v1/checker/by-id/{id}:
+    get:
+      tags:
+      - Checker
+      summary: Get check result by id
+      description: Retrieves a single check result by its identifier
+      operationId: getCheckResultById
+      parameters:
+      - name: id
+        in: path
+        description: Check result identifier
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved check result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckResultDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckResultDto"
+        "403":
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckResultDto"
+        "404":
+          description: Check result not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckResultDto"
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}:
+    get:
+      tags:
+      - Bundles
+      summary: Get bundle by share code
+      description: Retrieves a bundle by its share code. Public bundles are accessible
+        to anyone; private bundles require membership.
+      operationId: getBundleByShareCode
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved bundle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "403":
+          description: Access denied - bundle is private and user is not a member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundleDto"
+  /api/v1/bundles/{shareCode}/users:
+    get:
+      tags:
+      - Bundles
+      summary: Get users in bundle
+      description: Retrieves a list of users in a bundle with their roles
+      operationId: getUserRoles
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "403":
+          description: Access denied - Insufficient bundle permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/{shareCode}/invited-users:
+    get:
+      tags:
+      - Bundles
+      summary: Get invited user names in bundle
+      description: Retrieves the list of invited (pending) user names
+      operationId: getInvitedUsers
+      parameters:
+      - name: shareCode
+        in: path
+        description: Bundle share code
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved invited user names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "403":
+          description: Access denied - Insufficient bundle permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/public:
+    get:
+      tags:
+      - Bundles
+      summary: Get public bundles
+      description: Retrieves a paginated list of public bundles
+      operationId: getPublicBundles
+      parameters:
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: string
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of bundles per page
+        required: false
+        schema:
+          type: string
+          exclusiveMinimum: 0
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved public bundles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+  /api/v1/bundles/owned:
+    get:
+      tags:
+      - Bundles
+      summary: Get owned bundles
+      description: Retrieves a paginated list of bundles owned by the authenticated
+        user
+      operationId: getOwnedBundles
+      parameters:
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: string
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of bundles per page
+        required: false
+        schema:
+          type: string
+          exclusiveMinimum: 0
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved owned bundles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+      security:
+      - cookieAuth: []
+  /api/v1/bundles/joined:
+    get:
+      tags:
+      - Bundles
+      summary: Get joined bundles
+      description: Retrieves a paginated list of bundles joined by the authenticated
+        user
+      operationId: getJoinedBundles
+      parameters:
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: string
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of bundles per page
+        required: false
+        schema:
+          type: string
+          exclusiveMinimum: 0
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved joined bundles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BundleMetadata"
+      security:
+      - cookieAuth: []
 components:
   schemas:
-    SignUpRequest:
+    CreateSubmissionRequest:
       type: object
       properties:
-        username:
+        problemId:
           type: string
           minLength: 1
-        password:
-          type: string
-          minLength: 1
-        email:
-          type: string
-          minLength: 1
+        fileNames:
+          type: array
+          items:
+            type: string
+          minItems: 1
       required:
-      - email
-      - password
-      - username
-    SignInRequest:
+      - fileNames
+      - problemId
+    SubmissionDto:
       type: object
       properties:
-        username:
+        id:
           type: string
-          minLength: 1
-        password:
+        problemId:
           type: string
-          minLength: 1
+        userName:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING
+          - FAILED
+          - SUCCESS
+        createdAt:
+          type: string
+          format: date-time
+        fileUrls:
+          type: array
+          items:
+            type: string
       required:
-      - password
-      - username
+      - createdAt
+      - fileUrls
+      - id
+      - problemId
+      - status
+      - userName
+    CreateBundleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          minLength: 0
+        description:
+          type: string
+          maxLength: 255
+          minLength: 0
+        isPublic:
+          type: boolean
+        problemIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+      - description
+      - isPublic
+      - name
+      - problemIds
+    BundleDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        admins:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+        problems:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProblemMetadata"
+        shareCode:
+          type: string
+      required:
+      - admins
+      - description
+      - isPublic
+      - name
+      - problems
+      - shareCode
+    ProblemMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+        isHard:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+      required:
+      - isHard
+      - name
+      - status
+      - tags
+    ChangeBundleProblemsRequest:
+      type: object
+      properties:
+        problemIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+      - problemIds
+    BundleMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        admins:
+          type: array
+          items:
+            type: string
+        shareCode:
+          type: string
+        isPublic:
+          type: boolean
+        size:
+          type: integer
+          format: int64
+      required:
+      - admins
+      - description
+      - isPublic
+      - name
+      - shareCode
+      - size
+    UserDto:
+      type: object
+      properties:
+        name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+      required:
+      - name
+      - roles
+      - status
+    Result:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        notes:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+      required:
+      - id
+      - images
+      - notes
+      - text
+    ProblemDto:
+      type: object
+      properties:
+        id:
+          type: string
+        isHard:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        text:
+          type: string
+        subtasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subtask"
+        images:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+        hasResult:
+          type: boolean
+      required:
+      - hasResult
+      - id
+      - images
+      - isHard
+      - status
+      - subtasks
+      - tags
+      - text
+    Subtask:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+      required:
+      - id
+      - text
+    FileMetadata:
+      type: object
+      properties:
+        key:
+          type: string
+        authorName:
+          type: string
+        lastModified:
+          type: string
+          format: date-time
+        size:
+          type: integer
+          format: int64
+      required:
+      - authorName
+      - key
+      - lastModified
+      - size
+    CheckResultInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - MISTAKE
+          - INTERNAL_ERROR
+        trustLevel:
+          type: number
+          format: float
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - id
+      - status
+      - trustLevel
+    CheckResultDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - SUCCESS
+          - MISTAKE
+          - INTERNAL_ERROR
+        trustLevel:
+          type: number
+          format: float
+        errorType:
+          type: string
+          enum:
+          - ALGEBRAIC
+          - CONCEPTUAL
+          - INCOMPLETE
+          - NONE
+          - NUMERICAL
+          - UNCLEAR
+          - UNIT
+        explanation:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - errorType
+      - explanation
+      - status
+      - trustLevel
+    UserNameWithRole:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+          - USER
+          - MODERATOR
+          - ADMIN
+      required:
+      - name
+      - role
   securitySchemes:
     cookieAuth:
       type: apiKey
