@@ -4,6 +4,8 @@ info:
   version: v0
 servers:
 - url: http://localhost:5810
+security:
+- cookieAuth: []
 tags:
 - name: Notifications
   description: API for managing user notifications

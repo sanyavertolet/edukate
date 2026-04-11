@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
@@ -33,6 +34,7 @@ import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @Validated
+@SecurityRequirements
 @RequestMapping("/api/v1/problems")
 @Tag(name = "Problems", description = "API for managing and retrieving problems")
 class ProblemController(private val problemService: ProblemService) {

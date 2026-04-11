@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.servers.Server
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -22,6 +23,8 @@ class OpenApiConfiguration {
     @Bean
     @ConditionalOnProperty(name = ["gateway.url"])
     fun openAPI(@Value($$"${gateway.url}") gatewayUrl: String): OpenAPI {
-        return OpenAPI().servers(listOf(Server().url(gatewayUrl)))
+        return OpenAPI()
+            .servers(listOf(Server().url(gatewayUrl)))
+            .security(listOf(SecurityRequirement().addList("cookieAuth")))
     }
 }
