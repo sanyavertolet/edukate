@@ -25,10 +25,10 @@ dependencies {
 
     apiElements(libs.awssdk.s3)
     implementation(libs.awssdk.s3.transfer.manager)
+    implementation(libs.jackson.annotations)
     implementation(libs.reactor.core)
     implementation(libs.reactor.kotlin.extensions)
     implementation(libs.kotlin.reflect)
-    implementation(libs.fasterxml.jackson.annotations)
 
     annotationProcessor(libs.spring.boot.configuration.processor)
 

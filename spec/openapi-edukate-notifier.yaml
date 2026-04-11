@@ -4,6 +4,8 @@ info:
   version: v0
 servers:
 - url: http://localhost:5810
+security:
+- cookieAuth: []
 tags:
 - name: Notifications
   description: API for managing user notifications
@@ -124,11 +126,11 @@ components:
       discriminator:
         propertyName: _type
       properties:
-        uuid:
-          type: string
         createdAt:
           type: string
           format: date-time
+        uuid:
+          type: string
         isRead:
           type: boolean
         _type:

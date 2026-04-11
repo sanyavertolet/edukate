@@ -103,3 +103,13 @@ docker compose up -d
   `noUnusedParameters` enabled.
 - Java toolchain is set to Java 21 across all modules.
 - The entire codebase is Kotlin — no Java source files remain.
+
+## Spring Boot 4 Notes
+
+- **Version**: Spring Boot 4.0.0 / Spring Cloud 5.0.1 / Spring Security 7 / Jackson 3.
+- **`WebClient.Builder`** autoconfiguration is in `spring-boot-webclient` — not pulled transitively by `spring-boot-starter-webflux`. Add explicitly to any module that injects `WebClient.Builder`.
+- **`ClientHttpRequestFactoryBuilder` / `HttpClientSettings`** (renamed from `ClientHttpRequestFactorySettings`) are in `spring-boot-http-client`. Add explicitly to any module configuring HTTP timeouts (e.g. `edukate-checker`).
+- **Jackson 3 + Kotlin**: two modules must coexist — `com.fasterxml.jackson.module:jackson-module-kotlin` (Jackson 2 shim, required by Spring AMQP) and `tools.jackson.module:jackson-module-kotlin` (native Jackson 3). Without the native module, `is`-prefixed boolean properties (e.g. `isRead`, `isHard`) serialize without the `is` prefix, breaking JSON round-trips.
+- **Spring Security 7**: when a `ReactiveUserDetailsService` bean is present, a `ReactiveUserDetailsPasswordService` bean must also be present or the context fails to start.
+- **MongoDB tests**: flapdoodle `spring3x` does not work with Boot 4. Use Testcontainers `MongoDBContainer("mongo:8")` with `@ServiceConnection`. See `MongoTestContainerConfig` in `edukate-backend` and `edukate-notifier` test sources.
+- **Spring Cloud Gateway 5**: artifact renamed to `spring-cloud-starter-gateway-server-webflux`; route config prefix is `spring.cloud.gateway.server.webflux.*`.

@@ -46,7 +46,14 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation(libs.mockk)
     testImplementation(libs.springmockk)
-    testImplementation(libs.flapdoodle.embed.mongo)
+    testImplementation(libs.testcontainers.mongodb)
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.spring.boot.starter.test.classic)
+    testImplementation(libs.spring.boot.webtestclient)
+}
+
+configure<org.springdoc.openapi.gradle.plugin.OpenApiExtension> {
+    apiDocsUrl.set("http://localhost:18084/v3/api-docs.yaml")
 }
 
 tasks.withType<Test>().configureEach {

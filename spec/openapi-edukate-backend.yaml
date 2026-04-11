@@ -4,6 +4,8 @@ info:
   version: v0
 servers:
 - url: http://localhost:5810
+security:
+- cookieAuth: []
 tags:
 - name: Checker
   description: API for scheduling checks and retrieving check results
@@ -959,6 +961,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ProblemMetadata"
+      security: []
   /api/v1/problems/{id}:
     get:
       tags:
@@ -993,6 +996,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDto"
+      security: []
   /api/v1/problems/random:
     get:
       tags:
@@ -1008,6 +1012,7 @@ paths:
             text/plain:
               schema:
                 type: string
+      security: []
   /api/v1/problems/count:
     get:
       tags:
@@ -1062,6 +1067,7 @@ paths:
               schema:
                 type: integer
                 format: int64
+      security: []
   /api/v1/problems/by-prefix:
     get:
       tags:
@@ -1103,6 +1109,7 @@ paths:
                 type: array
                 items:
                   type: string
+      security: []
   /api/v1/files/temp/get:
     get:
       tags:
@@ -1413,6 +1420,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/BundleMetadata"
+      security: []
   /api/v1/bundles/owned:
     get:
       tags:

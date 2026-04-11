@@ -33,7 +33,7 @@ dependencies {
     implementation(libs.springdoc.openapi.starter.webflux.ui)
     implementation(libs.reactor.kotlin.extensions)
     implementation(libs.jackson.module.kotlin)
-    implementation(libs.kotlin.reflect)
+    implementation(libs.jackson2.module.kotlin)
 
     annotationProcessor(libs.spring.boot.configuration.processor)
 

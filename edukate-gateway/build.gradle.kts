@@ -34,11 +34,12 @@ dependencies {
     implementation(projects.edukateAuth)
 
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.webclient)
     implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.cloud.starter.gateway)
+    implementation(libs.spring.cloud.starter.gateway.server.webflux)
     implementation(libs.springdoc.openapi.starter.webflux.ui)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.kotlin.reflect)
@@ -54,6 +55,12 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation(libs.mockk)
     testImplementation(libs.springmockk)
+    testImplementation(libs.spring.boot.starter.test.classic)
+    testImplementation(libs.spring.boot.webtestclient)
+}
+
+configure<org.springdoc.openapi.gradle.plugin.OpenApiExtension> {
+    apiDocsUrl.set("http://localhost:18082/v3/api-docs.yaml")
 }
 
 tasks.withType<Test>().configureEach {

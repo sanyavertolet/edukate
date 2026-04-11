@@ -51,7 +51,7 @@ Polymorphic serialization via Jackson `@JsonTypeInfo`.
 
 ## Testing
 
-Test dependencies: `spring-boot-starter-test`, `reactor-test`, `mockk`, `springmockk`, `flapdoodle-embed-mongo`.
+Test dependencies: `spring-boot-starter-test`, `spring-boot-starter-test-classic`, `spring-boot-webtestclient`, `reactor-test`, `mockk`, `springmockk`, `testcontainers-mongodb`, `spring-boot-testcontainers`.
 
 Run tests:
 
@@ -73,7 +73,7 @@ src/test/kotlin/.../notifier/
 ├── controllers/
 │   └── NotificationControllerTest.kt    — @WebFluxTest + WebTestClient
 └── repositories/
-    └── NotificationRepositoryTest.kt    — @DataMongoTest + Flapdoodle embedded MongoDB
+    └── NotificationRepositoryTest.kt    — @DataMongoTest + Testcontainers MongoDBContainer (@ServiceConnection)
 ```
 
 ### Key testing patterns

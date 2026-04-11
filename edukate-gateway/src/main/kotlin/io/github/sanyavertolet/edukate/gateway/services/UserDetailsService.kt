@@ -2,14 +2,18 @@ package io.github.sanyavertolet.edukate.gateway.services
 
 import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails
 import io.github.sanyavertolet.edukate.common.users.UserCredentials
+import org.springframework.security.core.userdetails.ReactiveUserDetailsPasswordService
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
 @Service
-class UserDetailsService(private val backendService: BackendService) : ReactiveUserDetailsService {
+class UserDetailsService(private val backendService: BackendService) :
+    ReactiveUserDetailsService, ReactiveUserDetailsPasswordService {
     override fun findByUsername(username: String): Mono<UserDetails> = findEdukateUserDetailsByUsername(username).map { it }
+
+    override fun updatePassword(user: UserDetails, newPassword: String?): Mono<UserDetails> = Mono.just(user)
 
     fun findEdukateUserDetailsByUsername(username: String): Mono<EdukateUserDetails> =
         backendService.getUserByName(username).map(::EdukateUserDetails)

@@ -27,6 +27,6 @@ class AuthService(
             .toMono()
             .filterWhen { userDetailsService.isNotUserPresent(it.username) }
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.CONFLICT)))
-            .flatMap { userDetailsService.create(it.username, it.email, passwordEncoder.encode(it.password)) }
+            .flatMap { userDetailsService.create(it.username, it.email, checkNotNull(passwordEncoder.encode(it.password))) }
             .map { userDetails -> jwtTokenService.generateToken(userDetails) }
 }

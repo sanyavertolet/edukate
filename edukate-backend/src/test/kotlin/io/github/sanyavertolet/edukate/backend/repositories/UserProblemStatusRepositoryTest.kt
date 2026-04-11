@@ -1,18 +1,19 @@
 package io.github.sanyavertolet.edukate.backend.repositories
 
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
+import io.github.sanyavertolet.edukate.backend.MongoTestContainerConfig
 import io.github.sanyavertolet.edukate.backend.configs.MongoConfig
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
+import org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import reactor.test.StepVerifier
 
 @DataMongoTest
-@Import(MongoConfig::class)
+@Import(MongoConfig::class, MongoTestContainerConfig::class)
 class UserProblemStatusRepositoryTest {
 
     @Autowired private lateinit var repository: UserProblemStatusRepository

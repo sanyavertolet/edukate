@@ -42,9 +42,9 @@ This is a known Gradle limitation — see the workaround already used for `libs.
 `BuildImageUtils.kt` — Docker image naming and registry credential helpers. Used by both
 `spring-boot-app-configuration` and `frontend-image-build-configuration`. Reads credentials from:
 
-| Source   | Gradle property      | Environment variable |
-|:---------|:---------------------|:---------------------|
-| Username | `do.docker.username` | `DO_DOCKER_USERNAME` |
-| Password | `do.docker.password` | `DO_DOCKER_PASSWORD` |
+| Source   | Gradle property | Environment variable |
+|:---------|:----------------|:---------------------|
+| Username | `ghcr.username` | `GITHUB_ACTOR`       |
+| Password | `ghcr.token`    | `GITHUB_TOKEN`       |
 
-Target registry: `registry.digitalocean.com/edukate-container-registry`.
+Target registry: `ghcr.io/sanyavertolet`.

@@ -1,9 +1,12 @@
 package io.github.sanyavertolet.edukate.notifier.dtos
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.Instant
 
+@JsonPropertyOrder("createdAt", "uuid", "isRead", "_type")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = SimpleNotificationDto::class, name = "simple"),
@@ -12,6 +15,7 @@ import java.time.Instant
 )
 sealed interface BaseNotificationDto {
     val uuid: String
-    val isRead: Boolean
+
+    @get:JsonProperty("isRead") val isRead: Boolean
     val createdAt: Instant
 }

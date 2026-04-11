@@ -1,0 +1,83 @@
+name: Publish Docker Images
+
+on:
+  workflow_run:
+    workflows: ["Frontend", "Backend Tests"]
+    types: [completed]
+    branches: [master]
+
+permissions:
+  packages: write
+
+jobs:
+  gate:
+    name: Gate
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - name: Check both workflows succeeded for this SHA
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          frontend=$(gh api "repos/$REPO/actions/workflows/frontend.yml/runs?head_sha=$SHA&branch=master&per_page=1" \
+            --jq '.workflow_runs[0].conclusion // "pending"')
+          backend=$(gh api "repos/$REPO/actions/workflows/backend.yml/runs?head_sha=$SHA&branch=master&per_page=1" \
+            --jq '.workflow_runs[0].conclusion // "pending"')
+          echo "frontend=$frontend backend=$backend"
+          if [ "$frontend" = "success" ] && [ "$backend" = "success" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish-backend:
+    name: Publish / ${{ matrix.module }}
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - edukate-backend
+          - edukate-checker
+          - edukate-gateway
+          - edukate-notifier
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Build and push ${{ matrix.module }} image
+        run: ./gradlew :${{ matrix.module }}:bootBuildImage --no-daemon
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-frontend:
+    name: Publish / edukate-frontend
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Build and push frontend image
+        run: ./gradlew buildAndPushFrontendImage --no-daemon
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

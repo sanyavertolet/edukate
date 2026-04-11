@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -24,6 +25,7 @@ import reactor.core.publisher.Mono
 
 @RestController
 @Validated
+@SecurityRequirements
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "API for user authentication operations")
 class AuthController(private val authService: AuthService, private val authCookieService: AuthCookieService) {
