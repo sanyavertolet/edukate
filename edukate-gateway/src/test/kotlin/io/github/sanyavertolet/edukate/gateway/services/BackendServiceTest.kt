@@ -1,7 +1,5 @@
 package io.github.sanyavertolet.edukate.gateway.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.sanyavertolet.edukate.gateway.GatewayFixtures
 import io.github.sanyavertolet.edukate.gateway.configs.GatewayProperties
 import io.mockk.every
@@ -17,9 +15,11 @@ import org.springframework.web.reactive.function.client.ExchangeFunction
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class BackendServiceTest {
-    private val objectMapper = ObjectMapper().registerKotlinModule()
+    private val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
     private val exchangeFunction: ExchangeFunction = mockk()
     private val webClientBuilder = WebClient.builder().exchangeFunction(exchangeFunction)
     private val gatewayProperties = GatewayProperties(GatewayProperties.Backend("http://test-backend"))

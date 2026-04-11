@@ -26,7 +26,7 @@ class EdukateUserDetails(
 
     fun toPreAuthenticatedAuthenticationToken() = PreAuthenticatedAuthenticationToken(this, null, authorities)
 
-    override fun getAuthorities(): MutableCollection<out GrantedAuthority?> =
+    override fun getAuthorities(): MutableCollection<out GrantedAuthority> =
         roles.map { it.asGrantedAuthority() }.toMutableSet()
 
     override fun isEnabled(): Boolean = status == UserStatus.ACTIVE

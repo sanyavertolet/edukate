@@ -63,9 +63,6 @@ cors:
   allowed-origin-pattern: https://edukate.mooo.com
 
 server:
-  servlet:
-    session:
-      timeout: 30m
   error:
     include-message: always
     path: /error

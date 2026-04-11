@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.notifier.repositories
 
+import io.github.sanyavertolet.edukate.notifier.MongoTestContainerConfig
 import io.github.sanyavertolet.edukate.notifier.NotificationFixtures
 import io.github.sanyavertolet.edukate.notifier.configs.MongoConfig
 import io.github.sanyavertolet.edukate.notifier.entities.CheckedNotification
@@ -10,14 +11,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
+import org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest
 import org.springframework.context.annotation.Import
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import reactor.test.StepVerifier
 
 @DataMongoTest
-@Import(MongoConfig::class)
+@Import(MongoConfig::class, MongoTestContainerConfig::class)
 class NotificationRepositoryTest {
 
     @Autowired private lateinit var repository: NotificationRepository

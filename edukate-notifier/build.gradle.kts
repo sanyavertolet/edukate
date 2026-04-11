@@ -46,7 +46,10 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation(libs.mockk)
     testImplementation(libs.springmockk)
-    testImplementation(libs.flapdoodle.embed.mongo)
+    testImplementation(libs.testcontainers.mongodb)
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.spring.boot.starter.test.classic)
+    testImplementation(libs.spring.boot.webtestclient)
 }
 
 tasks.withType<Test>().configureEach {

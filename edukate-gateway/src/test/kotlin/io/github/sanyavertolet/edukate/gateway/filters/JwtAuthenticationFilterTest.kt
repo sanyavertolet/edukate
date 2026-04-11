@@ -55,7 +55,7 @@ class JwtAuthenticationFilterTest {
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete()
 
-        assertThat(capturedExchange.captured.request.headers).doesNotContainKey(AuthHeaders.AUTHORIZATION_ID.headerName)
+        assertThat(capturedExchange.captured.request.headers[AuthHeaders.AUTHORIZATION_ID.headerName]).isNull()
     }
 
     @Test
@@ -70,7 +70,7 @@ class JwtAuthenticationFilterTest {
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete()
 
-        assertThat(capturedExchange.captured.request.headers).doesNotContainKey(AuthHeaders.AUTHORIZATION_ID.headerName)
+        assertThat(capturedExchange.captured.request.headers[AuthHeaders.AUTHORIZATION_ID.headerName]).isNull()
     }
 
     @Test
@@ -86,6 +86,6 @@ class JwtAuthenticationFilterTest {
 
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete()
 
-        assertThat(capturedExchange.captured.request.headers).doesNotContainKey(AuthHeaders.AUTHORIZATION_ID.headerName)
+        assertThat(capturedExchange.captured.request.headers[AuthHeaders.AUTHORIZATION_ID.headerName]).isNull()
     }
 }

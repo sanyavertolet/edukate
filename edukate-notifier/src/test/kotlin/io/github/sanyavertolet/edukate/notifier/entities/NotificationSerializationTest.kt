@@ -1,8 +1,5 @@
 package io.github.sanyavertolet.edukate.notifier.entities
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
 import io.github.sanyavertolet.edukate.common.notifications.BaseNotificationCreateRequest
 import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationCreateRequest
@@ -16,10 +13,12 @@ import io.github.sanyavertolet.edukate.notifier.dtos.SimpleNotificationDto
 import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class NotificationSerializationTest {
 
-    private val objectMapper = ObjectMapper().registerKotlinModule().registerModule(JavaTimeModule())
+    private val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
     // region Entity serialization — _type field
 

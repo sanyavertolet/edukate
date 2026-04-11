@@ -1,8 +1,6 @@
 package io.github.sanyavertolet.edukate.checker.domain
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
@@ -10,9 +8,11 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class ModelResponseTest {
-    private val mapper = ObjectMapper().registerKotlinModule()
+    private val mapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
     @Test
     fun `defaults are INTERNAL_ERROR`() {

@@ -5,6 +5,6 @@ import org.springframework.data.repository.Repository
 import reactor.core.publisher.Mono
 
 @NoRepositoryBean
-interface ReactiveReadOnlyRepository<T : Any, ID> : Repository<T, ID> {
+interface ReactiveReadOnlyRepository<T : Any, ID : Any> : Repository<T, ID> {
     fun findById(id: ID): Mono<T>
 }

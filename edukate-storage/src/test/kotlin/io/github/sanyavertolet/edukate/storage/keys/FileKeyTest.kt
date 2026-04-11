@@ -1,13 +1,13 @@
 package io.github.sanyavertolet.edukate.storage.keys
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class FileKeyTest {
-    private val objectMapper = ObjectMapper().registerKotlinModule()
+    private val objectMapper = JsonMapper.builder().addModule(KotlinModule.Builder().build()).build()
 
     // Region 1 — fileKey() valid paths
     @Test

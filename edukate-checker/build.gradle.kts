@@ -23,11 +23,11 @@ dependencies {
     implementation(projects.edukateStorage)
 
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.http.client)
     implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.ai.starter.model.openai)
-    implementation(libs.jackson.module.kotlin)
     implementation(libs.kotlin.reflect)
 
     developmentOnly(libs.spring.boot.devtools)
@@ -37,6 +37,7 @@ dependencies {
     testImplementation("io.projectreactor:reactor-test")
     testImplementation(libs.mockk)
     testImplementation(libs.springmockk)
+    testImplementation(libs.jackson.module.kotlin)
 }
 
 tasks.withType<Test>().configureEach {

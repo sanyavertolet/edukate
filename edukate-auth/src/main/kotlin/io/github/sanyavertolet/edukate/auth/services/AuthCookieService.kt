@@ -1,7 +1,6 @@
 package io.github.sanyavertolet.edukate.auth.services
 
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.server.Cookie
 import org.springframework.core.env.Environment
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
@@ -25,7 +24,7 @@ class AuthCookieService(
             .domain(hostname)
             .path("/")
             .maxAge(expirationTimeSeconds)
-            .sameSite(Cookie.SameSite.STRICT.toString())
+            .sameSite("Strict")
             .build()
 
     private fun createExpiredTokenCookie(): ResponseCookie =
@@ -35,7 +34,7 @@ class AuthCookieService(
             .domain(hostname)
             .path("/")
             .maxAge(0)
-            .sameSite(Cookie.SameSite.STRICT.toString())
+            .sameSite("Strict")
             .build()
 
     fun ejectToken(exchange: ServerWebExchange): Mono<String> =

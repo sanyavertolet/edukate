@@ -4,13 +4,15 @@ import com.ninjasquad.springmockk.MockkBean
 import io.github.sanyavertolet.edukate.backend.storage.FileKeyStorage
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient
+import org.springframework.context.annotation.Import
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers
 import org.springframework.test.web.reactive.server.WebTestClient
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureWebTestClient
+@Import(MongoTestContainerConfig::class)
 abstract class AbstractBackendIntegrationTest {
 
     @Autowired protected lateinit var webTestClient: WebTestClient
