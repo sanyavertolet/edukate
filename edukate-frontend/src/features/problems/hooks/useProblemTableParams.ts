@@ -9,6 +9,11 @@ function getSearchParamAsInt(searchParams: URLSearchParams, key: string, default
     return value ? parseInt(value, 10) : defaultValue;
 }
 
+function getSearchParamAsBoolean(searchParams: URLSearchParams, key: string): boolean | undefined {
+    const value = searchParams.get(key);
+    return value === null ? undefined : value === "true";
+}
+
 export type StatusFilter = ProblemStatus | "ALL" | undefined;
 
 export function useProblemTableParams() {
@@ -18,16 +23,32 @@ export function useProblemTableParams() {
     const [rowsPerPage, setRowsPerPage] = useState(getSearchParamAsInt(searchParams, "pageSize", DEFAULT_PAGE_SIZE));
     const [status, setStatus] = useState<StatusFilter>((searchParams.get("status") as StatusFilter) || "ALL");
     const [prefix, setPrefix] = useState<string>(searchParams.get("prefix") || "");
+    const [isHard, setIsHard] = useState<boolean | undefined>(getSearchParamAsBoolean(searchParams, "isHard"));
+    const [hasPictures, setHasPictures] = useState<boolean | undefined>(
+        getSearchParamAsBoolean(searchParams, "hasPictures"),
+    );
+    const [hasResult, setHasResult] = useState<boolean | undefined>(getSearchParamAsBoolean(searchParams, "hasResult"));
 
     useEffect(() => {
         setPage(getSearchParamAsInt(searchParams, "page", 0));
         setRowsPerPage(getSearchParamAsInt(searchParams, "pageSize", DEFAULT_PAGE_SIZE));
         setStatus((searchParams.get("status") as StatusFilter) || "ALL");
         setPrefix(searchParams.get("prefix") || "");
+        setIsHard(getSearchParamAsBoolean(searchParams, "isHard"));
+        setHasPictures(getSearchParamAsBoolean(searchParams, "hasPictures"));
+        setHasResult(getSearchParamAsBoolean(searchParams, "hasResult"));
     }, [searchParams]);
 
     const updateSearchParams = (
-        params: Partial<{ page: number; pageSize: number; status: StatusFilter; prefix: string }>,
+        params: Partial<{
+            page: number;
+            pageSize: number;
+            status: StatusFilter;
+            prefix: string;
+            isHard: boolean | undefined;
+            hasPictures: boolean | undefined;
+            hasResult: boolean | undefined;
+        }>,
     ) => {
         const next = new URLSearchParams(searchParams);
 
@@ -47,6 +68,18 @@ export function useProblemTableParams() {
             if (!params.prefix) next.delete("prefix");
             else next.set("prefix", params.prefix);
         }
+        if ("isHard" in params) {
+            if (params.isHard === undefined) next.delete("isHard");
+            else next.set("isHard", String(params.isHard));
+        }
+        if ("hasPictures" in params) {
+            if (params.hasPictures === undefined) next.delete("hasPictures");
+            else next.set("hasPictures", String(params.hasPictures));
+        }
+        if ("hasResult" in params) {
+            if (params.hasResult === undefined) next.delete("hasResult");
+            else next.set("hasResult", String(params.hasResult));
+        }
         setSearchParams(next);
     };
 
@@ -64,9 +97,18 @@ export function useProblemTableParams() {
             onChangeRowsPerPage: (event: ChangeEvent<HTMLInputElement>) => {
                 updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) });
             },
+            onChangeIsHard: (value: boolean | undefined) => {
+                updateSearchParams({ page: 0, isHard: value });
+            },
+            onChangeHasPictures: (checked: boolean) => {
+                updateSearchParams({ page: 0, hasPictures: checked || undefined });
+            },
+            onChangeHasResult: (checked: boolean) => {
+                updateSearchParams({ page: 0, hasResult: checked || undefined });
+            },
         }),
         [searchParams],
     );
 
-    return { page, rowsPerPage, status, prefix, handlers };
+    return { page, rowsPerPage, status, prefix, isHard, hasPictures, hasResult, handlers };
 }

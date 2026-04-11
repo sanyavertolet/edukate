@@ -1,25 +1,12 @@
 import { renderHook } from "@testing-library/react";
 import { server } from "@/test/server";
-import {
-    getGetNotificationsCountMockHandler,
-    getGetNotificationsCountResponseMock,
-    getGetNotificationsMockHandler,
-    getGetNotificationsResponseMock,
-} from "@/generated/notifier";
+import { getGetNotificationsMockHandler, getGetNotificationsResponseMock } from "@/generated/notifier";
 import { createWrapper } from "@/test/render";
 import {
-    useNotificationsCountRequest,
     useGetNotificationsRequest,
     useMarkNotificationsAsReadMutation,
     useMarkAllNotificationsAsReadMutation,
 } from "./api";
-
-describe("useNotificationsCountRequest", () => {
-    it("is idle when unauthenticated", () => {
-        const { result } = renderHook(() => useNotificationsCountRequest(), { wrapper: createWrapper() });
-        expect(result.current.fetchStatus).toBe("idle");
-    });
-});
 
 describe("useGetNotificationsRequest", () => {
     it("is idle when unauthenticated", () => {
@@ -52,12 +39,3 @@ describe("useMarkAllNotificationsAsReadMutation", () => {
     });
 });
 
-describe("useNotificationsCountRequest — MSW responds", () => {
-    it("returns count data when MSW handler is active (coverage of queryFn path)", () => {
-        server.use(getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 3 })));
-        // Hook is guarded by isAuthorized — hook stays idle in test context;
-        // this test verifies the hook shape is correct and doesn't throw
-        const { result } = renderHook(() => useNotificationsCountRequest(), { wrapper: createWrapper() });
-        expect(result.current.isError).toBe(false);
-    });
-});

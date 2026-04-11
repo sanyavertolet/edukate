@@ -9,7 +9,7 @@ export default function IndexPage() {
 
     return (
         <Box>
-            <Typography component="h1" color="primary" variant="h5">
+            <Typography component="h1" color="primary" variant="h5" align="center">
                 Welcome to Edukate
             </Typography>
 

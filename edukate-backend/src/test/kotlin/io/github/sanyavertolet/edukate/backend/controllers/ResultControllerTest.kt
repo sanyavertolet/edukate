@@ -27,7 +27,7 @@ class ResultControllerTest {
 
     @Test
     fun `getResultById returns 200 with result when found`() {
-        val result = Result("1.0.0", "42", "No notes", Result.ResultType.NUMERIC, emptyList())
+        val result = Result("1.0.0", "42", "No notes", emptyList())
         every { resultService.findResultById("1.0.0") } returns Mono.just(result)
 
         webTestClient

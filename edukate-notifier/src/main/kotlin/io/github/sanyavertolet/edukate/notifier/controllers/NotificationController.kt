@@ -1,7 +1,6 @@
 package io.github.sanyavertolet.edukate.notifier.controllers
 
-import io.github.sanyavertolet.edukate.notifier.dtos.BaseNotificationDto
-import io.github.sanyavertolet.edukate.notifier.dtos.NotificationStatistics
+import io.github.sanyavertolet.edukate.notifier.dtos.NotificationPage
 import io.github.sanyavertolet.edukate.notifier.services.NotificationService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
@@ -98,21 +96,10 @@ class NotificationController(private val notificationService: NotificationServic
         @RequestParam(defaultValue = "10") @Positive size: Int,
         @RequestParam(required = false) isRead: Boolean?,
         authentication: Authentication?,
-    ): Flux<BaseNotificationDto> =
-        notificationService.getUserNotifications(isRead, size, page, authentication).map { it.toDto() }
-
-    @GetMapping("/count")
-    @Operation(
-        summary = "Get notification statistics",
-        description = "Retrieves notification statistics for the authenticated user",
-    )
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(responseCode = "200", description = "Successfully retrieved notification statistics"),
-                ApiResponse(responseCode = "401", description = "Unauthorized"),
-            ]
-    )
-    fun getNotificationsCount(authentication: Authentication?): Mono<NotificationStatistics> =
-        notificationService.gatherUserStatistics(authentication)
+    ): Mono<NotificationPage> {
+        val notifications =
+            notificationService.getUserNotifications(isRead, size, page, authentication).map { it.toDto() }.collectList()
+        val statistics = notificationService.gatherUserStatistics(authentication)
+        return Mono.zip(notifications, statistics, ::NotificationPage)
+    }
 }

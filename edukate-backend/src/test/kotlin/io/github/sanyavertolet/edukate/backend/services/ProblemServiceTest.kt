@@ -4,6 +4,7 @@ package io.github.sanyavertolet.edukate.backend.services
 
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.entities.Problem
+import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
@@ -15,19 +16,21 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
 class ProblemServiceTest {
     private val problemRepository: ProblemRepository = mockk()
+    private val mongoTemplate: ReactiveMongoTemplate = mockk()
     private val fileManager: FileManager = mockk()
     private val problemStatusDecisionManager: ProblemStatusDecisionManager = mockk()
     private lateinit var service: ProblemService
 
     @BeforeEach
     fun setUp() {
-        service = ProblemService(problemRepository, fileManager, problemStatusDecisionManager)
+        service = ProblemService(problemRepository, mongoTemplate, fileManager, problemStatusDecisionManager)
     }
 
     // region getFilteredProblems
@@ -38,7 +41,7 @@ class ProblemServiceTest {
         val problems = listOf(BackendFixtures.problem("1.0.0"), BackendFixtures.problem("1.1.0"))
         every { problemRepository.findAll(any(Pageable::class)) } returns Flux.fromIterable(problems)
 
-        StepVerifier.create(service.getFilteredProblems(page)).expectNextCount(2).verifyComplete()
+        StepVerifier.create(service.getFilteredProblems(ProblemFilter(), null, page)).expectNextCount(2).verifyComplete()
 
         verify(exactly = 1) { problemRepository.findAll(any(Pageable::class)) }
     }
@@ -82,24 +85,22 @@ class ProblemServiceTest {
     fun `updateProblemBatch saves all`() {
         val p1 = BackendFixtures.problem("1.0.0")
         val p2 = BackendFixtures.problem("1.1.0")
-        every { problemRepository.save(p1) } returns Mono.just(p1)
-        every { problemRepository.save(p2) } returns Mono.just(p2)
+        every { problemRepository.saveAll(any<Flux<Problem>>()) } returns Flux.just(p1, p2)
 
-        StepVerifier.create(service.updateProblemBatch(listOf(p1, p2))).expectNextCount(2).verifyComplete()
+        StepVerifier.create(service.updateProblemBatch(Flux.just(p1, p2))).expectNext(2L).verifyComplete()
 
-        verify(exactly = 1) { problemRepository.save(p1) }
-        verify(exactly = 1) { problemRepository.save(p2) }
+        verify(exactly = 1) { problemRepository.saveAll(any<Flux<Problem>>()) }
     }
 
     // endregion
 
-    // region countProblems / deleteProblemById
+    // region countFilteredProblems / deleteProblemById
 
     @Test
-    fun `countProblems returns count`() {
+    fun `countFilteredProblems with no filters returns total count`() {
         every { problemRepository.count() } returns Mono.just(42L)
 
-        StepVerifier.create(service.countProblems()).expectNext(42L).verifyComplete()
+        StepVerifier.create(service.countFilteredProblems(ProblemFilter(), null)).expectNext(42L).verifyComplete()
     }
 
     @Test

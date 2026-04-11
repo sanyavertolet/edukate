@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata
 import io.github.sanyavertolet.edukate.backend.dtos.ChangeBundleProblemsRequest
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest
 import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole
+import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.services.BundleService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
@@ -36,6 +37,7 @@ class BundleControllerTest {
     @MockkBean private lateinit var bundleService: BundleService
     @MockkBean private lateinit var userService: UserService
     @MockkBean private lateinit var notifier: Notifier
+    @MockkBean private lateinit var bundlePermissionEvaluator: BundlePermissionEvaluator
 
     private fun authenticatedClient(): WebTestClient =
         webTestClient.mutateWith(
@@ -117,9 +119,9 @@ class BundleControllerTest {
 
     @Test
     fun `getBundleByShareCode returns 200 when user is a member`() {
-        // Bundle with "user-1" as a USER — passes isUserInBundle filter
         val bundle = BackendFixtures.bundle(userIdRoleMap = mapOf("user-1" to UserRole.USER))
         every { bundleService.findBundleByShareCode("SHARE123") } returns Mono.just(bundle)
+        every { bundlePermissionEvaluator.hasReadPermission(bundle, "user-1") } returns true
         every { bundleService.prepareDto(bundle, any()) } returns Mono.just(bundleDto())
 
         authenticatedClient()
@@ -135,9 +137,9 @@ class BundleControllerTest {
 
     @Test
     fun `getBundleByShareCode returns 403 when user is not a member`() {
-        // Bundle with only "admin-1" — "user-1" is not a member, filter returns empty → 403
         val bundle = BackendFixtures.bundle(userIdRoleMap = mapOf("admin-1" to UserRole.ADMIN))
         every { bundleService.findBundleByShareCode("SHARE123") } returns Mono.just(bundle)
+        every { bundlePermissionEvaluator.hasReadPermission(bundle, "user-1") } returns false
 
         authenticatedClient().get().uri("/api/v1/bundles/SHARE123").exchange().expectStatus().isForbidden
     }

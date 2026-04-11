@@ -1,8 +1,10 @@
+// noinspection DuplicatedCode
+
 import { http, HttpResponse } from "msw";
 import userEvent from "@testing-library/user-event";
 import { render, screen, waitFor } from "@/test/render";
 import { server } from "@/test/server";
-import { getGetNotificationsCountMockHandler, getGetNotificationsCountResponseMock } from "@/generated/notifier";
+import { getGetNotificationsMockHandler, getGetNotificationsResponseMock } from "@/generated/notifier";
 import { NotificationButton } from "./NotificationButton";
 
 function makeUnauthenticated() {
@@ -24,7 +26,7 @@ describe("NotificationButton — unauthenticated", () => {
 
 describe("NotificationButton — authenticated", () => {
     it("renders the bell icon button", async () => {
-        server.use(getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 0, total: 0 })));
+        server.use(getGetNotificationsMockHandler(getGetNotificationsResponseMock({ statistics: { unread: 0, total: 0 } })));
         render(<NotificationButton />);
         await waitFor(() => {
             expect(screen.getByRole("button", { name: /show notifications/i })).toBeInTheDocument();
@@ -32,7 +34,7 @@ describe("NotificationButton — authenticated", () => {
     });
 
     it("shows unread badge count when there are unread notifications", async () => {
-        server.use(getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 5, total: 10 })));
+        server.use(getGetNotificationsMockHandler(getGetNotificationsResponseMock({ statistics: { unread: 5, total: 10 } })));
         render(<NotificationButton />);
         await waitFor(() => {
             expect(screen.getByText("5")).toBeInTheDocument();
@@ -41,8 +43,8 @@ describe("NotificationButton — authenticated", () => {
 
     it("opens the notification menu on button click", async () => {
         server.use(
-            getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 0, total: 0 })),
-            http.get("*/api/v1/notifications", () => HttpResponse.json([])),
+            getGetNotificationsMockHandler(getGetNotificationsResponseMock({ statistics: { unread: 0, total: 0 } })),
+            http.get("*/api/v1/notifications", () => HttpResponse.json({ notifications: [], statistics: { total: 0, unread: 0 } })),
         );
         render(<NotificationButton />);
         const button = await screen.findByRole("button", { name: /show notifications/i });
@@ -54,8 +56,8 @@ describe("NotificationButton — authenticated", () => {
 
     it("closes the menu after opening", async () => {
         server.use(
-            getGetNotificationsCountMockHandler(getGetNotificationsCountResponseMock({ unread: 0, total: 0 })),
-            http.get("*/api/v1/notifications", () => HttpResponse.json([])),
+            getGetNotificationsMockHandler(getGetNotificationsResponseMock({ statistics: { unread: 0, total: 0 } })),
+            http.get("*/api/v1/notifications", () => HttpResponse.json({ notifications: [], statistics: { total: 0, unread: 0 } })),
         );
         render(<NotificationButton />);
         const button = await screen.findByRole("button", { name: /show notifications/i });

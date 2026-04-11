@@ -16,7 +16,6 @@ import { CheckedNotificationComponent } from "./CheckedNotification";
 interface NotificationMenuProps {
     anchorEl?: HTMLElement;
     onClose: () => void;
-    notificationStatistics: NotificationStatistics | null | undefined;
     onNotificationClick: (notification: BaseNotification) => void;
 }
 
@@ -33,18 +32,15 @@ function calculateNumberOfPage(statistics: NotificationStatistics | undefined | 
     return statistics ? Math.ceil(statistics.total / defaultNotificationPageSize) : 1;
 }
 
-export const NotificationMenu: FC<NotificationMenuProps> = ({
-    anchorEl,
-    onClose,
-    notificationStatistics,
-    onNotificationClick,
-}) => {
+export const NotificationMenu: FC<NotificationMenuProps> = ({ anchorEl, onClose, onNotificationClick }) => {
     const [page, setPage] = useState(1);
-    const { data: notifications, refetch: refetchNotifications } = useGetNotificationsRequest(
+    const { data: notificationPage, refetch: refetchNotifications } = useGetNotificationsRequest(
         undefined,
         defaultNotificationPageSize,
         page - 1,
     );
+    const notifications = notificationPage?.notifications;
+    const stats = notificationPage?.statistics;
 
     const markAllAsReadMutation = useMarkAllNotificationsAsReadMutation();
     const handleMarkAllAsRead = () => {
@@ -56,7 +52,7 @@ export const NotificationMenu: FC<NotificationMenuProps> = ({
         setPage(newPage);
     };
     const isMenuOpen = Boolean(anchorEl);
-    const numberOfPages = useMemo(() => calculateNumberOfPage(notificationStatistics), [notificationStatistics]);
+    const numberOfPages = useMemo(() => calculateNumberOfPage(stats), [stats]);
     return (
         <Menu
             id="notifications-menu"

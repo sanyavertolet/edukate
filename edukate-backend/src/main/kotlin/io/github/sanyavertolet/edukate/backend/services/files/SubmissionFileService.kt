@@ -6,11 +6,12 @@ import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey
 import io.github.sanyavertolet.edukate.storage.keys.TempFileKey
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.kotlin.core.publisher.toFlux
 
 @Service
 class SubmissionFileService(private val fileManager: FileManager) {
     fun moveSubmissionFiles(userId: String, submissionId: String, request: CreateSubmissionRequest): Flux<FileKey> =
-        Flux.fromIterable(request.fileNames).flatMapSequential { file ->
+        request.fileNames.toFlux().flatMapSequential { file ->
             fileManager.moveFile(TempFileKey(userId, file), SubmissionFileKey(userId, request.problemId, submissionId, file))
         }
 }

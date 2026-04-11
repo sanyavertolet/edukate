@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
 
 @Service
 class SubmissionService(
@@ -44,7 +46,8 @@ class SubmissionService(
             submissionFileService
                 .moveSubmissionFiles(userId, requireNotNull(submission.id), submissionRequest)
                 .then(
-                    Flux.fromIterable(submissionRequest.fileNames)
+                    submissionRequest.fileNames
+                        .toFlux()
                         .map { fileName ->
                             SubmissionFileKey(userId, submissionRequest.problemId, submission.id, fileName).toString()
                         }
@@ -74,9 +77,9 @@ class SubmissionService(
     fun getSubmissionIfOwns(submissionId: String, userId: String): Mono<Submission> =
         submissionRepository
             .findById(submissionId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found").toMono())
             .filter { submission -> submissionPermissionEvaluator.isOwner(submission, userId) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied").toMono())
 
     fun prepareDto(submission: Submission): Mono<SubmissionDto> =
         collectFileUrls(submission).zipWith(userService.findUserName(submission.userId)) { fileUrls, userName ->

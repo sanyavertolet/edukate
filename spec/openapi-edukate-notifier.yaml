@@ -104,54 +104,19 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  oneOf:
-                  - $ref: "#/components/schemas/CheckedNotificationDto"
-                  - $ref: "#/components/schemas/InviteNotificationDto"
-                  - $ref: "#/components/schemas/SimpleNotificationDto"
+                $ref: "#/components/schemas/NotificationPage"
         "400":
           description: Validation failed
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  oneOf:
-                  - $ref: "#/components/schemas/CheckedNotificationDto"
-                  - $ref: "#/components/schemas/InviteNotificationDto"
-                  - $ref: "#/components/schemas/SimpleNotificationDto"
+                $ref: "#/components/schemas/NotificationPage"
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  oneOf:
-                  - $ref: "#/components/schemas/CheckedNotificationDto"
-                  - $ref: "#/components/schemas/InviteNotificationDto"
-                  - $ref: "#/components/schemas/SimpleNotificationDto"
-  /api/v1/notifications/count:
-    get:
-      tags:
-      - Notifications
-      summary: Get notification statistics
-      description: Retrieves notification statistics for the authenticated user
-      operationId: getNotificationsCount
-      responses:
-        "200":
-          description: Successfully retrieved notification statistics
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotificationStatistics"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotificationStatistics"
+                $ref: "#/components/schemas/NotificationPage"
 components:
   schemas:
     BaseNotificationDto:
@@ -213,6 +178,33 @@ components:
       - inviterName
       - isRead
       - uuid
+    NotificationPage:
+      type: object
+      properties:
+        notifications:
+          type: array
+          items:
+            oneOf:
+            - $ref: "#/components/schemas/CheckedNotificationDto"
+            - $ref: "#/components/schemas/InviteNotificationDto"
+            - $ref: "#/components/schemas/SimpleNotificationDto"
+        statistics:
+          $ref: "#/components/schemas/NotificationStatistics"
+      required:
+      - notifications
+      - statistics
+    NotificationStatistics:
+      type: object
+      properties:
+        unread:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+      required:
+      - total
+      - unread
     SimpleNotificationDto:
       allOf:
       - $ref: "#/components/schemas/BaseNotificationDto"
@@ -231,18 +223,6 @@ components:
       - source
       - title
       - uuid
-    NotificationStatistics:
-      type: object
-      properties:
-        unread:
-          type: integer
-          format: int32
-        total:
-          type: integer
-          format: int32
-      required:
-      - total
-      - unread
   securitySchemes:
     cookieAuth:
       type: apiKey

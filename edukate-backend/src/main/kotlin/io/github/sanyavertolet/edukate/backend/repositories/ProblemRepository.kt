@@ -17,6 +17,8 @@ interface ProblemRepository : ReactiveMongoRepository<Problem, String> {
 
     fun findProblemsByIdStartingWith(prefix: String, pageable: Pageable): Flux<Problem>
 
+    fun countByIdStartingWith(prefix: String): Mono<Long>
+
     @Aggregation(
         pipeline =
             [

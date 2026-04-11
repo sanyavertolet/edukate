@@ -7,6 +7,7 @@ import io.github.sanyavertolet.edukate.storage.keys.ResultFileKey
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 
 @Service
@@ -17,24 +18,26 @@ class ResultService(private val problemRepository: ProblemRepository, private va
     fun updateResult(result: Result): Mono<String> =
         problemRepository
             .findById(result.id)
-            .map { problem -> problem.withResult(result) }
+            .map { problem -> problem.copy(result = result) }
             .flatMap { problemRepository.save(it) }
             .map { it.id }
 
-    fun updateResultBatch(results: Flux<Result>): Flux<String> =
-        results.flatMap { result ->
-            problemRepository
-                .findById(result.id)
-                .map { problem -> problem.withResult(result) }
-                .flatMap { problemRepository.save(it) }
-                .map { it.id }
-        }
+    fun updateResultBatch(results: Flux<Result>): Mono<Long> =
+        results
+            .flatMap { result ->
+                problemRepository
+                    .findById(result.id)
+                    .map { problem -> problem.copy(result = result) }
+                    .flatMap { problemRepository.save(it) }
+            }
+            .count()
 
     fun findResultById(id: String): Mono<Result> =
         problemRepository.findById(id).flatMap { it.result.toMono() }.flatMap { updateImagesInResult(it) }
 
     private fun getResultImageList(result: Result): Mono<List<String>> =
-        Flux.fromIterable(result.images)
+        result.images
+            .toFlux()
             .map { fileName -> ResultFileKey(result.id, fileName) }
             .flatMap { fileManager.getPresignedUrl(it) }
             .collectList()

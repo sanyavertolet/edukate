@@ -18,14 +18,14 @@ export default function BundleListPage() {
     return (
         <Box>
             <Container>
-                <Typography component="h1" color="primary" variant="h5">
+                <Typography component="h1" color="primary" variant="h5" align="center">
                     Problem bundles
                 </Typography>
             </Container>
 
             <Box>
                 <Container>
-                    <Box pt={2} width={"100%"} justifySelf={"center"}>
+                    <Box pt={2} width={"100%"}>
                         <BundleJoinForm disabled={!isAuthorized} />
                     </Box>
                     <Tabs value={tab} onChange={onTabChange} centered>

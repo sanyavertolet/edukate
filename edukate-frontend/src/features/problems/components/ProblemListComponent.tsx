@@ -14,10 +14,18 @@ export default function ProblemListComponent() {
         void navigate(`/problems/${problemName}`);
     };
 
-    const { page, rowsPerPage, status, prefix, handlers } = useProblemTableParams();
+    const { page, rowsPerPage, status, prefix, isHard, hasPictures, hasResult, handlers } = useProblemTableParams();
 
-    const { data: problemList, isLoading: isListLoading, error: listError } = useProblemListRequest(page, rowsPerPage);
-    const { data: problemCount, isLoading: isCountLoading, error: countError } = useProblemCountRequest();
+    const {
+        data: problemList,
+        isLoading: isListLoading,
+        error: listError,
+    } = useProblemListRequest(page, rowsPerPage, prefix, status, isHard, hasPictures, hasResult);
+    const {
+        data: problemCount,
+        isLoading: isCountLoading,
+        error: countError,
+    } = useProblemCountRequest(prefix, status, isHard, hasPictures, hasResult);
 
     const isLoading = isListLoading || isCountLoading;
     const hasError = !!(listError || countError);
@@ -32,6 +40,12 @@ export default function ProblemListComponent() {
                         onStatusChange={handlers.onChangeStatus}
                         prefix={prefix}
                         onPrefixChange={handlers.onChangePrefix}
+                        isHard={isHard}
+                        onIsHardChange={handlers.onChangeIsHard}
+                        hasPictures={hasPictures}
+                        onHasPicturesChange={handlers.onChangeHasPictures}
+                        hasResult={hasResult}
+                        onHasResultChange={handlers.onChangeHasResult}
                         rightSlot={<RandomProblemButton />}
                     />
                 }

@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
-import org.springframework.test.web.reactive.server.expectBodyList
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -30,10 +29,12 @@ class NotificationControllerTest {
     // region GET /api/v1/notifications
 
     @Test
-    fun `getNotifications returns 200 with notification DTOs`() {
+    fun `getNotifications returns 200 with notification DTOs and statistics`() {
         val simple = NotificationFixtures.simpleNotification(userId = "user-1")
         val invite = NotificationFixtures.inviteNotification(userId = "user-1")
+        val stats = NotificationStatistics(unread = 1, total = 2)
         every { notificationService.getUserNotifications(null, 10, 0, any()) } returns Flux.just(simple, invite)
+        every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)
 
         webTestClient
             .get()
@@ -44,23 +45,41 @@ class NotificationControllerTest {
             .expectHeader()
             .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
-            .jsonPath("$[0]._type")
+            .jsonPath("$.notifications[0]._type")
             .isEqualTo("simple")
-            .jsonPath("$[1]._type")
+            .jsonPath("$.notifications[1]._type")
             .isEqualTo("invite")
+            .jsonPath("$.statistics.unread")
+            .isEqualTo(1)
+            .jsonPath("$.statistics.total")
+            .isEqualTo(2)
     }
 
     @Test
-    fun `getNotifications returns empty list when no notifications exist`() {
+    fun `getNotifications returns empty notifications list when no notifications exist`() {
+        val stats = NotificationStatistics(unread = 0, total = 0)
         every { notificationService.getUserNotifications(null, 10, 0, any()) } returns Flux.empty()
+        every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)
 
-        webTestClient.get().uri("/api/v1/notifications").exchange().expectStatus().isOk.expectBodyList<Any>().hasSize(0)
+        webTestClient
+            .get()
+            .uri("/api/v1/notifications")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .jsonPath("$.notifications")
+            .isArray
+            .jsonPath("$.notifications.length()")
+            .isEqualTo(0)
     }
 
     @Test
     fun `getNotifications passes isRead=true filter to service`() {
         val notification = NotificationFixtures.simpleNotification(isRead = true)
+        val stats = NotificationStatistics(unread = 0, total = 1)
         every { notificationService.getUserNotifications(true, 10, 0, any()) } returns Flux.just(notification)
+        every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)
 
         webTestClient
             .get()
@@ -69,32 +88,44 @@ class NotificationControllerTest {
             .expectStatus()
             .isOk
             .expectBody()
-            .jsonPath("$[0].isRead")
+            .jsonPath("$.notifications[0].isRead")
             .isEqualTo(true)
     }
 
     @Test
     fun `getNotifications passes isRead=false filter to service`() {
         val notification = NotificationFixtures.simpleNotification(isRead = false)
+        val stats = NotificationStatistics(unread = 1, total = 1)
         every { notificationService.getUserNotifications(false, 10, 0, any()) } returns Flux.just(notification)
+        every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)
 
         webTestClient.get().uri("/api/v1/notifications?isRead=false").exchange().expectStatus().isOk
     }
 
     @Test
     fun `getNotifications passes custom page and size to service`() {
+        val stats = NotificationStatistics(unread = 0, total = 0)
         every { notificationService.getUserNotifications(null, 20, 3, any()) } returns Flux.empty()
+        every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)
 
         webTestClient.get().uri("/api/v1/notifications?page=3&size=20").exchange().expectStatus().isOk
     }
 
     @Test
     fun `getNotifications returns empty body when unauthenticated`() {
-        // The controller uses Mono.justOrEmpty(authentication).flatMapMany(...)
-        // so unauthenticated requests (null authentication) produce an empty Flux
+        val stats = NotificationStatistics(unread = 0, total = 0)
         every { notificationService.getUserNotifications(null, 10, 0, null) } returns Flux.empty()
+        every { notificationService.gatherUserStatistics(null) } returns Mono.just(stats)
 
-        webTestClient.get().uri("/api/v1/notifications").exchange().expectStatus().isOk.expectBodyList<Any>().hasSize(0)
+        webTestClient
+            .get()
+            .uri("/api/v1/notifications")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .jsonPath("$.notifications.length()")
+            .isEqualTo(0)
     }
 
     // endregion
@@ -164,46 +195,6 @@ class NotificationControllerTest {
             .isOk
             .expectBody<Long>()
             .isEqualTo(0L)
-    }
-
-    // endregion
-
-    // region GET /api/v1/notifications/count
-
-    @Test
-    fun `getNotificationsCount returns 200 with statistics`() {
-        val stats = NotificationStatistics(unread = 3, total = 10)
-        every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)
-
-        webTestClient
-            .get()
-            .uri("/api/v1/notifications/count")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("$.unread")
-            .isEqualTo(3)
-            .jsonPath("$.total")
-            .isEqualTo(10)
-    }
-
-    @Test
-    fun `getNotificationsCount returns zeros when user has no notifications`() {
-        val stats = NotificationStatistics(unread = 0, total = 0)
-        every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)
-
-        webTestClient
-            .get()
-            .uri("/api/v1/notifications/count")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("$.unread")
-            .isEqualTo(0)
-            .jsonPath("$.total")
-            .isEqualTo(0)
     }
 
     // endregion

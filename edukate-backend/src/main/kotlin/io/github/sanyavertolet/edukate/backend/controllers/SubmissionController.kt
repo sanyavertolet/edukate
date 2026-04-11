@@ -42,6 +42,8 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @Validated
@@ -109,17 +111,18 @@ class SubmissionController(
     ): Mono<SubmissionDto> =
         userService
             .findUserByAuthentication(authentication)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found").toMono())
             .filterWhen { userService.hasUserPermissionToSubmit(it) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission").toMono())
             .filterWhen { problemService.findProblemById(submissionRequest.problemId).hasElement() }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.").toMono())
             .flatMap { user ->
-                Flux.fromIterable(submissionRequest.fileNames)
+                submissionRequest.fileNames
+                    .toFlux()
                     .map { fileName -> TempFileKey(requireNotNull(user.id), fileName) as FileKey }
                     .collectList()
                     .filterWhen { fileManager.doFilesExist(it) }
-                    .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.")))
+                    .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.").toMono())
                     .then(submissionService.saveSubmission(submissionRequest, authentication))
             }
             .flatMap { submissionService.prepareDto(it) }
@@ -165,7 +168,7 @@ class SubmissionController(
     ): Flux<SubmissionDto> =
         userService
             .findUserByName(username)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User $username not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User $username not found").toMono())
             .flatMapMany { user ->
                 submissionService.findSubmissionsByProblemIdAndUserId(
                     problemId,

@@ -2,8 +2,9 @@ import { queryKeys } from "./query-keys";
 
 describe("queryKeys", () => {
     describe("problems", () => {
-        it("list includes page and size", () => {
-            expect(queryKeys.problems.list(0, 20)).toEqual(["problems", "list", 0, 20]);
+        it("list includes page, size and optional filters", () => {
+            expect(queryKeys.problems.list(0, 20)).toEqual(["problems", "list", 0, 20, undefined, undefined, undefined, undefined, undefined]);
+            expect(queryKeys.problems.list(1, 10, "1.", "SOLVED", true, false, true)).toEqual(["problems", "list", 1, 10, "1.", "SOLVED", true, false, true]);
         });
 
         it("detail includes id", () => {
@@ -14,8 +15,12 @@ describe("queryKeys", () => {
             expect(queryKeys.problems.result("prob-1")).toEqual(["problems", "result", "prob-1"]);
         });
 
-        it("count and random are static arrays", () => {
-            expect(queryKeys.problems.count).toEqual(["problems", "count"]);
+        it("count includes optional filters", () => {
+            expect(queryKeys.problems.count()).toEqual(["problems", "count", undefined, undefined, undefined, undefined, undefined]);
+            expect(queryKeys.problems.count("1.", "SOLVED", true)).toEqual(["problems", "count", "1.", "SOLVED", true, undefined, undefined]);
+        });
+
+        it("random is a static array", () => {
             expect(queryKeys.problems.random).toEqual(["problems", "random"]);
         });
     });
@@ -55,10 +60,6 @@ describe("queryKeys", () => {
 
         it("list accepts undefined isRead", () => {
             expect(queryKeys.notifications.list(undefined, 1, 5)).toEqual(["notifications", "list", undefined, 1, 5]);
-        });
-
-        it("stats is a static array", () => {
-            expect(queryKeys.notifications.stats).toEqual(["notifications", "stats"]);
         });
     });
 

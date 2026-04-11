@@ -46,7 +46,6 @@ function renderMenu(anchorEl: HTMLElement | undefined = document.createElement("
         <NotificationMenu
             anchorEl={anchorEl}
             onClose={vi.fn()}
-            notificationStatistics={{ total: 1, unread: 1 }}
             onNotificationClick={vi.fn()}
         />,
     );
@@ -62,7 +61,7 @@ describe("NotificationMenu — header", () => {
 
 describe("NotificationMenu — notification types", () => {
     it("renders a simple notification title and message", async () => {
-        server.use(getGetNotificationsMockHandler([simpleNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [simpleNotification], statistics: { total: 1, unread: 1 } }));
         renderMenu();
         await waitFor(() => {
             expect(screen.getByText("System Update")).toBeInTheDocument();
@@ -71,7 +70,7 @@ describe("NotificationMenu — notification types", () => {
     });
 
     it("renders an invite notification with inviter name", async () => {
-        server.use(getGetNotificationsMockHandler([inviteNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [inviteNotification], statistics: { total: 1, unread: 1 } }));
         renderMenu();
         await waitFor(() => {
             expect(screen.getByText(/Alice invites you!/i)).toBeInTheDocument();
@@ -80,7 +79,7 @@ describe("NotificationMenu — notification types", () => {
     });
 
     it("renders a checked notification with problem id and status", async () => {
-        server.use(getGetNotificationsMockHandler([checkedNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [checkedNotification], statistics: { total: 1, unread: 1 } }));
         renderMenu();
         await waitFor(() => {
             expect(screen.getByText("Submission Checked")).toBeInTheDocument();
@@ -90,7 +89,7 @@ describe("NotificationMenu — notification types", () => {
     });
 
     it("renders multiple notifications of mixed types", async () => {
-        server.use(getGetNotificationsMockHandler([simpleNotification, inviteNotification, checkedNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [simpleNotification, inviteNotification, checkedNotification], statistics: { total: 3, unread: 3 } }));
         renderMenu();
         await waitFor(() => {
             expect(screen.getByText("System Update")).toBeInTheDocument();
@@ -102,7 +101,7 @@ describe("NotificationMenu — notification types", () => {
 
 describe("NotificationMenu — read state", () => {
     it("renders an already-read notification as disabled MenuItem", async () => {
-        server.use(getGetNotificationsMockHandler([readNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [readNotification], statistics: { total: 1, unread: 0 } }));
         renderMenu();
         await waitFor(() => {
             expect(screen.getByText("Already Read")).toBeInTheDocument();
@@ -115,12 +114,11 @@ describe("NotificationMenu — read state", () => {
 
 describe("NotificationMenu — pagination", () => {
     it("does not show pagination when total fits on one page", async () => {
-        server.use(getGetNotificationsMockHandler([simpleNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [simpleNotification], statistics: { total: 5, unread: 1 } }));
         render(
             <NotificationMenu
                 anchorEl={document.createElement("button")}
                 onClose={vi.fn()}
-                notificationStatistics={{ total: 5, unread: 1 }}
                 onNotificationClick={vi.fn()}
             />,
         );
@@ -129,12 +127,11 @@ describe("NotificationMenu — pagination", () => {
     });
 
     it("shows pagination when total exceeds one page", async () => {
-        server.use(getGetNotificationsMockHandler([simpleNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [simpleNotification], statistics: { total: 25, unread: 3 } }));
         render(
             <NotificationMenu
                 anchorEl={document.createElement("button")}
                 onClose={vi.fn()}
-                notificationStatistics={{ total: 25, unread: 3 }}
                 onNotificationClick={vi.fn()}
             />,
         );
@@ -149,7 +146,6 @@ describe("NotificationMenu — closed state", () => {
             <NotificationMenu
                 anchorEl={undefined}
                 onClose={vi.fn()}
-                notificationStatistics={null}
                 onNotificationClick={vi.fn()}
             />,
         );
@@ -159,13 +155,12 @@ describe("NotificationMenu — closed state", () => {
 
 describe("NotificationMenu — onNotificationClick", () => {
     it("calls onNotificationClick with the notification when a menu item is clicked", async () => {
-        server.use(getGetNotificationsMockHandler([simpleNotification]));
+        server.use(getGetNotificationsMockHandler({ notifications: [simpleNotification], statistics: { total: 1, unread: 1 } }));
         const onNotificationClick = vi.fn();
         render(
             <NotificationMenu
                 anchorEl={document.createElement("button")}
                 onClose={vi.fn()}
-                notificationStatistics={{ total: 1, unread: 1 }}
                 onNotificationClick={onNotificationClick}
             />,
         );

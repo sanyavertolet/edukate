@@ -16,8 +16,6 @@ data class Problem(
     val images: List<String>,
     val result: Result? = null,
 ) {
-    @Suppress("DataClassContainsFunctions") fun withResult(result: Result): Problem = copy(result = result)
-
     fun toProblemMetadata(status: Status): ProblemMetadata = ProblemMetadata(id, isHard, tags, status)
 
     fun toProblemDto(status: Status, images: List<String>): ProblemDto =
