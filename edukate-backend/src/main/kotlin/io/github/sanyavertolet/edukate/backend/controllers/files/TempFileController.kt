@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @RequestMapping("/api/v1/files/temp")
@@ -105,8 +106,8 @@ class TempFileController(private val fileManager: FileManager) {
         Mono.fromCallable { TempFileKey(requireNotNull(authentication.id()), fileName) }
             .flatMap { fileManager.deleteFile(it) }
             .flatMap { success ->
-                if (success) Mono.just(fileName)
-                else Mono.error(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete file"))
+                if (success) fileName.toMono()
+                else ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete file").toMono()
             }
 
     @GetMapping("/get", produces = [MediaType.APPLICATION_OCTET_STREAM_VALUE])
@@ -136,7 +137,7 @@ class TempFileController(private val fileManager: FileManager) {
     fun downloadTempFile(@RequestParam @NotBlank fileName: String, authentication: Authentication): Flux<ByteBuffer> =
         Mono.fromCallable { TempFileKey(requireNotNull(authentication.id()), fileName) }
             .flatMapMany { fileManager.getFileContent(it) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "File not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "File not found").toMono())
 
     @GetMapping
     @Operation(

@@ -110,7 +110,7 @@ const WhyUseBundlesCard: FC = () => {
 
 export const BundleInfoCards = () => {
     return (
-        <Container maxWidth={"lg"} sx={{ justifyContent: "center" }}>
+        <Container maxWidth={"lg"}>
             <Box>
                 <WhatIsBundleCard />
             </Box>

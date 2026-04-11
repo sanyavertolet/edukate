@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Service
 class UserService(private val userRepository: UserRepository, private val notifier: Notifier) {
@@ -31,7 +32,7 @@ class UserService(private val userRepository: UserRepository, private val notifi
 
     fun deleteUserById(id: String): Mono<Void> = userRepository.deleteById(id)
 
-    fun hasUserPermissionToSubmit(user: User): Mono<Boolean> = Mono.just(user.status == UserStatus.ACTIVE)
+    fun hasUserPermissionToSubmit(user: User): Mono<Boolean> = (user.status == UserStatus.ACTIVE).toMono()
 
     fun notifyAllUsersWithStatus(title: String?, message: String, status: UserStatus): Mono<Long> =
         userRepository

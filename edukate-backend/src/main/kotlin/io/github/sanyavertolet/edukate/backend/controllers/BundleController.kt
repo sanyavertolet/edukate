@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @Validated
@@ -225,7 +226,7 @@ class BundleController(
             .findBundleByShareCode(shareCode)
             .filter { bundlePermissionEvaluator.hasReadPermission(it, authentication?.id()) }
             .switchIfEmpty(
-                Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Bundle is private and you are not a member."))
+                ResponseStatusException(HttpStatus.FORBIDDEN, "Bundle is private and you are not a member.").toMono()
             )
             .flatMap { bundle -> bundleService.prepareDto(bundle, authentication) }
 
@@ -307,7 +308,7 @@ class BundleController(
     ): Mono<String> =
         userService
             .findUserByName(inviteeName)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User $inviteeName not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User $inviteeName not found").toMono())
             .zipWhen(
                 { invitee ->
                     val requesterId = requireNotNull(authentication.id())
@@ -360,7 +361,7 @@ class BundleController(
     ): Mono<String> =
         userService
             .findUserByName(inviteeName)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User $inviteeName not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User $inviteeName not found").toMono())
             .flatMap { invitee ->
                 val requesterId = requireNotNull(authentication.id())
                 bundleService.expireInvite(shareCode, requesterId, requireNotNull(invitee.id))
@@ -398,7 +399,7 @@ class BundleController(
         @RequestParam @NotNull response: Boolean,
         authentication: Authentication,
     ): Mono<String> =
-        Mono.just(response).flatMap { hasAccepted ->
+        response.toMono().flatMap { hasAccepted ->
             if (hasAccepted) {
                 bundleService
                     .joinUser(shareCode, requireNotNull(authentication.id()))
@@ -479,7 +480,7 @@ class BundleController(
     ): Mono<UserRole> =
         userService
             .findUserByName(username)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "User $username not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User $username not found").toMono())
             .mapNotNull { it.id }
             .flatMap { userId -> bundleService.changeUserRole(shareCode, userId, requestedRole, authentication) }
 

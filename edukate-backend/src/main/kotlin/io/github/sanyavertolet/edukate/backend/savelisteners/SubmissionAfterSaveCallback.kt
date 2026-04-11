@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono
 import reactor.util.retry.Retry
 
 @Component
-class SubmissionAfterSaveCallback(@Lazy private val template: ReactiveMongoTemplate) :
+class SubmissionAfterSaveCallback(@param:Lazy private val template: ReactiveMongoTemplate) :
     ReactiveAfterSaveCallback<Submission> {
     override fun onAfterSave(entity: Submission, document: Document, collection: String): Publisher<Submission> =
         doUpsert(entity).thenReturn(entity)

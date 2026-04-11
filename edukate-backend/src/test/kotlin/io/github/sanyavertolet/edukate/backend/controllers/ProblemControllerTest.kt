@@ -7,6 +7,7 @@ import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
 import io.github.sanyavertolet.edukate.backend.entities.Problem
+import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
 import io.mockk.every
@@ -38,7 +39,7 @@ class ProblemControllerTest {
 
     @Test
     fun `getProblemList returns 200 with metadata list`() {
-        every { problemService.getFilteredProblems(any()) } returns
+        every { problemService.getFilteredProblems(eq(ProblemFilter()), isNull(), any()) } returns
             Flux.just(BackendFixtures.problem("1.0.0"), BackendFixtures.problem("1.1.0"))
         every { problemService.prepareMetadata(any(), isNull()) } returnsMany
             listOf(Mono.just(metadata("1.0.0")), Mono.just(metadata("1.1.0")))
@@ -55,15 +56,78 @@ class ProblemControllerTest {
             .hasSize(2)
     }
 
+    @Test
+    fun `getProblemList with prefix filter passes prefix to service`() {
+        every { problemService.getFilteredProblems(eq(ProblemFilter(prefix = "1.")), isNull(), any()) } returns
+            Flux.just(BackendFixtures.problem("1.0.0"), BackendFixtures.problem("1.1.0"))
+        every { problemService.prepareMetadata(any(), isNull()) } returnsMany
+            listOf(Mono.just(metadata("1.0.0")), Mono.just(metadata("1.1.0")))
+
+        webTestClient
+            .get()
+            .uri("/api/v1/problems?prefix=1.")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemMetadata>()
+            .hasSize(2)
+    }
+
+    @Test
+    fun `getProblemList with status filter passes status to service`() {
+        every {
+            problemService.getFilteredProblems(eq(ProblemFilter(status = Problem.Status.SOLVED)), isNull(), any())
+        } returns Flux.just(BackendFixtures.problem("1.0.0"))
+        every { problemService.prepareMetadata(any(), isNull()) } returns Mono.just(metadata("1.0.0"))
+
+        webTestClient
+            .get()
+            .uri("/api/v1/problems?status=SOLVED")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemMetadata>()
+            .hasSize(1)
+    }
+
     // endregion
 
     // region GET /api/v1/problems/count
 
     @Test
     fun `count returns problem count`() {
-        every { problemService.countProblems() } returns Mono.just(7L)
+        every { problemService.countFilteredProblems(eq(ProblemFilter()), isNull()) } returns Mono.just(7L)
 
         webTestClient.get().uri("/api/v1/problems/count").exchange().expectStatus().isOk.expectBody<Long>().isEqualTo(7L)
+    }
+
+    @Test
+    fun `count with prefix returns filtered count`() {
+        every { problemService.countFilteredProblems(eq(ProblemFilter(prefix = "1.")), isNull()) } returns Mono.just(2L)
+
+        webTestClient
+            .get()
+            .uri("/api/v1/problems/count?prefix=1.")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<Long>()
+            .isEqualTo(2L)
+    }
+
+    @Test
+    fun `count with status returns filtered count`() {
+        every { problemService.countFilteredProblems(eq(ProblemFilter(status = Problem.Status.SOLVED)), isNull()) } returns
+            Mono.just(1L)
+
+        webTestClient
+            .get()
+            .uri("/api/v1/problems/count?status=SOLVED")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<Long>()
+            .isEqualTo(1L)
     }
 
     // endregion

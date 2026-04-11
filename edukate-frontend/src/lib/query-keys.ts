@@ -1,9 +1,18 @@
 export const queryKeys = {
     problems: {
         all: ["problems"] as const,
-        list: (page: number, size: number) => ["problems", "list", page, size] as const,
+        list: (
+            page: number,
+            size: number,
+            prefix?: string,
+            status?: string,
+            isHard?: boolean,
+            hasPictures?: boolean,
+            hasResult?: boolean,
+        ) => ["problems", "list", page, size, prefix, status, isHard, hasPictures, hasResult] as const,
         detail: (id: string) => ["problems", "detail", id] as const,
-        count: ["problems", "count"] as const,
+        count: (prefix?: string, status?: string, isHard?: boolean, hasPictures?: boolean, hasResult?: boolean) =>
+            ["problems", "count", prefix, status, isHard, hasPictures, hasResult] as const,
         random: ["problems", "random"] as const,
         result: (id: string) => ["problems", "result", id] as const,
     },
@@ -24,7 +33,6 @@ export const queryKeys = {
         // isRead/page/size are part of the key so each combination is cached independently
         list: (isRead: boolean | undefined, page: number, size: number) =>
             ["notifications", "list", isRead, page, size] as const,
-        stats: ["notifications", "stats"] as const,
     },
     checks: {
         all: ["checks"] as const,

@@ -1,14 +1,27 @@
 import { Box, Typography } from "@mui/material";
 
 export function AppFooter() {
-    const version = import.meta.env.VITE_APP_VERSION;
-    const commit = __GIT_COMMIT__;
+    const buildTime = new Date(__BUILD_TIME__).toLocaleDateString(undefined, {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
 
     return (
-        <Box component="footer" sx={{ textAlign: "center", py: 2, opacity: 0.4 }}>
-            <Typography variant="caption">
-                v{version} ({commit})
-            </Typography>
+        <Box
+            component="footer"
+            sx={{
+                position: "fixed",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                py: 1,
+                opacity: 0.4,
+                pointerEvents: "none",
+            }}
+        >
+            <Typography variant="caption">build {buildTime}</Typography>
         </Box>
     );
 }

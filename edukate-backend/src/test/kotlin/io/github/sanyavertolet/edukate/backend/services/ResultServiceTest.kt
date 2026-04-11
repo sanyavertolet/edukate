@@ -30,9 +30,9 @@ class ResultServiceTest {
 
     @Test
     fun `updateResult saves to Problem`() {
-        val result = Result("1.0.0", "Answer is 42", "No notes", Result.ResultType.NUMERIC, emptyList())
+        val result = Result("1.0.0", "Answer is 42", "No notes", emptyList())
         val problem = BackendFixtures.problem(id = "1.0.0")
-        val updatedProblem = problem.withResult(result)
+        val updatedProblem = problem.copy(result = result)
 
         every { problemRepository.findById("1.0.0") } returns Mono.just(problem)
         every { problemRepository.save(updatedProblem) } returns Mono.just(updatedProblem)
@@ -44,18 +44,18 @@ class ResultServiceTest {
 
     @Test
     fun `updateResultBatch saves all`() {
-        val r1 = Result("1.0.0", "Ans1", "", Result.ResultType.TEXT, emptyList())
-        val r2 = Result("1.1.0", "Ans2", "", Result.ResultType.TEXT, emptyList())
+        val r1 = Result("1.0.0", "Ans1", "", emptyList())
+        val r2 = Result("1.1.0", "Ans2", "", emptyList())
         val p1 = BackendFixtures.problem(id = "1.0.0")
         val p2 = BackendFixtures.problem(id = "1.1.0")
 
         every { problemRepository.findById("1.0.0") } returns Mono.just(p1)
-        every { problemRepository.save(p1.withResult(r1)) } returns Mono.just(p1.withResult(r1))
+        every { problemRepository.save(p1.copy(result = r1)) } returns Mono.just(p1.copy(result = r1))
         every { problemRepository.findById("1.1.0") } returns Mono.just(p2)
-        every { problemRepository.save(p2.withResult(r2)) } returns Mono.just(p2.withResult(r2))
+        every { problemRepository.save(p2.copy(result = r2)) } returns Mono.just(p2.copy(result = r2))
 
         StepVerifier.create(service.updateResultBatch(reactor.core.publisher.Flux.just(r1, r2)))
-            .expectNext("1.0.0", "1.1.0")
+            .expectNext(2L)
             .verifyComplete()
     }
 
@@ -65,7 +65,7 @@ class ResultServiceTest {
 
     @Test
     fun `findResultById returns Result with image urls`() {
-        val result = Result("1.0.0", "Answer", "Notes", Result.ResultType.TEXT, listOf("img.png"))
+        val result = Result("1.0.0", "Answer", "Notes", listOf("img.png"))
         val problem = BackendFixtures.problem(id = "1.0.0", result = result)
         val resultKey = ResultFileKey("1.0.0", "img.png")
 

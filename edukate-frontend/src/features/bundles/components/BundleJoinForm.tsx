@@ -33,7 +33,7 @@ export const BundleJoinForm: FC<BundleJoinFormProps> = ({ disabled = false }) =>
         void navigate("/bundles/new");
     };
     return (
-        <ConditionalTooltip title={"Sign in to use bundles"} shown={disabled} placement={"right"}>
+        <ConditionalTooltip title={"Sign in to use bundles"} shown={disabled} placement={"bottom-end"}>
             <Paper component="form" sx={{ p: "0px 1px", display: "flex", alignItems: "center" }}>
                 <InputBase
                     sx={{ ml: 1, flex: 1 }}

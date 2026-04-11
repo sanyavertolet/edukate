@@ -1,22 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { execSync } from "child_process";
 import { visualizer } from "rollup-plugin-visualizer";
-
-const gitCommit = (() => {
-    try {
-        return execSync("git rev-parse --short HEAD").toString().trim();
-    } catch {
-        return "unknown";
-    }
-})();
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
     plugins: [react(), mode === "analyze" && visualizer({ open: true, filename: "dist/stats.html", gzipSize: true })],
     define: {
-        __GIT_COMMIT__: JSON.stringify(gitCommit),
+        __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     },
     resolve: {
         alias: {

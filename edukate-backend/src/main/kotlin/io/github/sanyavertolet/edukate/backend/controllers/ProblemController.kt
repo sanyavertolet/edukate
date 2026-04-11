@@ -2,6 +2,8 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
+import io.github.sanyavertolet.edukate.backend.entities.Problem
+import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @Validated
@@ -40,6 +43,10 @@ class ProblemController(private val problemService: ProblemService) {
             [
                 ApiResponse(responseCode = "200", description = "Successfully retrieved problem list"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required when filtering by status (other than NOT_SOLVED)",
+                ),
             ]
     )
     @Parameters(
@@ -59,19 +66,46 @@ class ProblemController(private val problemService: ProblemService) {
                 ),
             ]
     )
+    @Suppress("LongParameterList")
     fun getProblemList(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
+        @RequestParam(required = false) prefix: String?,
+        @RequestParam(required = false) status: Problem.Status?,
+        @RequestParam(required = false) isHard: Boolean?,
+        @RequestParam(required = false) hasPictures: Boolean?,
+        @RequestParam(required = false) hasResult: Boolean?,
         authentication: Authentication?,
     ): Flux<ProblemMetadata> =
-        problemService.getFilteredProblems(PageRequest.of(page, size)).flatMapSequential { problem ->
-            problemService.prepareMetadata(problem, authentication)
-        }
+        problemService
+            .getFilteredProblems(
+                ProblemFilter(prefix, status, isHard, hasPictures, hasResult),
+                authentication,
+                PageRequest.of(page, size),
+            )
+            .flatMapSequential { problem -> problemService.prepareMetadata(problem, authentication) }
 
     @GetMapping("/count")
     @Operation(summary = "Count problems", description = "Returns the total number of problems in the system")
-    @ApiResponses(value = [ApiResponse(responseCode = "200", description = "Successfully retrieved problem count")])
-    fun count(): Mono<Long> = problemService.countProblems()
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved problem count"),
+                ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required when filtering by status (other than NOT_SOLVED)",
+                ),
+            ]
+    )
+    fun count(
+        @RequestParam(required = false) prefix: String?,
+        @RequestParam(required = false) status: Problem.Status?,
+        @RequestParam(required = false) isHard: Boolean?,
+        @RequestParam(required = false) hasPictures: Boolean?,
+        @RequestParam(required = false) hasResult: Boolean?,
+        authentication: Authentication?,
+    ): Mono<Long> =
+        problemService.countFilteredProblems(ProblemFilter(prefix, status, isHard, hasPictures, hasResult), authentication)
 
     @GetMapping("/by-prefix")
     @Operation(
@@ -116,7 +150,7 @@ class ProblemController(private val problemService: ProblemService) {
     fun getProblem(@PathVariable @NotBlank id: String, authentication: Authentication?): Mono<ProblemDto> =
         problemService
             .findProblemById(id)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found").toMono())
             .flatMap { problem -> problemService.prepareDto(problem, authentication) }
 
     @Suppress("MaxLineLength")

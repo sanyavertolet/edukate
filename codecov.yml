@@ -1,0 +1,18 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto   # track movement relative to the base commit
+        threshold: 1%  # allow up to 1% drop before marking the status check red
+
+component_management:
+  individual_components:
+    - component_id: frontend
+      name: "Frontend (TypeScript)"
+      flag_regexes:
+        - frontend
+
+    - component_id: backend
+      name: "Backend (Kotlin)"
+      flag_regexes:
+        - edukate-.*  # matches all per-module flags: edukate-auth, edukate-backend, …

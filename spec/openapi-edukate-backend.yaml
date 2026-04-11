@@ -903,6 +903,36 @@ paths:
           exclusiveMinimum: 0
           maximum: 100
           minimum: 1
+      - name: prefix
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+      - name: isHard
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasPictures
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasResult
+        in: query
+        required: false
+        schema:
+          type: boolean
       responses:
         "200":
           description: Successfully retrieved problem list
@@ -914,6 +944,15 @@ paths:
                   $ref: "#/components/schemas/ProblemMetadata"
         "400":
           description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemMetadata"
+        "401":
+          description: Authentication required when filtering by status (other than
+            NOT_SOLVED)
           content:
             application/json:
               schema:
@@ -976,9 +1015,48 @@ paths:
       summary: Count problems
       description: Returns the total number of problems in the system
       operationId: count
+      parameters:
+      - name: prefix
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+      - name: isHard
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasPictures
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: hasResult
+        in: query
+        required: false
+        schema:
+          type: boolean
       responses:
         "200":
           description: Successfully retrieved problem count
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+        "401":
+          description: Authentication required when filtering by status (other than
+            NOT_SOLVED)
           content:
             application/json:
               schema:

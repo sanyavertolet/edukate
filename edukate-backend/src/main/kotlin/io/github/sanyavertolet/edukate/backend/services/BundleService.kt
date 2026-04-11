@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 @Service
 @Suppress("TooManyFunctions")
@@ -31,7 +32,7 @@ class BundleService(
     fun findBundleByShareCode(shareCode: String): Mono<Bundle> =
         bundleRepository
             .findBundleByShareCode(shareCode)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Bundle [$shareCode] not found")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Bundle [$shareCode] not found").toMono())
 
     fun getOwnedBundles(pageable: PageRequest, authentication: Authentication): Flux<Bundle> =
         authentication.monoId().flatMapMany { userId ->
@@ -56,13 +57,11 @@ class BundleService(
         findBundleByShareCode(shareCode)
             .filter { bundlePermissionEvaluator.hasJoinPermission(it, userId) }
             .switchIfEmpty(
-                Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "To join this bundle, you should be invited"))
+                ResponseStatusException(HttpStatus.FORBIDDEN, "To join this bundle, you should be invited").toMono()
             )
             .filter { !it.isUserInBundle(userId) }
             .switchIfEmpty(
-                Mono.error(
-                    ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already joined the bundle [$shareCode]")
-                )
+                ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already joined the bundle [$shareCode]").toMono()
             )
             .map { it.withJoinedUser(userId, UserRole.USER) }
             .flatMap { bundleRepository.save(it) }
@@ -71,10 +70,10 @@ class BundleService(
     fun removeUser(shareCode: String, userId: String): Mono<Bundle> =
         findBundleByShareCode(shareCode)
             .filter { it.isUserInBundle(userId) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not in bundle")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not in bundle").toMono())
             .filter { !it.isAdmin(userId) || it.getAdminIds().size > 1 }
             .switchIfEmpty(
-                Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Last admin should delete bundle, not leave it"))
+                ResponseStatusException(HttpStatus.BAD_REQUEST, "Last admin should delete bundle, not leave it").toMono()
             )
             .map { it.withoutUser(userId) }
             .flatMap { bundleRepository.save(it) }
@@ -83,9 +82,9 @@ class BundleService(
     fun inviteUser(shareCode: String, inviterId: String, inviteeId: String): Mono<Bundle> =
         findBundleByShareCode(shareCode)
             .filter { bundlePermissionEvaluator.hasInvitePermission(it, inviterId) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions to invite")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions to invite").toMono())
             .filter { !it.isUserInBundle(inviteeId) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already in bundle")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already in bundle").toMono())
             .map { it.withInvitedUser(inviteeId) }
             .flatMap { bundleRepository.save(it) }
 
@@ -93,11 +92,9 @@ class BundleService(
     fun expireInvite(shareCode: String, inviterId: String, inviteeId: String): Mono<Bundle> =
         findBundleByShareCode(shareCode)
             .filter { bundlePermissionEvaluator.hasInvitePermission(it, inviterId) }
-            .switchIfEmpty(
-                Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions to expire invite"))
-            )
+            .switchIfEmpty(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permissions to expire invite").toMono())
             .filter { it.isUserInvited(inviteeId) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not invited to this bundle")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not invited to this bundle").toMono())
             .map { it.withoutInvitedUser(inviteeId) }
             .flatMap { bundleRepository.save(it) }
 
@@ -122,9 +119,7 @@ class BundleService(
                 val requesterId = requireNotNull(authentication.id())
                 bundlePermissionEvaluator.hasRole(it, requesterId, UserRole.MODERATOR)
             }
-            .flatMapMany { bundle ->
-                Mono.justOrEmpty(bundle.invitedUserIds).flatMapMany { userService.findUsersByIds(it) }.map { it.name }
-            }
+            .flatMapMany { bundle -> userService.findUsersByIds(bundle.invitedUserIds).map { it.name } }
 
     @Transactional
     fun changeUserRole(
@@ -135,13 +130,13 @@ class BundleService(
     ): Mono<UserRole> =
         findBundleByShareCode(shareCode)
             .filter { it.isUserInBundle(userId) }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Target user not found in bundle")))
+            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Target user not found in bundle").toMono())
             .filter {
                 val requesterId = requireNotNull(authentication.id())
                 bundlePermissionEvaluator.hasChangeRolePermission(it, requesterId, userId, requestedRole)
             }
             .switchIfEmpty(
-                Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot set $userId role to be $requestedRole"))
+                ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot set $userId role to be $requestedRole").toMono()
             )
             .map { it.withUserRole(userId, requestedRole) }
             .flatMap { bundleRepository.save(it) }
@@ -152,12 +147,11 @@ class BundleService(
         findBundleByShareCode(shareCode)
             .filter { it.isUserInvited(requireNotNull(authentication.id())) }
             .switchIfEmpty(
-                Mono.error(
-                    ResponseStatusException(
+                ResponseStatusException(
                         HttpStatus.FORBIDDEN,
                         "You cannot decline the invitation as nobody has invited you yet",
                     )
-                )
+                    .toMono()
             )
             .map { it.withoutInvitedUser(requireNotNull(authentication.id())) }
             .flatMap { bundleRepository.save(it) }
@@ -167,26 +161,22 @@ class BundleService(
         findBundleByShareCode(shareCode)
             .filter { bundlePermissionEvaluator.hasRole(it, UserRole.MODERATOR, authentication) }
             .switchIfEmpty(
-                Mono.error(
-                    ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot change visibility due to lack of permissions")
-                )
+                ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot change visibility due to lack of permissions").toMono()
             )
             .map { it.withVisibility(isPublic) }
             .flatMap { bundleRepository.save(it) }
 
     @Transactional
     fun changeProblems(shareCode: String, problemIds: List<String>, authentication: Authentication): Mono<Bundle> =
-        Mono.just(shareCode)
+        shareCode
+            .toMono()
             .filter { problemIds.isNotEmpty() }
-            .switchIfEmpty(
-                Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Bundle problem list cannot be empty"))
-            )
+            .switchIfEmpty(ResponseStatusException(HttpStatus.BAD_REQUEST, "Bundle problem list cannot be empty").toMono())
             .flatMap { findBundleByShareCode(it) }
             .filter { bundlePermissionEvaluator.hasRole(it, UserRole.MODERATOR, authentication) }
             .switchIfEmpty(
-                Mono.error(
-                    ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot change problem list due to lack of permissions")
-                )
+                ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot change problem list due to lack of permissions")
+                    .toMono()
             )
             .map { it.withProblemIds(problemIds) }
             .flatMap { bundleRepository.save(it) }
@@ -201,5 +191,5 @@ class BundleService(
     fun prepareMetadata(bundle: Bundle): Mono<BundleMetadata> = getAdmins(bundle).map { bundle.toBundleMetadata(it) }
 
     private fun getAdmins(bundle: Bundle): Mono<List<String>> =
-        Mono.just(bundle.getAdminIds()).flatMapMany { userService.findUsersByIds(it) }.map { it.name }.collectList()
+        userService.findUsersByIds(bundle.getAdminIds()).map { it.name }.collectList()
 }

@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("dev.detekt")
     id("com.ncorti.ktfmt.gradle")
+    jacoco
 }
 
 detekt {
@@ -39,4 +40,17 @@ ktfmt {
     continuationIndent.set(4)
     manageTrailingCommas.set(true)
     removeUnusedImports.set(true)
+}
+
+// Automatically generate the JaCoCo XML + HTML report after every test run.
+tasks.withType<Test>().configureEach {
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.withType<Test>())
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
 }

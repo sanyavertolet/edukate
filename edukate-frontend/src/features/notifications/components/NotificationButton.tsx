@@ -6,7 +6,7 @@ import { useAuthContext } from "@/features/auth/context";
 import { InvitationDialog } from "./InvitationDialog";
 import { BaseNotification, InviteNotification } from "@/features/notifications/types";
 import { toast } from "react-toastify";
-import { useMarkNotificationsAsReadMutation, useNotificationsCountRequest } from "@/features/notifications/api";
+import { useGetNotificationsRequest, useMarkNotificationsAsReadMutation } from "@/features/notifications/api";
 import { useBundleInvitationReplyMutation } from "@/features/bundles/api";
 
 type BundleInviteInfo = {
@@ -19,7 +19,7 @@ type BundleInviteInfo = {
 export const NotificationButton: FC = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
     const { isAuthorized } = useAuthContext();
-    const { data: statistics } = useNotificationsCountRequest();
+    const { data: page } = useGetNotificationsRequest();
     const handleClose = () => {
         setAnchorEl(undefined);
     };
@@ -64,12 +64,7 @@ export const NotificationButton: FC = () => {
     return (
         <Box>
             <InvitationDialog bundleInfo={bundleInviteInfo} onClose={onInvitationDialogClose} />
-            <NotificationMenu
-                notificationStatistics={statistics}
-                onNotificationClick={onNotificationClick}
-                anchorEl={anchorEl}
-                onClose={handleClose}
-            />
+            <NotificationMenu onNotificationClick={onNotificationClick} anchorEl={anchorEl} onClose={handleClose} />
             {isAuthorized && (
                 <IconButton
                     aria-label="show notifications"
@@ -79,7 +74,7 @@ export const NotificationButton: FC = () => {
                     edge="end"
                     onClick={handleOpen}
                 >
-                    <Badge badgeContent={statistics?.unread || 0} color="primary">
+                    <Badge badgeContent={page?.statistics.unread || 0} color="primary">
                         <NotificationsIcon />
                     </Badge>
                 </IconButton>

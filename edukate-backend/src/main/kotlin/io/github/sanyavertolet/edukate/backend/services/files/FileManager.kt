@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
 
 @Service
 class FileManager(private val fileObjectRepository: FileObjectRepository, private val storage: FileKeyStorage) {
@@ -56,7 +58,7 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
             .delete(key)
             .onErrorResume { e ->
                 log.warn("storage delete error for key={}, will continue to DB cleanup", key, e)
-                Mono.just(false)
+                false.toMono()
             }
             .flatMap { storageDeleted ->
                 fileObjectRepository.deleteByKeyPath(key.toString()).defaultIfEmpty(0L).map { dbDeletedCount ->
@@ -82,7 +84,8 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
             .defaultIfEmpty(false)
 
     fun doFilesExist(keys: List<FileKey>): Mono<Boolean> =
-        Flux.fromIterable(keys)
+        keys
+            .toFlux()
             .flatMapSequential({ doesFileExist(it) }, MAX_CONCURRENCY)
             .all { it }
             .timeout(DEFAULT_TIMEOUT)
@@ -99,7 +102,7 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
                         .flatMap { meta -> saveOrUpdateByKeyPath(oldKey.toString(), newKey, meta) }
                         .thenReturn(newKey)
                 } else {
-                    Mono.error(IllegalStateException("Move failed: $oldKey -> $newKey"))
+                    IllegalStateException("Move failed: $oldKey -> $newKey").toMono()
                 }
             }
             .timeout(DEFAULT_TIMEOUT)

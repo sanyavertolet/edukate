@@ -22,8 +22,8 @@ export const RandomProblemButton: FC = () => {
 
     return (
         <Tooltip title={"Randomize problem"}>
-            <IconButton aria-label="random-problem" color="primary" size={"small"} onClick={onClick}>
-                <ShuffleIcon />
+            <IconButton aria-label="random-problem" color="primary" onClick={onClick}>
+                <ShuffleIcon sx={{ fontSize: 30 }} />
             </IconButton>
         </Tooltip>
     );

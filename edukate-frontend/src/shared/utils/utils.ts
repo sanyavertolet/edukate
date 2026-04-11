@@ -4,16 +4,16 @@ export const defaultTooltipSlotProps = {
     popper: {
         sx: {
             [`&.${tooltipClasses.popper}[data-popper-placement*="bottom"] .${tooltipClasses.tooltip}`]: {
-                marginTop: "0px",
+                marginTop: "5px",
             },
             [`&.${tooltipClasses.popper}[data-popper-placement*="top"] .${tooltipClasses.tooltip}`]: {
-                marginBottom: "0px",
+                marginBottom: "5px",
             },
             [`&.${tooltipClasses.popper}[data-popper-placement*="right"] .${tooltipClasses.tooltip}`]: {
-                marginLeft: "0px",
+                marginLeft: "5px",
             },
             [`&.${tooltipClasses.popper}[data-popper-placement*="left"] .${tooltipClasses.tooltip}`]: {
-                marginRight: "0px",
+                marginRight: "5px",
             },
         },
     },

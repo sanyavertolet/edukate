@@ -5,7 +5,7 @@ import ProblemListComponent from "@/features/problems/components/ProblemListComp
 export default function ProblemListPage() {
     return (
         <Container>
-            <Typography component="h1" color="primary" variant="h5">
+            <Typography component="h1" color="primary" variant="h5" align="center">
                 Problems
             </Typography>
 

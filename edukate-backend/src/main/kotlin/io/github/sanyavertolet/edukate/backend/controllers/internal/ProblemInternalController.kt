@@ -19,8 +19,7 @@ class ProblemInternalController(private val problemService: ProblemService) {
     @PostMapping fun postProblem(@RequestBody problem: Problem): Mono<Problem> = problemService.updateProblem(problem)
 
     @PostMapping("/batch")
-    fun postProblemBatch(@RequestBody problems: List<Problem>): Flux<String> =
-        problemService.updateProblemBatch(problems).map { it.id }
+    fun postProblemBatch(@RequestBody problems: Flux<Problem>): Mono<Long> = problemService.updateProblemBatch(problems)
 
     @DeleteMapping("/{id}")
     fun deleteProblem(@PathVariable id: String): Mono<String> = problemService.deleteProblemById(id).thenReturn(id)

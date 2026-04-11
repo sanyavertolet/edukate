@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.AbstractBackendIntegrationTest
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
+import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,7 +22,7 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
     @BeforeEach
     fun setUp() {
         problemRepository.deleteAll().block()
-        mongoTemplate.dropCollection("user_problem_statuses").block()
+        mongoTemplate.dropCollection("problem_status").block()
         problemRepository.save(BackendFixtures.problem(id = "1.0.0")).block()
         problemRepository.save(BackendFixtures.problem(id = "1.1.0")).block()
         problemRepository.save(BackendFixtures.problem(id = "2.0.0")).block()
@@ -55,6 +56,140 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
             .hasSize(2)
     }
 
+    @Test
+    fun `getProblems with prefix returns only matching problems`() {
+        webTestClient
+            .get()
+            .uri("/api/v1/problems?prefix=1.")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemMetadata>()
+            .hasSize(2)
+    }
+
+    @Test
+    fun `getProblems with status SOLVED returns 401 when unauthenticated`() {
+        webTestClient.get().uri("/api/v1/problems?prefix=1.&status=SOLVED").exchange().expectStatus().isUnauthorized
+    }
+
+    @Test
+    fun `getProblems with status NOT_SOLVED returns all problems when unauthenticated`() {
+        webTestClient
+            .get()
+            .uri("/api/v1/problems?status=NOT_SOLVED")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemMetadata>()
+            .hasSize(3)
+    }
+
+    @Test
+    fun `getProblems with status SOLVED returns only solved problems when authenticated`() {
+        mongoTemplate
+            .save(
+                BackendFixtures.userProblemStatus(
+                    userId = "user-1",
+                    problemId = "1.0.0",
+                    bestStatus = SubmissionStatus.SUCCESS,
+                ),
+                "problem_status",
+            )
+            .block()
+        mongoTemplate
+            .save(
+                BackendFixtures.userProblemStatus(
+                    userId = "user-1",
+                    problemId = "1.1.0",
+                    bestStatus = SubmissionStatus.FAILED,
+                ),
+                "problem_status",
+            )
+            .block()
+
+        authenticatedClient()
+            .get()
+            .uri("/api/v1/problems?status=SOLVED")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemMetadata>()
+            .hasSize(1)
+            .contains(
+                ProblemMetadata(
+                    "1.0.0",
+                    false,
+                    emptyList(),
+                    io.github.sanyavertolet.edukate.backend.entities.Problem.Status.SOLVED,
+                )
+            )
+    }
+
+    @Test
+    fun `getProblems with status NOT_SOLVED returns unsolved problems when authenticated`() {
+        mongoTemplate
+            .save(
+                BackendFixtures.userProblemStatus(
+                    userId = "user-1",
+                    problemId = "1.0.0",
+                    bestStatus = SubmissionStatus.SUCCESS,
+                ),
+                "problem_status",
+            )
+            .block()
+
+        authenticatedClient()
+            .get()
+            .uri("/api/v1/problems?status=NOT_SOLVED")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemMetadata>()
+            .hasSize(2)
+    }
+
+    @Test
+    fun `getProblems with prefix and status SOLVED returns only matching solved problems when authenticated`() {
+        mongoTemplate
+            .save(
+                BackendFixtures.userProblemStatus(
+                    userId = "user-1",
+                    problemId = "1.0.0",
+                    bestStatus = SubmissionStatus.SUCCESS,
+                ),
+                "problem_status",
+            )
+            .block()
+        mongoTemplate
+            .save(
+                BackendFixtures.userProblemStatus(
+                    userId = "user-1",
+                    problemId = "2.0.0",
+                    bestStatus = SubmissionStatus.SUCCESS,
+                ),
+                "problem_status",
+            )
+            .block()
+
+        authenticatedClient()
+            .get()
+            .uri("/api/v1/problems?prefix=1.&status=SOLVED")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemMetadata>()
+            .hasSize(1)
+            .contains(
+                ProblemMetadata(
+                    "1.0.0",
+                    false,
+                    emptyList(),
+                    io.github.sanyavertolet.edukate.backend.entities.Problem.Status.SOLVED,
+                )
+            )
+    }
+
     // endregion
 
     // region GET /api/v1/problems/count
@@ -62,6 +197,46 @@ class ProblemControllerIntegrationTest : AbstractBackendIntegrationTest() {
     @Test
     fun `count returns total number of problems`() {
         webTestClient.get().uri("/api/v1/problems/count").exchange().expectStatus().isOk.expectBody<Long>().isEqualTo(3L)
+    }
+
+    @Test
+    fun `count with prefix returns filtered count`() {
+        webTestClient
+            .get()
+            .uri("/api/v1/problems/count?prefix=1.")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<Long>()
+            .isEqualTo(2L)
+    }
+
+    @Test
+    fun `count with status SOLVED returns filtered count when authenticated`() {
+        mongoTemplate
+            .save(
+                BackendFixtures.userProblemStatus(
+                    userId = "user-1",
+                    problemId = "1.0.0",
+                    bestStatus = SubmissionStatus.SUCCESS,
+                ),
+                "problem_status",
+            )
+            .block()
+
+        authenticatedClient()
+            .get()
+            .uri("/api/v1/problems/count?status=SOLVED")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody<Long>()
+            .isEqualTo(1L)
+    }
+
+    @Test
+    fun `count with status SOLVED returns 401 when unauthenticated`() {
+        webTestClient.get().uri("/api/v1/problems/count?status=SOLVED").exchange().expectStatus().isUnauthorized
     }
 
     // endregion

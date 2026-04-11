@@ -23,7 +23,7 @@ export const BundleIndexCard: FC<BundleIndexCardProps> = ({ bundle }: BundleInde
     };
     return (
         <Card>
-            <Box justifyContent={"center"}>
+            <Box display="flex" flexDirection="column" alignItems="center">
                 <Tabs value={tab} onChange={onTabChange} color={"primary"}>
                     <Tab key={"description"} value={"description"} label={"Description"} />
                     <Tab key={"settings"} value={"settings"} label={"Settings"} disabled={!isAdmin} />

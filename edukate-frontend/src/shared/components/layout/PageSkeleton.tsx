@@ -50,8 +50,8 @@ export default function PageSkeleton() {
                 <Suspense fallback={null}>
                     <ParticlesComponent />
                 </Suspense>
-                <AppFooter />
             </Container>
+            <AppFooter />
         </Box>
     );
 }

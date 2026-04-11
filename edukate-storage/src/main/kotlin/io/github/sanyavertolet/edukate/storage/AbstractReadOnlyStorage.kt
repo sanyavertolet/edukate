@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.storage.configs.S3Properties
 import java.nio.ByteBuffer
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
 import software.amazon.awssdk.core.async.AsyncResponseTransformer
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
@@ -61,7 +62,7 @@ abstract class AbstractReadOnlyStorage<Key : Any, Metadata : Any>(
         val request = ListObjectsV2Request.builder().bucket(s3Properties.bucket).prefix(rawKeyPrefix).build()
 
         return Flux.from(s3AsyncClient.listObjectsV2Paginator(request))
-            .flatMap { response -> Flux.fromIterable(response.contents()) }
+            .flatMap { response -> response.contents().toFlux() }
             .map(S3Object::key)
             .map { buildKey(it) }
     }

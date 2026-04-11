@@ -34,9 +34,5 @@ class UserController(private val userService: UserService) {
             ]
     )
     fun whoami(authentication: Authentication): Mono<UserDto> =
-        authentication
-            .toMono()
-            .flatMap { userService.findUserByName(it.name) }
-            .map { UserDto.of(it) }
-            .switchIfEmpty(Mono.empty())
+        authentication.toMono().flatMap { userService.findUserByName(it.name) }.map { UserDto.of(it) }
 }

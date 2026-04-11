@@ -17,5 +17,5 @@ class ResultInternalController(private val resultService: ResultService) {
     @PostMapping fun postResult(@RequestBody result: Result): Mono<String> = resultService.updateResult(result)
 
     @PostMapping("/batch")
-    fun postResultsBatch(@RequestBody results: Flux<Result>): Flux<String> = resultService.updateResultBatch(results)
+    fun postResultsBatch(@RequestBody results: Flux<Result>): Mono<Long> = resultService.updateResultBatch(results)
 }

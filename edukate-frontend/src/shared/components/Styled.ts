@@ -34,6 +34,7 @@ export const SignCard = styled(Card)(({ theme }) => ({
 }));
 
 export const SignContainer = styled(Stack)(({ theme }) => ({
+    alignItems: "center",
     padding: theme.spacing(2),
     [theme.breakpoints.up("sm")]: {
         padding: theme.spacing(4),
