@@ -8,8 +8,8 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
-private const val DOCKER_REGISTRY_URL = "registry.digitalocean.com"
-private const val DOCKER_CONTAINER_REGISTRY_NAME = "edukate-container-registry"
+private const val DOCKER_REGISTRY_URL = "ghcr.io"
+private const val DOCKER_CONTAINER_REGISTRY_NAME = "sanyavertolet"
 
 fun DefaultTask.version() = project.version.toString().replace("+", "-")
 
@@ -23,13 +23,13 @@ fun DefaultTask.fullImageNameWithTag(
 ) = "${fullImageName(imageName)}:${imageTag ?: version()}"
 
 private fun Project.usernameFromPropertyOrEnv() = providers
-    .gradleProperty("do.docker.username")
-    .orElse(providers.environmentVariable("DO_DOCKER_USERNAME"))
+    .gradleProperty("ghcr.username")
+    .orElse(providers.environmentVariable("GITHUB_ACTOR"))
     .orNull
 
 private fun Project.passwordFromPropertyOrEnv() = providers
-    .gradleProperty("do.docker.password")
-    .orElse(providers.environmentVariable("DO_DOCKER_PASSWORD"))
+    .gradleProperty("ghcr.token")
+    .orElse(providers.environmentVariable("GITHUB_TOKEN"))
     .orNull
 
 /**
@@ -64,7 +64,7 @@ fun DockerPushImage.configureFrontendPush(
     shouldPublishLatest: Boolean = true,
 ) {
     group = "docker"
-    description = "Pushes the frontend Docker image to DigitalOcean registry"
+    description = "Pushes the frontend Docker image to GitHub Container Registry"
 
     if (shouldPublishLatest) {
         images.add(fullImageNameWithTag(frontendName, "latest"))

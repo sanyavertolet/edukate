@@ -16,15 +16,13 @@ spring:
   cloud:
     discovery:
       enabled: false
-    loadbalancer:
-      enabled: false
 
 server:
-  port: 18080
+  port: 18082
 
 management:
   server:
-    port: 18081
+    port: 18083
   health:
     rabbit:
       enabled: false

@@ -56,6 +56,10 @@ dependencies {
     testImplementation(libs.spring.boot.webtestclient)
 }
 
+configure<org.springdoc.openapi.gradle.plugin.OpenApiExtension> {
+    apiDocsUrl.set("http://localhost:18080/v3/api-docs.yaml")
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }

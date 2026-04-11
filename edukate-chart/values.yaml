@@ -1,5 +1,5 @@
 namespace: default
-imageRegistry: registry.digitalocean.com/edukate-container-registry
+imageRegistry: ghcr.io/sanyavertolet
 dockerTag: latest
 replicaCount: 1
 

@@ -71,6 +71,7 @@ components:
           minLength: 1
         email:
           type: string
+          format: email
           minLength: 1
       required:
       - email

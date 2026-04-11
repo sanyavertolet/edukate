@@ -66,6 +66,9 @@ reactor-core = { module = "io.projectreactor:reactor-core" }
 reactor-kotlin-extensions = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
 jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
+# Jackson 2 shim — springdoc 3.x uses Jackson 2 reflection internally; without this module,
+# is-prefixed boolean getters (e.g. isHard, isPublic) lose the prefix in the generated OpenAPI spec.
+jackson2-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 snakeyaml = { module = "org.yaml:snakeyaml" }
 

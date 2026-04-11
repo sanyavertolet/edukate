@@ -1,0 +1,49 @@
+name: OpenAPI Schema
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    paths-ignore:
+      - 'edukate-frontend/**'
+      - '**.md'
+
+jobs:
+  schema:
+    name: Schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      # The spec-gen Spring profile uses lazy/dummy connections — no external services required.
+      # Services run in parallel: backend on 18080, gateway on 18081, notifier on 18082.
+      - name: Regenerate OpenAPI specs
+        run: |
+          ./gradlew :edukate-backend:generateOpenApiDocs --no-daemon &
+          ./gradlew :edukate-gateway:generateOpenApiDocs --no-daemon &
+          ./gradlew :edukate-notifier:generateOpenApiDocs --no-daemon &
+          wait
+
+      - name: Check for spec drift
+        run: |
+          if ! git diff --exit-code spec/; then
+            echo ""
+            echo "OpenAPI specs are out of date. Regenerate and commit:"
+            echo "  ./gradlew :edukate-backend:generateOpenApiDocs &"
+            echo "  ./gradlew :edukate-gateway:generateOpenApiDocs &"
+            echo "  ./gradlew :edukate-notifier:generateOpenApiDocs &"
+            echo "  wait"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: edukate-frontend/.nvmrc
+
+      - name: Lint OpenAPI specs
+        run: npx --yes @redocly/cli@latest lint spec/*.yaml
