@@ -6,6 +6,19 @@ replicaCount: 1
 autoscaling:
   enabled: false
 
+# Default resource limits for all Spring Boot services.
+# Paketo's memory calculator reads the cgroups memory limit to compute -Xmx and
+# -XX:MaxDirectMemorySize. Without a limit, it falls back to 10MB direct memory —
+# far too small for Netty + WebFlux + MongoDB. Override per-service with
+# .service.resources if needed.
+springBootResources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
 env: staging
 initCerts:
   enabled: false

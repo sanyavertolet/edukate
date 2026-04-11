@@ -60,6 +60,10 @@ ports:
   - name: mgmt
     containerPort:  {{ .service.managementPort }}
   {{ end }}
+{{- with (or .service.resources .Values.springBootResources) }}
+resources:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
 {{- end }}
 
 {{- define "spring-boot.common.env" -}}

@@ -10,6 +10,7 @@ configure<OpenApiExtension> {
     waitTimeInSeconds.set(120)
     customBootRun {
         args.add("--spring.profiles.active=spec-gen")
+        jvmArgs.add("-XX:MaxDirectMemorySize=256m")
     }
 }
 

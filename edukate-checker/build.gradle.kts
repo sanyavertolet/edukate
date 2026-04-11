@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.ai.starter.model.openai)
+    runtimeOnly(libs.spring.boot.autoconfigure.classic)
     implementation(libs.kotlin.reflect)
 
     developmentOnly(libs.spring.boot.devtools)
