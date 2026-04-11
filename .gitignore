@@ -43,3 +43,5 @@ out/
 /.claude/settings.local.json
 
 /edukate-problems/
+
+**/application-local.*
