@@ -4,9 +4,6 @@ on:
   push:
     branches: [master]
   pull_request:
-    paths:
-      - 'edukate-frontend/**'
-      - '.github/workflows/frontend.yml'
 
 permissions:
   security-events: write  # required for upload-sarif

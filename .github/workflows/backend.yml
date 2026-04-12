@@ -4,9 +4,6 @@ on:
   push:
     branches: [master]
   pull_request:
-    paths-ignore:
-      - 'edukate-frontend/**'
-      - '**.md'
 
 env:
   TESTCONTAINERS_RYUK_DISABLED: "true"
@@ -67,3 +64,16 @@ jobs:
           flags: ${{ matrix.module }}
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  backend-status:
+    name: Backend Tests
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check result
+        run: |
+          if [ "${{ needs.test.result }}" = "failure" ] || [ "${{ needs.test.result }}" = "cancelled" ]; then
+            exit 1
+          fi
+
