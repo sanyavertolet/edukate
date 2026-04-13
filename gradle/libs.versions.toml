@@ -63,6 +63,12 @@ springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmoc
 testcontainers-mongodb = { module = "org.testcontainers:testcontainers-mongodb", version.ref = "testcontainers" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 
+# observability — versions managed by Spring Boot BOM except logstash-logback-encoder
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
+micrometer-tracing-bridge-otel = { module = "io.micrometer:micrometer-tracing-bridge-otel" }
+opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version = "8.0" }
+
 # utils
 reactor-core = { module = "io.projectreactor:reactor-core" }
 reactor-kotlin-extensions = { module = "io.projectreactor.kotlin:reactor-kotlin-extensions" }

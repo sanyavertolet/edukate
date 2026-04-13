@@ -86,3 +86,167 @@ mongodb:
 jwt:
   secretName: jwt
   secretKey: key
+
+# LGTM observability stack (Loki + Grafana + Tempo + Prometheus).
+# Toggle with lgtm.enabled. Sub-chart configs live at the top level (kube-prometheus-stack:,
+# loki:, tempo:, promtail:) — Helm requires dependency values at the root, not nested.
+# Run `helm dependency update edukate-chart/` once after cloning or adding new dependencies.
+lgtm:
+  enabled: false
+
+# ── Prometheus + Grafana + Alertmanager ──────────────────────────────────────
+# https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+kube-prometheus-stack:
+  fullnameOverride: kube-prometheus-stack
+  grafana:
+    fullnameOverride: grafana
+    # Override via --set or grafana.admin.existingSecret in production
+    adminPassword: "changeme"
+    additionalDataSources:
+      # Loki datasource — correlated to Tempo traces via traceId field in JSON logs
+      - name: Loki
+        type: loki
+        url: http://loki:3100
+        access: proxy
+        isDefault: false
+        jsonData:
+          derivedFields:
+            - name: TraceID
+              matcherRegex: '"traceId":"([a-f0-9]+)"'
+              url: "${__value.raw}"
+              datasourceUid: tempo
+      # Tempo datasource — links traces back to Loki logs
+      - name: Tempo
+        type: tempo
+        url: http://tempo:3100
+        access: proxy
+        uid: tempo
+        jsonData:
+          tracesToLogs:
+            datasourceUid: loki
+            filterByTraceID: true
+            filterBySpanID: false
+  prometheus:
+    prometheusSpec:
+      # Enable remote write receiver so Tempo metricsGenerator can push span-derived RED metrics
+      enableRemoteWriteReceiver: true
+      # Scrape all pods annotated with prometheus.io/scrape: "true".
+      # The pod.common.annotations helper in _helpers.tpl already emits these annotations
+      # for every Spring Boot service (backend, gateway, notifier, checker).
+      additionalScrapeConfigs:
+        - job_name: edukate-pods
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: "true"
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            # Rewrite pod address to use managementPort from annotation (not containerPort)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $1:$2
+              target_label: __address__
+            # Carry the kompose service label as a Prometheus "service" label
+            - source_labels: [__meta_kubernetes_pod_label_io_kompose_service]
+              action: replace
+              target_label: service
+  alertmanager:
+    enabled: false  # enable once alert routing (PagerDuty/Slack/email) is configured
+
+# ── Loki — log aggregation ───────────────────────────────────────────────────
+# SingleBinary mode: single pod, filesystem storage — suitable for small clusters
+# https://github.com/grafana/helm-charts/tree/main/charts/loki
+loki:
+  fullnameOverride: loki
+  deploymentMode: SingleBinary
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+      # bucketNames required by chart validation even when type=filesystem
+      bucketNames:
+        chunks: chunks
+        ruler: ruler
+        admin: admin
+    schemaConfig:
+      configs:
+        - from: "2024-01-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+  singleBinary:
+    replicas: 1
+  # Disable distributed-mode components (SingleBinary handles all roles)
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  backend:
+    replicas: 0
+  # Disable bundled MinIO — using filesystem storage instead
+  minio:
+    enabled: false
+
+# ── Tempo — distributed tracing backend ─────────────────────────────────────
+# Receives OTLP traces from Spring Boot services; serves traces to Grafana
+# https://github.com/grafana/helm-charts/tree/main/charts/tempo
+tempo:
+  fullnameOverride: tempo
+  tempo:
+    # OTLP receivers — Spring Boot services push to http://tempo:4318/v1/traces
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: "0.0.0.0:4318"
+          grpc:
+            endpoint: "0.0.0.0:4317"
+    # metricsGenerator derives span-level RED metrics and remote-writes them to Prometheus
+    metricsGenerator:
+      enabled: true
+      remoteWriteUrl: "http://kube-prometheus-stack-prometheus:9090/api/v1/write"
+    # Enable the two standard processors globally (single-tenant setup).
+    # Without these, metricsGenerator runs but emits nothing useful.
+    # service-graphs: service topology edges (calls/errors between services)
+    # span-metrics: per-operation RED metrics (requests, errors, duration histograms)
+    # per_tenant_override_config must be kept to preserve the file-based override path.
+    overrides:
+      defaults:
+        metrics_generator:
+          processors:
+            - service-graphs
+            - span-metrics
+      per_tenant_override_config: /conf/overrides.yaml
+
+# ── Promtail — DaemonSet log shipper ────────────────────────────────────────
+# Reads pod stdout/stderr from node filesystem and ships JSON logs to Loki
+# https://github.com/grafana/helm-charts/tree/main/charts/promtail
+promtail:
+  fullnameOverride: promtail
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+    snippets:
+      pipelineStages:
+        - cri: {}
+        # Parse JSON emitted by logback-spring.xml (active on non-dev Spring profiles)
+        - json:
+            expressions:
+              level: level
+              traceId: traceId
+              spanId: spanId
+        # Promote to Loki stream labels — enables LogQL: {traceId="abc123"}
+        - labels:
+            level:
+            traceId:
+            spanId:
