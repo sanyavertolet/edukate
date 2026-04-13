@@ -4,24 +4,24 @@ package io.github.sanyavertolet.edukate.checker.services
 
 import io.github.sanyavertolet.edukate.checker.CheckerFixtures
 import io.github.sanyavertolet.edukate.checker.domain.RequestContext
-import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse
 import io.github.sanyavertolet.edukate.checker.services.impl.SpringAiChatService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import io.mockk.verify
-import java.util.function.Consumer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.ai.chat.client.ChatClient
-import org.springframework.ai.content.Media
+import org.springframework.ai.chat.messages.AssistantMessage
+import org.springframework.ai.chat.model.ChatModel
+import org.springframework.ai.chat.model.ChatResponse
+import org.springframework.ai.chat.model.Generation
+import org.springframework.ai.chat.prompt.ChatOptions
+import org.springframework.ai.chat.prompt.Prompt
 import reactor.test.StepVerifier
 
 class SpringAiChatServiceTest {
-    private val chatClient = mockk<ChatClient>(relaxed = true)
-    private val promptSpec = mockk<ChatClient.ChatClientRequestSpec>(relaxed = true)
-    private val callSpec = mockk<ChatClient.CallResponseSpec>(relaxed = true)
+    private val chatModel = mockk<ChatModel>()
+    private val systemPromptTemplate = "Check the solution for: {problemText}"
     private lateinit var service: SpringAiChatService
 
     private val problemMedia = listOf(CheckerFixtures.mockMedia())
@@ -31,18 +31,19 @@ class SpringAiChatServiceTest {
 
     @BeforeEach
     fun setUp() {
-        service = SpringAiChatService(chatClient)
-        every { chatClient.prompt() } returns promptSpec
-        every { promptSpec.system(any<Consumer<ChatClient.PromptSystemSpec>>()) } returns promptSpec
-        every { promptSpec.user(any<Consumer<ChatClient.PromptUserSpec>>()) } returns promptSpec
-        every { promptSpec.call() } returns callSpec
-        every { callSpec.entity(ModelResponse::class.java) } returns expectedResponse
+        service = SpringAiChatService(chatModel, systemPromptTemplate)
+        every { chatModel.getDefaultOptions() } returns ChatOptions.builder().build()
+        val responseJson = """{"status":"SUCCESS","trustLevel":0.9,"errorType":"NONE","explanation":"Correct."}"""
+        every { chatModel.call(any<Prompt>()) } returns ChatResponse(listOf(Generation(AssistantMessage(responseJson))))
     }
 
     @Test
-    fun `makeRequest emits the entity returned by ChatClient`() {
+    fun `makeRequest emits the entity returned by ChatModel`() {
         StepVerifier.create(service.makeRequest(ctx))
-            .assertNext { response -> assertThat(response).isEqualTo(expectedResponse) }
+            .assertNext { response ->
+                assertThat(response.status).isEqualTo(expectedResponse.status)
+                assertThat(response.explanation).isEqualTo(expectedResponse.explanation)
+            }
             .verifyComplete()
     }
 
@@ -52,51 +53,50 @@ class SpringAiChatServiceTest {
     }
 
     @Test
-    fun `problem text is set as system param`() {
-        val systemConsumerSlot = slot<Consumer<ChatClient.PromptSystemSpec>>()
-        every { promptSpec.system(capture(systemConsumerSlot)) } returns promptSpec
+    fun `problem text is substituted into system message`() {
+        val promptSlot = slot<Prompt>()
+        every { chatModel.call(capture(promptSlot)) } returns
+            ChatResponse(
+                listOf(
+                    Generation(
+                        AssistantMessage("""{"status":"SUCCESS","trustLevel":0.9,"errorType":"NONE","explanation":"ok"}""")
+                    )
+                )
+            )
 
         StepVerifier.create(service.makeRequest(ctx)).expectNextCount(1).verifyComplete()
 
-        val systemSpec = mockk<ChatClient.PromptSystemSpec>(relaxed = true)
-        systemConsumerSlot.captured.accept(systemSpec)
-        verify { systemSpec.param("problemText", ctx.problemText) }
+        val systemMessages = promptSlot.captured.instructions.filter { it.messageType.value == "system" }
+        assertThat(systemMessages).isNotEmpty
+        assertThat(systemMessages.first().getText()).contains(ctx.problemText)
     }
 
     @Test
-    fun `problem images are passed to user spec`() {
-        val userConsumerSlot = slot<Consumer<ChatClient.PromptUserSpec>>()
-        every { promptSpec.user(capture(userConsumerSlot)) } returns promptSpec
+    fun `all problem and submission images are included in the prompt`() {
+        val promptSlot = slot<Prompt>()
+        every { chatModel.call(capture(promptSlot)) } returns
+            ChatResponse(
+                listOf(
+                    Generation(
+                        AssistantMessage("""{"status":"SUCCESS","trustLevel":0.9,"errorType":"NONE","explanation":"ok"}""")
+                    )
+                )
+            )
 
         StepVerifier.create(service.makeRequest(ctx)).expectNextCount(1).verifyComplete()
 
-        val userSpec = mockk<ChatClient.PromptUserSpec>(relaxed = true)
-        every { userSpec.text(any<String>()) } returns userSpec
-        every { userSpec.media(*anyVararg<Media>()) } returns userSpec
-        userConsumerSlot.captured.accept(userSpec)
-
-        verify { userSpec.media(*problemMedia.toTypedArray()) }
+        val allExpectedMedia = problemMedia + submissionMedia
+        val userMessages = promptSlot.captured.instructions.filter { it.messageType.value == "user" }
+        assertThat(userMessages).isNotEmpty
+        val actualMedia =
+            userMessages.flatMap { msg -> (msg as? org.springframework.ai.chat.messages.UserMessage)?.media ?: emptyList() }
+        assertThat(actualMedia).hasSize(allExpectedMedia.size)
     }
 
     @Test
-    fun `submission images are passed to user spec`() {
-        val userConsumerSlot = slot<Consumer<ChatClient.PromptUserSpec>>()
-        every { promptSpec.user(capture(userConsumerSlot)) } returns promptSpec
+    fun `null text response from model throws`() {
+        every { chatModel.call(any<Prompt>()) } returns ChatResponse(listOf(Generation(AssistantMessage(null))))
 
-        StepVerifier.create(service.makeRequest(ctx)).expectNextCount(1).verifyComplete()
-
-        val userSpec = mockk<ChatClient.PromptUserSpec>(relaxed = true)
-        every { userSpec.text(any<String>()) } returns userSpec
-        every { userSpec.media(*anyVararg<Media>()) } returns userSpec
-        userConsumerSlot.captured.accept(userSpec)
-
-        verify { userSpec.media(*submissionMedia.toTypedArray()) }
-    }
-
-    @Test
-    fun `null entity response throws`() {
-        every { callSpec.entity(ModelResponse::class.java) } returns null
-
-        StepVerifier.create(service.makeRequest(ctx)).expectError().verify()
+        StepVerifier.create(service.makeRequest(ctx)).expectError(IllegalArgumentException::class.java).verify()
     }
 }

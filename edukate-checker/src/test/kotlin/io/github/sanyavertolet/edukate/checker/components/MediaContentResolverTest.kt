@@ -10,7 +10,6 @@ import java.nio.ByteBuffer
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import org.springframework.http.MediaType
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -18,12 +17,11 @@ import reactor.test.StepVerifier
 
 class MediaContentResolverTest {
     private val storage = mockk<RawKeyReadOnlyStorage>()
-    private val dataBufferFactory = DefaultDataBufferFactory()
     private lateinit var resolver: MediaContentResolver
 
     @BeforeEach
     fun setUp() {
-        resolver = MediaContentResolver(storage, dataBufferFactory)
+        resolver = MediaContentResolver(storage)
     }
 
     @Test

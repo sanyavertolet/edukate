@@ -115,8 +115,8 @@ class SubmissionService(
                         requireNotNull(submission.id) { "Submission id must not be null" },
                         problem.id,
                         problemText,
-                        submissionRawKeys,
                         problemRawKeys,
+                        submissionRawKeys,
                     )
                 }
         }

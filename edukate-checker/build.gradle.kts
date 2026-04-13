@@ -14,6 +14,7 @@ kotlin {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
 dependencies {
@@ -23,11 +24,11 @@ dependencies {
     implementation(projects.edukateStorage)
 
     implementation(libs.spring.boot.starter.webflux)
-    implementation(libs.spring.boot.http.client)
     implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.starter.amqp)
     implementation(libs.spring.ai.starter.model.openai)
+    implementation(libs.spring.boot.http.client)
     runtimeOnly(libs.spring.boot.autoconfigure.classic)
     implementation(libs.kotlin.reflect)
 

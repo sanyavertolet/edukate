@@ -37,6 +37,10 @@ spring:
     enabled: false
   profiles:
     default: prod,secure
+  web:
+    error:
+      include-message: always
+      path: /error
   cloud:
     gateway:
       server:
@@ -63,9 +67,6 @@ cors:
   allowed-origin-pattern: https://edukate.mooo.com
 
 server:
-  error:
-    include-message: always
-    path: /error
   port: 5810
 management:
   server:

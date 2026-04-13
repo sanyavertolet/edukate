@@ -1,6 +1,6 @@
 import { ChangeEvent, FC } from "react";
 import { TableFooter, TablePagination, TableRow } from "@mui/material";
-import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
+import { ProblemTablePaginationActions } from "./ProblemTablePaginationActions";
 
 type Props = {
     count: number;
@@ -33,7 +33,15 @@ export const ProblemTablePagination: FC<Props> = ({
                     slotProps={{ select: { inputProps: { "aria-label": "rows per page" }, native: true } }}
                     onPageChange={onPageChange}
                     onRowsPerPageChange={onRowsPerPageChange}
-                    ActionsComponent={TablePaginationActions}
+                    ActionsComponent={ProblemTablePaginationActions}
+                    labelDisplayedRows={({ from, to, count }) =>
+                        `${String(from)}–${String(to)} of ${String(count)} problems`
+                    }
+                    sx={{
+                        "& .MuiTablePagination-spacer": { flex: 0 },
+                        "& .MuiTablePagination-toolbar": { position: "relative" },
+                        "& .MuiTablePagination-displayedRows": { marginLeft: "auto", mr: 2 },
+                    }}
                 />
             </TableRow>
         </TableFooter>
