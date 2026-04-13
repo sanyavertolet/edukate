@@ -12,6 +12,8 @@ export function ResultAccordionComponent({ problem }: ResultComponentProps) {
     const { data: result } = useResultRequest(problem.id);
     const { isAuthorized } = useAuthContext();
 
+    if (!result) return null;
+
     return (
         <Box width={"80%"}>
             <Accordion disabled={!isAuthorized}>
@@ -19,8 +21,8 @@ export function ResultAccordionComponent({ problem }: ResultComponentProps) {
                     <Typography component="span">Show the result</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                    {result?.text && <LazyLatexComponent text={result.text} />}
-                    {!!result?.images && result.images.length != 0 && <ImageListComponent images={result.images} />}
+                    {result.text && <LazyLatexComponent text={result.text} />}
+                    {result.images.length > 0 && <ImageListComponent images={result.images} />}
                 </AccordionDetails>
             </Accordion>
         </Box>

@@ -5,12 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 
 @SpringBootApplication(
-    scanBasePackages =
-        [
-            "io.github.sanyavertolet.edukate.checker",
-            "io.github.sanyavertolet.edukate.common",
-            "io.github.sanyavertolet.edukate.storage",
-        ]
+    scanBasePackages = ["io.github.sanyavertolet.edukate.checker", "io.github.sanyavertolet.edukate.storage"]
 )
 @ConfigurationPropertiesScan(basePackages = ["io.github.sanyavertolet.edukate.storage.configs"])
 class EdukateCheckerApplication

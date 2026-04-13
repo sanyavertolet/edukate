@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @RequestMapping("/api/v1/results")
@@ -40,5 +39,5 @@ class ResultController(private val resultService: ResultService) {
     fun getResultById(@PathVariable @NotBlank id: String): Mono<Result> =
         resultService
             .findResultById(id)
-            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found").toMono())
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found")))
 }

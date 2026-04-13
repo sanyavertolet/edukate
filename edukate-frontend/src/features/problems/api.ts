@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { getProblem, getProblemList, getRandomUnsolvedProblemId, getResultById } from "@/generated/backend";
 import type { GetProblemListParams } from "@/generated/backend";
@@ -76,7 +77,16 @@ export function useProblemRequest(id: string | undefined) {
 export function useResultRequest(problemId: string) {
     return useQuery({
         queryKey: queryKeys.problems.result(problemId),
-        queryFn: ({ signal }) => getResultById(problemId, signal),
+        queryFn: async ({ signal }) => {
+            try {
+                return await getResultById(problemId, signal);
+            } catch (error) {
+                if (isAxiosError(error) && error.response?.status === 404) {
+                    return null;
+                }
+                throw error;
+            }
+        },
     });
 }
 

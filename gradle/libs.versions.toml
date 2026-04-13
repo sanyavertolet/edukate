@@ -4,7 +4,7 @@ mockk = "1.14.9"
 springmockk = "5.0.1"
 testcontainers = "2.0.4"
 spring-cloud = "5.0.1"
-spring-ai = "1.1.4"
+spring-ai = "2.0.0-SNAPSHOT"
 spring-dependency = "1.1.7"
 aws = "2.42.32"
 jjwt = "0.13.0"
@@ -30,15 +30,12 @@ spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-starter-amqp" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
 spring-boot-starter-data-mongodb-reactive = { module = "org.springframework.boot:spring-boot-starter-data-mongodb-reactive" }
 spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
 spring-boot-docker-compose = { module = "org.springframework.boot:spring-boot-docker-compose" }
 spring-boot-starter-test-classic = { module = "org.springframework.boot:spring-boot-starter-test-classic" }
-# Backward-compatibility shim for Spring Boot 4 autoconfigure modularization.
-# Required as long as Spring AI 1.x is used: its autoconfigure classes reference relocated Boot 3.x
-# classes (e.g. RestClientAutoConfiguration) that no longer exist in spring-boot-autoconfigure.
-# Remove once Spring AI is upgraded to a Boot 4-compatible release.
 spring-boot-autoconfigure-classic = { module = "org.springframework.boot:spring-boot-autoconfigure-classic" }
 spring-boot-webtestclient = { module = "org.springframework.boot:spring-boot-webtestclient" }
 spring-boot-webclient = { module = "org.springframework.boot:spring-boot-webclient" }

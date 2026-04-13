@@ -13,8 +13,8 @@ class RestClientConfig {
     /** Spring AI uses RestClient.Builder to build a model client but provides no way to configure timeouts. */
     @Bean
     fun restClientBuilder(
-        @Value("\${spring.http.client.connect-timeout:1s}") connectTimeout: Duration,
-        @Value("\${spring.http.client.read-timeout:10s}") readTimeout: Duration,
+        @Value($$"${spring.http.clients.connect-timeout:5s}") connectTimeout: Duration,
+        @Value($$"${spring.http.clients.read-timeout:2m}") readTimeout: Duration,
     ): RestClient.Builder {
         val settings = HttpClientSettings.defaults().withConnectTimeout(connectTimeout).withReadTimeout(readTimeout)
         return RestClient.builder().requestFactory(ClientHttpRequestFactoryBuilder.reactor().build(settings))

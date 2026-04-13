@@ -21,8 +21,7 @@ tasks.jar {
 }
 
 dependencies {
-    implementation(libs.spring.boot.starter.data.mongodb.reactive)
-
+    implementation(libs.spring.boot.starter)
     apiElements(libs.awssdk.s3)
     implementation(libs.awssdk.s3.transfer.manager)
     implementation(libs.jackson.annotations)

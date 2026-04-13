@@ -60,7 +60,7 @@ SubmissionContextListener
 | Class                       | Responsibility                                                                                                                                     |
 |-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 | `EdukateCheckerApplication` | Spring Boot entry point; scans `checker`, `common`, `storage` packages                                                                             |
-| `ChatClientConfig`          | Creates `ChatClient` bean with system prompt from `checker.openai.system-prompt`                                                                   |
+| `ChatClientConfig`          | `@Primary ChatModel` bean that wraps `OpenAiChatModel`; fixes Spring AI 2.0.0-SNAPSHOT regression where `OpenAiChatOptions` lacks `mutate()` — returns `DefaultChatOptions` from `ChatOptions.builder()` which properly implements `mutate()` |
 | `RestClientConfig`          | Configures HTTP timeouts (connect: 5s, read: 2m) for Spring AI's OpenAI client; requires `spring-boot-http-client` dep (Boot 4 module split)       |
 | `RabbitConfig`              | Declares durable queue and binding for `checker.check.schedule.v1.q`                                                                               |
 | `RawKeyReadOnlyStorage`     | `AbstractReadOnlyStorage<String, MediaType>`; fetches S3 objects by raw key                                                                        |

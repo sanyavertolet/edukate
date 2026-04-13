@@ -15,10 +15,9 @@ auth:
   hostname: localhost
 
 spring:
+  web:
+    error:
+      include-message: always
   docker:
     compose:
       enabled: false
-
-server:
-  error:
-    path: /error

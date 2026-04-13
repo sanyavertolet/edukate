@@ -246,11 +246,8 @@ class SubmissionServiceTest {
                 assertThat(ctx.submissionId).isEqualTo("sub-1")
                 assertThat(ctx.problemId).isEqualTo("1.0.0")
                 assertThat(ctx.problemText).isEqualTo("Solve it")
-                // Note: SubmissionContext positional args 4 & 5 map submissionRawKeys ->
-                // problemImageRawKeys
-                // and problemRawKeys -> submissionImageRawKeys (as-coded, positional order)
-                assertThat(ctx.problemImageRawKeys).containsExactly(fileKey.toString())
-                assertThat(ctx.submissionImageRawKeys).containsExactly(ProblemFileKey("1.0.0", "img.png").toString())
+                assertThat(ctx.problemImageRawKeys).containsExactly(ProblemFileKey("1.0.0", "img.png").toString())
+                assertThat(ctx.submissionImageRawKeys).containsExactly(fileKey.toString())
             }
             .verifyComplete()
     }

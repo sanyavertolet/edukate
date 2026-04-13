@@ -1,11 +1,13 @@
 package io.github.sanyavertolet.edukate.common.configs
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
 
 @Configuration
+@ConditionalOnClass(RoleHierarchy::class)
 class RoleHierarchyConfiguration {
     // todo: this does not seem to work at all
     @Bean
