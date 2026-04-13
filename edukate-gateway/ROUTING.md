@@ -141,24 +141,24 @@ The Swagger UI configuration is served at `/swagger/gateway/api-docs/swagger-con
 
 Configured in `WebSecurityConfig.corsConfigurationSource()`.
 
-| Setting                | Value                                                            |
-|------------------------|------------------------------------------------------------------|
-| Allowed origin pattern | `https://edukate.mooo.com` (prod) / `http://localhost:[*]` (dev) |
-| Allowed methods        | `GET, POST, PUT, DELETE, OPTIONS`                                |
-| Allowed headers        | `Content-Type, api_key`                                          |
-| Max age                | 3600 seconds                                                     |
-| Applied to             | `/**` (all paths)                                                |
+| Setting                | Value                                                                  |
+|------------------------|------------------------------------------------------------------------|
+| Allowed origin pattern | `https://edukatemeplease.online` (prod) / `http://localhost:[*]` (dev) |
+| Allowed methods        | `GET, POST, PUT, DELETE, OPTIONS`                                      |
+| Allowed headers        | `Content-Type, api_key`                                                |
+| Max age                | 3600 seconds                                                           |
+| Applied to             | `/**` (all paths)                                                      |
 
 ---
 
 ## Environment URLs
 
-| Property                      | Production                 | Development (`dev` profile) |
-|-------------------------------|----------------------------|-----------------------------|
-| `gateway.backend.url`         | `http://backend`           | `http://localhost:5800`     |
-| `gateway.notifier.url`        | `http://notifier`          | `http://localhost:5820`     |
-| `gateway.url`                 | `https://edukate.mooo.com` | `http://localhost:5810`     |
-| `cors.allowed-origin-pattern` | `https://edukate.mooo.com` | `http://localhost:[*]`      |
+| Property                      | Production                       | Development (`dev` profile) |
+|-------------------------------|----------------------------------|-----------------------------|
+| `gateway.backend.url`         | `http://backend`                 | `http://localhost:5800`     |
+| `gateway.notifier.url`        | `http://notifier`                | `http://localhost:5820`     |
+| `gateway.url`                 | `https://edukatemeplease.online` | `http://localhost:5810`     |
+| `cors.allowed-origin-pattern` | `https://edukatemeplease.online` | `http://localhost:[*]`      |
 
 ---
 
