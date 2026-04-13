@@ -54,9 +54,9 @@ describe("SolutionCard — static rendering", () => {
         expect(screen.queryByRole("button", { name: /submit/i })).not.toBeInTheDocument();
     });
 
-    it("renders the 'Show the result' accordion", () => {
+    it("renders the 'Show the result' accordion", async () => {
         render(<SolutionCard problem={problem} />);
-        expect(screen.getByText("Show the result")).toBeInTheDocument();
+        expect(await screen.findByText("Show the result")).toBeInTheDocument();
     });
 });
 
