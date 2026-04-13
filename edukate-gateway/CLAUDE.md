@@ -34,7 +34,7 @@ routes traffic to downstream services.
 
 - `application.yml` / `application-dev.yml`
 - Port: 5810 (main), 5811 (management)
-- Prod CORS: `https://edukate.mooo.com`; Dev CORS: `http://localhost:[*]`
+- Prod CORS: `https://edukatemeplease.online`; Dev CORS: `http://localhost:[*]`
 - Profiles: `dev`, `secure`
 - JWT secret from `${JWT_SECRET}` env var (prod) or hardcoded (dev)
 

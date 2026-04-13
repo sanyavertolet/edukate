@@ -7,8 +7,8 @@ profile: prod,secure
 checker:
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "200m"
+      memory: "256Mi"
+      cpu: "100m"
     limits:
       memory: "1Gi"
       cpu: "1000m"
@@ -31,7 +31,7 @@ ingress:
 #   either staging or prod
     profile: "prod"
     email: "lxnfrolov@gmail.com"
-  host: "edukate.mooo.com"
+  host: "edukatemeplease.online"
 
 s3:
   enabled: true
@@ -62,8 +62,8 @@ kube-prometheus-stack:
     adminPassword: ""
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 50m
+        memory: 128Mi
       limits:
         cpu: 500m
         memory: 512Mi
@@ -72,8 +72,8 @@ kube-prometheus-stack:
       retention: 30d
       resources:
         requests:
-          cpu: 200m
-          memory: 512Mi
+          cpu: 100m
+          memory: 256Mi
         limits:
           cpu: 1000m
           memory: 1Gi
@@ -85,8 +85,8 @@ loki:
     replicas: 1
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 50m
+        memory: 128Mi
       limits:
         cpu: 500m
         memory: 512Mi
@@ -95,8 +95,8 @@ tempo:
   tempo:
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 50m
+        memory: 128Mi
       limits:
         cpu: 500m
         memory: 512Mi

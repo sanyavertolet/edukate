@@ -3,7 +3,7 @@ info:
   title: OpenAPI definition
   version: v0
 servers:
-- url: https://edukate.mooo.com
+- url: https://edukatemeplease.online
 security:
 - cookieAuth: []
 tags:

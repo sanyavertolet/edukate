@@ -3,7 +3,7 @@ gateway:
     url: http://backend
   notifier:
     url: http://notifier
-  url: https://edukate.mooo.com
+  url: https://edukatemeplease.online
 
 auth:
   jwt:
@@ -64,7 +64,7 @@ spring:
                 - RemoveRequestHeader=Cookie
 
 cors:
-  allowed-origin-pattern: https://edukate.mooo.com
+  allowed-origin-pattern: https://edukatemeplease.online
 
 server:
   port: 5810
