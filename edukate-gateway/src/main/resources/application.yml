@@ -32,7 +32,7 @@ springdoc:
 
 spring:
   application:
-    name: gateway
+    name: edukate-gateway
   liquibase:
     enabled: false
   profiles:
@@ -74,16 +74,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info,gateway,loggers,prometheus
   endpoint:
     health:
       probes:
         enabled: true
+    prometheus:
+      access: unrestricted
 
 logging:
-  level:
-    org:
-      springframework: DEBUG
-    io:
-      github:
-        sanyavertolet: DEBUG
+  group:
+    edukate: io.github.sanyavertolet

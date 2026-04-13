@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Suppress actuator health-probe noise (all profiles) -->
+    <logger name="reactor.netty.http.server" level="WARN"/>
+    <logger name="org.springframework.web.reactive.function.server" level="WARN"/>
+    <logger name="org.springframework.security.web" level="WARN"/>
+
+    <springProfile name="dev">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%-36.36logger{35}){cyan} [%X{traceId}] %clr(:){faint} %m%n%xEx{10}</pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="io.github.sanyavertolet" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="!dev">
+        <!-- JSON encoder for Loki ingestion; traceId/spanId come from Micrometer Tracing MDC bridge -->
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdcKeyName>traceId</includeMdcKeyName>
+                <includeMdcKeyName>spanId</includeMdcKeyName>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+    </springProfile>
+</configuration>

@@ -12,6 +12,9 @@ checker:
     limits:
       memory: "1Gi"
       cpu: "1000m"
+  applicationProperties: |
+    management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
+    management.tracing.sampling.probability=0.1
 
 autoscaling:
   enabled: false
@@ -40,3 +43,79 @@ mongodb:
   secretKey:
     backend: connectionString
     notifier: notifierConnectionString
+
+# Enable the LGTM stack for production
+lgtm:
+  enabled: true
+
+# ── Production overrides for LGTM sub-charts ─────────────────────────────────
+# NOTE: Sub-chart values must be at the top level (not nested under lgtm:).
+#       The lgtm.enabled toggle above controls whether the sub-charts are deployed.
+
+kube-prometheus-stack:
+  grafana:
+    # Overrides the "changeme" default from values.yaml.
+    # Empty string triggers the Grafana chart's random-password path:
+    # a 40-char password is generated and stored in the "grafana" Secret.
+    # Retrieve it after install with:
+    #   kubectl get secret grafana -o jsonpath='{.data.admin-password}' | base64 -d
+    adminPassword: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  prometheus:
+    prometheusSpec:
+      retention: 30d
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+  alertmanager:
+    enabled: false
+
+loki:
+  singleBinary:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+tempo:
+  tempo:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# OTLP tracing endpoint for all Spring Boot services.
+# Requires micrometer-tracing-bridge-otel + opentelemetry-exporter-otlp on the classpath
+# (see OBSERVABILITY.md §3.1 for the Gradle dependency additions).
+backend:
+  applicationProperties: |
+    management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
+    management.tracing.sampling.probability=0.1
+
+gateway:
+  applicationProperties: |
+    management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
+    management.tracing.sampling.probability=0.1
+
+notifier:
+  applicationProperties: |
+    management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
+    management.tracing.sampling.probability=0.1
+

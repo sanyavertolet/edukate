@@ -21,3 +21,8 @@ spring:
   docker:
     compose:
       enabled: false
+
+management:
+  tracing:
+    export:
+      enabled: false
