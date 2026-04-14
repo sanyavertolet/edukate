@@ -13,6 +13,7 @@ import io.github.sanyavertolet.edukate.common.checks.SubmissionContext
 import io.github.sanyavertolet.edukate.common.utils.monoId
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
@@ -33,6 +34,7 @@ class SubmissionService(
     private val fileObjectRepository: FileObjectRepository,
     private val problemService: ProblemService,
     private val submissionPermissionEvaluator: SubmissionPermissionEvaluator,
+    private val meterRegistry: MeterRegistry,
 ) {
     @Transactional
     fun saveSubmission(submissionRequest: CreateSubmissionRequest, authentication: Authentication): Mono<Submission> =
@@ -56,6 +58,9 @@ class SubmissionService(
                         .collectList()
                 )
                 .flatMap { ids -> submissionRepository.save(submission.withFileObjectIds(ids)) }
+                .doOnNext {
+                    meterRegistry.counter("submissions.created", "problemId", submissionRequest.problemId).increment()
+                }
         }
 
     fun findById(id: String): Mono<Submission> = submissionRepository.findById(id)
