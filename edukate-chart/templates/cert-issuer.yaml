@@ -11,8 +11,10 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-nginx-private-key-cert-{{ .Values.ingress.tls.profile }}
     solvers:
-      - dns01:
-          digitalocean:
-            tokenSecretRef:
-              name: digitalocean-dns
-              key: access-token
+      - http01:
+          ingress:
+            ingressClassName: nginx
+            ingressTemplate:
+              metadata:
+                annotations:
+                  nginx.ingress.kubernetes.io/use-regex: "true"

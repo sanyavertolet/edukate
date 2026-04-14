@@ -98,13 +98,27 @@ lgtm:
 # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 kube-prometheus-stack:
   fullnameOverride: kube-prometheus-stack
+  prometheusOperator:
+    admissionWebhooks:
+      enabled: false
   grafana:
     fullnameOverride: grafana
     # Override via --set or grafana.admin.existingSecret in production
     adminPassword: "changeme"
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        labelValue: "1"
+        # Read the grafana_folder annotation from each ConfigMap to place dashboards in subfolders
+        folderAnnotation: grafana_folder
+        provider:
+          foldersFromFilesStructure: false
     persistence:
       enabled: true
       size: 1Gi
+    deploymentStrategy:
+      type: Recreate
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -148,6 +162,22 @@ kube-prometheus-stack:
       # The pod.common.annotations helper in _helpers.tpl already emits these annotations
       # for every Spring Boot service (backend, gateway, notifier, checker).
       additionalScrapeConfigs:
+        # RabbitMQ Prometheus plugin — two scrape jobs are required:
+        # 1. /metrics          → aggregated broker-level metrics (connections, channels, memory).
+        # 2. /metrics/detailed → per-queue labeled metrics (rabbitmq_detailed_* prefix).
+        #    Per-queue data only exists here; the default /metrics endpoint aggregates across all queues.
+        - job_name: edukate-rabbitmq
+          static_configs:
+            - targets: ["edukate-rabbit:15692"]
+          metrics_path: /metrics
+        - job_name: edukate-rabbitmq-detailed
+          static_configs:
+            - targets: ["edukate-rabbit:15692"]
+          metrics_path: /metrics/detailed
+          params:
+            family:
+              - queue_coarse_metrics   # rabbitmq_detailed_queue_messages, _ready, _unacked
+              - queue_consumer_count   # rabbitmq_detailed_queue_consumers
         - job_name: edukate-pods
           kubernetes_sd_configs:
             - role: pod
@@ -165,15 +195,12 @@ kube-prometheus-stack:
               regex: ([^:]+)(?::\d+)?;(\d+)
               replacement: $1:$2
               target_label: __address__
-            # Carry the kompose service label as both "service" and "application" labels.
-            # "service" is used internally; "application" makes community dashboards
-            # (JVM Micrometer, Spring Boot Statistics, etc.) work without variable edits.
+            # Carry the kompose service label as "service" for internal Prometheus use.
+            # The "application" label is emitted directly by Spring Boot 4 Micrometer
+            # autoconfiguration from spring.application.name — no relabeling needed.
             - source_labels: [__meta_kubernetes_pod_label_io_kompose_service]
               action: replace
               target_label: service
-            - source_labels: [__meta_kubernetes_pod_label_io_kompose_service]
-              action: replace
-              target_label: application
   alertmanager:
     enabled: false  # enable once alert routing (PagerDuty/Slack/email) is configured
 
@@ -220,10 +247,6 @@ loki:
     enabled: false
   resultsCache:
     enabled: false
-  # Override Loki chart's default ingress.tls: [] (list) with an empty table to suppress
-  # "destination for loki.ingress.tls is a table. Ignoring non-table value ([])" warning
-  ingress:
-    tls: {}
 
 # ── Tempo — distributed tracing backend ─────────────────────────────────────
 # Receives OTLP traces from Spring Boot services; serves traces to Grafana
