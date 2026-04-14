@@ -224,9 +224,39 @@ class FileManagerTest {
         every { storage.move(oldKey, newKey) } returns Mono.just(true)
         every { storage.metadata(newKey) } returns Mono.just(metadata)
         every { fileObjectRepository.findByKeyPath(oldKey.toString()) } returns Mono.empty()
+        every { fileObjectRepository.findByKeyPath(newKey.toString()) } returns Mono.empty()
         every { fileObjectRepository.save(any()) } answers { Mono.just(firstArg()) }
 
         StepVerifier.create(fileManager.moveFile(oldKey, newKey)).expectNext(newKey).verifyComplete()
+    }
+
+    @Test
+    fun `moveFile reuses existing file object when old path missing but new path already exists`() {
+        val oldKey = TempFileKey("user-1", "draft.txt")
+        val newKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "draft.txt")
+        val metadata = meta()
+        val existingFo =
+            FileObject(
+                id = "fo-existing",
+                keyPath = newKey.toString(),
+                key = newKey,
+                type = "submission",
+                ownerUserId = "user-1",
+                metadata = meta(50L),
+            )
+
+        every { storage.move(oldKey, newKey) } returns Mono.just(true)
+        every { storage.metadata(newKey) } returns Mono.just(metadata)
+        // Old tmp path not in DB (already moved in a previous attempt)
+        every { fileObjectRepository.findByKeyPath(oldKey.toString()) } returns Mono.empty()
+        // New final path already has a record (from that previous attempt)
+        every { fileObjectRepository.findByKeyPath(newKey.toString()) } returns Mono.just(existingFo)
+        every { fileObjectRepository.save(any()) } answers { Mono.just(firstArg()) }
+
+        StepVerifier.create(fileManager.moveFile(oldKey, newKey)).expectNext(newKey).verifyComplete()
+
+        // Must update the existing record, not create a new one
+        verify(exactly = 1) { fileObjectRepository.save(match { it.id == "fo-existing" }) }
     }
 
     @Test

@@ -155,6 +155,8 @@ kube-prometheus-stack:
             datasourceUid: loki
             filterByTraceID: true
             filterBySpanID: false
+          serviceMap:
+            datasourceUid: prometheus
   prometheus:
     prometheusSpec:
       # Enable remote write receiver so Tempo metricsGenerator can push span-derived RED metrics
@@ -202,6 +204,14 @@ kube-prometheus-stack:
             - source_labels: [__meta_kubernetes_pod_label_io_kompose_service]
               action: replace
               target_label: service
+            # Expose Kubernetes namespace and pod name as metric labels.
+            # Required by the JVM Micrometer Grafana dashboard (ID 4701) alongside "application".
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
   alertmanager:
     enabled: false  # enable once alert routing (PagerDuty/Slack/email) is configured
 

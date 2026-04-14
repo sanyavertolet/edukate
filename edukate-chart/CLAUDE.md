@@ -78,8 +78,8 @@ These Kubernetes Secrets must exist in the target namespace before `helm install
 
 | Helper | Purpose |
 |--------|---------|
-| `common.labels` | Deployment-level labels: `io.kompose.service`, `version`, `env` |
-| `pod.common.labels` | Pod template labels: `io.kompose.service`, `version` |
+| `common.labels` | Deployment-level labels: `io.kompose.service`, `app.kubernetes.io/name`, `app.kubernetes.io/part-of: edukate`, `version`, `env` |
+| `pod.common.labels` | Pod template labels: `io.kompose.service`, `app.kubernetes.io/name`, `app.kubernetes.io/part-of: edukate`, `version` |
 | `pod.common.annotations` | Prometheus scrape annotations — sets `scrape: "true"`, `path: /actuator/prometheus`, `port: <managementPort>` |
 | `spring-boot.common` | Container `image`, `imagePullPolicy`, `ports`, `resources` |
 | `spring-boot.common.env` | `SPRING_PROFILES_ACTIVE` env var |
