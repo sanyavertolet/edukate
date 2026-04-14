@@ -199,8 +199,8 @@ kube-prometheus-stack:
               replacement: $1:$2
               target_label: __address__
             # Carry the kompose service label as "service" for internal Prometheus use.
-            # The "application" label is emitted directly by Spring Boot 4 Micrometer
-            # autoconfiguration from spring.application.name — no relabeling needed.
+            # The "application" label is emitted by Micrometer via management.metrics.tags.application
+            # (set in each service's application.properties) — no relabeling needed.
             - source_labels: [__meta_kubernetes_pod_label_io_kompose_service]
               action: replace
               target_label: service
