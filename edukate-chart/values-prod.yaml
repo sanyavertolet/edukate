@@ -15,6 +15,7 @@ checker:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
     management.tracing.sampling.probability=0.5
+    management.otlp.metrics.export.enabled=false
 
 autoscaling:
   enabled: false
@@ -106,14 +107,17 @@ backend:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
     management.tracing.sampling.probability=0.5
+    management.otlp.metrics.export.enabled=false
 
 gateway:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
     management.tracing.sampling.probability=0.5
+    management.otlp.metrics.export.enabled=false
 
 notifier:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
     management.tracing.sampling.probability=0.5
+    management.otlp.metrics.export.enabled=false
 

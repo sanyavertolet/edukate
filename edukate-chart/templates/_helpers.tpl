@@ -1,11 +1,15 @@
 {{- define "common.labels" -}}
 io.kompose.service: {{ .service.name }}
+app.kubernetes.io/name: {{ .service.name }}
+app.kubernetes.io/part-of: edukate
 version: {{ or .service.dockerTag .Values.dockerTag }}
 env: {{ .Values.env }}
 {{- end }}
 
 {{- define "pod.common.labels" }}
 io.kompose.service: {{ .service.name }}
+app.kubernetes.io/name: {{ .service.name }}
+app.kubernetes.io/part-of: edukate
 version: {{ or .service.dockerTag .Values.dockerTag }}
 {{- end }}
 

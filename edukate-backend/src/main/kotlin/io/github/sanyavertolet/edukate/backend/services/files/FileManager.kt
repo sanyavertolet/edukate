@@ -136,10 +136,19 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
                 }
             }
             .switchIfEmpty(
-                fileObjectRepository.save(FileObject.fromStorageState(newPath, newKey, type, owner, metadata)).doOnSuccess {
-                    created ->
-                    log.debug("Created file object: key={}", created?.key)
-                }
+                fileObjectRepository
+                    .findByKeyPath(newPath)
+                    .flatMap { existing ->
+                        val updated = existing.withStorageState(newPath, newKey, type, owner, metadata)
+                        fileObjectRepository.save(updated).doOnSuccess { saved ->
+                            log.debug("Re-used existing file object: key={}", saved?.key)
+                        }
+                    }
+                    .switchIfEmpty(
+                        fileObjectRepository
+                            .save(FileObject.fromStorageState(newPath, newKey, type, owner, metadata))
+                            .doOnSuccess { created -> log.debug("Created file object: key={}", created?.key) }
+                    )
             )
             .timeout(DEFAULT_TIMEOUT)
             .doOnError { e -> log.error("saveOrUpdateByKeyPath failed: lookup={} newKey={}", lookupKeyPath, newKey, e) }
