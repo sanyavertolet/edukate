@@ -145,7 +145,7 @@ pods automatically — no `ServiceMonitor` CRDs required.
 Grafana datasources are pre-wired: Tempo links out to Loki by `traceId`, and Loki extracts
 `traceId` from JSON log lines. This requires:
 - `logback-spring.xml` emitting JSON with `traceId`/`spanId` fields (see OBSERVABILITY.md §4.1)
-- `micrometer-tracing-bridge-otel` + `opentelemetry-exporter-otlp` on each service classpath (see OBSERVABILITY.md §3.1)
+- `spring-boot-starter-opentelemetry` on each service classpath — activates `management.opentelemetry.*` autoconfiguration
 
 ### Enabling for production
 ```yaml

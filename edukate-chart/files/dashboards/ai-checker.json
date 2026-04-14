@@ -120,7 +120,7 @@
         {
           "refId": "A",
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "sum(rate(openai_call_seconds_count{application=\"edukate-checker\", error=\"true\"}[5m])) / sum(rate(openai_call_seconds_count{application=\"edukate-checker\"}[5m]))",
+          "expr": "sum(rate(openai_call_seconds_count{application=\"edukate-checker\", error!=\"none\"}[5m])) / sum(rate(openai_call_seconds_count{application=\"edukate-checker\"}[5m]))",
           "legendFormat": "error %"
         }
       ]

@@ -103,8 +103,9 @@ kube-prometheus-stack:
       enabled: false
   grafana:
     fullnameOverride: grafana
-    # Override via --set or grafana.admin.existingSecret in production
-    adminPassword: "changeme"
+    # Must be overridden via --set or existingSecret (see values-prod.yaml).
+    # Empty string causes Grafana to fail at startup rather than deploy with a known default.
+    adminPassword: ""
     sidecar:
       dashboards:
         enabled: true

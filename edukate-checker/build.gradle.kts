@@ -26,7 +26,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.reactor.kotlin.extensions)
     implementation(libs.spring.boot.starter.actuator)
-    implementation(libs.spring.boot.starter.aop)
+    implementation(libs.spring.boot.starter.aspectj)
     implementation(libs.micrometer.registry.prometheus)
     implementation(libs.spring.boot.starter.opentelemetry)
     implementation(libs.logstash.logback.encoder)
