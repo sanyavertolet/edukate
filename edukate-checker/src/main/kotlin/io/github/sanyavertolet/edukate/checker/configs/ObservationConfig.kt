@@ -10,9 +10,8 @@ class ObservationConfig {
     /**
      * Activates @Observed annotation processing via AOP.
      *
-     * Spring Boot auto-configures ObservationRegistry but does NOT register ObservedAspect. Without this bean, all
-     *
-     * @Observed annotations are silently ignored — no spans, no metrics.
+     * Spring Boot auto-configures ObservationRegistry but does NOT register ObservedAspect. Without this bean, all Observed
+     * annotations are silently ignored — no spans, no metrics.
      */
     @Bean fun observedAspect(observationRegistry: ObservationRegistry): ObservedAspect = ObservedAspect(observationRegistry)
 }
