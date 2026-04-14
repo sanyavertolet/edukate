@@ -5,6 +5,7 @@ package io.github.sanyavertolet.edukate.backend.services
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.repositories.CheckResultRepository
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -22,11 +23,12 @@ class CheckResultServiceTest {
 
     private val checkResultRepository: CheckResultRepository = mockk()
     private val submissionService: SubmissionService = mockk()
+    private val meterRegistry = SimpleMeterRegistry()
     private lateinit var service: CheckResultService
 
     @BeforeEach
     fun setUp() {
-        service = CheckResultService(checkResultRepository, submissionService)
+        service = CheckResultService(checkResultRepository, submissionService, meterRegistry)
     }
 
     // region saveAndUpdateSubmission

@@ -5,6 +5,7 @@ import io.github.sanyavertolet.edukate.checker.utils.error
 import io.github.sanyavertolet.edukate.checker.utils.success
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
 import io.github.sanyavertolet.edukate.common.checks.SubmissionContext
+import io.micrometer.observation.annotation.Observed
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -12,6 +13,7 @@ import reactor.core.publisher.Mono
 @Service
 class CheckerService(private val chatService: ChatService, private val mediaContentResolver: MediaContentResolver) {
 
+    @Observed(name = "ai.check", contextualName = "ai-check-pipeline")
     fun runCheck(context: SubmissionContext): Mono<CheckResultMessage> =
         buildRequestContext(context)
             .doOnNext { ctx ->

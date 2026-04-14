@@ -13,6 +13,7 @@ import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileServ
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -35,6 +36,7 @@ class SubmissionServiceTest {
     private val fileObjectRepository: FileObjectRepository = mockk()
     private val problemService: ProblemService = mockk()
     private val submissionPermissionEvaluator: SubmissionPermissionEvaluator = mockk()
+    private val meterRegistry = SimpleMeterRegistry()
     private lateinit var service: SubmissionService
 
     @BeforeEach
@@ -48,6 +50,7 @@ class SubmissionServiceTest {
                 fileObjectRepository,
                 problemService,
                 submissionPermissionEvaluator,
+                meterRegistry,
             )
     }
 
