@@ -1,0 +1,438 @@
+{
+  "title": "Edukate — RabbitMQ",
+  "uid": "edukate-rabbitmq",
+  "description": "Queue depths, consumer health, and broker resource usage for the Edukate RabbitMQ cluster",
+  "tags": ["edukate", "rabbitmq"],
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "graphTooltip": 1,
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "links": [],
+  "annotations": { "list": [] },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "label": "Datasource",
+        "query": "prometheus",
+        "refresh": 1,
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Queue Depths",
+      "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Checker Backlog",
+      "description": "Messages waiting in checker.check.schedule.v1.q — if growing, the AI checker is falling behind",
+      "id": 2,
+      "gridPos": { "x": 0, "y": 1, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "background" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages{queue=\"checker.check.schedule.v1.q\"}",
+          "legendFormat": "total"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Check Results Backlog",
+      "description": "Messages waiting in backend.check.result.v1.q — results from checker not yet consumed by backend",
+      "id": 3,
+      "gridPos": { "x": 8, "y": 1, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "background" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages{queue=\"backend.check.result.v1.q\"}",
+          "legendFormat": "total"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Notifications Backlog",
+      "description": "Messages waiting in notifier.notify.v1.q",
+      "id": 4,
+      "gridPos": { "x": 16, "y": 1, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "background" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages{queue=\"notifier.notify.v1.q\"}",
+          "legendFormat": "total"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Queue Depth Over Time — All Platform Queues",
+      "id": 5,
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2, "fillOpacity": 8 },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages{queue=\"checker.check.schedule.v1.q\"}",
+          "legendFormat": "checker backlog"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages{queue=\"backend.check.result.v1.q\"}",
+          "legendFormat": "check results"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages{queue=\"notifier.notify.v1.q\"}",
+          "legendFormat": "notifications"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Ready vs In-Flight",
+      "id": 10,
+      "gridPos": { "x": 0, "y": 13, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Checker Queue — Ready vs Unacknowledged",
+      "description": "Ready = waiting; Unacknowledged = currently being processed by the checker. A large unacked count with slow queue drain means the checker is taking long per message.",
+      "id": 6,
+      "gridPos": { "x": 0, "y": 14, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 1, "fillOpacity": 10 },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages_ready{queue=\"checker.check.schedule.v1.q\"}",
+          "legendFormat": "ready"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages_unacked{queue=\"checker.check.schedule.v1.q\"}",
+          "legendFormat": "unacked (in-flight)"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Check Results Queue — Ready vs Unacknowledged",
+      "id": 7,
+      "gridPos": { "x": 8, "y": 14, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 1, "fillOpacity": 10 },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages_ready{queue=\"backend.check.result.v1.q\"}",
+          "legendFormat": "ready"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages_unacked{queue=\"backend.check.result.v1.q\"}",
+          "legendFormat": "unacked (in-flight)"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Notifications Queue — Ready vs Unacknowledged",
+      "id": 8,
+      "gridPos": { "x": 16, "y": 14, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 1, "fillOpacity": 10 },
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages_ready{queue=\"notifier.notify.v1.q\"}",
+          "legendFormat": "ready"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_messages_unacked{queue=\"notifier.notify.v1.q\"}",
+          "legendFormat": "unacked (in-flight)"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Broker Health",
+      "id": 11,
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Connections",
+      "id": 12,
+      "gridPos": { "x": 0, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_connections",
+          "legendFormat": "connections"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Channels",
+      "id": 13,
+      "gridPos": { "x": 6, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "value" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_channels",
+          "legendFormat": "channels"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Consumers",
+      "id": 14,
+      "gridPos": { "x": 12, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "background" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(rabbitmq_detailed_queue_consumers)",
+          "legendFormat": "consumers"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Broker Memory",
+      "id": 15,
+      "gridPos": { "x": 18, "y": 23, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 536870912 },
+              { "color": "red", "value": 1073741824 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "graphMode": "area", "colorMode": "background" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_process_resident_memory_bytes",
+          "legendFormat": "resident memory"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Consumers per Queue",
+      "description": "A queue with 0 consumers will accumulate messages indefinitely. Red = no consumer.",
+      "id": 16,
+      "gridPos": { "x": 0, "y": 27, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 1, "fillOpacity": 5 },
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "desc" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"] }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "rabbitmq_detailed_queue_consumers{queue=~\"checker.check.schedule.v1.q|backend.check.result.v1.q|notifier.notify.v1.q\"}",
+          "legendFormat": "{{queue}}"
+        }
+      ]
+    }
+  ]
+}

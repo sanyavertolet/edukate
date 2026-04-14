@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.checker.services.impl
 import io.github.sanyavertolet.edukate.checker.domain.RequestContext
 import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse
 import io.github.sanyavertolet.edukate.checker.services.ChatService
+import io.micrometer.observation.annotation.Observed
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor
@@ -21,6 +22,7 @@ class SpringAiChatService(
 ) : ChatService {
     private val chatClient = ChatClient.builder(chatModel).defaultAdvisors(SimpleLoggerAdvisor()).build()
 
+    @Observed(name = "openai.call", contextualName = "openai-api-call")
     override fun makeRequest(ctx: RequestContext): Mono<ModelResponse> =
         Mono.fromCallable { callModel(ctx) }
             .doOnSuccess { log.debug("Successfully retrieved AI response") }

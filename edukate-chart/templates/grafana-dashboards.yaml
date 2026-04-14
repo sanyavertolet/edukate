@@ -1,0 +1,58 @@
+{{- if .Values.lgtm.enabled }}
+# Grafana dashboard ConfigMaps — one per dashboard JSON file.
+# The kube-prometheus-stack Grafana sidecar watches for the `grafana_dashboard: "1"` label
+# and automatically loads any ConfigMap carrying it into Grafana.
+# Dashboards land in the "Edukate" folder (controlled by the grafana_folder annotation).
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-service-health
+  namespace: {{ .Values.namespace }}
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Edukate"
+data:
+  service-health.json: |
+{{ .Files.Get "files/dashboards/service-health.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-ai-checker
+  namespace: {{ .Values.namespace }}
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Edukate"
+data:
+  ai-checker.json: |
+{{ .Files.Get "files/dashboards/ai-checker.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-mongodb-latency
+  namespace: {{ .Values.namespace }}
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Edukate"
+data:
+  mongodb-latency.json: |
+{{ .Files.Get "files/dashboards/mongodb-latency.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-rabbitmq
+  namespace: {{ .Values.namespace }}
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_folder: "Edukate"
+data:
+  rabbitmq.json: |
+{{ .Files.Get "files/dashboards/rabbitmq.json" | indent 4 }}
+{{- end }}

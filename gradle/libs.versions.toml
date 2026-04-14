@@ -29,6 +29,7 @@ spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-s
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-starter-amqp" }
+spring-boot-starter-aspectj = { module = "org.springframework.boot:spring-boot-starter-aspectj" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
 spring-boot-starter-data-mongodb-reactive = { module = "org.springframework.boot:spring-boot-starter-data-mongodb-reactive" }
@@ -65,8 +66,9 @@ spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-te
 
 # observability — versions managed by Spring Boot BOM except logstash-logback-encoder
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
-micrometer-tracing-bridge-otel = { module = "io.micrometer:micrometer-tracing-bridge-otel" }
-opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
+# spring-boot-starter-opentelemetry bundles micrometer-tracing-bridge-otel +
+# opentelemetry-exporter-otlp and activates the management.opentelemetry.* autoconfiguration
+spring-boot-starter-opentelemetry = { module = "org.springframework.boot:spring-boot-starter-opentelemetry" }
 logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version = "8.0" }
 
 # utils

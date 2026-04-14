@@ -6,5 +6,10 @@ metadata:
 spec:
   replicas: 1
   image: rabbitmq:4.0-management
+  rabbitmq:
+    # Enable the Prometheus plugin so the broker exposes metrics at :15692/metrics.
+    # The Cluster Operator automatically adds port 15692 to the Service when this plugin is present.
+    additionalPlugins:
+      - rabbitmq_prometheus
   persistence:
     storage: 10Gi
