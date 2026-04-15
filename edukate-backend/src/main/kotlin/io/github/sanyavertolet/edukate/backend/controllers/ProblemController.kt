@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
 import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
+import io.github.sanyavertolet.edukate.backend.mappers.ProblemMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -37,7 +38,7 @@ import reactor.kotlin.core.publisher.toMono
 @SecurityRequirements
 @RequestMapping("/api/v1/problems")
 @Tag(name = "Problems", description = "API for managing and retrieving problems")
-class ProblemController(private val problemService: ProblemService) {
+class ProblemController(private val problemService: ProblemService, private val problemMapper: ProblemMapper) {
     @GetMapping
     @Operation(summary = "Get problem list", description = "Retrieves a paginated list of problem metadata")
     @ApiResponses(
@@ -85,7 +86,7 @@ class ProblemController(private val problemService: ProblemService) {
                 authentication,
                 PageRequest.of(page, size),
             )
-            .flatMapSequential { problem -> problemService.prepareMetadata(problem, authentication) }
+            .flatMapSequential { problem -> problemMapper.toMetadata(problem, authentication) }
 
     @GetMapping("/count")
     @Operation(summary = "Count problems", description = "Returns the total number of problems in the system")
@@ -153,7 +154,7 @@ class ProblemController(private val problemService: ProblemService) {
         problemService
             .findProblemById(id)
             .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found").toMono())
-            .flatMap { problem -> problemService.prepareDto(problem, authentication) }
+            .flatMap { problem -> problemMapper.toDto(problem, authentication) }
 
     @Suppress("MaxLineLength")
     @GetMapping("/random")

@@ -1,16 +1,15 @@
 package io.github.sanyavertolet.edukate.backend.services
 
-import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto
-import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
 import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
-import io.github.sanyavertolet.edukate.backend.services.files.FileManager
 import io.github.sanyavertolet.edukate.backend.utils.SemVerUtils.semVerSort
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.github.sanyavertolet.edukate.common.utils.monoId
-import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import org.bson.Document
+import org.springframework.cache.annotation.CacheConfig
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
@@ -24,17 +23,12 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 
 @Service
+@CacheConfig(cacheNames = ["problems"])
 @Suppress("TooManyFunctions")
-class ProblemService(
-    private val problemRepository: ProblemRepository,
-    private val mongoTemplate: ReactiveMongoTemplate,
-    private val fileManager: FileManager,
-    private val problemStatusDecisionManager: ProblemStatusDecisionManager,
-) {
+class ProblemService(private val problemRepository: ProblemRepository, private val mongoTemplate: ReactiveMongoTemplate) {
     fun getFilteredProblems(
         filter: ProblemFilter,
         authentication: Authentication?,
@@ -72,15 +66,16 @@ class ProblemService(
         }
     }
 
-    fun findProblemById(id: String): Mono<Problem> = problemRepository.findById(id)
+    @Cacheable(key = "#id") fun findProblemById(id: String): Mono<Problem> = problemRepository.findById(id)
 
     fun findProblemsByIds(problemIds: List<String>): Flux<Problem> = problemRepository.findProblemsByIdIn(problemIds)
 
-    fun updateProblem(problem: Problem): Mono<Problem> = problemRepository.save(problem)
+    @CacheEvict(key = "#problem.id") fun updateProblem(problem: Problem): Mono<Problem> = problemRepository.save(problem)
 
+    @CacheEvict(allEntries = true)
     fun updateProblemBatch(problems: Flux<Problem>): Mono<Long> = problemRepository.saveAll(problems).count()
 
-    fun deleteProblemById(id: String): Mono<Void> = problemRepository.deleteById(id)
+    @CacheEvict(key = "#id") fun deleteProblemById(id: String): Mono<Void> = problemRepository.deleteById(id)
 
     fun getProblemIdsByPrefix(prefix: String, limit: Int): Flux<String> =
         problemRepository.findProblemsByIdStartingWith(prefix, Pageable.ofSize(limit)).map { it.id }
@@ -90,17 +85,6 @@ class ProblemService(
             .monoId()
             .flatMap { problemRepository.findRandomUnsolvedProblemId(it) }
             .switchIfEmpty(problemRepository.findRandomProblemId())
-
-    fun problemImageDownloadUrls(problemId: String, images: List<String>): Flux<String> =
-        images.toFlux().map { fileName -> ProblemFileKey(problemId, fileName) }.flatMap { fileManager.getPresignedUrl(it) }
-
-    fun prepareDto(problem: Problem, authentication: Authentication?): Mono<ProblemDto> =
-        problemStatusDecisionManager
-            .getStatus(problem.id, authentication)
-            .zipWith(problemImageDownloadUrls(problem.id, problem.images).collectList(), problem::toProblemDto)
-
-    fun prepareMetadata(problem: Problem, authentication: Authentication?): Mono<ProblemMetadata> =
-        problemStatusDecisionManager.getStatus(problem.id, authentication).map { problem.toProblemMetadata(it) }
 
     private fun findByFilter(filter: ProblemFilter, userId: String?, pageRequest: PageRequest): Flux<Problem> {
         val operations = buildFilterStages(filter, userId)

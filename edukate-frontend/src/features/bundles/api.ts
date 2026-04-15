@@ -11,7 +11,6 @@ import {
     getPublicBundles,
     getUserRoles,
     inviteToBundle,
-    joinBundle,
     replyToInvite,
 } from "@/generated/backend";
 import { useAuthContext } from "@/features/auth/context";
@@ -53,16 +52,6 @@ export function useBundlesRequest(category: BundleCategory) {
     return useQuery({
         queryKey: queryKeys.bundles.list(category),
         queryFn: ({ signal }) => bundleListFn[category](undefined, signal),
-    });
-}
-
-export function useJoinBundleMutation() {
-    return useMutation({
-        mutationFn: (shareCode: string) => joinBundle(shareCode),
-        onSuccess: (_data, shareCode) => {
-            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.list("joined") });
-            void queryClient.invalidateQueries({ queryKey: queryKeys.bundles.detail(shareCode) });
-        },
     });
 }
 

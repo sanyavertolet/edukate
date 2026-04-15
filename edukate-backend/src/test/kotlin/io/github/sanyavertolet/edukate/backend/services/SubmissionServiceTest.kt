@@ -8,10 +8,8 @@ import io.github.sanyavertolet.edukate.backend.entities.files.FileObjectMetadata
 import io.github.sanyavertolet.edukate.backend.permissions.SubmissionPermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository
-import io.github.sanyavertolet.edukate.backend.services.files.FileManager
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
-import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.every
@@ -30,11 +28,8 @@ import reactor.test.StepVerifier
 
 class SubmissionServiceTest {
     private val submissionRepository: SubmissionRepository = mockk()
-    private val fileManager: FileManager = mockk()
     private val submissionFileService: SubmissionFileService = mockk()
-    private val userService: UserService = mockk()
     private val fileObjectRepository: FileObjectRepository = mockk()
-    private val problemService: ProblemService = mockk()
     private val submissionPermissionEvaluator: SubmissionPermissionEvaluator = mockk()
     private val meterRegistry = SimpleMeterRegistry()
     private lateinit var service: SubmissionService
@@ -44,11 +39,8 @@ class SubmissionServiceTest {
         service =
             SubmissionService(
                 submissionRepository,
-                fileManager,
                 submissionFileService,
-                userService,
                 fileObjectRepository,
-                problemService,
                 submissionPermissionEvaluator,
                 meterRegistry,
             )
@@ -194,66 +186,4 @@ class SubmissionServiceTest {
 
     // endregion
 
-    // region prepareDto
-
-    @Test
-    fun `prepareDto collects file urls and user name`() {
-        val fileKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "solution.txt")
-        val fileObject =
-            FileObject(
-                id = "fo-1",
-                keyPath = fileKey.toString(),
-                key = fileKey,
-                type = "submission",
-                ownerUserId = "user-1",
-                metadata = FileObjectMetadata(Instant.now(), 100L, "text/plain"),
-            )
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1", fileObjectIds = listOf("fo-1"))
-
-        every { fileObjectRepository.findAllById(listOf("fo-1")) } returns Flux.just(fileObject)
-        every { fileManager.getPresignedUrl(fileKey) } returns Mono.just("https://s3/solution.txt")
-        every { userService.findUserName("user-1") } returns Mono.just("alice")
-
-        StepVerifier.create(service.prepareDto(submission))
-            .assertNext { dto ->
-                assertThat(dto.userName).isEqualTo("alice")
-                assertThat(dto.fileUrls).containsExactly("https://s3/solution.txt")
-            }
-            .verifyComplete()
-    }
-
-    // endregion
-
-    // region prepareContext
-
-    @Test
-    fun `prepareContext builds SubmissionContext`() {
-        val problem = BackendFixtures.problem(id = "1.0.0", text = "Solve it", images = listOf("img.png"))
-        val fileKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "solution.txt")
-        val fileObject =
-            FileObject(
-                id = "fo-1",
-                keyPath = fileKey.toString(),
-                key = fileKey,
-                type = "submission",
-                ownerUserId = "user-1",
-                metadata = FileObjectMetadata(Instant.now(), 100L, "text/plain"),
-            )
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1", fileObjectIds = listOf("fo-1"))
-
-        every { problemService.findProblemById("1.0.0") } returns Mono.just(problem)
-        every { fileManager.getFileObjectsByIds(listOf("fo-1")) } returns Flux.just(fileObject)
-
-        StepVerifier.create(service.prepareContext(submission))
-            .assertNext { ctx ->
-                assertThat(ctx.submissionId).isEqualTo("sub-1")
-                assertThat(ctx.problemId).isEqualTo("1.0.0")
-                assertThat(ctx.problemText).isEqualTo("Solve it")
-                assertThat(ctx.problemImageRawKeys).containsExactly(ProblemFileKey("1.0.0", "img.png").toString())
-                assertThat(ctx.submissionImageRawKeys).containsExactly(fileKey.toString())
-            }
-            .verifyComplete()
-    }
-
-    // endregion
 }

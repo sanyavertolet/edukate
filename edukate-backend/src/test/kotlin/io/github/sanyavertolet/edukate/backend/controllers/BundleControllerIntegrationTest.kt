@@ -99,48 +99,6 @@ class BundleControllerIntegrationTest : AbstractBackendIntegrationTest() {
 
     // endregion
 
-    // region POST /api/v1/bundles/{shareCode}/join
-
-    @Test
-    fun `joinBundle returns 200 for public bundle`() {
-        bundleRepository
-            .save(
-                BackendFixtures.bundle(
-                    isPublic = true,
-                    shareCode = "SC-JOIN",
-                    userIdRoleMap = mapOf("other-user" to UserRole.ADMIN),
-                )
-            )
-            .block()
-
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/bundles/SC-JOIN/join")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("$.shareCode")
-            .isEqualTo("SC-JOIN")
-    }
-
-    @Test
-    fun `joinBundle returns 400 when already a member`() {
-        bundleRepository
-            .save(
-                BackendFixtures.bundle(
-                    isPublic = true,
-                    shareCode = "SC-JOINED",
-                    userIdRoleMap = mapOf("user-1" to UserRole.ADMIN),
-                )
-            )
-            .block()
-
-        authenticatedClient().post().uri("/api/v1/bundles/SC-JOINED/join").exchange().expectStatus().isBadRequest
-    }
-
-    // endregion
-
     // region POST /api/v1/bundles/{shareCode}/leave
 
     @Test

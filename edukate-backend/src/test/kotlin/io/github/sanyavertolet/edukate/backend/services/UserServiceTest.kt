@@ -27,19 +27,6 @@ class UserServiceTest {
         service = UserService(userRepository, notifier)
     }
 
-    // region findUserByAuthentication
-
-    @Test
-    fun `findUserByAuthentication returns User`() {
-        val user = BackendFixtures.user(id = "user-1")
-        val auth = BackendFixtures.mockAuthentication(userId = "user-1")
-        every { userRepository.findById("user-1") } returns Mono.just(user)
-
-        StepVerifier.create(service.findUserByAuthentication(auth)).expectNext(user).verifyComplete()
-    }
-
-    // endregion
-
     // region findUserByName
 
     @Test
@@ -55,25 +42,6 @@ class UserServiceTest {
         every { userRepository.findByName("ghost") } returns Mono.empty()
 
         StepVerifier.create(service.findUserByName("ghost")).verifyComplete()
-    }
-
-    // endregion
-
-    // region findUserName
-
-    @Test
-    fun `findUserName returns name`() {
-        val user = BackendFixtures.user(id = "user-1", name = "alice")
-        every { userRepository.findById("user-1") } returns Mono.just(user)
-
-        StepVerifier.create(service.findUserName("user-1")).expectNext("alice").verifyComplete()
-    }
-
-    @Test
-    fun `findUserName returns unknown for missing User`() {
-        every { userRepository.findById("nobody") } returns Mono.empty()
-
-        StepVerifier.create(service.findUserName("nobody")).expectNext("UNKNOWN").verifyComplete()
     }
 
     // endregion

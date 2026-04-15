@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.BundleMetadata
 import io.github.sanyavertolet.edukate.backend.dtos.ChangeBundleProblemsRequest
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest
 import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole
+import io.github.sanyavertolet.edukate.backend.mappers.BundleMapper
 import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.services.BundleService
 import io.github.sanyavertolet.edukate.backend.services.UserService
@@ -24,6 +25,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBodyList
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -35,6 +37,7 @@ class BundleControllerTest {
     @Autowired private lateinit var webTestClient: WebTestClient
 
     @MockkBean private lateinit var bundleService: BundleService
+    @MockkBean private lateinit var bundleMapper: BundleMapper
     @MockkBean private lateinit var userService: UserService
     @MockkBean private lateinit var notifier: Notifier
     @MockkBean private lateinit var bundlePermissionEvaluator: BundlePermissionEvaluator
@@ -56,7 +59,7 @@ class BundleControllerTest {
     fun `createBundle returns 200 with bundle DTO`() {
         val bundle = BackendFixtures.bundle()
         every { bundleService.createBundle(any(), any()) } returns Mono.just(bundle)
-        every { bundleService.prepareDto(bundle, any()) } returns Mono.just(bundleDto())
+        every { bundleMapper.toDto(bundle, any()) } returns Mono.just(bundleDto())
 
         authenticatedClient()
             .post()
@@ -81,7 +84,7 @@ class BundleControllerTest {
     fun `getPublicBundles returns 200 with metadata list (no auth required)`() {
         val bundle = BackendFixtures.bundle(isPublic = true)
         every { bundleService.getPublicBundles(any()) } returns Flux.just(bundle)
-        every { bundleService.prepareMetadata(bundle) } returns Mono.just(bundleMetadata())
+        every { bundleMapper.toMetadata(bundle) } returns Mono.just(bundleMetadata())
 
         webTestClient
             .get()
@@ -89,7 +92,7 @@ class BundleControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList(BundleMetadata::class.java)
+            .expectBodyList<BundleMetadata>()
             .hasSize(1)
     }
 
@@ -101,7 +104,7 @@ class BundleControllerTest {
     fun `getOwnedBundles returns 200 with owned bundle metadata`() {
         val bundle = BackendFixtures.bundle()
         every { bundleService.getOwnedBundles(any(), any()) } returns Flux.just(bundle)
-        every { bundleService.prepareMetadata(bundle) } returns Mono.just(bundleMetadata())
+        every { bundleMapper.toMetadata(bundle) } returns Mono.just(bundleMetadata())
 
         authenticatedClient()
             .get()
@@ -109,7 +112,7 @@ class BundleControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList(BundleMetadata::class.java)
+            .expectBodyList<BundleMetadata>()
             .hasSize(1)
     }
 
@@ -122,7 +125,7 @@ class BundleControllerTest {
         val bundle = BackendFixtures.bundle(userIdRoleMap = mapOf("user-1" to UserRole.USER))
         every { bundleService.findBundleByShareCode("SHARE123") } returns Mono.just(bundle)
         every { bundlePermissionEvaluator.hasReadPermission(bundle, "user-1") } returns true
-        every { bundleService.prepareDto(bundle, any()) } returns Mono.just(bundleDto())
+        every { bundleMapper.toDto(bundle, any()) } returns Mono.just(bundleDto())
 
         authenticatedClient()
             .get()
@@ -146,34 +149,13 @@ class BundleControllerTest {
 
     // endregion
 
-    // region POST /api/v1/bundles/{shareCode}/join
-
-    @Test
-    fun `joinBundle returns 200 with bundle metadata`() {
-        val bundle = BackendFixtures.bundle()
-        every { bundleService.joinUser("SHARE123", "user-1") } returns Mono.just(bundle)
-        every { bundleService.prepareMetadata(bundle) } returns Mono.just(bundleMetadata())
-
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/bundles/SHARE123/join")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("$.shareCode")
-            .isEqualTo("SHARE123")
-    }
-
-    // endregion
-
     // region GET /api/v1/bundles/joined
 
     @Test
     fun `getJoinedBundles returns 200 with joined bundle metadata`() {
         val bundle = BackendFixtures.bundle()
         every { bundleService.getJoinedBundles(any(), any()) } returns Flux.just(bundle)
-        every { bundleService.prepareMetadata(bundle) } returns Mono.just(bundleMetadata())
+        every { bundleMapper.toMetadata(bundle) } returns Mono.just(bundleMetadata())
 
         authenticatedClient()
             .get()
@@ -181,7 +163,7 @@ class BundleControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList(BundleMetadata::class.java)
+            .expectBodyList<BundleMetadata>()
             .hasSize(1)
     }
 
@@ -266,7 +248,7 @@ class BundleControllerTest {
     @Test
     fun `replyToInvite accept returns 200 success message`() {
         val bundle = BackendFixtures.bundle()
-        every { bundleService.joinUser("SHARE123", "user-1") } returns Mono.just(bundle)
+        every { bundleService.reactToInvite("SHARE123", true, any()) } returns Mono.just(bundle)
 
         authenticatedClient()
             .post()
@@ -279,7 +261,7 @@ class BundleControllerTest {
     @Test
     fun `replyToInvite decline returns 200 success message`() {
         val bundle = BackendFixtures.bundle()
-        every { bundleService.declineInvite("SHARE123", any()) } returns Mono.just(bundle)
+        every { bundleService.reactToInvite("SHARE123", false, any()) } returns Mono.just(bundle)
 
         authenticatedClient()
             .post()
@@ -295,8 +277,9 @@ class BundleControllerTest {
 
     @Test
     fun `getUserRoles returns 200 with user role list`() {
-        every { bundleService.getBundleUsers("SHARE123", any()) } returns
-            Flux.just(UserNameWithRole("admin-1", UserRole.ADMIN))
+        val bundle = BackendFixtures.bundle(shareCode = "SHARE123")
+        every { bundleService.getBundleForModerator("SHARE123", any()) } returns Mono.just(bundle)
+        every { bundleMapper.toUserRoles(bundle) } returns Flux.just(UserNameWithRole("admin-1", UserRole.ADMIN))
 
         authenticatedClient()
             .get()
@@ -304,7 +287,7 @@ class BundleControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList(UserNameWithRole::class.java)
+            .expectBodyList<UserNameWithRole>()
             .hasSize(1)
     }
 
@@ -314,7 +297,9 @@ class BundleControllerTest {
 
     @Test
     fun `getInvitedUsers returns 200 with invited user list`() {
-        every { bundleService.getBundleInvitedUsers("SHARE123", any()) } returns Flux.just("invitee-1")
+        val bundle = BackendFixtures.bundle(shareCode = "SHARE123")
+        every { bundleService.getBundleForModerator("SHARE123", any()) } returns Mono.just(bundle)
+        every { bundleMapper.toInvitedUserNames(bundle) } returns Flux.just("invitee-1")
 
         authenticatedClient()
             .get()
@@ -322,7 +307,7 @@ class BundleControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList(String::class.java)
+            .expectBodyList<String>()
             .hasSize(1)
     }
 
@@ -368,7 +353,7 @@ class BundleControllerTest {
     fun `changeVisibility returns 200 with updated bundle DTO`() {
         val bundle = BackendFixtures.bundle(isPublic = true)
         every { bundleService.changeVisibility("SHARE123", true, any()) } returns Mono.just(bundle)
-        every { bundleService.prepareDto(bundle, any()) } returns Mono.just(bundleDto())
+        every { bundleMapper.toDto(bundle, any()) } returns Mono.just(bundleDto())
 
         authenticatedClient()
             .post()
@@ -389,7 +374,7 @@ class BundleControllerTest {
     fun `changeProblems returns 200 with updated bundle DTO`() {
         val bundle = BackendFixtures.bundle(problemIds = listOf("1.0.0", "2.0.0"))
         every { bundleService.changeProblems("SHARE123", listOf("1.0.0", "2.0.0"), any()) } returns Mono.just(bundle)
-        every { bundleService.prepareDto(bundle, any()) } returns Mono.just(bundleDto())
+        every { bundleMapper.toDto(bundle, any()) } returns Mono.just(bundleDto())
 
         authenticatedClient()
             .post()

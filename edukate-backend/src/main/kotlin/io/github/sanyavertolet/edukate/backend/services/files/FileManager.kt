@@ -9,6 +9,8 @@ import io.github.sanyavertolet.edukate.storage.keys.FileKey
 import java.nio.ByteBuffer
 import java.time.Duration
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,12 +35,11 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
             .doOnSubscribe { log.debug("Downloading content: key={}", key) }
             .doOnError { e -> log.error("download failed for key={}", key, e) }
 
+    @Cacheable(cacheNames = ["presigned-urls"], key = "#key.toString()")
     fun getPresignedUrl(key: FileKey): Mono<String> =
         storage.generatePresignedUrl(key).timeout(DEFAULT_TIMEOUT).doOnError { e ->
             log.error("presign failed for key={}", key, e)
         }
-
-    fun getFileObjectsByIds(ids: List<String>): Flux<FileObject> = fileObjectRepository.findAllById(ids)
 
     @Transactional
     fun uploadFile(key: FileKey, contentType: MediaType, content: Flux<ByteBuffer>): Mono<FileKey> =
@@ -52,6 +53,7 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
             .doOnSuccess { k -> log.debug("Uploaded: key={}", k) }
             .doOnError { e -> log.error("upload failed for key={}", key, e) }
 
+    @CacheEvict(cacheNames = ["presigned-urls"], key = "#key.toString()")
     @Transactional
     fun deleteFile(key: FileKey): Mono<Boolean> =
         storage
@@ -91,6 +93,7 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
             .timeout(DEFAULT_TIMEOUT)
             .doOnError { e -> log.error("batch exists check failed", e) }
 
+    @CacheEvict(cacheNames = ["presigned-urls"], key = "#oldKey.toString()")
     @Transactional
     fun moveFile(oldKey: FileKey, newKey: FileKey): Mono<FileKey> =
         storage
