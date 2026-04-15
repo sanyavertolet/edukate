@@ -503,54 +503,6 @@ paths:
                 type: string
       security:
       - cookieAuth: []
-  /api/v1/bundles/{shareCode}/join:
-    post:
-      tags:
-      - Bundles
-      summary: Join a bundle
-      description: Joins a bundle using its share code
-      operationId: joinBundle
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "200":
-          description: Successfully joined bundle
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleMetadata"
-        "400":
-          description: Already in bundle
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleMetadata"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleMetadata"
-        "403":
-          description: Access denied - invite is required to join
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleMetadata"
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleMetadata"
-      security:
-      - cookieAuth: []
   /api/v1/bundles/{shareCode}/invite:
     post:
       tags:
@@ -1652,31 +1604,6 @@ components:
           minItems: 1
       required:
       - problemIds
-    BundleMetadata:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        admins:
-          type: array
-          items:
-            type: string
-        shareCode:
-          type: string
-        isPublic:
-          type: boolean
-        size:
-          type: integer
-          format: int64
-      required:
-      - admins
-      - description
-      - isPublic
-      - name
-      - shareCode
-      - size
     UserDto:
       type: object
       properties:
@@ -1846,6 +1773,31 @@ components:
       required:
       - name
       - role
+    BundleMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        admins:
+          type: array
+          items:
+            type: string
+        shareCode:
+          type: string
+        isPublic:
+          type: boolean
+        size:
+          type: integer
+          format: int64
+      required:
+      - admins
+      - description
+      - isPublic
+      - name
+      - shareCode
+      - size
   securitySchemes:
     cookieAuth:
       type: apiKey

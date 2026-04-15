@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto
+import io.github.sanyavertolet.edukate.backend.mappers.SubmissionMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.backend.services.UserService
@@ -53,6 +54,7 @@ class SubmissionController(
     private val problemService: ProblemService,
     private val userService: UserService,
     private val submissionService: SubmissionService,
+    private val submissionMapper: SubmissionMapper,
     private val fileManager: FileManager,
 ) {
     @GetMapping("/by-id/{id}")
@@ -78,7 +80,7 @@ class SubmissionController(
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
             .filter { it.userId == authentication.id() }
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
-            .flatMap { submissionService.prepareDto(it) }
+            .flatMap { submissionMapper.toDto(it) }
 
     @PostMapping
     @SecurityRequirement(name = "cookieAuth")
@@ -109,8 +111,9 @@ class SubmissionController(
         @RequestBody @Valid submissionRequest: CreateSubmissionRequest,
         authentication: Authentication,
     ): Mono<SubmissionDto> =
-        userService
-            .findUserByAuthentication(authentication)
+        authentication
+            .monoId()
+            .flatMap { userService.findUserById(it) }
             .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found").toMono())
             .filterWhen { userService.hasUserPermissionToSubmit(it) }
             .switchIfEmpty(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission").toMono())
@@ -125,7 +128,7 @@ class SubmissionController(
                     .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.").toMono())
                     .then(submissionService.saveSubmission(submissionRequest, authentication))
             }
-            .flatMap { submissionService.prepareDto(it) }
+            .flatMap { submissionMapper.toDto(it) }
 
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     @GetMapping("/{problemId}/{username}")
@@ -176,7 +179,7 @@ class SubmissionController(
                     sortedPageable(page, size),
                 )
             }
-            .flatMapSequential { submissionService.prepareDto(it) }
+            .flatMapSequential { submissionMapper.toDto(it) }
 
     @Suppress("MaxLineLength")
     @GetMapping("/my")
@@ -224,7 +227,7 @@ class SubmissionController(
         authentication
             .monoId()
             .flatMapMany { userId -> submissionService.findUserSubmissions(userId, problemId, sortedPageable(page, size)) }
-            .flatMapSequential { submissionService.prepareDto(it) }
+            .flatMapSequential { submissionMapper.toDto(it) }
 
     private fun sortedPageable(page: Int, size: Int): Pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
 }

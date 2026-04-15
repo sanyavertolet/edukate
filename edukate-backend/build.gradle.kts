@@ -38,6 +38,8 @@ dependencies {
     implementation(libs.spring.boot.starter.opentelemetry)
     implementation(libs.logstash.logback.encoder)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.cache)
+    implementation(libs.caffeine)
     implementation(libs.spring.boot.starter.data.mongodb.reactive)
     implementation(libs.springdoc.openapi.starter.webflux.ui)
     implementation(libs.jackson.module.kotlin)

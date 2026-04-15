@@ -6,12 +6,9 @@ import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
-import io.github.sanyavertolet.edukate.backend.services.files.FileManager
-import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageRequest
@@ -24,13 +21,11 @@ import reactor.test.StepVerifier
 class ProblemServiceTest {
     private val problemRepository: ProblemRepository = mockk()
     private val mongoTemplate: ReactiveMongoTemplate = mockk()
-    private val fileManager: FileManager = mockk()
-    private val problemStatusDecisionManager: ProblemStatusDecisionManager = mockk()
     private lateinit var service: ProblemService
 
     @BeforeEach
     fun setUp() {
-        service = ProblemService(problemRepository, mongoTemplate, fileManager, problemStatusDecisionManager)
+        service = ProblemService(problemRepository, mongoTemplate)
     }
 
     // region getFilteredProblems
@@ -146,42 +141,4 @@ class ProblemServiceTest {
 
     // endregion
 
-    // region problemImageDownloadUrls / prepareDto / prepareMetadata
-
-    @Test
-    fun `problemImageDownloadUrls generates presigned urls`() {
-        every { fileManager.getPresignedUrl(ProblemFileKey("1.0.0", "img.png")) } returns Mono.just("https://s3/img.png")
-
-        StepVerifier.create(service.problemImageDownloadUrls("1.0.0", listOf("img.png")))
-            .expectNext("https://s3/img.png")
-            .verifyComplete()
-    }
-
-    @Test
-    fun `prepareDto zips status and images`() {
-        val auth = BackendFixtures.mockAuthentication()
-        val problem = BackendFixtures.problem(id = "1.0.0", images = listOf("img.png"))
-        every { problemStatusDecisionManager.getStatus("1.0.0", auth) } returns Mono.just(Problem.Status.SOLVED)
-        every { fileManager.getPresignedUrl(ProblemFileKey("1.0.0", "img.png")) } returns Mono.just("https://s3/img.png")
-
-        StepVerifier.create(service.prepareDto(problem, auth))
-            .assertNext { dto ->
-                assertThat(dto.status).isEqualTo(Problem.Status.SOLVED)
-                assertThat(dto.images).containsExactly("https://s3/img.png")
-            }
-            .verifyComplete()
-    }
-
-    @Test
-    fun `prepareMetadata applies status`() {
-        val auth = BackendFixtures.mockAuthentication()
-        val problem = BackendFixtures.problem(id = "1.0.0")
-        every { problemStatusDecisionManager.getStatus("1.0.0", auth) } returns Mono.just(Problem.Status.SOLVING)
-
-        StepVerifier.create(service.prepareMetadata(problem, auth))
-            .assertNext { meta -> assertThat(meta.status).isEqualTo(Problem.Status.SOLVING) }
-            .verifyComplete()
-    }
-
-    // endregion
 }

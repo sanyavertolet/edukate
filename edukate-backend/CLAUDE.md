@@ -8,14 +8,14 @@ Core business logic service. Manages problems, bundles, submissions, users, and 
 
 ## Domain Entities (MongoDB documents)
 
-| Entity              | Purpose                                                             |
-|---------------------|---------------------------------------------------------------------|
-| `Problem`           | Educational problem with subtasks, images, results, status          |
-| `Bundle`            | Collection of problems; has user roles (ADMIN, USER) and visibility |
-| `Submission`        | User's answer to a problem; statuses: PENDING, ACCEPTED, REJECTED   |
-| `User`              | Authentication data                                                 |
-| `CheckResult`       | AI checker output for a submission                                  |
-| `UserProblemStatus` | Junction — tracks per-user progress per problem                     |
+| Entity              | Purpose                                                                                                                                                           |
+|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Problem`           | Educational problem with subtasks, images, results, status                                                                                                        |
+| `Bundle`            | Collection of problems; has user roles (ADMIN, USER) and visibility. Membership is invite-only (no open join endpoint — see TODO.md for planned invite-link flow) |
+| `Submission`        | User's answer to a problem; statuses: PENDING, ACCEPTED, REJECTED                                                                                                 |
+| `User`              | Authentication data                                                                                                                                               |
+| `CheckResult`       | AI checker output for a submission                                                                                                                                |
+| `UserProblemStatus` | Junction — tracks per-user progress per problem                                                                                                                   |
 
 ## Key DTOs
 
@@ -24,6 +24,12 @@ Core business logic service. Manages problems, bundles, submissions, users, and 
 - `SubmissionDto`, `CreateSubmissionRequest`
 - `CheckResultDto`, `Result`
 - `FileMetadata`, `FileObject`
+
+## Mapper Layer (`mappers/`)
+
+`BundleMapper`, `ProblemMapper`, `SubmissionMapper` are `@Component` assembler beans that own all
+reactive DTO construction (presigned URLs, user-name lookups, status resolution). Controllers inject
+both the relevant service and its mapper; services contain only business logic.
 
 ## Async Messaging (RabbitMQ)
 

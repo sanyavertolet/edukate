@@ -8,6 +8,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
 import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
+import io.github.sanyavertolet.edukate.backend.mappers.ProblemMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
 import io.mockk.every
@@ -29,6 +30,7 @@ class ProblemControllerTest {
     @Autowired private lateinit var webTestClient: WebTestClient
 
     @MockkBean private lateinit var problemService: ProblemService
+    @MockkBean private lateinit var problemMapper: ProblemMapper
 
     private fun metadata(id: String = "1.0.0") = ProblemMetadata(id, false, emptyList(), Problem.Status.NOT_SOLVED)
 
@@ -41,7 +43,7 @@ class ProblemControllerTest {
     fun `getProblemList returns 200 with metadata list`() {
         every { problemService.getFilteredProblems(eq(ProblemFilter()), isNull(), any()) } returns
             Flux.just(BackendFixtures.problem("1.0.0"), BackendFixtures.problem("1.1.0"))
-        every { problemService.prepareMetadata(any(), isNull()) } returnsMany
+        every { problemMapper.toMetadata(any(), isNull()) } returnsMany
             listOf(Mono.just(metadata("1.0.0")), Mono.just(metadata("1.1.0")))
 
         webTestClient
@@ -60,7 +62,7 @@ class ProblemControllerTest {
     fun `getProblemList with prefix filter passes prefix to service`() {
         every { problemService.getFilteredProblems(eq(ProblemFilter(prefix = "1.")), isNull(), any()) } returns
             Flux.just(BackendFixtures.problem("1.0.0"), BackendFixtures.problem("1.1.0"))
-        every { problemService.prepareMetadata(any(), isNull()) } returnsMany
+        every { problemMapper.toMetadata(any(), isNull()) } returnsMany
             listOf(Mono.just(metadata("1.0.0")), Mono.just(metadata("1.1.0")))
 
         webTestClient
@@ -78,7 +80,7 @@ class ProblemControllerTest {
         every {
             problemService.getFilteredProblems(eq(ProblemFilter(status = Problem.Status.SOLVED)), isNull(), any())
         } returns Flux.just(BackendFixtures.problem("1.0.0"))
-        every { problemService.prepareMetadata(any(), isNull()) } returns Mono.just(metadata("1.0.0"))
+        every { problemMapper.toMetadata(any(), isNull()) } returns Mono.just(metadata("1.0.0"))
 
         webTestClient
             .get()
@@ -159,7 +161,7 @@ class ProblemControllerTest {
     fun `getProblem returns 200 when problem found`() {
         val problem = BackendFixtures.problem("1.0.0")
         every { problemService.findProblemById("1.0.0") } returns Mono.just(problem)
-        every { problemService.prepareDto(problem, isNull()) } returns Mono.just(dto("1.0.0"))
+        every { problemMapper.toDto(problem, isNull()) } returns Mono.just(dto("1.0.0"))
 
         webTestClient
             .get()

@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.Result
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
 import io.github.sanyavertolet.edukate.storage.keys.ResultFileKey
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -15,13 +16,15 @@ import reactor.kotlin.core.publisher.toMono
  * todo: refactor Result entity in order to split the persistent result with human readable result (with correct pics)
  */
 class ResultService(private val problemRepository: ProblemRepository, private val fileManager: FileManager) {
-    fun updateResult(result: Result): Mono<String> =
+    @CacheEvict(cacheNames = ["problems"], key = "#problemResult.id")
+    fun updateResult(problemResult: Result): Mono<String> =
         problemRepository
-            .findById(result.id)
-            .map { problem -> problem.copy(result = result) }
+            .findById(problemResult.id)
+            .map { problem -> problem.copy(result = problemResult) }
             .flatMap { problemRepository.save(it) }
             .map { it.id }
 
+    @CacheEvict(cacheNames = ["problems"], allEntries = true)
     fun updateResultBatch(results: Flux<Result>): Mono<Long> =
         results
             .flatMap { result ->

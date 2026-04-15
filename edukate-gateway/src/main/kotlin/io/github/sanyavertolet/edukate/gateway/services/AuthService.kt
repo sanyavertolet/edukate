@@ -20,7 +20,7 @@ class AuthService(
         userDetailsService
             .findEdukateUserDetailsByUsername(signInRequest.username)
             .filter { passwordEncoder.matches(signInRequest.password, it.password) }
-            .map { userDetails -> jwtTokenService.generateToken(userDetails) }
+            .map { jwtTokenService.generateToken(it) }
 
     fun signUp(signUpRequest: SignUpRequest): Mono<String> =
         signUpRequest
@@ -28,5 +28,5 @@ class AuthService(
             .filterWhen { userDetailsService.isNotUserPresent(it.username) }
             .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.CONFLICT)))
             .flatMap { userDetailsService.create(it.username, it.email, checkNotNull(passwordEncoder.encode(it.password))) }
-            .map { userDetails -> jwtTokenService.generateToken(userDetails) }
+            .map { jwtTokenService.generateToken(it) }
 }

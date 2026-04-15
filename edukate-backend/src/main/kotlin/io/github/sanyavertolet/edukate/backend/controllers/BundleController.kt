@@ -6,6 +6,7 @@ import io.github.sanyavertolet.edukate.backend.dtos.ChangeBundleProblemsRequest
 import io.github.sanyavertolet.edukate.backend.dtos.CreateBundleRequest
 import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole
 import io.github.sanyavertolet.edukate.backend.entities.Bundle
+import io.github.sanyavertolet.edukate.backend.mappers.BundleMapper
 import io.github.sanyavertolet.edukate.backend.permissions.BundlePermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.services.BundleService
 import io.github.sanyavertolet.edukate.backend.services.UserService
@@ -55,6 +56,7 @@ import reactor.kotlin.core.publisher.toMono
 @Suppress("TooManyFunctions")
 class BundleController(
     private val bundleService: BundleService,
+    private val bundleMapper: BundleMapper,
     private val userService: UserService,
     private val notifier: Notifier,
     private val bundlePermissionEvaluator: BundlePermissionEvaluator,
@@ -82,9 +84,7 @@ class BundleController(
             ],
     )
     fun createBundle(@RequestBody @Valid request: CreateBundleRequest, authentication: Authentication): Mono<BundleDto> =
-        bundleService.createBundle(request, authentication).flatMap { bundle ->
-            bundleService.prepareDto(bundle, authentication)
-        }
+        bundleService.createBundle(request, authentication).flatMap { bundle -> bundleMapper.toDto(bundle, authentication) }
 
     @GetMapping("/owned")
     @PreAuthorize("isAuthenticated()")
@@ -123,9 +123,7 @@ class BundleController(
         @RequestParam(defaultValue = "10") @Positive size: Int,
         authentication: Authentication,
     ): Flux<BundleMetadata> =
-        bundleService.getOwnedBundles(PageRequest.of(page, size), authentication).flatMap {
-            bundleService.prepareMetadata(it)
-        }
+        bundleService.getOwnedBundles(PageRequest.of(page, size), authentication).flatMap { bundleMapper.toMetadata(it) }
 
     @GetMapping("/joined")
     @PreAuthorize("isAuthenticated()")
@@ -164,9 +162,7 @@ class BundleController(
         @RequestParam(defaultValue = "10") @Positive size: Int,
         authentication: Authentication,
     ): Flux<BundleMetadata> =
-        bundleService.getJoinedBundles(PageRequest.of(page, size), authentication).flatMap {
-            bundleService.prepareMetadata(it)
-        }
+        bundleService.getJoinedBundles(PageRequest.of(page, size), authentication).flatMap { bundleMapper.toMetadata(it) }
 
     @GetMapping("/public")
     @SecurityRequirements
@@ -199,7 +195,7 @@ class BundleController(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
     ): Flux<BundleMetadata> =
-        bundleService.getPublicBundles(PageRequest.of(page, size)).flatMap { bundleService.prepareMetadata(it) }
+        bundleService.getPublicBundles(PageRequest.of(page, size)).flatMap { bundleMapper.toMetadata(it) }
 
     @GetMapping("/{shareCode}")
     @Operation(
@@ -230,30 +226,7 @@ class BundleController(
             .switchIfEmpty(
                 ResponseStatusException(HttpStatus.FORBIDDEN, "Bundle is private and you are not a member.").toMono()
             )
-            .flatMap { bundle -> bundleService.prepareDto(bundle, authentication) }
-
-    @PostMapping("/{shareCode}/join")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "cookieAuth")
-    @Operation(summary = "Join a bundle", description = "Joins a bundle using its share code")
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(responseCode = "200", description = "Successfully joined bundle"),
-                ApiResponse(responseCode = "400", description = "Already in bundle"),
-                ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Access denied - invite is required to join"),
-                ApiResponse(responseCode = "404", description = "Bundle not found"),
-            ]
-    )
-    @Parameters(
-        value = [Parameter(name = "shareCode", description = "Bundle share code", `in` = ParameterIn.PATH, required = true)]
-    )
-    fun joinBundle(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<BundleMetadata> =
-        authentication
-            .monoId()
-            .flatMap { userId -> bundleService.joinUser(shareCode, userId) }
-            .flatMap { bundleService.prepareMetadata(it) }
+            .flatMap { bundle -> bundleMapper.toDto(bundle, authentication) }
 
     @PostMapping("/{shareCode}/leave")
     @PreAuthorize("isAuthenticated()")
@@ -401,17 +374,12 @@ class BundleController(
         @RequestParam @NotNull response: Boolean,
         authentication: Authentication,
     ): Mono<String> =
-        response.toMono().flatMap { hasAccepted ->
-            if (hasAccepted) {
-                bundleService
-                    .joinUser(shareCode, requireNotNull(authentication.id()))
-                    .thenReturn("You have accepted invite to bundle $shareCode")
-            } else {
-                bundleService
-                    .declineInvite(shareCode, authentication)
-                    .thenReturn("You have declined invite to bundle $shareCode")
-            }
-        }
+        bundleService
+            .reactToInvite(shareCode, response, authentication)
+            .thenReturn(
+                if (response) "You have accepted invite to bundle $shareCode"
+                else "You have declined invite to bundle $shareCode"
+            )
 
     @GetMapping("/{shareCode}/users")
     @SecurityRequirement(name = "cookieAuth")
@@ -430,7 +398,7 @@ class BundleController(
         value = [Parameter(name = "shareCode", description = "Bundle share code", `in` = ParameterIn.PATH, required = true)]
     )
     fun getUserRoles(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Flux<UserNameWithRole> =
-        bundleService.getBundleUsers(shareCode, authentication)
+        bundleService.getBundleForModerator(shareCode, authentication).flatMapMany { bundleMapper.toUserRoles(it) }
 
     @GetMapping("/{shareCode}/invited-users")
     @SecurityRequirement(name = "cookieAuth")
@@ -452,7 +420,10 @@ class BundleController(
         value = [Parameter(name = "shareCode", description = "Bundle share code", `in` = ParameterIn.PATH, required = true)]
     )
     fun getInvitedUsers(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<List<String>> =
-        bundleService.getBundleInvitedUsers(shareCode, authentication).collectList()
+        bundleService
+            .getBundleForModerator(shareCode, authentication)
+            .flatMapMany { bundleMapper.toInvitedUserNames(it) }
+            .collectList()
 
     @PostMapping("/{shareCode}/role")
     @SecurityRequirement(name = "cookieAuth")
@@ -513,7 +484,7 @@ class BundleController(
         authentication: Authentication,
     ): Mono<BundleDto> =
         bundleService.changeVisibility(shareCode, isPublic, authentication).flatMap { bundle ->
-            bundleService.prepareDto(bundle, authentication)
+            bundleMapper.toDto(bundle, authentication)
         }
 
     @PostMapping("/{shareCode}/problems")
@@ -547,6 +518,6 @@ class BundleController(
         authentication: Authentication,
     ): Mono<BundleDto> =
         bundleService.changeProblems(shareCode, changeBundleProblemsRequest.problemIds, authentication).flatMap { bundle ->
-            bundleService.prepareDto(bundle, authentication)
+            bundleMapper.toDto(bundle, authentication)
         }
 }

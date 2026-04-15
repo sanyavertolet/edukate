@@ -1,0 +1,27 @@
+package io.github.sanyavertolet.edukate.backend.configs
+
+import com.github.benmanes.caffeine.cache.Caffeine
+import org.springframework.cache.CacheManager
+import org.springframework.cache.annotation.EnableCaching
+import org.springframework.cache.caffeine.CaffeineCacheManager
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+
+@Configuration
+@EnableCaching
+class CacheConfig {
+    @Bean
+    fun cacheManager(): CacheManager {
+        val manager = CaffeineCacheManager()
+        manager.setAsyncCacheMode(true)
+        listOf(
+                "problems" to "maximumSize=500,expireAfterWrite=24h",
+                "users-by-id" to "maximumSize=500,expireAfterWrite=10m",
+                "users-by-name" to "maximumSize=500,expireAfterWrite=10m",
+                "bundles" to "maximumSize=200,expireAfterWrite=5m",
+                "presigned-urls" to "maximumSize=1000,expireAfterWrite=30m",
+            )
+            .forEach { (name, spec) -> manager.registerCustomCache(name, Caffeine.from(spec).buildAsync()) }
+        return manager
+    }
+}

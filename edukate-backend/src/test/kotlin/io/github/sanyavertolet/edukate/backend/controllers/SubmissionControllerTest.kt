@@ -5,6 +5,7 @@ package io.github.sanyavertolet.edukate.backend.controllers
 import com.ninjasquad.springmockk.MockkBean
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto
+import io.github.sanyavertolet.edukate.backend.mappers.SubmissionMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.backend.services.UserService
@@ -33,6 +34,7 @@ class SubmissionControllerTest {
     @MockkBean private lateinit var problemService: ProblemService
     @MockkBean private lateinit var userService: UserService
     @MockkBean private lateinit var submissionService: SubmissionService
+    @MockkBean private lateinit var submissionMapper: SubmissionMapper
     @MockkBean private lateinit var fileManager: FileManager
 
     private fun authenticatedClient(): WebTestClient =
@@ -58,7 +60,7 @@ class SubmissionControllerTest {
         val dto = submissionDto(id = "sub-1")
 
         every { submissionService.findById("sub-1") } returns Mono.just(submission)
-        every { submissionService.prepareDto(submission) } returns Mono.just(dto)
+        every { submissionMapper.toDto(submission) } returns Mono.just(dto)
 
         authenticatedClient()
             .get()
@@ -93,7 +95,7 @@ class SubmissionControllerTest {
 
         every { submissionService.findUserSubmissions(any(), isNull(), any()) } returns
             Flux.just(BackendFixtures.submission(id = "sub-1"), BackendFixtures.submission(id = "sub-2"))
-        every { submissionService.prepareDto(any()) } returnsMany listOf(Mono.just(dto1), Mono.just(dto2))
+        every { submissionMapper.toDto(any()) } returnsMany listOf(Mono.just(dto1), Mono.just(dto2))
 
         authenticatedClient()
             .get()

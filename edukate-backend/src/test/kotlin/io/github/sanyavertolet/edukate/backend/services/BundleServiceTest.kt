@@ -8,7 +8,6 @@ import io.github.sanyavertolet.edukate.backend.repositories.BundleRepository
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
@@ -21,14 +20,12 @@ class BundleServiceTest {
 
     private val bundleRepository: BundleRepository = mockk()
     private val shareCodeGenerator: ShareCodeGenerator = mockk()
-    private val problemService: ProblemService = mockk()
     private val bundlePermissionEvaluator: BundlePermissionEvaluator = mockk()
-    private val userService: UserService = mockk()
     private lateinit var service: BundleService
 
     @BeforeEach
     fun setUp() {
-        service = BundleService(bundleRepository, shareCodeGenerator, problemService, bundlePermissionEvaluator, userService)
+        service = BundleService(bundleRepository, shareCodeGenerator, bundlePermissionEvaluator)
     }
 
     // region findBundleByShareCode
@@ -105,49 +102,6 @@ class BundleServiceTest {
                 assert(saved.shareCode == "NEWCODE")
             }
             .verifyComplete()
-    }
-
-    // endregion
-
-    // region joinUser
-
-    @Test
-    fun `joinUser adds user to bundle when allowed`() {
-        val bundle = BackendFixtures.bundle(isPublic = true, shareCode = "JOIN1")
-        every { bundleRepository.findBundleByShareCode("JOIN1") } returns Mono.just(bundle)
-        every { bundlePermissionEvaluator.hasJoinPermission(bundle, "new-user") } returns true
-        every { bundleRepository.save(any()) } answers { Mono.just(firstArg()) }
-
-        StepVerifier.create(service.joinUser("JOIN1", "new-user"))
-            .assertNext { updated -> assert(updated.isUserInBundle("new-user")) }
-            .verifyComplete()
-    }
-
-    @Test
-    fun `joinUser emits FORBIDDEN when user has no join permission`() {
-        val bundle = BackendFixtures.bundle(isPublic = false, invitedUserIds = emptySet(), shareCode = "JOIN2")
-        every { bundleRepository.findBundleByShareCode("JOIN2") } returns Mono.just(bundle)
-        every { bundlePermissionEvaluator.hasJoinPermission(bundle, "stranger") } returns false
-
-        StepVerifier.create(service.joinUser("JOIN2", "stranger"))
-            .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.FORBIDDEN }
-            .verify()
-    }
-
-    @Test
-    fun `joinUser emits BAD_REQUEST when user is already in bundle`() {
-        val bundle =
-            BackendFixtures.bundle(
-                isPublic = true,
-                userIdRoleMap = mapOf("admin-1" to UserRole.ADMIN, "user-1" to UserRole.USER),
-                shareCode = "JOIN3",
-            )
-        every { bundleRepository.findBundleByShareCode("JOIN3") } returns Mono.just(bundle)
-        every { bundlePermissionEvaluator.hasJoinPermission(bundle, "user-1") } returns true
-
-        StepVerifier.create(service.joinUser("JOIN3", "user-1"))
-            .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.BAD_REQUEST }
-            .verify()
     }
 
     // endregion
@@ -272,17 +226,6 @@ class BundleServiceTest {
     // endregion
 
     // region changeProblems
-
-    @Test
-    fun `changeProblems emits BAD_REQUEST when problem list is empty`() {
-        val auth = BackendFixtures.mockAuthentication()
-
-        StepVerifier.create(service.changeProblems("PROB1", emptyList(), auth))
-            .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.BAD_REQUEST }
-            .verify()
-
-        verify(exactly = 0) { bundleRepository.findBundleByShareCode(any()) }
-    }
 
     @Test
     fun `changeProblems updates problemIds when authorized`() {

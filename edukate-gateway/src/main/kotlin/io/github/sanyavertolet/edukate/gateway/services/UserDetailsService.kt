@@ -11,16 +11,20 @@ import reactor.core.publisher.Mono
 @Service
 class UserDetailsService(private val backendService: BackendService) :
     ReactiveUserDetailsService, ReactiveUserDetailsPasswordService {
-    override fun findByUsername(username: String): Mono<UserDetails> = findEdukateUserDetailsByUsername(username).map { it }
 
-    override fun updatePassword(user: UserDetails, newPassword: String?): Mono<UserDetails> = Mono.just(user)
+    override fun findByUsername(username: String): Mono<UserDetails> =
+        backendService.getUserByName(username).map(::EdukateUserDetails)
 
     fun findEdukateUserDetailsByUsername(username: String): Mono<EdukateUserDetails> =
         backendService.getUserByName(username).map(::EdukateUserDetails)
 
     fun findById(id: String): Mono<EdukateUserDetails> = backendService.getUserById(id).map(::EdukateUserDetails)
 
-    fun isNotUserPresent(username: String): Mono<Boolean> = findByUsername(username).hasElement().map { !it }
+    fun isNotUserPresent(username: String): Mono<Boolean> =
+        backendService.getUserByName(username).map { false }.defaultIfEmpty(true)
+
+    // todo: looks like this dummy stub needs to be fixed
+    override fun updatePassword(user: UserDetails, newPassword: String?): Mono<UserDetails> = Mono.just(user)
 
     fun create(username: String, email: String, encodedPassword: String): Mono<EdukateUserDetails> {
         val userCredentials = UserCredentials.newUser(username, encodedPassword, email)
