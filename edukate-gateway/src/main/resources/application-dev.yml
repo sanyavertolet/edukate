@@ -15,6 +15,10 @@ auth:
   hostname: localhost
 
 spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/edukate
+    username: edukate-backend
+    password: secret
   web:
     error:
       include-message: always

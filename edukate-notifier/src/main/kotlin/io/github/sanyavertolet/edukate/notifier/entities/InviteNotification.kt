@@ -12,12 +12,12 @@ import org.springframework.data.mongodb.core.index.Indexed
 data class InviteNotification(
     @field:Id override val id: String? = null,
     @field:Indexed(unique = true) override val uuid: String,
-    override val targetUserId: String,
+    override val targetUserId: Long,
     override val isRead: Boolean = false,
     @field:CreatedDate override val createdAt: Instant? = null,
     val inviterName: String,
-    val bundleName: String,
-    val bundleShareCode: String,
+    val problemSetName: String,
+    val problemSetShareCode: String,
 ) : BaseNotification() {
     override fun toDto() =
         InviteNotificationDto(
@@ -25,8 +25,8 @@ data class InviteNotification(
             isRead = isRead,
             createdAt = requireNotNull(createdAt) { "createdAt is null for notification uuid=$uuid" },
             inviterName = inviterName,
-            bundleName = bundleName,
-            bundleShareCode = bundleShareCode,
+            problemSetName = problemSetName,
+            problemSetShareCode = problemSetShareCode,
         )
 
     override fun markAsRead() = copy(isRead = true)
@@ -38,8 +38,8 @@ data class InviteNotification(
                 uuid = creationRequest.uuid,
                 targetUserId = creationRequest.targetUserId,
                 inviterName = creationRequest.inviterName,
-                bundleName = creationRequest.bundleName,
-                bundleShareCode = creationRequest.bundleShareCode,
+                problemSetName = creationRequest.problemSetName,
+                problemSetShareCode = creationRequest.problemSetShareCode,
             )
     }
 }

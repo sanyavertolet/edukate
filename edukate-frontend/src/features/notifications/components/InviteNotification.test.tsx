@@ -8,8 +8,8 @@ const makeInvite = (overrides: Partial<InviteNotification> = {}): InviteNotifica
     createdAt: "2024-03-20T08:30:00Z",
     _type: "invite",
     inviterName: "Alice",
-    bundleName: "Math Basics",
-    bundleShareCode: "share-xyz",
+    problemSetName: "Math Basics",
+    problemSetShareCode: "share-xyz",
     ...overrides,
 });
 
@@ -19,8 +19,8 @@ describe("InviteNotificationComponent", () => {
         expect(screen.getByText(/Alice invites you!/i)).toBeInTheDocument();
     });
 
-    it("renders the bundle name in the body", () => {
-        render(<InviteNotificationComponent notification={makeInvite({ bundleName: "Physics 101" })} />);
+    it("renders the problem set name in the body", () => {
+        render(<InviteNotificationComponent notification={makeInvite({ problemSetName: "Physics 101" })} />);
         expect(screen.getByText(/Physics 101/)).toBeInTheDocument();
     });
 

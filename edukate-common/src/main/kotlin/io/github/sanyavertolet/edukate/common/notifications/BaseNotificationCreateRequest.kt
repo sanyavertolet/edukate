@@ -11,5 +11,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 )
 sealed interface BaseNotificationCreateRequest {
     val uuid: String
-    val targetUserId: String
+    val targetUserId: Long
 }

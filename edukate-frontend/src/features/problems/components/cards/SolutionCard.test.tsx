@@ -4,14 +4,16 @@ import { server } from "@/test/server";
 import {
     getGetTempFilesMockHandler,
     getUploadTempFileMockHandler,
-    getGetResultByIdMockHandler,
-    getGetResultByIdResponseMock,
+    getGetAnswerByProblemKeyMockHandler,
+    getGetAnswerByProblemKeyResponseMock,
 } from "@/generated/backend";
 import SolutionCard from "./SolutionCard";
 import type { Problem } from "@/features/problems/types";
 
 const problem: Problem = {
-    id: "prob-42",
+    key: "savchenko/1.1.1",
+    code: "1.1.1",
+    bookSlug: "savchenko",
     isHard: false,
     tags: [],
     text: "Solve this problem",
@@ -35,7 +37,7 @@ describe("SolutionCard — static rendering", () => {
     beforeEach(() => {
         server.use(
             getGetTempFilesMockHandler([]),
-            getGetResultByIdMockHandler(getGetResultByIdResponseMock({ text: "", images: [] })),
+            getGetAnswerByProblemKeyMockHandler(getGetAnswerByProblemKeyResponseMock({ text: "", images: [] })),
         );
     });
 
@@ -54,9 +56,9 @@ describe("SolutionCard — static rendering", () => {
         expect(screen.queryByRole("button", { name: /submit/i })).not.toBeInTheDocument();
     });
 
-    it("renders the 'Show the result' accordion", async () => {
+    it("renders the 'Show the answer' accordion", async () => {
         render(<SolutionCard problem={problem} />);
-        expect(await screen.findByText("Show the result")).toBeInTheDocument();
+        expect(await screen.findByText("Show the answer")).toBeInTheDocument();
     });
 });
 
@@ -91,7 +93,7 @@ describe("SolutionCard — submission pipeline", () => {
 
         await waitFor(() => {
             expect(submittedBody).toMatchObject({
-                problemId: "prob-42",
+                problemKey: "savchenko/1.1.1",
                 fileNames: ["temp-key-xyz"],
             });
         });

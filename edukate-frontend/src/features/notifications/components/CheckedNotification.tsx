@@ -20,7 +20,7 @@ export const CheckedNotificationComponent: FC<CheckedNotificationProps> = ({ not
                 <Box>
                     <Box>
                         <Typography component={"span"} variant={"body1"}>
-                            Your submission for problem {notification.problemId} has been checked with status{" "}
+                            Your submission for problem {notification.problemKey} has been checked with status{" "}
                             {notification.status}!
                         </Typography>
                     </Box>

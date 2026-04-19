@@ -14,10 +14,14 @@ users to read/manage their notifications.
 | Type                  | Description             |
 |-----------------------|-------------------------|
 | `SimpleNotification`  | Plain text notification |
-| `InviteNotification`  | Bundle invitation       |
+| `InviteNotification`  | Problem set invitation  |
 | `CheckedNotification` | Problem checking result |
 
 Polymorphic serialization via Jackson `@JsonTypeInfo`.
+
+**ID types:** `targetUserId` is `Long` (PostgreSQL user ID). MongoDB document `id` remains `String?`.
+`CheckedNotification` uses `submissionId: Long` and `problemKey: String` (composite key like `savchenko/1.1.1`).
+`InviteNotification` uses `problemSetName` and `problemSetShareCode` (not "bundle").
 
 ### REST Endpoints (`NotificationController`)
 

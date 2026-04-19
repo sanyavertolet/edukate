@@ -43,7 +43,7 @@ class NotificationService(private val notificationRepository: NotificationReposi
         page: Int,
         authentication: Authentication?,
     ): Flux<BaseNotification> =
-        authentication.monoId().flatMapMany { userId: String ->
+        authentication.monoId().flatMapMany { userId ->
             val pageRequest = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
             isRead?.let { notificationRepository.findAllByTargetUserIdAndIsRead(userId, isRead, pageRequest) }
                 ?: notificationRepository.findAllByTargetUserId(userId, pageRequest)

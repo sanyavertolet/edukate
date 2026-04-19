@@ -1,26 +1,20 @@
 package io.github.sanyavertolet.edukate.backend.entities
 
-import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto
-import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
-import io.github.sanyavertolet.edukate.backend.dtos.Result
 import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.relational.core.mapping.Table
 
-@Document("problems")
+@Table("problems")
 data class Problem(
-    @field:Id val id: String,
-    val isHard: Boolean,
-    val tags: List<String>,
+    @Id val id: Long? = null,
+    val bookId: Long,
+    val code: String,
+    val key: String = "",
+    val isHard: Boolean = false,
+    val tags: List<String> = emptyList(),
     val text: String,
-    val subtasks: List<Subtask>,
-    val images: List<String>,
-    val result: Result? = null,
+    val subtasks: List<Subtask> = emptyList(),
+    val images: List<String> = emptyList(),
 ) {
-    fun toProblemMetadata(status: Status): ProblemMetadata = ProblemMetadata(id, isHard, tags, status)
-
-    fun toProblemDto(status: Status, images: List<String>): ProblemDto =
-        ProblemDto(id, isHard, tags, text, subtasks, images, status, result != null)
-
     data class Subtask(val id: String, val text: String)
 
     enum class Status {

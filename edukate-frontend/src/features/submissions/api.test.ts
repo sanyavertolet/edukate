@@ -32,11 +32,11 @@ describe("useSubmissionQuery", () => {
     });
 
     it("fetches submission when id is provided", async () => {
-        server.use(getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: "sub-42", problemId: "prob-1" })));
-        const { result } = renderHook(() => useSubmissionQuery("sub-42"), { wrapper: createWrapper() });
+        server.use(getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: 42, problemKey: "savchenko/1.1.1" })));
+        const { result } = renderHook(() => useSubmissionQuery("42"), { wrapper: createWrapper() });
         await waitFor(() => {
             expect(result.current.isSuccess).toBe(true);
         });
-        expect(result.current.data?.id).toBe("sub-42");
+        expect(result.current.data?.id).toBe(42);
     });
 });

@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Problem
 
 @Suppress("DataClassContainsFunctions")
 data class ProblemFilter(
+    val bookSlug: String? = null,
     val prefix: String? = null,
     val status: Problem.Status? = null,
     val isHard: Boolean? = null,

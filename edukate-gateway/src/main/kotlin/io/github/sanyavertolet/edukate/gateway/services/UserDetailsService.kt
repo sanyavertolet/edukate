@@ -18,7 +18,7 @@ class UserDetailsService(private val backendService: BackendService) :
     fun findEdukateUserDetailsByUsername(username: String): Mono<EdukateUserDetails> =
         backendService.getUserByName(username).map(::EdukateUserDetails)
 
-    fun findById(id: String): Mono<EdukateUserDetails> = backendService.getUserById(id).map(::EdukateUserDetails)
+    fun findById(id: Long): Mono<EdukateUserDetails> = backendService.getUserById(id).map(::EdukateUserDetails)
 
     fun isNotUserPresent(username: String): Mono<Boolean> =
         backendService.getUserByName(username).map { false }.defaultIfEmpty(true)

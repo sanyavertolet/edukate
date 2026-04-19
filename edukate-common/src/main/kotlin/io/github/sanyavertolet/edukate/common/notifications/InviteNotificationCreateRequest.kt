@@ -7,19 +7,19 @@ import java.util.UUID
 @JsonTypeName("invite")
 data class InviteNotificationCreateRequest(
     override val uuid: String = UUID.randomUUID().toString(),
-    @field:NotBlank override val targetUserId: String,
+    override val targetUserId: Long,
     @field:NotBlank val inviterName: String,
-    @field:NotBlank val bundleName: String,
-    @field:NotBlank val bundleShareCode: String,
+    @field:NotBlank val problemSetName: String,
+    @field:NotBlank val problemSetShareCode: String,
 ) : BaseNotificationCreateRequest {
     companion object {
         @JvmStatic
-        fun from(targetUserId: String, inviterName: String, bundleName: String, bundleShareCode: String) =
+        fun from(targetUserId: Long, inviterName: String, problemSetName: String, problemSetShareCode: String) =
             InviteNotificationCreateRequest(
                 targetUserId = targetUserId,
                 inviterName = inviterName,
-                bundleName = bundleName,
-                bundleShareCode = bundleShareCode,
+                problemSetName = problemSetName,
+                problemSetShareCode = problemSetShareCode,
             )
     }
 }

@@ -4,12 +4,11 @@ import io.github.sanyavertolet.edukate.backend.entities.CheckResult
 import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.backend.repositories.CheckResultRepository
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
+import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.data.domain.Sort
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -23,7 +22,7 @@ class CheckResultService(
     fun saveAndUpdateSubmission(checkResult: CheckResult): Mono<Pair<CheckResult, Submission>> =
         submissionService
             .findById(checkResult.submissionId)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
+            .orNotFound("Submission not found")
             .flatMap { submission -> checkResultRepository.save(checkResult).map { saved -> Pair(saved, submission) } }
             .flatMap { (saved, submission) ->
                 val newStatus = SubmissionStatus.from(saved.status)
@@ -34,8 +33,8 @@ class CheckResultService(
                     .thenReturn(Pair(saved, submission))
             }
 
-    fun findById(id: String): Mono<CheckResult> = checkResultRepository.findById(id)
+    fun findById(id: Long): Mono<CheckResult> = checkResultRepository.findById(id)
 
-    fun findAllBySubmissionId(submissionId: String): Flux<CheckResult> =
+    fun findAllBySubmissionId(submissionId: Long): Flux<CheckResult> =
         checkResultRepository.findBySubmissionId(submissionId, Sort.by(Sort.Direction.DESC, "createdAt"))
 }

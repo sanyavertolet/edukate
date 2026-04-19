@@ -26,7 +26,7 @@ class UserService(private val userRepository: UserRepository, private val notifi
     fun saveUser(user: User): Mono<User> = userRepository.save(user)
 
     @Cacheable(cacheNames = ["users-by-id"], key = "#userId")
-    fun findUserById(userId: String): Mono<User> = userRepository.findById(userId)
+    fun findUserById(userId: Long): Mono<User> = userRepository.findById(userId)
 
     @Cacheable(cacheNames = ["users-by-name"], key = "#name")
     fun findUserByName(name: String): Mono<User> = userRepository.findByName(name)
@@ -38,7 +38,7 @@ class UserService(private val userRepository: UserRepository, private val notifi
                 CacheEvict(cacheNames = ["users-by-name"], allEntries = true),
             ]
     )
-    fun deleteUserById(id: String): Mono<Void> = userRepository.deleteById(id)
+    fun deleteUserById(id: Long): Mono<Void> = userRepository.deleteById(id)
 
     fun hasUserPermissionToSubmit(user: User): Mono<Boolean> = (user.status == UserStatus.ACTIVE).toMono()
 

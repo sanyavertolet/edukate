@@ -83,51 +83,51 @@ class NotificationServiceTest {
 
     @Test
     fun `getUserNotifications filters by isRead true`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
-        val notification = NotificationFixtures.simpleNotification(userId = "user-1", isRead = true)
+        val auth = NotificationFixtures.mockAuthentication(1L)
+        val notification = NotificationFixtures.simpleNotification(userId = 1L, isRead = true)
         val pageRequest = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt")
-        every { repository.findAllByTargetUserIdAndIsRead("user-1", true, pageRequest) } returns Flux.just(notification)
+        every { repository.findAllByTargetUserIdAndIsRead(1L, true, pageRequest) } returns Flux.just(notification)
 
         StepVerifier.create(service.getUserNotifications(true, 10, 0, auth)).expectNext(notification).verifyComplete()
     }
 
     @Test
     fun `getUserNotifications filters by isRead false`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
-        val notification = NotificationFixtures.simpleNotification(userId = "user-1", isRead = false)
+        val auth = NotificationFixtures.mockAuthentication(1L)
+        val notification = NotificationFixtures.simpleNotification(userId = 1L, isRead = false)
         val pageRequest = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt")
-        every { repository.findAllByTargetUserIdAndIsRead("user-1", false, pageRequest) } returns Flux.just(notification)
+        every { repository.findAllByTargetUserIdAndIsRead(1L, false, pageRequest) } returns Flux.just(notification)
 
         StepVerifier.create(service.getUserNotifications(false, 10, 0, auth)).expectNext(notification).verifyComplete()
     }
 
     @Test
     fun `getUserNotifications returns all notifications when isRead is null`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
-        val n1 = NotificationFixtures.simpleNotification(userId = "user-1", isRead = true)
-        val n2 = NotificationFixtures.inviteNotification(userId = "user-1", isRead = false)
+        val auth = NotificationFixtures.mockAuthentication(1L)
+        val n1 = NotificationFixtures.simpleNotification(userId = 1L, isRead = true)
+        val n2 = NotificationFixtures.inviteNotification(userId = 1L, isRead = false)
         val pageRequest = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt")
-        every { repository.findAllByTargetUserId("user-1", pageRequest) } returns Flux.just(n1, n2)
+        every { repository.findAllByTargetUserId(1L, pageRequest) } returns Flux.just(n1, n2)
 
         StepVerifier.create(service.getUserNotifications(null, 10, 0, auth)).expectNext(n1, n2).verifyComplete()
     }
 
     @Test
     fun `getUserNotifications passes correct page and size to repository`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
+        val auth = NotificationFixtures.mockAuthentication(1L)
         val pageRequest = PageRequest.of(2, 25, Sort.Direction.DESC, "createdAt")
-        every { repository.findAllByTargetUserId("user-1", pageRequest) } returns Flux.empty()
+        every { repository.findAllByTargetUserId(1L, pageRequest) } returns Flux.empty()
 
         StepVerifier.create(service.getUserNotifications(null, 25, 2, auth)).verifyComplete()
 
-        verify { repository.findAllByTargetUserId("user-1", pageRequest) }
+        verify { repository.findAllByTargetUserId(1L, pageRequest) }
     }
 
     @Test
     fun `getUserNotifications does not call isRead-filtered query when isRead is null`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
+        val auth = NotificationFixtures.mockAuthentication(1L)
         val pageRequest = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt")
-        every { repository.findAllByTargetUserId("user-1", pageRequest) } returns Flux.empty()
+        every { repository.findAllByTargetUserId(1L, pageRequest) } returns Flux.empty()
 
         StepVerifier.create(service.getUserNotifications(null, 10, 0, auth)).verifyComplete()
 
@@ -140,10 +140,10 @@ class NotificationServiceTest {
 
     @Test
     fun `markAsRead marks specified notifications as read and returns count`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
-        val n1 = NotificationFixtures.simpleNotification(userId = "user-1", uuid = "u1", isRead = false)
-        val n2 = NotificationFixtures.inviteNotification(userId = "user-1", uuid = "u2", isRead = false)
-        every { repository.findByTargetUserIdAndUuidIn("user-1", listOf("u1", "u2")) } returns Flux.just(n1, n2)
+        val auth = NotificationFixtures.mockAuthentication(1L)
+        val n1 = NotificationFixtures.simpleNotification(userId = 1L, uuid = "u1", isRead = false)
+        val n2 = NotificationFixtures.inviteNotification(userId = 1L, uuid = "u2", isRead = false)
+        every { repository.findByTargetUserIdAndUuidIn(1L, listOf("u1", "u2")) } returns Flux.just(n1, n2)
         every { repository.save(any()) } answers { Mono.just(firstArg()) }
 
         StepVerifier.create(service.markAsRead(listOf("u1", "u2"), auth)).expectNext(2L).verifyComplete()
@@ -153,8 +153,8 @@ class NotificationServiceTest {
 
     @Test
     fun `markAsRead returns zero when no matching notifications found`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
-        every { repository.findByTargetUserIdAndUuidIn("user-1", listOf("nonexistent")) } returns Flux.empty()
+        val auth = NotificationFixtures.mockAuthentication(1L)
+        every { repository.findByTargetUserIdAndUuidIn(1L, listOf("nonexistent")) } returns Flux.empty()
 
         StepVerifier.create(service.markAsRead(listOf("nonexistent"), auth)).expectNext(0L).verifyComplete()
     }
@@ -170,10 +170,10 @@ class NotificationServiceTest {
 
     @Test
     fun `markAllAsRead marks all unread notifications and returns count`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
-        val n1 = NotificationFixtures.simpleNotification(userId = "user-1", isRead = false)
-        val n2 = NotificationFixtures.checkedNotification(userId = "user-1", isRead = false)
-        every { repository.findAllByTargetUserIdAndIsRead("user-1", false, Pageable.unpaged()) } returns Flux.just(n1, n2)
+        val auth = NotificationFixtures.mockAuthentication(1L)
+        val n1 = NotificationFixtures.simpleNotification(userId = 1L, isRead = false)
+        val n2 = NotificationFixtures.checkedNotification(userId = 1L, isRead = false)
+        every { repository.findAllByTargetUserIdAndIsRead(1L, false, Pageable.unpaged()) } returns Flux.just(n1, n2)
         every { repository.save(any()) } answers { Mono.just(firstArg()) }
 
         StepVerifier.create(service.markAllAsRead(auth)).expectNext(2L).verifyComplete()
@@ -183,8 +183,8 @@ class NotificationServiceTest {
 
     @Test
     fun `markAllAsRead returns zero when there are no unread notifications`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
-        every { repository.findAllByTargetUserIdAndIsRead("user-1", false, Pageable.unpaged()) } returns Flux.empty()
+        val auth = NotificationFixtures.mockAuthentication(1L)
+        every { repository.findAllByTargetUserIdAndIsRead(1L, false, Pageable.unpaged()) } returns Flux.empty()
 
         StepVerifier.create(service.markAllAsRead(auth)).expectNext(0L).verifyComplete()
     }
@@ -200,9 +200,9 @@ class NotificationServiceTest {
 
     @Test
     fun `gatherUserStatistics returns statistics from repository`() {
-        val auth = NotificationFixtures.mockAuthentication("user-1")
+        val auth = NotificationFixtures.mockAuthentication(1L)
         val stats = NotificationStatistics(unread = 3, total = 10)
-        every { repository.gatherStatistics("user-1") } returns Mono.just(stats)
+        every { repository.gatherStatistics(1L) } returns Mono.just(stats)
 
         StepVerifier.create(service.gatherUserStatistics(auth)).expectNext(stats).verifyComplete()
     }

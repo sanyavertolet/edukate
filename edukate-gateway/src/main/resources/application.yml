@@ -33,7 +33,14 @@ springdoc:
 spring:
   application:
     name: edukate-gateway
-  liquibase:
+  r2dbc:
+    url: ${SPRING_R2DBC_URL}
+    username: ${SPRING_R2DBC_USERNAME:}
+    password: ${SPRING_R2DBC_PASSWORD:}
+    pool:
+      initial-size: 1
+      max-size: 3
+  flyway:
     enabled: false
   profiles:
     default: prod,secure

@@ -8,9 +8,9 @@ const ProblemListPage = lazy(() => import("@/pages/ProblemListPage"));
 const ProblemPage = lazy(() => import("@/pages/ProblemPage"));
 const SignInPage = lazy(() => import("@/pages/SignInPage"));
 const SignUpPage = lazy(() => import("@/pages/SignUpPage"));
-const BundleListPage = lazy(() => import("@/pages/BundleListPage"));
-const BundlePage = lazy(() => import("@/pages/BundlePage"));
-const BundleCreationPage = lazy(() => import("@/pages/BundleCreationPage"));
+const ProblemSetListPage = lazy(() => import("@/pages/ProblemSetListPage"));
+const ProblemSetPage = lazy(() => import("@/pages/ProblemSetPage"));
+const ProblemSetCreationPage = lazy(() => import("@/pages/ProblemSetCreationPage"));
 const SubmissionPage = lazy(() => import("@/pages/SubmissionPage"));
 
 export const router = createBrowserRouter([
@@ -27,7 +27,7 @@ export const router = createBrowserRouter([
                 element: <ProblemListPage />,
             },
             {
-                path: "/problems/:id",
+                path: "/problems/:bookSlug/:code",
                 element: <ProblemPage />,
             },
             {
@@ -39,22 +39,22 @@ export const router = createBrowserRouter([
                 element: <SignUpPage />,
             },
             {
-                path: "/bundles",
-                element: <BundleListPage />,
+                path: "/problem-sets",
+                element: <ProblemSetListPage />,
             },
             {
-                path: "/bundles/new",
+                path: "/problem-sets/new",
                 element: (
                     <AuthRequired>
-                        <BundleCreationPage />
+                        <ProblemSetCreationPage />
                     </AuthRequired>
                 ),
             },
             {
-                path: "/bundles/:code",
+                path: "/problem-sets/:code",
                 element: (
                     <AuthRequired>
-                        <BundlePage />
+                        <ProblemSetPage />
                     </AuthRequired>
                 ),
             },

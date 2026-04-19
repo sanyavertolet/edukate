@@ -32,19 +32,31 @@ class ProblemControllerTest {
     @MockkBean private lateinit var problemService: ProblemService
     @MockkBean private lateinit var problemMapper: ProblemMapper
 
-    private fun metadata(id: String = "1.0.0") = ProblemMetadata(id, false, emptyList(), Problem.Status.NOT_SOLVED)
+    private fun metadata(code: String = "1.1.1") =
+        ProblemMetadata("savchenko/$code", code, "savchenko", false, emptyList(), Problem.Status.NOT_SOLVED)
 
-    private fun dto(@Suppress("SameParameterValue") id: String = "1.0.0") =
-        ProblemDto(id, false, emptyList(), "Problem text", emptyList(), emptyList(), Problem.Status.NOT_SOLVED, false)
+    private fun dto(code: String = "1.1.1") =
+        ProblemDto(
+            "savchenko/$code",
+            code,
+            "savchenko",
+            false,
+            emptyList(),
+            "Problem text",
+            emptyList(),
+            emptyList(),
+            Problem.Status.NOT_SOLVED,
+            false,
+        )
 
     // region GET /api/v1/problems
 
     @Test
     fun `getProblemList returns 200 with metadata list`() {
         every { problemService.getFilteredProblems(eq(ProblemFilter()), isNull(), any()) } returns
-            Flux.just(BackendFixtures.problem("1.0.0"), BackendFixtures.problem("1.1.0"))
+            Flux.just(BackendFixtures.problem(id = 1L), BackendFixtures.problem(id = 2L))
         every { problemMapper.toMetadata(any(), isNull()) } returnsMany
-            listOf(Mono.just(metadata("1.0.0")), Mono.just(metadata("1.1.0")))
+            listOf(Mono.just(metadata()), Mono.just(metadata("1.1.2")))
 
         webTestClient
             .get()
@@ -61,9 +73,9 @@ class ProblemControllerTest {
     @Test
     fun `getProblemList with prefix filter passes prefix to service`() {
         every { problemService.getFilteredProblems(eq(ProblemFilter(prefix = "1.")), isNull(), any()) } returns
-            Flux.just(BackendFixtures.problem("1.0.0"), BackendFixtures.problem("1.1.0"))
+            Flux.just(BackendFixtures.problem(id = 1L), BackendFixtures.problem(id = 2L))
         every { problemMapper.toMetadata(any(), isNull()) } returnsMany
-            listOf(Mono.just(metadata("1.0.0")), Mono.just(metadata("1.1.0")))
+            listOf(Mono.just(metadata()), Mono.just(metadata("1.1.2")))
 
         webTestClient
             .get()
@@ -79,8 +91,8 @@ class ProblemControllerTest {
     fun `getProblemList with status filter passes status to service`() {
         every {
             problemService.getFilteredProblems(eq(ProblemFilter(status = Problem.Status.SOLVED)), isNull(), any())
-        } returns Flux.just(BackendFixtures.problem("1.0.0"))
-        every { problemMapper.toMetadata(any(), isNull()) } returns Mono.just(metadata("1.0.0"))
+        } returns Flux.just(BackendFixtures.problem(id = 1L))
+        every { problemMapper.toMetadata(any(), isNull()) } returns Mono.just(metadata())
 
         webTestClient
             .get()
@@ -137,8 +149,8 @@ class ProblemControllerTest {
     // region GET /api/v1/problems/by-prefix
 
     @Test
-    fun `getProblemIdsByPrefix returns matching ids`() {
-        every { problemService.getProblemIdsByPrefix("1.", 5) } returns Flux.just("1.0.0", "1.1.0")
+    fun `getProblemCodesByPrefix returns matching codes`() {
+        every { problemService.getProblemCodesByPrefix("1.", 5) } returns Flux.just("1.1.1", "1.1.2")
 
         webTestClient
             .get()
@@ -148,39 +160,39 @@ class ProblemControllerTest {
             .isOk
             .expectBody()
             .jsonPath("$[0]")
-            .isEqualTo("1.0.0")
+            .isEqualTo("1.1.1")
             .jsonPath("$[1]")
-            .isEqualTo("1.1.0")
+            .isEqualTo("1.1.2")
     }
 
     // endregion
 
-    // region GET /api/v1/problems/{id}
+    // region GET /api/v1/problems/{bookSlug}/{code}
 
     @Test
     fun `getProblem returns 200 when problem found`() {
-        val problem = BackendFixtures.problem("1.0.0")
-        every { problemService.findProblemById("1.0.0") } returns Mono.just(problem)
-        every { problemMapper.toDto(problem, isNull()) } returns Mono.just(dto("1.0.0"))
+        val problem = BackendFixtures.problem(id = 1L, code = "1.1.1")
+        every { problemService.findProblemByKey("savchenko/1.1.1") } returns Mono.just(problem)
+        every { problemMapper.toDto(problem, isNull()) } returns Mono.just(dto())
 
         webTestClient
             .get()
-            .uri("/api/v1/problems/1.0.0")
+            .uri("/api/v1/problems/savchenko/1.1.1")
             .exchange()
             .expectStatus()
             .isOk
             .expectHeader()
             .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
-            .jsonPath("$.id")
-            .isEqualTo("1.0.0")
+            .jsonPath("$.code")
+            .isEqualTo("1.1.1")
     }
 
     @Test
     fun `getProblem returns 404 when problem not found`() {
-        every { problemService.findProblemById("missing") } returns Mono.empty()
+        every { problemService.findProblemByKey("savchenko/UNKNOWN") } returns Mono.empty()
 
-        webTestClient.get().uri("/api/v1/problems/missing").exchange().expectStatus().isNotFound
+        webTestClient.get().uri("/api/v1/problems/savchenko/UNKNOWN").exchange().expectStatus().isNotFound
     }
 
     // endregion
@@ -188,8 +200,8 @@ class ProblemControllerTest {
     // region GET /api/v1/problems/random
 
     @Test
-    fun `getRandomUnsolvedProblemId returns problem id`() {
-        every { problemService.getRandomUnsolvedProblemId(isNull()) } returns Mono.just("2.3.4")
+    fun `getRandomUnsolvedProblemKey returns problem key`() {
+        every { problemService.getRandomUnsolvedProblemKey(isNull()) } returns Mono.just("savchenko/1.2.3")
 
         webTestClient
             .get()
@@ -198,7 +210,7 @@ class ProblemControllerTest {
             .expectStatus()
             .isOk
             .expectBody<String>()
-            .isEqualTo("2.3.4")
+            .isEqualTo("savchenko/1.2.3")
     }
 
     // endregion

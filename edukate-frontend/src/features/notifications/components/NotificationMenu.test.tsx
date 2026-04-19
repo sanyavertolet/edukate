@@ -20,8 +20,8 @@ const inviteNotification: InviteNotification = {
     createdAt: "2024-02-14T09:00:00Z",
     _type: "invite",
     inviterName: "Alice",
-    bundleName: "Math Pack",
-    bundleShareCode: "math-001",
+    problemSetName: "Math Pack",
+    problemSetShareCode: "math-001",
 };
 
 const checkedNotification: CheckedNotification = {
@@ -29,8 +29,8 @@ const checkedNotification: CheckedNotification = {
     isRead: false,
     createdAt: "2024-03-05T12:00:00Z",
     _type: "checked",
-    submissionId: "sub-1",
-    problemId: "prob-7",
+    submissionId: 1,
+    problemKey: "savchenko/1.1.7",
     status: "SUCCESS",
 };
 
@@ -76,7 +76,7 @@ describe("NotificationMenu — notification types", () => {
         expect(screen.getByText(/Math Pack/)).toBeInTheDocument();
     });
 
-    it("renders a checked notification with problem id and status", async () => {
+    it("renders a checked notification with problem key and status", async () => {
         server.use(
             getGetNotificationsMockHandler({ notifications: [checkedNotification], statistics: { total: 1, unread: 1 } }),
         );
@@ -84,7 +84,7 @@ describe("NotificationMenu — notification types", () => {
         await waitFor(() => {
             expect(screen.getByText("Submission Checked")).toBeInTheDocument();
         });
-        expect(screen.getByText(/prob-7/)).toBeInTheDocument();
+        expect(screen.getByText(/savchenko\/1\.1\.7/)).toBeInTheDocument();
         expect(screen.getByText(/SUCCESS/)).toBeInTheDocument();
     });
 

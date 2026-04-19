@@ -9,7 +9,7 @@ data class CheckedNotificationDto(
     override val uuid: String,
     override val isRead: Boolean,
     override val createdAt: Instant,
-    val submissionId: String,
-    val problemId: String,
+    val submissionId: Long,
+    val problemKey: String,
     val status: CheckStatus,
 ) : BaseNotificationDto

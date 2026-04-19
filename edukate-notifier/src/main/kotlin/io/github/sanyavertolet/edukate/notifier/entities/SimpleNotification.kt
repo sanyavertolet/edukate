@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.index.Indexed
 data class SimpleNotification(
     @field:Id override val id: String? = null,
     @field:Indexed(unique = true) override val uuid: String,
-    override val targetUserId: String,
+    override val targetUserId: Long,
     override val isRead: Boolean = false,
     @field:CreatedDate override val createdAt: Instant? = null,
     val title: String,

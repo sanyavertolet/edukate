@@ -7,6 +7,7 @@ import io.github.sanyavertolet.edukate.backend.services.CheckerSchedulerService
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.common.checks.CheckResultInfo
 import io.github.sanyavertolet.edukate.common.utils.id
+import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -63,10 +63,7 @@ class CheckerController(
                 )
             ]
     )
-    fun aiCheck(
-        @RequestParam(name = "id") submissionId: String,
-        authentication: Authentication,
-    ): Mono<ResponseEntity<Void>> =
+    fun aiCheck(@RequestParam(name = "id") submissionId: Long, authentication: Authentication): Mono<ResponseEntity<Void>> =
         submissionService
             .getSubmissionIfOwns(submissionId, requireNotNull(authentication.id()))
             .flatMap { checkerSchedulerService.scheduleCheck(it) }
@@ -99,7 +96,7 @@ class CheckerController(
             ]
     )
     fun selfCheck(
-        @RequestParam(name = "id") submissionId: String,
+        @RequestParam(name = "id") submissionId: Long,
         authentication: Authentication,
     ): Mono<ResponseEntity<Void>> =
         submissionService
@@ -128,7 +125,7 @@ class CheckerController(
             ]
     )
     fun supervisorCheck(
-        @RequestParam(name = "id") submissionId: String,
+        @RequestParam(name = "id") submissionId: Long,
         authentication: Authentication,
     ): Mono<ResponseEntity<Void>> = Mono.just(ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build())
 
@@ -155,10 +152,10 @@ class CheckerController(
                 )
             ]
     )
-    fun getCheckResultById(@PathVariable id: String, authentication: Authentication): Mono<CheckResultDto> =
+    fun getCheckResultById(@PathVariable id: Long, authentication: Authentication): Mono<CheckResultDto> =
         checkResultService
             .findById(id)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Check result not found")))
+            .orNotFound("Check result not found")
             .flatMap { result ->
                 val requesterId = requireNotNull(authentication.id())
                 submissionService.getSubmissionIfOwns(result.submissionId, requesterId).thenReturn(result)
@@ -191,7 +188,7 @@ class CheckerController(
             ]
     )
     fun getCheckResultsBySubmissionId(
-        @PathVariable submissionId: String,
+        @PathVariable submissionId: Long,
         authentication: Authentication,
     ): Flux<CheckResultInfo> =
         submissionService

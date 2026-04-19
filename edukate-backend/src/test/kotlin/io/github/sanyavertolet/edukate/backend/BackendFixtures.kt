@@ -1,13 +1,14 @@
 package io.github.sanyavertolet.edukate.backend
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest
-import io.github.sanyavertolet.edukate.backend.dtos.Result
-import io.github.sanyavertolet.edukate.backend.entities.Bundle
+import io.github.sanyavertolet.edukate.backend.entities.Answer
+import io.github.sanyavertolet.edukate.backend.entities.Book
 import io.github.sanyavertolet.edukate.backend.entities.CheckResult
 import io.github.sanyavertolet.edukate.backend.entities.Problem
+import io.github.sanyavertolet.edukate.backend.entities.ProblemProgress
+import io.github.sanyavertolet.edukate.backend.entities.ProblemSet
 import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.backend.entities.User
-import io.github.sanyavertolet.edukate.backend.entities.UserProblemStatus
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
@@ -19,31 +20,29 @@ import java.time.Instant
 import org.springframework.security.core.Authentication
 
 object BackendFixtures {
-    fun bundle(
-        id: String? = "bundle-1",
-        name: String = "Test Bundle",
+    fun problemSet(
+        id: Long? = 1L,
+        name: String = "Test ProblemSet",
         description: String = "Test Description",
         isPublic: Boolean = false,
-        problemIds: List<String> = listOf("1.0.0"),
-        userIdRoleMap: Map<String, UserRole> = mapOf("admin-1" to UserRole.ADMIN),
-        invitedUserIds: Set<String> = emptySet(),
+        userIdRoleMap: Map<Long, UserRole> = mapOf(100L to UserRole.ADMIN),
+        invitedUserIds: Set<Long> = emptySet(),
         shareCode: String = "SHARE123",
     ) =
-        Bundle(
+        ProblemSet(
             id = id,
             name = name,
             description = description,
             isPublic = isPublic,
-            problemIds = problemIds,
             userIdRoleMap = userIdRoleMap,
             invitedUserIds = invitedUserIds,
             shareCode = shareCode,
         )
 
     fun submission(
-        id: String? = "sub-1",
-        problemId: String = "1.0.0",
-        userId: String = "user-1",
+        id: Long? = 1L,
+        problemId: Long = 1L,
+        userId: Long = 1L,
         status: SubmissionStatus = SubmissionStatus.PENDING,
         fileObjectIds: List<String> = emptyList(),
         createdAt: Instant? = Instant.now(),
@@ -58,8 +57,8 @@ object BackendFixtures {
         )
 
     fun checkResult(
-        id: String? = "cr-1",
-        submissionId: String = "sub-1",
+        id: Long? = 1L,
+        submissionId: Long = 1L,
         status: CheckStatus = CheckStatus.SUCCESS,
         trustLevel: Float = 0.9f,
         errorType: CheckErrorType = CheckErrorType.NONE,
@@ -77,7 +76,7 @@ object BackendFixtures {
         )
 
     fun checkResultMessage(
-        submissionId: String = "sub-1",
+        submissionId: Long = 1L,
         status: CheckStatus = CheckStatus.SUCCESS,
         trustLevel: Float = 0.85f,
         errorType: CheckErrorType = CheckErrorType.NONE,
@@ -92,7 +91,7 @@ object BackendFixtures {
         )
 
     fun user(
-        id: String? = "user-1",
+        id: Long? = 1L,
         name: String = "testuser",
         email: String = "test@example.com",
         token: String = "token",
@@ -101,7 +100,7 @@ object BackendFixtures {
     ) = User(id = id, name = name, email = email, token = token, roles = roles, status = status)
 
     fun mockAuthentication(
-        userId: String = "user-1",
+        userId: Long = 1L,
         username: String = "testuser",
         roles: Set<UserRole> = setOf(UserRole.USER),
     ): Authentication {
@@ -109,33 +108,65 @@ object BackendFixtures {
         return userDetails.toPreAuthenticatedAuthenticationToken()
     }
 
-    fun createSubmissionRequest(problemId: String = "1.0.0", fileNames: List<String> = listOf("solution.txt")) =
-        CreateSubmissionRequest(problemId = problemId, fileNames = fileNames)
+    fun createSubmissionRequest(problemKey: String = "savchenko/P1", fileNames: List<String> = listOf("solution.txt")) =
+        CreateSubmissionRequest(problemKey = problemKey, fileNames = fileNames)
 
     fun problem(
-        id: String = "1.0.0",
+        id: Long? = 1L,
+        bookId: Long = 1L,
+        code: String = "1.1.1",
+        key: String = "savchenko/$code",
         isHard: Boolean = false,
         tags: List<String> = emptyList(),
         text: String = "Test problem text",
         subtasks: List<Problem.Subtask> = emptyList(),
         images: List<String> = emptyList(),
-        result: Result? = null,
-    ) = Problem(id = id, isHard = isHard, tags = tags, text = text, subtasks = subtasks, images = images, result = result)
+    ) =
+        Problem(
+            id = id,
+            bookId = bookId,
+            code = code,
+            key = key,
+            isHard = isHard,
+            tags = tags,
+            text = text,
+            subtasks = subtasks,
+            images = images,
+        )
 
-    fun userProblemStatus(
-        userId: String = "user-1",
-        problemId: String = "1.0.0",
+    fun problemProgress(
+        id: Long? = null,
+        userId: Long = 1L,
+        problemId: Long = 1L,
         bestStatus: SubmissionStatus = SubmissionStatus.SUCCESS,
         latestStatus: SubmissionStatus = bestStatus,
     ) =
-        UserProblemStatus(
+        ProblemProgress(
+            id = id,
             userId = userId,
             problemId = problemId,
             latestStatus = latestStatus,
             latestTime = Instant.now(),
-            latestSubmissionId = "sub-1",
+            latestSubmissionId = 1L,
             bestStatus = bestStatus,
             bestTime = Instant.now(),
-            bestSubmissionId = "sub-1",
+            bestSubmissionId = 1L,
         )
+
+    fun book(
+        id: Long? = 1L,
+        slug: String = "test-book",
+        subject: String = "Physics",
+        title: String = "Test Book",
+        citation: String = "Test Author, Test Book, 2024",
+        description: String? = "A test book",
+    ) = Book(id = id, slug = slug, subject = subject, title = title, citation = citation, description = description)
+
+    fun answer(
+        id: Long? = 1L,
+        problemId: Long = 1L,
+        text: String = "Answer is 42",
+        notes: String? = null,
+        images: List<String> = emptyList(),
+    ) = Answer(id = id, problemId = problemId, text = text, notes = notes, images = images)
 }

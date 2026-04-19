@@ -10,22 +10,23 @@ import { RandomProblemButton } from "./table/RandomProblemButton";
 
 export default function ProblemListComponent() {
     const navigate = useNavigate();
-    const navigateToProblem = (problemName: string) => {
-        void navigate(`/problems/${problemName}`);
+    const navigateToProblem = (problemKey: string) => {
+        void navigate(`/problems/${problemKey}`);
     };
 
-    const { page, rowsPerPage, status, prefix, isHard, hasPictures, hasResult, handlers } = useProblemTableParams();
+    const { page, rowsPerPage, status, prefix, isHard, hasPictures, hasResult, bookSlug, handlers } =
+        useProblemTableParams();
 
     const {
         data: problemList,
         isLoading: isListLoading,
         error: listError,
-    } = useProblemListRequest(page, rowsPerPage, prefix, status, isHard, hasPictures, hasResult);
+    } = useProblemListRequest(page, rowsPerPage, prefix, status, isHard, hasPictures, hasResult, bookSlug);
     const {
         data: problemCount,
         isLoading: isCountLoading,
         error: countError,
-    } = useProblemCountRequest(prefix, status, isHard, hasPictures, hasResult);
+    } = useProblemCountRequest(prefix, status, isHard, hasPictures, hasResult, bookSlug);
 
     const isLoading = isListLoading || isCountLoading;
     const hasError = !!(listError || countError);
@@ -33,7 +34,7 @@ export default function ProblemListComponent() {
     return (
         <Box>
             <ProblemTable
-                headerCells={["", "Name", "Tags"]}
+                headerCells={["", "Book", "Name", "Tags"]}
                 toolbar={
                     <ProblemTableToolbar
                         status={status}
@@ -46,6 +47,8 @@ export default function ProblemListComponent() {
                         onHasPicturesChange={handlers.onChangeHasPictures}
                         hasResult={hasResult}
                         onHasResultChange={handlers.onChangeHasResult}
+                        bookSlug={bookSlug}
+                        onBookSlugChange={handlers.onChangeBookSlug}
                         rightSlot={<RandomProblemButton />}
                     />
                 }
@@ -65,6 +68,7 @@ export default function ProblemListComponent() {
                     loading={isLoading}
                     error={hasError}
                     onRowClick={navigateToProblem}
+                    onBookSlugClick={handlers.onChangeBookSlug}
                 />
             </ProblemTable>
         </Box>

@@ -39,13 +39,13 @@ class SubmissionControllerTest {
 
     private fun authenticatedClient(): WebTestClient =
         webTestClient.mutateWith(
-            SecurityMockServerConfigurers.mockAuthentication(BackendFixtures.mockAuthentication(userId = "user-1"))
+            SecurityMockServerConfigurers.mockAuthentication(BackendFixtures.mockAuthentication(userId = 1L))
         )
 
-    private fun submissionDto(id: String = "sub-1", status: SubmissionStatus = SubmissionStatus.PENDING) =
+    private fun submissionDto(id: Long = 1L, status: SubmissionStatus = SubmissionStatus.PENDING) =
         SubmissionDto(
             id = id,
-            problemId = "1.0.0",
+            problemKey = "savchenko/P1",
             userName = "testuser",
             status = status,
             createdAt = Instant.parse("2024-01-01T00:00:00Z"),
@@ -56,15 +56,15 @@ class SubmissionControllerTest {
 
     @Test
     fun `getSubmissionById returns 200 with submission DTO when owner matches`() {
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1")
-        val dto = submissionDto(id = "sub-1")
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L)
+        val dto = submissionDto(id = 1L)
 
-        every { submissionService.findById("sub-1") } returns Mono.just(submission)
+        every { submissionService.findById(1L) } returns Mono.just(submission)
         every { submissionMapper.toDto(submission) } returns Mono.just(dto)
 
         authenticatedClient()
             .get()
-            .uri("/api/v1/submissions/by-id/sub-1")
+            .uri("/api/v1/submissions/by-id/1")
             .exchange()
             .expectStatus()
             .isOk
@@ -72,16 +72,16 @@ class SubmissionControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .expectBody()
             .jsonPath("$.id")
-            .isEqualTo("sub-1")
+            .isEqualTo(1)
             .jsonPath("$.status")
             .isEqualTo("PENDING")
     }
 
     @Test
     fun `getSubmissionById returns 404 when submission does not exist`() {
-        every { submissionService.findById("missing") } returns Mono.empty()
+        every { submissionService.findById(999L) } returns Mono.empty()
 
-        authenticatedClient().get().uri("/api/v1/submissions/by-id/missing").exchange().expectStatus().isNotFound
+        authenticatedClient().get().uri("/api/v1/submissions/by-id/999").exchange().expectStatus().isNotFound
     }
 
     // endregion
@@ -90,11 +90,11 @@ class SubmissionControllerTest {
 
     @Test
     fun `getMySubmissions returns 200 with list of DTOs`() {
-        val dto1 = submissionDto(id = "sub-1")
-        val dto2 = submissionDto(id = "sub-2")
+        val dto1 = submissionDto(id = 1L)
+        val dto2 = submissionDto(id = 2L)
 
         every { submissionService.findUserSubmissions(any(), isNull(), any()) } returns
-            Flux.just(BackendFixtures.submission(id = "sub-1"), BackendFixtures.submission(id = "sub-2"))
+            Flux.just(BackendFixtures.submission(id = 1L), BackendFixtures.submission(id = 2L))
         every { submissionMapper.toDto(any()) } returnsMany listOf(Mono.just(dto1), Mono.just(dto2))
 
         authenticatedClient()
@@ -122,10 +122,12 @@ class SubmissionControllerTest {
     }
 
     @Test
-    fun `getMySubmissions filters by problemId when provided`() {
-        every { submissionService.findUserSubmissions(any(), eq("1.0.0"), any()) } returns Flux.empty()
+    fun `getMySubmissions filters by problemKey when provided`() {
+        every { problemService.findProblemByKey("savchenko/P1") } returns
+            Mono.just(BackendFixtures.problem(id = 1L, code = "P1"))
+        every { submissionService.findUserSubmissions(any(), eq(1L), any()) } returns Flux.empty()
 
-        authenticatedClient().get().uri("/api/v1/submissions/my?problemId=1.0.0").exchange().expectStatus().isOk
+        authenticatedClient().get().uri("/api/v1/submissions/my?problemKey=savchenko/P1").exchange().expectStatus().isOk
     }
 
     @Test
@@ -136,5 +138,4 @@ class SubmissionControllerTest {
     }
 
     // endregion
-
 }

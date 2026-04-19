@@ -26,14 +26,14 @@ class UserControllerTest {
 
     private fun authenticatedClient(): WebTestClient =
         webTestClient.mutateWith(
-            SecurityMockServerConfigurers.mockAuthentication(BackendFixtures.mockAuthentication(userId = "user-1"))
+            SecurityMockServerConfigurers.mockAuthentication(BackendFixtures.mockAuthentication(userId = 1L))
         )
 
     // region GET /api/v1/users/whoami
 
     @Test
     fun `whoami returns 200 with user data when user found`() {
-        val user = BackendFixtures.user(id = "user-1", name = "testuser")
+        val user = BackendFixtures.user(id = 1L, name = "testuser")
         every { userService.findUserByName("testuser") } returns Mono.just(user)
 
         authenticatedClient()

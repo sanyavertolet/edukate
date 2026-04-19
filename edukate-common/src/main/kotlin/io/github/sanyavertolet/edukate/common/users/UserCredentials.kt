@@ -1,7 +1,7 @@
 package io.github.sanyavertolet.edukate.common.users
 
 data class UserCredentials(
-    val id: String?,
+    val id: Long?,
     val username: String,
     val encodedPassword: String,
     val email: String? = null,

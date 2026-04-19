@@ -10,18 +10,18 @@ import reactor.test.StepVerifier
 
 class AuthUtilsTest {
 
-    private val userDetails = CommonFixtures.userDetails(id = "user-1")
+    private val userDetails = CommonFixtures.userDetails(id = 1L)
     private val auth: Authentication = mockk { every { principal } returns userDetails }
 
     @Test
     fun `id extracts user id from authentication`() {
-        assertThat(auth.id()).isEqualTo("user-1")
+        assertThat(auth.id()).isEqualTo(1L)
         assertThat(null.id()).isNull()
     }
 
     @Test
     fun `monoId emits user id for valid authentication`() {
-        StepVerifier.create(auth.monoId()).expectNext("user-1").verifyComplete()
+        StepVerifier.create(auth.monoId()).expectNext(1L).verifyComplete()
     }
 
     @Test

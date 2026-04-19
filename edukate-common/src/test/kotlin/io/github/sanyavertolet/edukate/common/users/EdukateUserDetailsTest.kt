@@ -29,7 +29,7 @@ class EdukateUserDetailsTest {
     @Test
     fun `getAuthorities maps roles to granted authorities`() {
         val details = CommonFixtures.userDetails(roles = setOf(UserRole.USER, UserRole.ADMIN))
-        val authorityNames = details.authorities.map { it!!.authority }
+        val authorityNames = details.authorities.map { it.authority }
 
         assertThat(authorityNames).containsExactlyInAnyOrder("ROLE_USER", "ROLE_ADMIN")
     }
@@ -63,8 +63,8 @@ class EdukateUserDetailsTest {
         assertThat(token).isInstanceOf(PreAuthenticatedAuthenticationToken::class.java)
         assertThat(token.principal).isSameAs(details)
         assertThat(token.credentials).isNull()
-        assertThat(token.authorities.map { it!!.authority })
-            .containsExactlyInAnyOrderElementsOf(details.authorities.map { it!!.authority })
+        assertThat(token.authorities.map { it.authority })
+            .containsExactlyInAnyOrderElementsOf(details.authorities.map { it.authority })
     }
 
     @Test
@@ -73,7 +73,7 @@ class EdukateUserDetailsTest {
         val str = details.toString()
 
         assertThat(str).doesNotContain("super-secret")
-        assertThat(str).contains(CommonFixtures.USER_ID)
+        assertThat(str).contains(CommonFixtures.USER_ID.toString())
         assertThat(str).contains(CommonFixtures.USER_NAME)
     }
 }

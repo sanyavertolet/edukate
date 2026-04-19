@@ -49,3 +49,5 @@ out/
 # Helm subchart tarballs — reproducible via `helm dependency update edukate-chart/`
 # Chart.lock pins the exact versions; commit that, not the binaries.
 edukate-chart/charts/*.tgz
+
+/edukate-vault/

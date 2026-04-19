@@ -39,7 +39,7 @@ class JwtAuthenticationFilterTest {
         StepVerifier.create(filter.filter(exchange, chain)).verifyComplete()
 
         assertThat(capturedExchange.captured.request.headers[AuthHeaders.AUTHORIZATION_ID.headerName])
-            .contains(GatewayFixtures.USER_ID)
+            .contains(GatewayFixtures.USER_ID.toString())
         assertThat(capturedExchange.captured.request.headers[AuthHeaders.AUTHORIZATION_NAME.headerName])
             .contains(GatewayFixtures.USER_NAME)
     }

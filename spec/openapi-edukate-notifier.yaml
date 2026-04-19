@@ -146,8 +146,9 @@ components:
       - type: object
         properties:
           submissionId:
-            type: string
-          problemId:
+            type: integer
+            format: int64
+          problemKey:
             type: string
           status:
             type: string
@@ -158,7 +159,7 @@ components:
       required:
       - createdAt
       - isRead
-      - problemId
+      - problemKey
       - status
       - submissionId
       - uuid
@@ -169,16 +170,16 @@ components:
         properties:
           inviterName:
             type: string
-          bundleName:
+          problemSetName:
             type: string
-          bundleShareCode:
+          problemSetShareCode:
             type: string
       required:
-      - bundleName
-      - bundleShareCode
       - createdAt
       - inviterName
       - isRead
+      - problemSetName
+      - problemSetShareCode
       - uuid
     NotificationPage:
       type: object

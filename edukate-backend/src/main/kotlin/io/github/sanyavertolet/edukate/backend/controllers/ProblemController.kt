@@ -6,6 +6,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.mappers.ProblemMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
+import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.Parameters
@@ -20,7 +21,6 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import org.springframework.data.domain.PageRequest
-import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,10 +28,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @Validated
@@ -73,6 +71,7 @@ class ProblemController(private val problemService: ProblemService, private val 
     fun getProblemList(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
+        @RequestParam(required = false) bookSlug: String?,
         @RequestParam(required = false) prefix: String?,
         @RequestParam(required = false) status: Problem.Status?,
         @RequestParam(required = false) isHard: Boolean?,
@@ -82,14 +81,14 @@ class ProblemController(private val problemService: ProblemService, private val 
     ): Flux<ProblemMetadata> =
         problemService
             .getFilteredProblems(
-                ProblemFilter(prefix, status, isHard, hasPictures, hasResult),
+                ProblemFilter(bookSlug, prefix, status, isHard, hasPictures, hasResult),
                 authentication,
                 PageRequest.of(page, size),
             )
             .flatMapSequential { problem -> problemMapper.toMetadata(problem, authentication) }
 
     @GetMapping("/count")
-    @Operation(summary = "Count problems", description = "Returns the total number of problems in the system")
+    @Operation(summary = "Count problems", description = "Returns the total number of problems matching the filter")
     @ApiResponses(
         value =
             [
@@ -100,7 +99,9 @@ class ProblemController(private val problemService: ProblemService, private val 
                 ),
             ]
     )
+    @Suppress("LongParameterList")
     fun count(
+        @RequestParam(required = false) bookSlug: String?,
         @RequestParam(required = false) prefix: String?,
         @RequestParam(required = false) status: Problem.Status?,
         @RequestParam(required = false) isHard: Boolean?,
@@ -108,17 +109,20 @@ class ProblemController(private val problemService: ProblemService, private val 
         @RequestParam(required = false) hasResult: Boolean?,
         authentication: Authentication?,
     ): Mono<Long> =
-        problemService.countFilteredProblems(ProblemFilter(prefix, status, isHard, hasPictures, hasResult), authentication)
+        problemService.countFilteredProblems(
+            ProblemFilter(bookSlug, prefix, status, isHard, hasPictures, hasResult),
+            authentication,
+        )
 
     @GetMapping("/by-prefix")
     @Operation(
-        summary = "Get problem IDs by prefix",
-        description = "Retrieves a list of problem IDs that match the given prefix",
+        summary = "Get problem codes by prefix",
+        description = "Retrieves a list of problem codes that match the given prefix",
     )
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Successfully retrieved problem IDs"),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved problem codes"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
             ]
     )
@@ -127,20 +131,20 @@ class ProblemController(private val problemService: ProblemService, private val 
             [
                 Parameter(
                     name = "prefix",
-                    description = "The prefix to match problem IDs against",
+                    description = "The prefix to match problem codes against",
                     `in` = ParameterIn.QUERY,
                     required = true,
                 ),
                 Parameter(name = "limit", description = "Maximum number of results to return", `in` = ParameterIn.QUERY),
             ]
     )
-    fun getProblemIdsByPrefix(
+    fun getProblemCodesByPrefix(
         @RequestParam @NotBlank prefix: String,
         @RequestParam(required = false, defaultValue = "5") @Positive limit: Int,
-    ): Mono<List<String>> = problemService.getProblemIdsByPrefix(prefix, limit).collectList()
+    ): Mono<List<String>> = problemService.getProblemCodesByPrefix(prefix, limit).collectList()
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Get problem by ID", description = "Retrieves a specific problem by its ID")
+    @GetMapping("/{bookSlug}/{code}")
+    @Operation(summary = "Get problem by key", description = "Retrieves a specific problem by its book slug and code")
     @ApiResponses(
         value =
             [
@@ -149,30 +153,39 @@ class ProblemController(private val problemService: ProblemService, private val 
                 ApiResponse(responseCode = "404", description = "Problem not found"),
             ]
     )
-    @Parameters(value = [Parameter(name = "id", description = "Problem ID", `in` = ParameterIn.PATH, required = true)])
-    fun getProblem(@PathVariable @NotBlank id: String, authentication: Authentication?): Mono<ProblemDto> =
-        problemService
-            .findProblemById(id)
-            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found").toMono())
-            .flatMap { problem -> problemMapper.toDto(problem, authentication) }
+    @Parameters(
+        value =
+            [
+                Parameter(name = "bookSlug", description = "Book slug", `in` = ParameterIn.PATH, required = true),
+                Parameter(name = "code", description = "Problem code", `in` = ParameterIn.PATH, required = true),
+            ]
+    )
+    fun getProblem(
+        @PathVariable bookSlug: String,
+        @PathVariable code: String,
+        authentication: Authentication?,
+    ): Mono<ProblemDto> =
+        problemService.findProblemByKey("$bookSlug/$code").orNotFound("Problem not found").flatMap { problem ->
+            problemMapper.toDto(problem, authentication)
+        }
 
     @Suppress("MaxLineLength")
     @GetMapping("/random")
     @Operation(
-        summary = "Get random problem ID",
+        summary = "Get random problem key",
         description =
-            "Returns a random problem ID. If the user is authenticated, prioritizes problems the user hasn't solved yet; otherwise returns any random problem.",
+            "Returns a random problem key (bookSlug/code). If the user is authenticated, prioritizes problems the user hasn't solved yet; otherwise returns any random problem.",
     )
     @ApiResponses(
         value =
             [
                 ApiResponse(
                     responseCode = "200",
-                    description = "Successfully retrieved random problem ID",
+                    description = "Successfully retrieved random problem key",
                     content = [Content(mediaType = "text/plain", schema = Schema(implementation = String::class))],
                 )
             ]
     )
-    fun getRandomUnsolvedProblemId(authentication: Authentication?): Mono<String> =
-        problemService.getRandomUnsolvedProblemId(authentication)
+    fun getRandomUnsolvedProblemKey(authentication: Authentication?): Mono<String> =
+        problemService.getRandomUnsolvedProblemKey(authentication)
 }

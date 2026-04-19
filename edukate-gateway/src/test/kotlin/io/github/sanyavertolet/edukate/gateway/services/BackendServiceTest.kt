@@ -1,7 +1,10 @@
+@file:Suppress("ReactiveStreamsUnusedPublisher")
+
 package io.github.sanyavertolet.edukate.gateway.services
 
 import io.github.sanyavertolet.edukate.gateway.GatewayFixtures
 import io.github.sanyavertolet.edukate.gateway.configs.GatewayProperties
+import io.github.sanyavertolet.edukate.gateway.repositories.GatewayUserRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -23,7 +26,8 @@ class BackendServiceTest {
     private val exchangeFunction: ExchangeFunction = mockk()
     private val webClientBuilder = WebClient.builder().exchangeFunction(exchangeFunction)
     private val gatewayProperties = GatewayProperties(GatewayProperties.Backend("http://test-backend"))
-    private val backendService = BackendService(gatewayProperties, webClientBuilder)
+    private val gatewayUserRepository: GatewayUserRepository = mockk()
+    private val backendService = BackendService(gatewayProperties, webClientBuilder, gatewayUserRepository)
 
     private fun mockJsonResponse(status: HttpStatus, body: Any): ClientResponse =
         ClientResponse.create(status)
@@ -62,22 +66,18 @@ class BackendServiceTest {
     // ── getUserByName ─────────────────────────────────────────────────────────
 
     @Test
-    fun `getUserByName sends GET to by-name endpoint with correct path variable`() {
-        val credentials = GatewayFixtures.userCredentials()
-        val requestSlot = slot<ClientRequest>()
-        every { exchangeFunction.exchange(capture(requestSlot)) } returns
-            Mono.just(mockJsonResponse(HttpStatus.OK, credentials))
+    fun `getUserByName returns credentials from repository`() {
+        val user = GatewayFixtures.gatewayUser()
+        every { gatewayUserRepository.findByName(GatewayFixtures.USER_NAME) } returns Mono.just(user)
 
         StepVerifier.create(backendService.getUserByName(GatewayFixtures.USER_NAME))
             .expectNextMatches { it.username == GatewayFixtures.USER_NAME }
             .verifyComplete()
-
-        assertThat(requestSlot.captured.url().path).isEqualTo("/internal/users/by-name/${GatewayFixtures.USER_NAME}")
     }
 
     @Test
-    fun `getUserByName returns empty Mono when backend returns 404`() {
-        every { exchangeFunction.exchange(any()) } returns Mono.just(mockErrorResponse(HttpStatus.NOT_FOUND))
+    fun `getUserByName returns empty Mono when user not found`() {
+        every { gatewayUserRepository.findByName(GatewayFixtures.USER_NAME) } returns Mono.empty()
 
         StepVerifier.create(backendService.getUserByName(GatewayFixtures.USER_NAME)).verifyComplete()
     }
@@ -85,22 +85,18 @@ class BackendServiceTest {
     // ── getUserById ───────────────────────────────────────────────────────────
 
     @Test
-    fun `getUserById sends GET to by-id endpoint with correct path variable`() {
-        val credentials = GatewayFixtures.userCredentials()
-        val requestSlot = slot<ClientRequest>()
-        every { exchangeFunction.exchange(capture(requestSlot)) } returns
-            Mono.just(mockJsonResponse(HttpStatus.OK, credentials))
+    fun `getUserById returns credentials from repository`() {
+        val user = GatewayFixtures.gatewayUser()
+        every { gatewayUserRepository.findById(GatewayFixtures.USER_ID.toLong()) } returns Mono.just(user)
 
         StepVerifier.create(backendService.getUserById(GatewayFixtures.USER_ID))
             .expectNextMatches { it.id == GatewayFixtures.USER_ID }
             .verifyComplete()
-
-        assertThat(requestSlot.captured.url().path).isEqualTo("/internal/users/by-id/${GatewayFixtures.USER_ID}")
     }
 
     @Test
-    fun `getUserById returns empty Mono when backend returns 404`() {
-        every { exchangeFunction.exchange(any()) } returns Mono.just(mockErrorResponse(HttpStatus.NOT_FOUND))
+    fun `getUserById returns empty Mono when user not found`() {
+        every { gatewayUserRepository.findById(GatewayFixtures.USER_ID.toLong()) } returns Mono.empty()
 
         StepVerifier.create(backendService.getUserById(GatewayFixtures.USER_ID)).verifyComplete()
     }

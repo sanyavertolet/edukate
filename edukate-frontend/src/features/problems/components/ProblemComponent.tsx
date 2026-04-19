@@ -6,8 +6,8 @@ import SubmissionsCard from "./cards/SubmissionsCard";
 import { AuthRequired } from "@/features/auth/components/AuthRequired";
 import { getApiErrorMessage } from "@/lib/api-error";
 
-export function ProblemComponent({ problemId }: { problemId: string }) {
-    const { data: problem, isLoading, error } = useProblemRequest(problemId);
+export function ProblemComponent({ bookSlug, code }: { bookSlug: string; code: string }) {
+    const { data: problem, isLoading, error } = useProblemRequest(bookSlug, code);
 
     return (
         <Box>
@@ -22,7 +22,7 @@ export function ProblemComponent({ problemId }: { problemId: string }) {
                     <ProblemCard problem={problem} />
                     <AuthRequired>
                         <SolutionCard problem={problem} />
-                        <SubmissionsCard problemId={problem.id} />
+                        <SubmissionsCard problemKey={problem.key} />
                     </AuthRequired>
                 </Stack>
             )}

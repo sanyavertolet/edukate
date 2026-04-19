@@ -7,8 +7,9 @@ import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
-import io.github.sanyavertolet.edukate.common.utils.id
 import io.github.sanyavertolet.edukate.common.utils.monoId
+import io.github.sanyavertolet.edukate.common.utils.orForbidden
+import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.github.sanyavertolet.edukate.storage.keys.FileKey
 import io.github.sanyavertolet.edukate.storage.keys.TempFileKey
 import io.swagger.v3.oas.annotations.Operation
@@ -22,13 +23,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
@@ -40,11 +39,9 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
-import reactor.kotlin.core.publisher.toMono
 
 @RestController
 @Validated
@@ -74,12 +71,16 @@ class SubmissionController(
             ]
     )
     @Parameters(value = [Parameter(name = "id", description = "Submission ID", `in` = ParameterIn.PATH, required = true)])
-    fun getSubmissionById(@PathVariable @NotBlank id: String, authentication: Authentication): Mono<SubmissionDto> =
-        submissionService
-            .findById(id)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found")))
-            .filter { it.userId == authentication.id() }
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied")))
+    fun getSubmissionById(@PathVariable id: Long, authentication: Authentication): Mono<SubmissionDto> =
+        authentication
+            .monoId()
+            .flatMap { userId ->
+                submissionService
+                    .findById(id)
+                    .orNotFound("Submission not found")
+                    .filter { it.userId == userId }
+                    .orForbidden("Access denied")
+            }
             .flatMap { submissionMapper.toDto(it) }
 
     @PostMapping
@@ -114,26 +115,26 @@ class SubmissionController(
         authentication
             .monoId()
             .flatMap { userService.findUserById(it) }
-            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User not found").toMono())
+            .orNotFound("User not found")
             .filterWhen { userService.hasUserPermissionToSubmit(it) }
-            .switchIfEmpty(ResponseStatusException(HttpStatus.FORBIDDEN, "Not enough permission").toMono())
-            .filterWhen { problemService.findProblemById(submissionRequest.problemId).hasElement() }
-            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Problem not found.").toMono())
+            .orForbidden("Not enough permission")
+            .filterWhen { problemService.findProblemByKey(submissionRequest.problemKey).hasElement() }
+            .orNotFound("Problem not found.")
             .flatMap { user ->
                 submissionRequest.fileNames
                     .toFlux()
                     .map { fileName -> TempFileKey(requireNotNull(user.id), fileName) as FileKey }
                     .collectList()
                     .filterWhen { fileManager.doFilesExist(it) }
-                    .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find files.").toMono())
+                    .orNotFound("Could not find files.")
                     .then(submissionService.saveSubmission(submissionRequest, authentication))
             }
             .flatMap { submissionMapper.toDto(it) }
 
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
-    @GetMapping("/{problemId}/{username}")
+    @GetMapping("/{bookSlug}/{code}/{username}")
     @Operation(
-        summary = "Get submissions by username and problem ID",
+        summary = "Get submissions by username and problem key",
         description = "Retrieves paginated submissions for a specific user and problem",
     )
     @ApiResponses(
@@ -147,7 +148,8 @@ class SubmissionController(
     @Parameters(
         value =
             [
-                Parameter(name = "problemId", description = "Problem ID", `in` = ParameterIn.PATH, required = true),
+                Parameter(name = "bookSlug", description = "Book slug", `in` = ParameterIn.PATH, required = true),
+                Parameter(name = "code", description = "Problem code", `in` = ParameterIn.PATH, required = true),
                 Parameter(name = "username", description = "Username", `in` = ParameterIn.PATH, required = true),
                 Parameter(
                     name = "page",
@@ -163,23 +165,27 @@ class SubmissionController(
                 ),
             ]
     )
-    fun getSubmissionsByUsernameAndProblemId(
-        @PathVariable @NotBlank problemId: String,
-        @PathVariable @NotBlank username: String,
+    fun getSubmissionsByUsernameAndProblemKey(
+        @PathVariable bookSlug: String,
+        @PathVariable code: String,
+        @PathVariable username: String,
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
-    ): Flux<SubmissionDto> =
-        userService
-            .findUserByName(username)
-            .switchIfEmpty(ResponseStatusException(HttpStatus.NOT_FOUND, "User $username not found").toMono())
-            .flatMapMany { user ->
+    ): Flux<SubmissionDto> {
+        val problemKey = "$bookSlug/$code"
+        return Mono.zip(
+                userService.findUserByName(username).orNotFound("User $username not found"),
+                problemService.findProblemByKey(problemKey).orNotFound("Problem $problemKey not found"),
+            )
+            .flatMapMany { tuple ->
                 submissionService.findSubmissionsByProblemIdAndUserId(
-                    problemId,
-                    requireNotNull(user.id),
+                    requireNotNull(tuple.t2.id),
+                    requireNotNull(tuple.t1.id),
                     sortedPageable(page, size),
                 )
             }
             .flatMapSequential { submissionMapper.toDto(it) }
+    }
 
     @Suppress("MaxLineLength")
     @GetMapping("/my")
@@ -200,9 +206,9 @@ class SubmissionController(
         value =
             [
                 Parameter(
-                    name = "problemId",
+                    name = "problemKey",
                     `in` = ParameterIn.QUERY,
-                    description = "Optional problem ID to filter the user's submissions",
+                    description = "Optional problem key (bookSlug/code) to filter the user's submissions",
                 ),
                 Parameter(
                     name = "page",
@@ -219,15 +225,26 @@ class SubmissionController(
             ]
     )
     fun getMySubmissions(
-        @RequestParam(required = false) problemId: String?,
+        @RequestParam(required = false) problemKey: String?,
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
         authentication: Authentication,
     ): Flux<SubmissionDto> =
         authentication
             .monoId()
-            .flatMapMany { userId -> submissionService.findUserSubmissions(userId, problemId, sortedPageable(page, size)) }
+            .flatMapMany { userId ->
+                if (problemKey != null) {
+                    resolveProblemId(problemKey).flatMapMany { problemId ->
+                        submissionService.findUserSubmissions(userId, problemId, sortedPageable(page, size))
+                    }
+                } else {
+                    submissionService.findUserSubmissions(userId, null, sortedPageable(page, size))
+                }
+            }
             .flatMapSequential { submissionMapper.toDto(it) }
+
+    private fun resolveProblemId(key: String): Mono<Long> =
+        problemService.findProblemByKey(key).orNotFound("Problem $key not found").mapNotNull { problem -> problem.id }
 
     private fun sortedPageable(page: Int, size: Int): Pageable = PageRequest.of(page, size, Sort.Direction.DESC, "createdAt")
 }

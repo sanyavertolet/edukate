@@ -52,7 +52,7 @@ class NotificationSerializationTest {
         val original =
             NotificationFixtures.simpleNotification(
                 uuid = "rt-simple",
-                userId = "rt-user",
+                userId = 1L,
                 createdAt = Instant.parse("2025-01-01T00:00:00Z"),
             )
 
@@ -62,7 +62,7 @@ class NotificationSerializationTest {
         assertThat(deserialized).isInstanceOf(SimpleNotification::class.java)
         deserialized as SimpleNotification
         assertThat(deserialized.uuid).isEqualTo("rt-simple")
-        assertThat(deserialized.targetUserId).isEqualTo("rt-user")
+        assertThat(deserialized.targetUserId).isEqualTo(1L)
         assertThat(deserialized.title).isEqualTo("Test Title")
         assertThat(deserialized.message).isEqualTo("Test Message")
         assertThat(deserialized.source).isEqualTo("test-source")
@@ -81,8 +81,8 @@ class NotificationSerializationTest {
         deserialized as InviteNotification
         assertThat(deserialized.uuid).isEqualTo("rt-invite")
         assertThat(deserialized.inviterName).isEqualTo("inviter")
-        assertThat(deserialized.bundleName).isEqualTo("My Bundle")
-        assertThat(deserialized.bundleShareCode).isEqualTo("SHARE123")
+        assertThat(deserialized.problemSetName).isEqualTo("My Bundle")
+        assertThat(deserialized.problemSetShareCode).isEqualTo("SHARE123")
     }
 
     @Test
@@ -101,8 +101,8 @@ class NotificationSerializationTest {
         deserialized as CheckedNotification
         assertThat(deserialized.uuid).isEqualTo("rt-checked")
         assertThat(deserialized.status).isEqualTo(CheckStatus.MISTAKE)
-        assertThat(deserialized.submissionId).isEqualTo("submission-1")
-        assertThat(deserialized.problemId).isEqualTo("problem-1")
+        assertThat(deserialized.submissionId).isEqualTo(1L)
+        assertThat(deserialized.problemKey).isEqualTo("problem-1")
     }
 
     // endregion
@@ -111,14 +111,14 @@ class NotificationSerializationTest {
 
     @Test
     fun `SimpleNotificationCreateRequest deserializes from JSON with _type discriminator`() {
-        val json = """{"_type":"simple","uuid":"req-uuid","targetUserId":"u1","title":"T","message":"M","source":"S"}"""
+        val json = """{"_type":"simple","uuid":"req-uuid","targetUserId":1,"title":"T","message":"M","source":"S"}"""
 
         val result = objectMapper.readValue(json, BaseNotificationCreateRequest::class.java)
 
         assertThat(result).isInstanceOf(SimpleNotificationCreateRequest::class.java)
         result as SimpleNotificationCreateRequest
         assertThat(result.uuid).isEqualTo("req-uuid")
-        assertThat(result.targetUserId).isEqualTo("u1")
+        assertThat(result.targetUserId).isEqualTo(1L)
         assertThat(result.title).isEqualTo("T")
         assertThat(result.message).isEqualTo("M")
         assertThat(result.source).isEqualTo("S")
@@ -128,8 +128,8 @@ class NotificationSerializationTest {
     fun `InviteNotificationCreateRequest deserializes from JSON with _type discriminator`() {
         val json =
             """
-            |{"_type":"invite","uuid":"req-invite","targetUserId":"u2",
-            |"inviterName":"Alice","bundleName":"B","bundleShareCode":"CODE"}
+            |{"_type":"invite","uuid":"req-invite","targetUserId":2,
+            |"inviterName":"Alice","problemSetName":"B","problemSetShareCode":"CODE"}
             """
                 .trimMargin()
 
@@ -139,16 +139,16 @@ class NotificationSerializationTest {
         result as InviteNotificationCreateRequest
         assertThat(result.uuid).isEqualTo("req-invite")
         assertThat(result.inviterName).isEqualTo("Alice")
-        assertThat(result.bundleName).isEqualTo("B")
-        assertThat(result.bundleShareCode).isEqualTo("CODE")
+        assertThat(result.problemSetName).isEqualTo("B")
+        assertThat(result.problemSetShareCode).isEqualTo("CODE")
     }
 
     @Test
     fun `CheckedNotificationCreateRequest deserializes from JSON with _type discriminator`() {
         val json =
             """
-            |{"_type":"checked","uuid":"req-checked","targetUserId":"u3",
-            |"submissionId":"s1","problemId":"p1","status":"SUCCESS"}
+            |{"_type":"checked","uuid":"req-checked","targetUserId":3,
+            |"submissionId":1,"problemKey":"p1","status":"SUCCESS"}
             """
                 .trimMargin()
 
@@ -157,8 +157,8 @@ class NotificationSerializationTest {
         assertThat(result).isInstanceOf(CheckedNotificationCreateRequest::class.java)
         result as CheckedNotificationCreateRequest
         assertThat(result.uuid).isEqualTo("req-checked")
-        assertThat(result.submissionId).isEqualTo("s1")
-        assertThat(result.problemId).isEqualTo("p1")
+        assertThat(result.submissionId).isEqualTo(1L)
+        assertThat(result.problemKey).isEqualTo("p1")
         assertThat(result.status).isEqualTo(CheckStatus.SUCCESS)
     }
 
@@ -198,8 +198,8 @@ class NotificationSerializationTest {
                 isRead = true,
                 createdAt = now,
                 inviterName = "Bob",
-                bundleName = "Bundle",
-                bundleShareCode = "XYZ",
+                problemSetName = "Bundle",
+                problemSetShareCode = "XYZ",
             )
 
         val json = objectMapper.writeValueAsString(original)
@@ -208,7 +208,7 @@ class NotificationSerializationTest {
         assertThat(deserialized).isInstanceOf(InviteNotificationDto::class.java)
         deserialized as InviteNotificationDto
         assertThat(deserialized.inviterName).isEqualTo("Bob")
-        assertThat(deserialized.bundleShareCode).isEqualTo("XYZ")
+        assertThat(deserialized.problemSetShareCode).isEqualTo("XYZ")
     }
 
     @Test
@@ -219,8 +219,8 @@ class NotificationSerializationTest {
                 uuid = "dto-checked",
                 isRead = false,
                 createdAt = now,
-                submissionId = "sub-1",
-                problemId = "prob-1",
+                submissionId = 1L,
+                problemKey = "prob-1",
                 status = CheckStatus.INTERNAL_ERROR,
             )
 
@@ -230,7 +230,7 @@ class NotificationSerializationTest {
         assertThat(deserialized).isInstanceOf(CheckedNotificationDto::class.java)
         deserialized as CheckedNotificationDto
         assertThat(deserialized.status).isEqualTo(CheckStatus.INTERNAL_ERROR)
-        assertThat(deserialized.submissionId).isEqualTo("sub-1")
+        assertThat(deserialized.submissionId).isEqualTo(1L)
     }
 
     // endregion

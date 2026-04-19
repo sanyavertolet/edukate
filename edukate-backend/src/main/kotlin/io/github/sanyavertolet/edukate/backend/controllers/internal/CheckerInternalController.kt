@@ -17,6 +17,6 @@ class CheckerInternalController(
     private val checkerSchedulerService: CheckerSchedulerService,
 ) {
     @PostMapping("/ai")
-    fun checkSubmission(@RequestParam("id") submissionId: String): Mono<Void> =
+    fun checkSubmission(@RequestParam("id") submissionId: Long): Mono<Void> =
         submissionService.findById(submissionId).flatMap { checkerSchedulerService.scheduleCheck(it) }
 }

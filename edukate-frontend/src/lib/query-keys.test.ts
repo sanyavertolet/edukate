@@ -13,8 +13,9 @@ describe("queryKeys", () => {
                 undefined,
                 undefined,
                 undefined,
+                undefined,
             ]);
-            expect(queryKeys.problems.list(1, 10, "1.", "SOLVED", true, false, true)).toEqual([
+            expect(queryKeys.problems.list(1, 10, "1.", "SOLVED", true, false, true, "savchenko")).toEqual([
                 "problems",
                 "list",
                 1,
@@ -24,15 +25,16 @@ describe("queryKeys", () => {
                 true,
                 false,
                 true,
+                "savchenko",
             ]);
         });
 
-        it("detail includes id", () => {
-            expect(queryKeys.problems.detail("prob-1")).toEqual(["problems", "detail", "prob-1"]);
+        it("detail includes key", () => {
+            expect(queryKeys.problems.detail("savchenko/1.1.1")).toEqual(["problems", "detail", "savchenko/1.1.1"]);
         });
 
-        it("result includes id", () => {
-            expect(queryKeys.problems.result("prob-1")).toEqual(["problems", "result", "prob-1"]);
+        it("answer includes bookSlug and code", () => {
+            expect(queryKeys.problems.answer("savchenko", "1.1.1")).toEqual(["problems", "answer", "savchenko", "1.1.1"]);
         });
 
         it("count includes optional filters", () => {
@@ -44,8 +46,9 @@ describe("queryKeys", () => {
                 undefined,
                 undefined,
                 undefined,
+                undefined,
             ]);
-            expect(queryKeys.problems.count("1.", "SOLVED", true)).toEqual([
+            expect(queryKeys.problems.count("1.", "SOLVED", true, undefined, undefined, "savchenko")).toEqual([
                 "problems",
                 "count",
                 "1.",
@@ -53,6 +56,7 @@ describe("queryKeys", () => {
                 true,
                 undefined,
                 undefined,
+                "savchenko",
             ]);
         });
 
@@ -61,21 +65,21 @@ describe("queryKeys", () => {
         });
     });
 
-    describe("bundles", () => {
+    describe("problemSets", () => {
         it("detail includes code", () => {
-            expect(queryKeys.bundles.detail("abc")).toEqual(["bundles", "detail", "abc"]);
+            expect(queryKeys.problemSets.detail("abc")).toEqual(["problemSets", "detail", "abc"]);
         });
 
         it("list includes category", () => {
-            expect(queryKeys.bundles.list("joined")).toEqual(["bundles", "list", "joined"]);
+            expect(queryKeys.problemSets.list("joined")).toEqual(["problemSets", "list", "joined"]);
         });
 
         it("users includes code", () => {
-            expect(queryKeys.bundles.users("abc")).toEqual(["bundles", "users", "abc"]);
+            expect(queryKeys.problemSets.users("abc")).toEqual(["problemSets", "users", "abc"]);
         });
 
         it("invitedUsers includes code", () => {
-            expect(queryKeys.bundles.invitedUsers("abc")).toEqual(["bundles", "invited-users", "abc"]);
+            expect(queryKeys.problemSets.invitedUsers("abc")).toEqual(["problemSets", "invited-users", "abc"]);
         });
     });
 
@@ -84,8 +88,8 @@ describe("queryKeys", () => {
             expect(queryKeys.submissions.detail("sub-1")).toEqual(["submissions", "detail", "sub-1"]);
         });
 
-        it("byProblem includes problemId", () => {
-            expect(queryKeys.submissions.byProblem("prob-1")).toEqual(["submissions", "by-problem", "prob-1"]);
+        it("byProblem includes problemKey", () => {
+            expect(queryKeys.submissions.byProblem("savchenko/1.1.1")).toEqual(["submissions", "by-problem", "savchenko/1.1.1"]);
         });
     });
 

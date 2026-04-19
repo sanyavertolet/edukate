@@ -8,18 +8,17 @@ import io.github.sanyavertolet.edukate.common.checks.CheckStatus
 import java.time.Instant
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.index.Indexed
-import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.relational.core.mapping.Table
 
-@Document("check_results")
+@Table("check_results")
 data class CheckResult(
-    @field:Id val id: String? = null,
-    @field:Indexed val submissionId: String,
+    @Id val id: Long? = null,
+    val submissionId: Long,
     val status: CheckStatus,
     val trustLevel: Float,
     val errorType: CheckErrorType,
     val explanation: String,
-    @field:CreatedDate val createdAt: Instant? = null,
+    @CreatedDate val createdAt: Instant? = null,
 ) {
     fun toCheckResultDto() =
         CheckResultDto(
@@ -40,7 +39,7 @@ data class CheckResult(
 
     companion object {
         @JvmStatic
-        fun self(submissionId: String) =
+        fun self(submissionId: Long) =
             CheckResult(
                 submissionId = submissionId,
                 status = CheckStatus.SUCCESS,

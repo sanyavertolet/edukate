@@ -8,27 +8,27 @@ import { CreateSubmissionRequest } from "./types";
 export function useSubmitProblemMutation() {
     return useMutation({
         mutationFn: (request: CreateSubmissionRequest) => uploadSubmission(request),
-        onSuccess: (_data, { problemId }) => {
-            void queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(problemId) });
-            void queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problemId) });
+        onSuccess: (_data, { problemKey }) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(problemKey) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problemKey) });
             void queryClient.invalidateQueries({ queryKey: queryKeys.files.temp });
         },
     });
 }
 
-export function useMySubmissionsQuery(problemId?: string) {
+export function useMySubmissionsQuery(problemKey?: string) {
     const { isAuthorized } = useAuthContext();
     return useQuery({
-        queryKey: queryKeys.submissions.byProblem(problemId ?? ""),
+        queryKey: queryKeys.submissions.byProblem(problemKey ?? ""),
         enabled: isAuthorized,
-        queryFn: ({ signal }) => getMySubmissions({ problemId }, signal),
+        queryFn: ({ signal }) => getMySubmissions({ problemKey }, signal),
     });
 }
 
 export function useSubmissionQuery(submissionId: string | undefined) {
     return useQuery({
         queryKey: queryKeys.submissions.detail(submissionId ?? ""),
-        queryFn: ({ signal }) => getSubmissionById(submissionId as string, signal),
+        queryFn: ({ signal }) => getSubmissionById(Number(submissionId), signal),
         enabled: !!submissionId,
     });
 }

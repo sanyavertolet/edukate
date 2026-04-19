@@ -28,7 +28,7 @@ export function SubmissionListItem({ submission, setImage }: { submission: Submi
         <ListItem disablePadding secondaryAction={AttachmentButtonList(attachments, setImage)}>
             <ListItemButton
                 onClick={() => {
-                    void navigate(`/submissions/${submission.id}`);
+                    void navigate(`/submissions/${String(submission.id)}`);
                 }}
             >
                 <ListItemAvatar>

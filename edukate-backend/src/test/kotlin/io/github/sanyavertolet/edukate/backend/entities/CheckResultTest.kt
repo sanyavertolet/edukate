@@ -14,8 +14,8 @@ class CheckResultTest {
 
     @Test
     fun `self() creates a SUCCESS check result with low trust level`() {
-        val result = CheckResult.self("sub-42")
-        assertThat(result.submissionId).isEqualTo("sub-42")
+        val result = CheckResult.self(42L)
+        assertThat(result.submissionId).isEqualTo(42L)
         assertThat(result.status).isEqualTo(CheckStatus.SUCCESS)
         assertThat(result.trustLevel).isEqualTo(0.01f)
         assertThat(result.errorType).isEqualTo(CheckErrorType.NONE)
@@ -31,14 +31,14 @@ class CheckResultTest {
     fun `fromCheckResultMessage maps all fields correctly`() {
         val message =
             BackendFixtures.checkResultMessage(
-                submissionId = "sub-99",
+                submissionId = 99L,
                 status = CheckStatus.MISTAKE,
                 trustLevel = 0.75f,
                 errorType = CheckErrorType.CONCEPTUAL,
                 explanation = "Conceptual error in solution",
             )
         val result = CheckResult.fromCheckResultMessage(message)
-        assertThat(result.submissionId).isEqualTo("sub-99")
+        assertThat(result.submissionId).isEqualTo(99L)
         assertThat(result.status).isEqualTo(CheckStatus.MISTAKE)
         assertThat(result.trustLevel).isEqualTo(0.75f)
         assertThat(result.errorType).isEqualTo(CheckErrorType.CONCEPTUAL)
@@ -83,10 +83,9 @@ class CheckResultTest {
     @Test
     fun `toCheckResultInfo maps id, status, trustLevel, and createdAt`() {
         val now = Instant.now()
-        val result =
-            BackendFixtures.checkResult(id = "cr-1", status = CheckStatus.SUCCESS, trustLevel = 0.8f, createdAt = now)
+        val result = BackendFixtures.checkResult(id = 1L, status = CheckStatus.SUCCESS, trustLevel = 0.8f, createdAt = now)
         val info = result.toCheckResultInfo()
-        assertThat(info.id).isEqualTo("cr-1")
+        assertThat(info.id).isEqualTo(1L)
         assertThat(info.status).isEqualTo(CheckStatus.SUCCESS)
         assertThat(info.trustLevel).isEqualTo(0.8f)
         assertThat(info.createdAt).isEqualTo(now)
@@ -100,7 +99,7 @@ class CheckResultTest {
 
     @Test
     fun `toCheckResultInfo throws when createdAt is null`() {
-        val result = BackendFixtures.checkResult(id = "cr-1", createdAt = null)
+        val result = BackendFixtures.checkResult(id = 1L, createdAt = null)
         assertThatThrownBy { result.toCheckResultInfo() }.isInstanceOf(IllegalArgumentException::class.java)
     }
 

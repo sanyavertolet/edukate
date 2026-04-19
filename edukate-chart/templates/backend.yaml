@@ -31,6 +31,18 @@ spec:
                   name: {{ .Values.mongodb.secretName }}
                   key: {{ .Values.mongodb.secretKey.backend }}
             {{ end }}
+            {{ if .Values.postgresql.enabled }}
+            - name: SPRING_R2DBC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.secretName }}
+                  key: {{ .Values.postgresql.secretKey.backendR2dbc }}
+            - name: SPRING_FLYWAY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.secretName }}
+                  key: {{ .Values.postgresql.secretKey.backendFlyway }}
+            {{ end }}
             {{ include "s3.configuration.env" . | nindent 12 | trim }}
             {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}
           volumeMounts:

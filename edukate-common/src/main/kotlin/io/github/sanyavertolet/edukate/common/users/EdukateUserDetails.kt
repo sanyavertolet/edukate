@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
 class EdukateUserDetails(
-    val id: String,
+    val id: Long,
     val name: String,
     val roles: Set<UserRole> = emptySet(),
     val status: UserStatus,

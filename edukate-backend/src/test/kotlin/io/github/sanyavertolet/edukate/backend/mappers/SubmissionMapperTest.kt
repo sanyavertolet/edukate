@@ -35,21 +35,22 @@ class SubmissionMapperTest {
 
     @Test
     fun `toDto collects file urls and user name`() {
-        val fileKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "solution.txt")
+        val fileKey = SubmissionFileKey(1L, 1L, 1L, "solution.txt")
         val fileObject =
             FileObject(
-                id = "fo-1",
+                id = 1L,
                 keyPath = fileKey.toString(),
                 key = fileKey,
                 type = "submission",
-                ownerUserId = "user-1",
+                ownerUserId = 1L,
                 metadata = FileObjectMetadata(Instant.now(), 100L, "text/plain"),
             )
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1", fileObjectIds = listOf("fo-1"))
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L, fileObjectIds = listOf("1"))
 
-        every { fileObjectRepository.findAllById(listOf("fo-1")) } returns Flux.just(fileObject)
+        every { fileObjectRepository.findAllById(listOf(1L)) } returns Flux.just(fileObject)
         every { fileManager.getPresignedUrl(fileKey) } returns Mono.just("https://s3/solution.txt")
-        every { userService.findUserById("user-1") } returns Mono.just(BackendFixtures.user(id = "user-1", name = "alice"))
+        every { userService.findUserById(1L) } returns Mono.just(BackendFixtures.user(id = 1L, name = "alice"))
+        every { problemService.findProblemById(1L) } returns Mono.just(BackendFixtures.problem(id = 1L, code = "P1"))
 
         StepVerifier.create(mapper.toDto(submission))
             .assertNext { dto ->
@@ -61,28 +62,28 @@ class SubmissionMapperTest {
 
     @Test
     fun `prepareContext builds SubmissionContext`() {
-        val problem = BackendFixtures.problem(id = "1.0.0", text = "Solve it", images = listOf("img.png"))
-        val fileKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "solution.txt")
+        val problem = BackendFixtures.problem(id = 1L, code = "1.1.1", text = "Solve it", images = listOf("img.png"))
+        val fileKey = SubmissionFileKey(1L, 1L, 1L, "solution.txt")
         val fileObject =
             FileObject(
-                id = "fo-1",
+                id = 1L,
                 keyPath = fileKey.toString(),
                 key = fileKey,
                 type = "submission",
-                ownerUserId = "user-1",
+                ownerUserId = 1L,
                 metadata = FileObjectMetadata(Instant.now(), 100L, "text/plain"),
             )
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1", fileObjectIds = listOf("fo-1"))
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L, fileObjectIds = listOf("1"))
 
-        every { problemService.findProblemById("1.0.0") } returns Mono.just(problem)
-        every { fileObjectRepository.findAllById(listOf("fo-1")) } returns Flux.just(fileObject)
+        every { problemService.findProblemById(1L) } returns Mono.just(problem)
+        every { fileObjectRepository.findAllById(listOf(1L)) } returns Flux.just(fileObject)
 
         StepVerifier.create(mapper.prepareContext(submission))
             .assertNext { ctx ->
-                assertThat(ctx.submissionId).isEqualTo("sub-1")
-                assertThat(ctx.problemId).isEqualTo("1.0.0")
+                assertThat(ctx.submissionId).isEqualTo(1L)
+                assertThat(ctx.problemId).isEqualTo(1L)
                 assertThat(ctx.problemText).isEqualTo("Solve it")
-                assertThat(ctx.problemImageRawKeys).containsExactly(ProblemFileKey("1.0.0", "img.png").toString())
+                assertThat(ctx.problemImageRawKeys).containsExactly(ProblemFileKey(1L, "img.png").toString())
                 assertThat(ctx.submissionImageRawKeys).containsExactly(fileKey.toString())
             }
             .verifyComplete()

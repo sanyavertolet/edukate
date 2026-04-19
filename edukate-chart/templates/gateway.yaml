@@ -31,6 +31,13 @@ spec:
                   key: {{ .Values.jwt.secretKey }}
             - name: HOST_NAME
               value: {{ .Values.ingress.host }}
+            {{ if .Values.postgresql.enabled }}
+            - name: SPRING_R2DBC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.secretName }}
+                  key: {{ .Values.postgresql.secretKey.gatewayR2dbc }}
+            {{ end }}
           volumeMounts:
             - {{ include "spring-boot.config-volume-mount" . | indent 14 | trim }}
           {{- include "spring-boot.management" .Values.gateway | nindent 10 }}

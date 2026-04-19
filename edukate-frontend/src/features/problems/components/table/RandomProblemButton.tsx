@@ -1,18 +1,18 @@
 import { FC } from "react";
-import { useRandomProblemIdQuery } from "@/features/problems/api";
+import { useRandomProblemKeyQuery } from "@/features/problems/api";
 import { useNavigate } from "react-router-dom";
 import { IconButton, Tooltip } from "@mui/material";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import { toast } from "react-toastify";
 
 export const RandomProblemButton: FC = () => {
-    const randomProblemQuery = useRandomProblemIdQuery();
+    const randomProblemQuery = useRandomProblemKeyQuery();
     const navigate = useNavigate();
     const onClick = () => {
         void randomProblemQuery.refetch().then(
             (result) => {
-                const problemId = result.data;
-                void navigate(`/problems/${problemId ?? ""}`);
+                const problemKey = result.data;
+                void navigate(`/problems/${problemKey ?? ""}`);
             },
             () => {
                 toast.error("Could not randomize the problem");
