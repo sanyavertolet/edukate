@@ -11,8 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotEmpty
-import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.GetMapping
@@ -93,7 +93,7 @@ class NotificationController(private val notificationService: NotificationServic
     )
     fun getNotifications(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
-        @RequestParam(defaultValue = "10") @Positive size: Int,
+        @RequestParam(defaultValue = "10") @Min(1) size: Int,
         @RequestParam(required = false) isRead: Boolean?,
         authentication: Authentication?,
     ): Mono<NotificationPage> {

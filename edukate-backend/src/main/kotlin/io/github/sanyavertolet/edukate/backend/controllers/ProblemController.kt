@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
@@ -70,7 +71,7 @@ class ProblemController(private val problemService: ProblemService, private val 
     @Suppress("LongParameterList")
     fun getProblemList(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
-        @RequestParam(defaultValue = "10") @Positive size: Int,
+        @RequestParam(defaultValue = "10") @Min(1) size: Int,
         @RequestParam(required = false) bookSlug: String?,
         @RequestParam(required = false) prefix: String?,
         @RequestParam(required = false) status: Problem.Status?,
@@ -183,7 +184,8 @@ class ProblemController(private val problemService: ProblemService, private val 
                     responseCode = "200",
                     description = "Successfully retrieved random problem key",
                     content = [Content(mediaType = "text/plain", schema = Schema(implementation = String::class))],
-                )
+                ),
+                ApiResponse(responseCode = "404", description = "No problems available"),
             ]
     )
     fun getRandomUnsolvedProblemKey(authentication: Authentication?): Mono<String> =

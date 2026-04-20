@@ -5,6 +5,7 @@ gateway:
     url: http://notifier
   url: https://edukatemeplease.online
 
+
 auth:
   jwt:
     expirationSeconds: 3600

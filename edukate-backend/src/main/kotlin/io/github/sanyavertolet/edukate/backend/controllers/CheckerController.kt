@@ -111,7 +111,15 @@ class CheckerController(
         summary = "Request supervisor check",
         description = "Requests a supervisor check for the provided submission (not implemented yet)",
     )
-    @ApiResponses(value = [ApiResponse(responseCode = "501", description = "Not implemented")])
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Reserved for future implementation"),
+                ApiResponse(responseCode = "501", description = "Not implemented"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Access denied"),
+            ]
+    )
     @Parameters(
         value =
             [

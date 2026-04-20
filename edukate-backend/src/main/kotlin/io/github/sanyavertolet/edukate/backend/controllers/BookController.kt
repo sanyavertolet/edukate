@@ -29,7 +29,13 @@ import reactor.core.publisher.Mono
 class BookController(private val bookService: BookService) {
     @GetMapping
     @Operation(summary = "Get all books", description = "Retrieves a list of all available books")
-    @ApiResponses(value = [ApiResponse(responseCode = "200", description = "Successfully retrieved book list")])
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved book list"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+            ]
+    )
     fun getBooks(): Flux<BookSummaryDto> = bookService.findAll().map { BookSummaryDto(it.slug, it.subject, it.title) }
 
     @GetMapping("/{slug}")

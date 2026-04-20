@@ -56,7 +56,7 @@ All `targetUserId` fields are `Long` (PostgreSQL user IDs). `CheckedNotification
 
 ### OpenAPI
 
-- `OpenApiConfiguration` — shared Swagger/OpenAPI bean
+- `OpenApiConfiguration` — shared Swagger/OpenAPI bean; sets server URL (from `gateway.url`), `cookieAuth` security scheme, and AGPL v3 license info
 
 ## Testing Notes
 

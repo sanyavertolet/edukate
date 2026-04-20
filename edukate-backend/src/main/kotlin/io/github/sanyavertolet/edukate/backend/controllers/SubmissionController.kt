@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.PositiveOrZero
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -170,7 +170,7 @@ class SubmissionController(
         @PathVariable code: String,
         @PathVariable username: String,
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
-        @RequestParam(defaultValue = "10") @Positive size: Int,
+        @RequestParam(defaultValue = "10") @Min(1) size: Int,
     ): Flux<SubmissionDto> {
         val problemKey = "$bookSlug/$code"
         return Mono.zip(
@@ -227,7 +227,7 @@ class SubmissionController(
     fun getMySubmissions(
         @RequestParam(required = false) problemKey: String?,
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
-        @RequestParam(defaultValue = "10") @Positive size: Int,
+        @RequestParam(defaultValue = "10") @Min(1) size: Int,
         authentication: Authentication,
     ): Flux<SubmissionDto> =
         authentication

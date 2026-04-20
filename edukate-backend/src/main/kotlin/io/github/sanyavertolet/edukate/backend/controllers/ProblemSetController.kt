@@ -16,6 +16,9 @@ import io.github.sanyavertolet.edukate.common.utils.id
 import io.github.sanyavertolet.edukate.common.utils.monoId
 import io.github.sanyavertolet.edukate.common.utils.orForbidden
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -53,6 +56,15 @@ class ProblemSetController(
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(summary = "Create problem set", description = "Creates a new problem set for the authenticated user")
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Problem set created"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+            ]
+    )
     fun createProblemSet(
         @RequestBody @Valid request: CreateProblemSetRequest,
         authentication: Authentication,
@@ -62,6 +74,18 @@ class ProblemSetController(
     @GetMapping("/owned")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Get owned problem sets",
+        description = "Returns a paginated list of problem sets owned by the authenticated user",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved owned problem sets"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+            ]
+    )
     fun getOwnedProblemSets(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
@@ -74,6 +98,18 @@ class ProblemSetController(
     @GetMapping("/joined")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Get joined problem sets",
+        description = "Returns a paginated list of problem sets the authenticated user has joined",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved joined problem sets"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+            ]
+    )
     fun getJoinedProblemSets(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
@@ -85,6 +121,17 @@ class ProblemSetController(
 
     @GetMapping("/public")
     @SecurityRequirements
+    @Operation(
+        summary = "Get public problem sets",
+        description = "Returns a paginated list of publicly visible problem sets",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved public problem sets"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+            ]
+    )
     fun getPublicProblemSets(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
@@ -93,6 +140,19 @@ class ProblemSetController(
 
     @GetMapping("/{shareCode}")
     @SecurityRequirements
+    @Operation(
+        summary = "Get problem set by share code",
+        description =
+            "Retrieves a problem set by its share code; returns 403 if the set is private and the caller is not a member",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved problem set"),
+                ApiResponse(responseCode = "403", description = "Problem set is private and caller is not a member"),
+                ApiResponse(responseCode = "404", description = "Problem set not found"),
+            ]
+    )
     fun getProblemSetByShareCode(
         @PathVariable @NotBlank shareCode: String,
         authentication: Authentication?,
@@ -106,12 +166,31 @@ class ProblemSetController(
     @PostMapping("/{shareCode}/leave")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(summary = "Leave problem set", description = "Removes the authenticated user from the problem set")
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully left problem set"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "404", description = "Problem set not found or user is not a member"),
+            ]
+    )
     fun leaveProblemSet(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<String> =
         authentication.monoId().flatMap { problemSetService.removeUser(shareCode, it) }.map { it.shareCode }
 
     @PostMapping("/{shareCode}/invite")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(summary = "Invite user to problem set", description = "Sends an invitation to a user to join the problem set")
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Invitation sent"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "404", description = "Problem set or invitee not found"),
+            ]
+    )
     fun inviteToProblemSet(
         @PathVariable @NotBlank shareCode: String,
         @RequestParam @NotBlank inviteeName: String,
@@ -140,6 +219,19 @@ class ProblemSetController(
     @PostMapping("/{shareCode}/expire-invite")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Expire invitation",
+        description = "Cancels a pending invitation for a user to join the problem set",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Invitation expired"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "404", description = "Problem set or invitee not found"),
+            ]
+    )
     fun expireInvite(
         @PathVariable @NotBlank shareCode: String,
         @RequestParam @NotBlank inviteeName: String,
@@ -157,6 +249,18 @@ class ProblemSetController(
     @PostMapping("/{shareCode}/reply-invite")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Reply to invitation",
+        description = "Accepts or declines a pending invitation to join the problem set",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Invitation reply recorded"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "404", description = "Problem set not found or no pending invitation"),
+            ]
+    )
     fun replyToInvite(
         @PathVariable @NotBlank shareCode: String,
         @RequestParam @NotNull response: Boolean,
@@ -171,6 +275,18 @@ class ProblemSetController(
 
     @GetMapping("/{shareCode}/users")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Get user roles",
+        description = "Returns all users and their roles in the problem set; requires moderator access",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved user roles"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+            ]
+    )
     fun getUserRoles(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Flux<UserNameWithRole> =
         problemSetService.getProblemSetForModerator(shareCode, authentication).flatMapMany {
             problemSetMapper.toUserRoles(it)
@@ -178,6 +294,18 @@ class ProblemSetController(
 
     @GetMapping("/{shareCode}/invited-users")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Get invited users",
+        description = "Returns the list of users with pending invitations to the problem set; requires moderator access",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved invited users"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+            ]
+    )
     fun getInvitedUsers(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<List<String>> =
         problemSetService
             .getProblemSetForModerator(shareCode, authentication)
@@ -186,6 +314,19 @@ class ProblemSetController(
 
     @PostMapping("/{shareCode}/role")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Change user role",
+        description = "Updates the role of a user within the problem set; requires moderator access",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Role updated"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "404", description = "Problem set or user not found"),
+            ]
+    )
     fun changeUserRole(
         @PathVariable @NotBlank shareCode: String,
         @RequestParam @NotBlank username: String,
@@ -200,6 +341,18 @@ class ProblemSetController(
 
     @PostMapping("/{shareCode}/visibility")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Change visibility",
+        description = "Toggles the public/private visibility of the problem set; requires moderator access",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Visibility updated"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+            ]
+    )
     fun changeVisibility(
         @PathVariable @NotBlank shareCode: String,
         @RequestParam @NotNull isPublic: Boolean,
@@ -211,6 +364,19 @@ class ProblemSetController(
 
     @PostMapping("/{shareCode}/problems")
     @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Change problems",
+        description = "Replaces the problem list of the problem set; requires moderator access",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Problems updated"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+            ]
+    )
     fun changeProblems(
         @PathVariable @NotBlank shareCode: String,
         @RequestBody @Valid request: ChangeProblemSetProblemsRequest,

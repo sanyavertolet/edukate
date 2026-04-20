@@ -84,6 +84,12 @@ class AuthController(private val authService: AuthService, private val authCooki
         summary = "Sign user out",
         description = "Signs out the current user by expiring their authentication token",
     )
-    @ApiResponses(value = [ApiResponse(responseCode = "204", description = "Successfully signed out")])
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "204", description = "Successfully signed out"),
+                ApiResponse(responseCode = "400", description = "Bad request"),
+            ]
+    )
     fun signOut(): Mono<ResponseEntity<Void>> = authCookieService.respondWithExpiredToken()
 }
