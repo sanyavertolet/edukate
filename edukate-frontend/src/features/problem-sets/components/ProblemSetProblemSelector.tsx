@@ -37,7 +37,7 @@ export function ProblemSetProblemSelector({
                 isSelected: problem.code == selectedProblem?.code,
             })),
         ],
-        [problems, selectedProblem],
+        [problems, selectedProblem, onProblemSelect, problemSetName],
     );
     usePageSpecificNavigation(pageSpecificNavigation);
 
