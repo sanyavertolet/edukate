@@ -89,7 +89,11 @@ describe("queryKeys", () => {
         });
 
         it("byProblem includes problemKey", () => {
-            expect(queryKeys.submissions.byProblem("savchenko/1.1.1")).toEqual(["submissions", "by-problem", "savchenko/1.1.1"]);
+            expect(queryKeys.submissions.byProblem("savchenko/1.1.1")).toEqual([
+                "submissions",
+                "by-problem",
+                "savchenko/1.1.1",
+            ]);
         });
     });
 

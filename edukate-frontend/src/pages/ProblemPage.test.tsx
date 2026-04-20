@@ -11,7 +11,11 @@ describe("ProblemPage", () => {
     });
 
     it("spinner disappears once MSW returns a problem", async () => {
-        server.use(getGetProblemMockHandler(getGetProblemResponseMock({ key: "savchenko/1.1.1", bookSlug: "savchenko", code: "1.1.1" })));
+        server.use(
+            getGetProblemMockHandler(
+                getGetProblemResponseMock({ key: "savchenko/1.1.1", bookSlug: "savchenko", code: "1.1.1" }),
+            ),
+        );
         renderAtPath("/problems/savchenko/1.1.1", "/problems/:bookSlug/:code", <ProblemPage />);
         await waitFor(() => {
             expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();

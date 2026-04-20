@@ -58,14 +58,7 @@ export function useProblemCountRequest(
 ) {
     const effectiveStatus = status === "ALL" ? undefined : status;
     return useQuery({
-        queryKey: queryKeys.problems.count(
-            prefix || undefined,
-            effectiveStatus,
-            isHard,
-            hasPictures,
-            hasResult,
-            bookSlug,
-        ),
+        queryKey: queryKeys.problems.count(prefix || undefined, effectiveStatus, isHard, hasPictures, hasResult, bookSlug),
         staleTime: PROBLEM_STALE_TIME,
         queryFn: ({ signal }) =>
             client<number>({

@@ -12,13 +12,7 @@ type ProblemTableRowsProps = {
     onBookSlugClick: (slug: string) => void;
 };
 
-export const ProblemTableRows: FC<ProblemTableRowsProps> = ({
-    items,
-    loading,
-    error,
-    onRowClick,
-    onBookSlugClick,
-}) => {
+export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, error, onRowClick, onBookSlugClick }) => {
     if (loading || error) {
         return (
             <>

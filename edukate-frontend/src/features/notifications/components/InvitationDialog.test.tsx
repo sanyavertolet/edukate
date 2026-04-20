@@ -9,13 +9,17 @@ describe("InvitationDialog", () => {
     });
 
     it("opens with the problem set name in the title when problemSetInfo is provided", () => {
-        render(<InvitationDialog problemSetInfo={{ problemSetName: "Math Basics", inviterName: "Alice" }} onClose={vi.fn()} />);
+        render(
+            <InvitationDialog problemSetInfo={{ problemSetName: "Math Basics", inviterName: "Alice" }} onClose={vi.fn()} />,
+        );
         expect(screen.getByRole("dialog")).toBeInTheDocument();
         expect(screen.getByText(/Math Basics invite/i)).toBeInTheDocument();
     });
 
     it("shows inviter name and problem set name in the description", () => {
-        render(<InvitationDialog problemSetInfo={{ problemSetName: "Physics 101", inviterName: "Bob" }} onClose={vi.fn()} />);
+        render(
+            <InvitationDialog problemSetInfo={{ problemSetName: "Physics 101", inviterName: "Bob" }} onClose={vi.fn()} />,
+        );
         expect(screen.getByText(/Bob has invited you to Physics 101 problem set/i)).toBeInTheDocument();
     });
 

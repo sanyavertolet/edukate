@@ -13,9 +13,7 @@ describe("useProblemSetRequest", () => {
 
     it("fetches problem set data on mount", async () => {
         server.use(
-            getGetProblemSetByShareCodeMockHandler(
-                getGetProblemSetByShareCodeResponseMock({ name: "my-problem-set" }),
-            ),
+            getGetProblemSetByShareCodeMockHandler(getGetProblemSetByShareCodeResponseMock({ name: "my-problem-set" })),
         );
         const { result } = renderHook(() => useProblemSetRequest("code-abc"), { wrapper: createWrapper() });
         await waitFor(() => {

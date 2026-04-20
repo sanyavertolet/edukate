@@ -35,7 +35,9 @@ export function ProblemSetEmptyList() {
                     <Typography variant={"h4"} color={"primary"} align={"center"}>
                         No problem sets found.
                     </Typography>
-                    <Typography variant={"body1"}>Create your own problem set or join one of the public problem sets.</Typography>
+                    <Typography variant={"body1"}>
+                        Create your own problem set or join one of the public problem sets.
+                    </Typography>
                 </CardContent>
             </Card>
         </Container>

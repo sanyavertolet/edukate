@@ -11,7 +11,9 @@ describe("ProblemSetPage", () => {
 
     it("renders the problem set name as a heading once MSW responds", async () => {
         server.use(
-            getGetProblemSetByShareCodeMockHandler(getGetProblemSetByShareCodeResponseMock({ name: "Test Problem Set", problems: [] })),
+            getGetProblemSetByShareCodeMockHandler(
+                getGetProblemSetByShareCodeResponseMock({ name: "Test Problem Set", problems: [] }),
+            ),
         );
         renderAtPath("/problem-sets/test-code", "/problem-sets/:code", <ProblemSetPage />);
         await waitFor(() => {

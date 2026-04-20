@@ -21,7 +21,11 @@ describe("useProblemRequest", () => {
     });
 
     it("surfaces all pinned fields correctly", async () => {
-        server.use(getGetProblemMockHandler(getGetProblemResponseMock({ bookSlug: "savchenko", code: "1.1.2", isHard: true, tags: ["algebra"] })));
+        server.use(
+            getGetProblemMockHandler(
+                getGetProblemResponseMock({ bookSlug: "savchenko", code: "1.1.2", isHard: true, tags: ["algebra"] }),
+            ),
+        );
         const { result } = renderHook(() => useProblemRequest("savchenko", "1.1.2"), { wrapper: createWrapper() });
         await waitFor(() => {
             expect(result.current.isSuccess).toBe(true);
