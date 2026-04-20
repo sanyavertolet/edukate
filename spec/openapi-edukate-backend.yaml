@@ -1,9 +1,12 @@
 openapi: 3.1.0
 info:
-  title: OpenAPI definition
-  version: v0
+  title: Edukate API
+  license:
+    name: GNU Affero General Public License v3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+  version: 1.0.0
 servers:
-- url: http://localhost:5810
+- url: https://edukatemeplease.online
 security:
 - cookieAuth: []
 tags:
@@ -68,6 +71,8 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Create problem set
+      description: Creates a new problem set for the authenticated user
       operationId: createProblemSet
       requestBody:
         content:
@@ -77,7 +82,19 @@ paths:
         required: true
       responses:
         "200":
-          description: OK
+          description: Problem set created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -88,6 +105,9 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Change visibility
+      description: Toggles the public/private visibility of the problem set; requires
+        moderator access
       operationId: changeVisibility
       parameters:
       - name: shareCode
@@ -103,7 +123,19 @@ paths:
           type: boolean
       responses:
         "200":
-          description: OK
+          description: Visibility updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have moderator access
           content:
             application/json:
               schema:
@@ -114,6 +146,9 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Change user role
+      description: Updates the role of a user within the problem set; requires moderator
+        access
       operationId: changeUserRole
       parameters:
       - name: shareCode
@@ -139,7 +174,37 @@ paths:
           - ADMIN
       responses:
         "200":
-          description: OK
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "404":
+          description: Problem set or user not found
           content:
             application/json:
               schema:
@@ -154,6 +219,8 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Reply to invitation
+      description: Accepts or declines a pending invitation to join the problem set
       operationId: replyToInvite
       parameters:
       - name: shareCode
@@ -169,7 +236,19 @@ paths:
           type: boolean
       responses:
         "200":
-          description: OK
+          description: Invitation reply recorded
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set not found or no pending invitation
           content:
             application/json:
               schema:
@@ -180,6 +259,9 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Change problems
+      description: Replaces the problem list of the problem set; requires moderator
+        access
       operationId: changeProblems
       parameters:
       - name: shareCode
@@ -196,7 +278,25 @@ paths:
         required: true
       responses:
         "200":
-          description: OK
+          description: Problems updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have moderator access
           content:
             application/json:
               schema:
@@ -207,6 +307,8 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Leave problem set
+      description: Removes the authenticated user from the problem set
       operationId: leaveProblemSet
       parameters:
       - name: shareCode
@@ -217,7 +319,19 @@ paths:
           minLength: 1
       responses:
         "200":
-          description: OK
+          description: Successfully left problem set
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set not found or user is not a member
           content:
             application/json:
               schema:
@@ -228,6 +342,8 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Invite user to problem set
+      description: Sends an invitation to a user to join the problem set
       operationId: inviteToProblemSet
       parameters:
       - name: shareCode
@@ -244,7 +360,25 @@ paths:
           minLength: 1
       responses:
         "200":
-          description: OK
+          description: Invitation sent
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set or invitee not found
           content:
             application/json:
               schema:
@@ -255,6 +389,8 @@ paths:
     post:
       tags:
       - Problem Sets
+      summary: Expire invitation
+      description: Cancels a pending invitation for a user to join the problem set
       operationId: expireInvite
       parameters:
       - name: shareCode
@@ -271,7 +407,25 @@ paths:
           minLength: 1
       responses:
         "200":
-          description: OK
+          description: Invitation expired
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set or invitee not found
           content:
             application/json:
               schema:
@@ -369,8 +523,14 @@ paths:
         schema:
           type: string
       responses:
+        "200":
+          description: Reserved for future implementation
         "501":
           description: Not implemented
+        "401":
+          description: Unauthorized
+        "403":
+          description: Access denied
       security:
       - cookieAuth: []
   /api/v1/checker/self:
@@ -490,7 +650,6 @@ paths:
         required: false
         schema:
           type: string
-          exclusiveMinimum: 0
           maximum: 100
           minimum: 1
       responses:
@@ -548,7 +707,6 @@ paths:
         required: false
         schema:
           type: string
-          exclusiveMinimum: 0
           maximum: 100
           minimum: 1
       responses:
@@ -640,7 +798,6 @@ paths:
         required: false
         schema:
           type: string
-          exclusiveMinimum: 0
           maximum: 100
           minimum: 1
       - name: bookSlug
@@ -761,6 +918,12 @@ paths:
             text/plain:
               schema:
                 type: string
+        "404":
+          description: No problems available
+          content:
+            application/json:
+              schema:
+                type: string
       security: []
   /api/v1/problems/count:
     get:
@@ -868,6 +1031,9 @@ paths:
     get:
       tags:
       - Problem Sets
+      summary: Get problem set by share code
+      description: Retrieves a problem set by its share code; returns 403 if the set
+        is private and the caller is not a member
       operationId: getProblemSetByShareCode
       parameters:
       - name: shareCode
@@ -878,7 +1044,19 @@ paths:
           minLength: 1
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved problem set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Problem set is private and caller is not a member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "404":
+          description: Problem set not found
           content:
             application/json:
               schema:
@@ -888,6 +1066,9 @@ paths:
     get:
       tags:
       - Problem Sets
+      summary: Get user roles
+      description: Returns all users and their roles in the problem set; requires
+        moderator access
       operationId: getUserRoles
       parameters:
       - name: shareCode
@@ -898,7 +1079,23 @@ paths:
           minLength: 1
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved user roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "403":
+          description: Caller does not have moderator access
           content:
             application/json:
               schema:
@@ -911,6 +1108,9 @@ paths:
     get:
       tags:
       - Problem Sets
+      summary: Get invited users
+      description: Returns the list of users with pending invitations to the problem
+        set; requires moderator access
       operationId: getInvitedUsers
       parameters:
       - name: shareCode
@@ -921,7 +1121,23 @@ paths:
           minLength: 1
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved invited users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "403":
+          description: Caller does not have moderator access
           content:
             application/json:
               schema:
@@ -934,6 +1150,8 @@ paths:
     get:
       tags:
       - Problem Sets
+      summary: Get public problem sets
+      description: Returns a paginated list of publicly visible problem sets
       operationId: getPublicProblemSets
       parameters:
       - name: page
@@ -954,7 +1172,15 @@ paths:
           exclusiveMinimum: 0
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved public problem sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
@@ -966,6 +1192,9 @@ paths:
     get:
       tags:
       - Problem Sets
+      summary: Get owned problem sets
+      description: Returns a paginated list of problem sets owned by the authenticated
+        user
       operationId: getOwnedProblemSets
       parameters:
       - name: page
@@ -986,7 +1215,23 @@ paths:
           exclusiveMinimum: 0
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved owned problem sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -999,6 +1244,9 @@ paths:
     get:
       tags:
       - Problem Sets
+      summary: Get joined problem sets
+      description: Returns a paginated list of problem sets the authenticated user
+        has joined
       operationId: getJoinedProblemSets
       parameters:
       - name: page
@@ -1019,7 +1267,23 @@ paths:
           exclusiveMinimum: 0
       responses:
         "200":
-          description: OK
+          description: Successfully retrieved joined problem sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -1150,6 +1414,14 @@ paths:
       responses:
         "200":
           description: Successfully retrieved book list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookSummaryDto"
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:

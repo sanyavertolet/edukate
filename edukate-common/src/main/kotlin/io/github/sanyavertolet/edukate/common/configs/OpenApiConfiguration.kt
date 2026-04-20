@@ -30,6 +30,8 @@ class OpenApiConfiguration {
             .security(listOf(SecurityRequirement().addList("cookieAuth")))
             .info(
                 Info()
+                    .title("Edukate API")
+                    .version("1.0.0")
                     .license(
                         License()
                             .name("GNU Affero General Public License v3.0")
