@@ -16,7 +16,7 @@ class CacheConfig {
         manager.setAsyncCacheMode(true)
         manager.registerCustomCache(
             "user-credentials-by-id",
-            Caffeine.from("maximumSize=500,expireAfterWrite=24h").recordStats().buildAsync(),
+            Caffeine.from("maximumSize=500,expireAfterWrite=5m").recordStats().buildAsync(),
         )
         return manager
     }

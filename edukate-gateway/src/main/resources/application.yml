@@ -41,13 +41,10 @@ spring:
     pool:
       initial-size: 1
       max-size: 3
-  flyway:
-    enabled: false
   profiles:
     default: prod,secure
   web:
     error:
-      include-message: always
       path: /error
   cloud:
     gateway:
@@ -88,7 +85,7 @@ management:
       probes:
         enabled: true
     prometheus:
-      access: unrestricted
+      access: read_only
   metrics:
     tags:
       application: ${spring.application.name}
