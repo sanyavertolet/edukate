@@ -1,4 +1,4 @@
-import { Divider, IconButton, InputBase, Paper, Tooltip } from "@mui/material";
+import { Box, Divider, IconButton, InputBase, Paper, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import { FC } from "react";
@@ -20,7 +20,7 @@ export const ProblemSetJoinForm: FC<ProblemSetJoinFormProps> = ({ disabled = fal
         <ConditionalTooltip title={"Sign in to use problem sets"} shown={disabled} placement={"bottom-end"}>
             <Paper component="form" sx={{ p: "0px 1px", display: "flex", alignItems: "center" }}>
                 <Tooltip title="Join by invite link — coming soon" slotProps={defaultTooltipSlotProps}>
-                    <span>
+                    <Box component="span" sx={{ display: "flex", flex: 1, alignItems: "center" }}>
                         <InputBase
                             sx={{ ml: 1, flex: 1 }}
                             placeholder="Join by code"
@@ -30,7 +30,7 @@ export const ProblemSetJoinForm: FC<ProblemSetJoinFormProps> = ({ disabled = fal
                         <IconButton color="default" aria-label="join" disabled>
                             <GroupOutlinedIcon />
                         </IconButton>
-                    </span>
+                    </Box>
                 </Tooltip>
                 <Divider sx={{ height: "1.75rem" }} orientation="vertical" />
                 <IconButton color="secondary" aria-label="create" onClick={onCreateClick} disabled={disabled}>

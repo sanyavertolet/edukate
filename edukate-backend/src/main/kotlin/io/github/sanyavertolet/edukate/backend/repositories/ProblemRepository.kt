@@ -1,7 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.repositories
 
 import io.github.sanyavertolet.edukate.backend.entities.Problem
-import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.data.repository.reactive.ReactiveSortingRepository
@@ -12,33 +11,14 @@ import reactor.core.publisher.Mono
 @Suppress("TooManyFunctions")
 @Repository
 interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSortingRepository<Problem, Long> {
-    fun findAllBy(pageable: Pageable): Flux<Problem>
-
-    fun findByBookId(bookId: Long, pageable: Pageable): Flux<Problem>
-
-    fun countByBookId(bookId: Long): Mono<Long>
-
-    fun findByCode(code: String): Mono<Problem>
-
-    fun findByCodeIn(codes: Collection<String>): Flux<Problem>
-
     fun findByKey(key: String): Mono<Problem>
 
     fun findByKeyIn(keys: Collection<String>): Flux<Problem>
 
     fun findByIdIn(ids: Collection<Long>): Flux<Problem>
 
-    @Query("SELECT * FROM problems WHERE book_id = :bookId AND code LIKE :prefix || '%' ORDER BY code")
-    fun findByBookIdAndCodeStartingWith(bookId: Long, prefix: String, pageable: Pageable): Flux<Problem>
-
-    @Query("SELECT COUNT(*) FROM problems WHERE book_id = :bookId AND code LIKE :prefix || '%'")
-    fun countByBookIdAndCodeStartingWith(bookId: Long, prefix: String): Mono<Long>
-
-    @Query("SELECT * FROM problems WHERE code LIKE :prefix || '%' ORDER BY code")
-    fun findByCodeStartingWith(prefix: String, pageable: Pageable): Flux<Problem>
-
-    @Query("SELECT COUNT(*) FROM problems WHERE code LIKE :prefix || '%'")
-    fun countByCodeStartingWith(prefix: String): Mono<Long>
+    @Query("SELECT * FROM problems WHERE code LIKE :prefix || '%' ORDER BY string_to_array(code, '.')::int[] LIMIT :limit")
+    fun findByCodeStartingWith(prefix: String, limit: Int): Flux<Problem>
 
     @Query("SELECT * FROM problems ORDER BY RANDOM() LIMIT 1") fun findRandomProblem(): Mono<Problem>
 
@@ -64,7 +44,8 @@ interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSor
           AND (:hasResult IS NULL OR (EXISTS (SELECT 1 FROM answers a WHERE a.problem_id = p.id)) = :hasResult)
           AND (:notSolved = false OR NOT EXISTS (SELECT 1 FROM problem_progress pp WHERE pp.problem_id = p.id AND pp.user_id = :userId))
           AND (:bestStatus IS NULL OR EXISTS (SELECT 1 FROM problem_progress pp WHERE pp.problem_id = p.id AND pp.user_id = :userId AND pp.best_status = :bestStatus))
-        ORDER BY p.code
+        ORDER BY string_to_array(p.code, '.')::int[]
+        LIMIT :limit OFFSET :offset
         """
     )
     fun findWithFilter(
@@ -76,7 +57,8 @@ interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSor
         notSolved: Boolean,
         bestStatus: String?,
         userId: Long?,
-        pageable: Pageable,
+        limit: Int,
+        offset: Long,
     ): Flux<Problem>
 
     @Query(

@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ProblemStatus } from "@/features/problems/types";
 
@@ -101,8 +101,8 @@ export function useProblemTableParams() {
             onChangePrefix: (newPrefix: string) => {
                 updateSearchParams({ page: 0, prefix: newPrefix });
             },
-            onChangeRowsPerPage: (event: ChangeEvent<HTMLInputElement>) => {
-                updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) });
+            onChangeRowsPerPage: (value: number) => {
+                updateSearchParams({ page: 0, pageSize: value });
             },
             onChangeIsHard: (value: boolean | undefined) => {
                 updateSearchParams({ page: 0, isHard: value });

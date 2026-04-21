@@ -7,6 +7,7 @@ import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
 import io.github.sanyavertolet.edukate.storage.keys.ResultFileKey
 import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Caching
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -18,10 +19,22 @@ class AnswerService(
     private val problemRepository: ProblemRepository,
     private val fileManager: FileManager,
 ) {
-    @CacheEvict(cacheNames = ["problems"], allEntries = true)
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], allEntries = true),
+                CacheEvict(cacheNames = ["problems-by-key"], allEntries = true),
+            ]
+    )
     fun saveAnswer(answer: Answer): Mono<Answer> = answerRepository.save(answer)
 
-    @CacheEvict(cacheNames = ["problems"], allEntries = true)
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], allEntries = true),
+                CacheEvict(cacheNames = ["problems-by-key"], allEntries = true),
+            ]
+    )
     fun saveAnswerBatch(answers: Flux<Answer>): Mono<Long> = answerRepository.saveAll(answers).count()
 
     fun findByProblemKey(problemKey: String): Mono<AnswerDto> =

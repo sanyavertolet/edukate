@@ -59,6 +59,7 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
                             label={item.bookSlug}
                             size="small"
                             variant="outlined"
+                            color="primary"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onBookSlugClick(item.bookSlug);

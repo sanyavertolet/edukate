@@ -19,7 +19,7 @@ class UserService(private val userRepository: UserRepository, private val notifi
     @Caching(
         evict =
             [
-                CacheEvict(cacheNames = ["users-by-id"], key = "#user.id"),
+                CacheEvict(cacheNames = ["users-by-id"], key = "#user.id", condition = "#user.id != null"),
                 CacheEvict(cacheNames = ["users-by-name"], key = "#user.name"),
             ]
     )

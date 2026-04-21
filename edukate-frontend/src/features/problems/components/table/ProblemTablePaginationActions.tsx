@@ -1,14 +1,15 @@
 import { FC, KeyboardEvent, useEffect, useState } from "react";
 import { Box, IconButton, TextField, Typography } from "@mui/material";
 import { FirstPage, KeyboardArrowLeft, KeyboardArrowRight, LastPage } from "@mui/icons-material";
-import type { TablePaginationActionsProps } from "@mui/material/TablePagination/TablePaginationActions";
 
-export const ProblemTablePaginationActions: FC<TablePaginationActionsProps> = ({
-    count,
-    page,
-    rowsPerPage,
-    onPageChange,
-}) => {
+type Props = {
+    count: number;
+    page: number;
+    rowsPerPage: number;
+    onPageChange: (e: unknown, newPage: number) => void;
+};
+
+export const ProblemTablePaginationActions: FC<Props> = ({ count, page, rowsPerPage, onPageChange }) => {
     const pageCount = Math.ceil(count / rowsPerPage);
     const [inputValue, setInputValue] = useState(String(page + 1));
 
@@ -41,9 +42,6 @@ export const ProblemTablePaginationActions: FC<TablePaginationActionsProps> = ({
                 display: "flex",
                 alignItems: "center",
                 gap: 0.5,
-                position: "absolute",
-                left: "50%",
-                transform: "translateX(-50%)",
             }}
         >
             <IconButton

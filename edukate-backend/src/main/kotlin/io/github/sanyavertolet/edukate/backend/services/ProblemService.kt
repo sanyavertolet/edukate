@@ -8,6 +8,7 @@ import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import org.springframework.cache.annotation.CacheConfig
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
@@ -18,7 +19,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
 @Service
-@CacheConfig(cacheNames = ["problems"])
+@CacheConfig(cacheNames = ["problems-by-id"])
 @Suppress("TooManyFunctions")
 class ProblemService(private val problemRepository: ProblemRepository, private val bookService: BookService) {
     fun getFilteredProblems(
@@ -50,16 +51,27 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
 
     @Cacheable(key = "#id") fun findProblemById(id: Long): Mono<Problem> = problemRepository.findById(id)
 
+    @Cacheable(cacheNames = ["problems-by-key"], key = "#key")
     fun findProblemByKey(key: String): Mono<Problem> = problemRepository.findByKey(key)
 
     fun findProblemsByIds(problemIds: List<Long>): Flux<Problem> = problemRepository.findByIdIn(problemIds)
 
-    fun findProblemsByKeys(keys: List<String>): Flux<Problem> = problemRepository.findByKeyIn(keys)
-
-    @CacheEvict(key = "#problem.id")
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], key = "#problem.id", condition = "#problem.id != null"),
+                CacheEvict(cacheNames = ["problems-by-key"], key = "#problem.key", condition = "!#problem.key.isBlank()"),
+            ]
+    )
     fun updateProblem(problem: Problem): Mono<Problem> = enrichWithKey(problem).flatMap { problemRepository.save(it) }
 
-    @CacheEvict(allEntries = true)
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], allEntries = true),
+                CacheEvict(cacheNames = ["problems-by-key"], allEntries = true),
+            ]
+    )
     fun updateProblemBatch(problems: Flux<Problem>): Mono<Long> =
         problems.concatMap { enrichWithKey(it) }.let { problemRepository.saveAll(it).count() }
 
@@ -70,10 +82,17 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
                 problem.copy(key = "${book.slug}/${problem.code}")
             }
 
-    @CacheEvict(key = "#id") fun deleteProblemById(id: Long): Mono<Void> = problemRepository.deleteById(id)
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], key = "#id"),
+                CacheEvict(cacheNames = ["problems-by-key"], allEntries = true),
+            ]
+    )
+    fun deleteProblemById(id: Long): Mono<Void> = problemRepository.deleteById(id)
 
     fun getProblemCodesByPrefix(prefix: String, limit: Int): Flux<String> =
-        problemRepository.findByCodeStartingWith(prefix, PageRequest.of(0, limit)).map { it.code }
+        problemRepository.findByCodeStartingWith(prefix, limit).map { it.code }
 
     fun getRandomUnsolvedProblemKey(authentication: Authentication?): Mono<String> =
         authentication
@@ -97,6 +116,8 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
         val prefix = filter.prefix?.takeIf { it.isNotBlank() }
         val notSolved = filter.status == Problem.Status.NOT_SOLVED
         val bestStatus = statusToDbValue(filter.status)
+        val limit = pageRequest.pageSize
+        val offset = pageRequest.offset
         if (!filter.bookSlug.isNullOrBlank()) {
             return resolveBookId(filter.bookSlug).flatMapMany { bookId ->
                 problemRepository.findWithFilter(
@@ -108,7 +129,8 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
                     notSolved,
                     bestStatus,
                     userId,
-                    pageRequest,
+                    limit,
+                    offset,
                 )
             }
         }
@@ -121,7 +143,8 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
             notSolved,
             bestStatus,
             userId,
-            pageRequest,
+            limit,
+            offset,
         )
     }
 

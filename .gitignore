@@ -39,6 +39,7 @@ out/
 /mongo-data/
 /minio-data/
 /rabbitmq-data/
+/postgres-data/
 /pdf-cracker/data/
 /.claude/settings.local.json
 

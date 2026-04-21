@@ -19,20 +19,26 @@ describe("getApiErrorMessage", () => {
         expect(getApiErrorMessage(err)).toBe("Validation failed");
     });
 
-    it("falls back to data.error when message is absent", () => {
-        const err = makeAxiosError({ error: "Unauthorized" });
-        expect(getApiErrorMessage(err)).toBe("Unauthorized");
+    it("falls back to friendly status message when server message is absent", () => {
+        const err = makeAxiosError({ error: "Unauthorized" }, 401);
+        expect(getApiErrorMessage(err)).toBe("Authentication required");
     });
 
-    it("falls back to status code string when both message and error are absent", () => {
-        const err = makeAxiosError({}, 403);
-        expect(getApiErrorMessage(err)).toBe("403 error");
+    it("falls back to friendly status message when server message exceeds max length", () => {
+        const longMessage = "a".repeat(81);
+        const err = makeAxiosError({ message: longMessage }, 403);
+        expect(getApiErrorMessage(err)).toBe("Access denied");
     });
 
-    it("returns 'Unknown error' when response is missing entirely", () => {
+    it("falls back to generic error string for unknown status codes", () => {
+        const err = makeAxiosError({}, 418);
+        expect(getApiErrorMessage(err)).toBe("Error 418");
+    });
+
+    it("returns 'Something went wrong' when response is missing entirely", () => {
         const err = new AxiosError("network failure");
-        // err.response is undefined — status falls back to "Unknown"
-        expect(getApiErrorMessage(err)).toBe("Unknown error");
+        // err.response is undefined — no status to map
+        expect(getApiErrorMessage(err)).toBe("Something went wrong");
     });
 
     it("returns error.message for a plain Error instance", () => {

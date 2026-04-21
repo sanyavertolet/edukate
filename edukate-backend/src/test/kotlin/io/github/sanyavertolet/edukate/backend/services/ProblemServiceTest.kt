@@ -33,12 +33,12 @@ class ProblemServiceTest {
         val page = PageRequest.of(0, 10)
         val problems =
             listOf(BackendFixtures.problem(id = 1L, code = "1.1.1"), BackendFixtures.problem(id = 2L, code = "1.1.2"))
-        every { problemRepository.findWithFilter(null, null, null, null, null, false, null, null, page) } returns
+        every { problemRepository.findWithFilter(null, null, null, null, null, false, null, null, page.pageSize, page.offset) } returns
             Flux.fromIterable(problems)
 
         StepVerifier.create(service.getFilteredProblems(ProblemFilter(), null, page)).expectNextCount(2).verifyComplete()
 
-        verify(exactly = 1) { problemRepository.findWithFilter(null, null, null, null, null, false, null, null, page) }
+        verify(exactly = 1) { problemRepository.findWithFilter(null, null, null, null, null, false, null, null, page.pageSize, page.offset) }
     }
 
     // endregion

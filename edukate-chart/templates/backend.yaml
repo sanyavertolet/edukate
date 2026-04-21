@@ -42,6 +42,16 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.postgresql.secretName }}
                   key: {{ .Values.postgresql.secretKey.backendFlyway }}
+            - name: SPRING_FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.secretName }}
+                  key: {{ .Values.postgresql.secretKey.backendFlywayUser }}
+            - name: SPRING_FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.secretName }}
+                  key: {{ .Values.postgresql.secretKey.backendFlywayPassword }}
             {{ end }}
             {{ include "s3.configuration.env" . | nindent 12 | trim }}
             {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}

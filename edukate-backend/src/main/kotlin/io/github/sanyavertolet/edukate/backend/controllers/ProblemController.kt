@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.constraints.Min
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import org.springframework.data.domain.PageRequest
@@ -140,7 +139,7 @@ class ProblemController(private val problemService: ProblemService, private val 
             ]
     )
     fun getProblemCodesByPrefix(
-        @RequestParam @NotBlank prefix: String,
+        @RequestParam prefix: String,
         @RequestParam(required = false, defaultValue = "5") @Positive limit: Int,
     ): Mono<List<String>> = problemService.getProblemCodesByPrefix(prefix, limit).collectList()
 

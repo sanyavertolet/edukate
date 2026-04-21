@@ -10,17 +10,17 @@ export default function App() {
             <ToastContainer
                 aria-label={"Edukate toasts"}
                 position="bottom-left"
-                autoClose={5000}
+                autoClose={4000}
                 hideProgressBar
-                newestOnTop={false}
-                closeOnClick={false}
+                newestOnTop
+                closeOnClick
                 rtl={false}
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
                 theme="colored"
                 transition={Zoom}
-                style={{ color: "primary" }}
+                limit={3}
             />
         </Providers>
     );
