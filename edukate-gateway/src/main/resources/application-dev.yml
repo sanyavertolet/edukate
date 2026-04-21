@@ -15,6 +15,8 @@ auth:
   hostname: localhost
 
 spring:
+  r2dbc:
+    url: r2dbc:postgresql://admin:secret@localhost:5432/edukate
   web:
     error:
       include-message: always
@@ -26,3 +28,7 @@ management:
   tracing:
     export:
       enabled: false
+
+logging:
+  level:
+    io.micrometer.registry.otlp: ERROR

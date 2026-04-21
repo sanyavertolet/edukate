@@ -12,7 +12,7 @@ const headerTableCellSx = { minWidth: 44, maxWidth: 44, width: 44, p: 0.5 } as c
 
 export const ProblemTable: FC<ProblemTableProps> = ({ headerCells, toolbar, children, footer }) => {
     return (
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ borderRadius: 3, overflow: "hidden" }}>
             {toolbar}
             <Table aria-label="problem table">
                 <TableHead>

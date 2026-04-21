@@ -1,9 +1,12 @@
 openapi: 3.1.0
 info:
-  title: OpenAPI definition
-  version: v0
+  title: Edukate API
+  license:
+    name: GNU Affero General Public License v3.0
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+  version: 1.0.0
 servers:
-- url: http://localhost:5810
+- url: https://edukatemeplease.online
 security:
 - cookieAuth: []
 tags:
@@ -11,16 +14,18 @@ tags:
   description: API for scheduling checks and retrieving check results
 - name: Users
   description: API for managing user information
-- name: Bundles
-  description: API for managing problem bundles and user collaborations
 - name: Problems
   description: API for managing and retrieving problems
 - name: Submissions
   description: API for managing problem submissions
 - name: Temporary Files
   description: API for managing temporary files
-- name: Results
-  description: API for retrieving problem results
+- name: Books
+  description: API for retrieving problem books
+- name: Problem Sets
+  description: API for managing problem sets and user collaborations
+- name: Answers
+  description: API for retrieving problem answers
 paths:
   /api/v1/submissions:
     post:
@@ -60,6 +65,371 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SubmissionDto"
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets:
+    post:
+      tags:
+      - Problem Sets
+      summary: Create problem set
+      description: Creates a new problem set for the authenticated user
+      operationId: createProblemSet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProblemSetRequest"
+        required: true
+      responses:
+        "200":
+          description: Problem set created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/visibility:
+    post:
+      tags:
+      - Problem Sets
+      summary: Change visibility
+      description: Toggles the public/private visibility of the problem set; requires
+        moderator access
+      operationId: changeVisibility
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: isPublic
+        in: query
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Visibility updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/role:
+    post:
+      tags:
+      - Problem Sets
+      summary: Change user role
+      description: Updates the role of a user within the problem set; requires moderator
+        access
+      operationId: changeUserRole
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: username
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: requestedRole
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - USER
+          - MODERATOR
+          - ADMIN
+      responses:
+        "200":
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+        "404":
+          description: Problem set or user not found
+          content:
+            application/json:
+              schema:
+                type: string
+                enum:
+                - USER
+                - MODERATOR
+                - ADMIN
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/reply-invite:
+    post:
+      tags:
+      - Problem Sets
+      summary: Reply to invitation
+      description: Accepts or declines a pending invitation to join the problem set
+      operationId: replyToInvite
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: response
+        in: query
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: Invitation reply recorded
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set not found or no pending invitation
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/problems:
+    post:
+      tags:
+      - Problem Sets
+      summary: Change problems
+      description: Replaces the problem list of the problem set; requires moderator
+        access
+      operationId: changeProblems
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeProblemSetProblemsRequest"
+        required: true
+      responses:
+        "200":
+          description: Problems updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/leave:
+    post:
+      tags:
+      - Problem Sets
+      summary: Leave problem set
+      description: Removes the authenticated user from the problem set
+      operationId: leaveProblemSet
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully left problem set
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set not found or user is not a member
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/invite:
+    post:
+      tags:
+      - Problem Sets
+      summary: Invite user to problem set
+      description: Sends an invitation to a user to join the problem set
+      operationId: inviteToProblemSet
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: inviteeName
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Invitation sent
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set or invitee not found
+          content:
+            application/json:
+              schema:
+                type: string
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/expire-invite:
+    post:
+      tags:
+      - Problem Sets
+      summary: Expire invitation
+      description: Cancels a pending invitation for a user to join the problem set
+      operationId: expireInvite
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: inviteeName
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Invitation expired
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: string
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: string
+        "404":
+          description: Problem set or invitee not found
+          content:
+            application/json:
+              schema:
+                type: string
       security:
       - cookieAuth: []
   /api/v1/files/temp:
@@ -153,8 +523,14 @@ paths:
         schema:
           type: string
       responses:
+        "200":
+          description: Reserved for future implementation
         "501":
           description: Not implemented
+        "401":
+          description: Unauthorized
+        "403":
+          description: Access denied
       security:
       - cookieAuth: []
   /api/v1/checker/self:
@@ -207,412 +583,6 @@ paths:
           description: Submission not found
       security:
       - cookieAuth: []
-  /api/v1/bundles:
-    post:
-      tags:
-      - Bundles
-      summary: Create a bundle
-      description: Creates a new bundle with the specified properties
-      operationId: createBundle
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateBundleRequest"
-        required: true
-      responses:
-        "200":
-          description: Successfully created bundle
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/visibility:
-    post:
-      tags:
-      - Bundles
-      summary: Change bundle visibility
-      description: Changes bundle visibility allowing it to be public or private
-      operationId: changeVisibility
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: isPublic
-        in: query
-        description: Visibility flag
-        required: true
-        schema:
-          type: boolean
-      responses:
-        "200":
-          description: Successfully changed visibility
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "403":
-          description: Access denied - Insufficient bundle permissions
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/role:
-    post:
-      tags:
-      - Bundles
-      summary: Change user role in bundle
-      description: Changes user role in a bundle by their name
-      operationId: changeUserRole
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: username
-        in: query
-        description: Username
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: requestedRole
-        in: query
-        description: Role to set
-        required: true
-        schema:
-          type: string
-          enum:
-          - USER
-          - MODERATOR
-          - ADMIN
-      responses:
-        "200":
-          description: Successfully changed user role
-          content:
-            application/json:
-              schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
-        "403":
-          description: Access denied - Insufficient bundle permissions
-          content:
-            application/json:
-              schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
-        "404":
-          description: Bundle or user not found
-          content:
-            application/json:
-              schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/reply-invite:
-    post:
-      tags:
-      - Bundles
-      summary: Reply to bundle invitation
-      description: Accepts or declines an invitation to join a bundle
-      operationId: replyToInvite
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: response
-        in: query
-        description: "True to accept, false to decline"
-        required: true
-        schema:
-          type: boolean
-      responses:
-        "200":
-          description: Successfully replied to invitation
-          content:
-            application/json:
-              schema:
-                type: string
-        "400":
-          description: User is already in bundle
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-        "403":
-          description: Access denied - User is not invited
-          content:
-            application/json:
-              schema:
-                type: string
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                type: string
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/problems:
-    post:
-      tags:
-      - Bundles
-      summary: Change bundle problems
-      description: Changes problem list of a bundle
-      operationId: changeProblems
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ChangeBundleProblemsRequest"
-        required: true
-      responses:
-        "200":
-          description: Successfully changed problem list
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "400":
-          description: Problem list should not be empty
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "403":
-          description: Access denied - Insufficient bundle permissions
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/leave:
-    post:
-      tags:
-      - Bundles
-      summary: Leave a bundle
-      description: Leaves a bundle the user is currently a member of and returns bundle
-        shareCode
-      operationId: leaveBundle
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "200":
-          description: Successfully left bundle
-          content:
-            application/json:
-              schema:
-                type: string
-        "400":
-          description: Either not a participant or last admin
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                type: string
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/invite:
-    post:
-      tags:
-      - Bundles
-      summary: Invite user to bundle
-      description: Invites another user to join a bundle
-      operationId: inviteToBundle
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: inviteeName
-        in: query
-        description: Username of the user to invite
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "200":
-          description: Successfully invited user
-          content:
-            application/json:
-              schema:
-                type: string
-        "400":
-          description: User is already in bundle
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-        "403":
-          description: Access denied - Insufficient permissions in bundle
-          content:
-            application/json:
-              schema:
-                type: string
-        "404":
-          description: Bundle or user not found
-          content:
-            application/json:
-              schema:
-                type: string
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/expire-invite:
-    post:
-      tags:
-      - Bundles
-      summary: Expire bundle invitation
-      description: Cancels an existing invitation for a specific user
-      operationId: expireInvite
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: inviteeName
-        in: query
-        description: Username of the user whose invitation to cancel
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "200":
-          description: Successfully expired invitation
-          content:
-            application/json:
-              schema:
-                type: string
-        "400":
-          description: User is not invited
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-        "403":
-          description: Access denied - Insufficient permissions in bundle
-          content:
-            application/json:
-              schema:
-                type: string
-        "404":
-          description: Bundle or user not found
-          content:
-            application/json:
-              schema:
-                type: string
-      security:
-      - cookieAuth: []
   /api/v1/users/whoami:
     get:
       tags:
@@ -641,28 +611,32 @@ paths:
                 $ref: "#/components/schemas/UserDto"
       security:
       - cookieAuth: []
-  /api/v1/submissions/{problemId}/{username}:
+  /api/v1/submissions/{bookSlug}/{code}/{username}:
     get:
       tags:
       - Submissions
-      summary: Get submissions by username and problem ID
+      summary: Get submissions by username and problem key
       description: Retrieves paginated submissions for a specific user and problem
-      operationId: getSubmissionsByUsernameAndProblemId
+      operationId: getSubmissionsByUsernameAndProblemKey
       parameters:
-      - name: problemId
+      - name: bookSlug
         in: path
-        description: Problem ID
+        description: Book slug
         required: true
         schema:
           type: string
-          minLength: 1
+      - name: code
+        in: path
+        description: Problem code
+        required: true
+        schema:
+          type: string
       - name: username
         in: path
         description: Username
         required: true
         schema:
           type: string
-          minLength: 1
       - name: page
         in: query
         description: Page number (zero-based)
@@ -676,7 +650,6 @@ paths:
         required: false
         schema:
           type: string
-          exclusiveMinimum: 0
           maximum: 100
           minimum: 1
       responses:
@@ -715,9 +688,9 @@ paths:
         \ order."
       operationId: getMySubmissions
       parameters:
-      - name: problemId
+      - name: problemKey
         in: query
-        description: Optional problem ID to filter the user's submissions
+        description: Optional problem key (bookSlug/code) to filter the user's submissions
         required: false
         schema:
           type: string
@@ -734,7 +707,6 @@ paths:
         required: false
         schema:
           type: string
-          exclusiveMinimum: 0
           maximum: 100
           minimum: 1
       responses:
@@ -770,8 +742,8 @@ paths:
         description: Submission ID
         required: true
         schema:
-          type: string
-          minLength: 1
+          type: integer
+          format: int64
       responses:
         "200":
           description: Successfully retrieved submission
@@ -805,34 +777,6 @@ paths:
                 $ref: "#/components/schemas/SubmissionDto"
       security:
       - cookieAuth: []
-  /api/v1/results/{id}:
-    get:
-      tags:
-      - Results
-      summary: Get result by ID
-      description: Retrieves a specific result by its ID
-      operationId: getResultById
-      parameters:
-      - name: id
-        in: path
-        description: Result ID
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "200":
-          description: Successfully retrieved result
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Result"
-        "404":
-          description: Result not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Result"
   /api/v1/problems:
     get:
       tags:
@@ -854,9 +798,13 @@ paths:
         required: false
         schema:
           type: string
-          exclusiveMinimum: 0
           maximum: 100
           minimum: 1
+      - name: bookSlug
+        in: query
+        required: false
+        schema:
+          type: string
       - name: prefix
         in: query
         required: false
@@ -914,21 +862,26 @@ paths:
                 items:
                   $ref: "#/components/schemas/ProblemMetadata"
       security: []
-  /api/v1/problems/{id}:
+  /api/v1/problems/{bookSlug}/{code}:
     get:
       tags:
       - Problems
-      summary: Get problem by ID
-      description: Retrieves a specific problem by its ID
+      summary: Get problem by key
+      description: Retrieves a specific problem by its book slug and code
       operationId: getProblem
       parameters:
-      - name: id
+      - name: bookSlug
         in: path
-        description: Problem ID
+        description: Book slug
         required: true
         schema:
           type: string
-          minLength: 1
+      - name: code
+        in: path
+        description: Problem code
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: Successfully retrieved problem
@@ -953,15 +906,22 @@ paths:
     get:
       tags:
       - Problems
-      summary: Get random problem ID
-      description: "Returns a random problem ID. If the user is authenticated, prioritizes\
-        \ problems the user hasn't solved yet; otherwise returns any random problem."
-      operationId: getRandomUnsolvedProblemId
+      summary: Get random problem key
+      description: "Returns a random problem key (bookSlug/code). If the user is authenticated,\
+        \ prioritizes problems the user hasn't solved yet; otherwise returns any random\
+        \ problem."
+      operationId: getRandomUnsolvedProblemKey
       responses:
         "200":
-          description: Successfully retrieved random problem ID
+          description: Successfully retrieved random problem key
           content:
             text/plain:
+              schema:
+                type: string
+        "404":
+          description: No problems available
+          content:
+            application/json:
               schema:
                 type: string
       security: []
@@ -970,9 +930,14 @@ paths:
       tags:
       - Problems
       summary: Count problems
-      description: Returns the total number of problems in the system
+      description: Returns the total number of problems matching the filter
       operationId: count
       parameters:
+      - name: bookSlug
+        in: query
+        required: false
+        schema:
+          type: string
       - name: prefix
         in: query
         required: false
@@ -1024,17 +989,16 @@ paths:
     get:
       tags:
       - Problems
-      summary: Get problem IDs by prefix
-      description: Retrieves a list of problem IDs that match the given prefix
-      operationId: getProblemIdsByPrefix
+      summary: Get problem codes by prefix
+      description: Retrieves a list of problem codes that match the given prefix
+      operationId: getProblemCodesByPrefix
       parameters:
       - name: prefix
         in: query
-        description: The prefix to match problem IDs against
+        description: The prefix to match problem codes against
         required: true
         schema:
           type: string
-          minLength: 1
       - name: limit
         in: query
         description: Maximum number of results to return
@@ -1046,7 +1010,7 @@ paths:
           exclusiveMinimum: 0
       responses:
         "200":
-          description: Successfully retrieved problem IDs
+          description: Successfully retrieved problem codes
           content:
             application/json:
               schema:
@@ -1062,6 +1026,271 @@ paths:
                 items:
                   type: string
       security: []
+  /api/v1/problem-sets/{shareCode}:
+    get:
+      tags:
+      - Problem Sets
+      summary: Get problem set by share code
+      description: Retrieves a problem set by its share code; returns 403 if the set
+        is private and the caller is not a member
+      operationId: getProblemSetByShareCode
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved problem set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Problem set is private and caller is not a member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "404":
+          description: Problem set not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security: []
+  /api/v1/problem-sets/{shareCode}/users:
+    get:
+      tags:
+      - Problem Sets
+      summary: Get user roles
+      description: Returns all users and their roles in the problem set; requires
+        moderator access
+      operationId: getUserRoles
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved user roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/invited-users:
+    get:
+      tags:
+      - Problem Sets
+      summary: Get invited users
+      description: Returns the list of users with pending invitations to the problem
+        set; requires moderator access
+      operationId: getInvitedUsers
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "200":
+          description: Successfully retrieved invited users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/public:
+    get:
+      tags:
+      - Problem Sets
+      summary: Get public problem sets
+      description: Returns a paginated list of publicly visible problem sets
+      operationId: getPublicProblemSets
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          exclusiveMinimum: 0
+      responses:
+        "200":
+          description: Successfully retrieved public problem sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+      security: []
+  /api/v1/problem-sets/owned:
+    get:
+      tags:
+      - Problem Sets
+      summary: Get owned problem sets
+      description: Returns a paginated list of problem sets owned by the authenticated
+        user
+      operationId: getOwnedProblemSets
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          exclusiveMinimum: 0
+      responses:
+        "200":
+          description: Successfully retrieved owned problem sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/joined:
+    get:
+      tags:
+      - Problem Sets
+      summary: Get joined problem sets
+      description: Returns a paginated list of problem sets the authenticated user
+        has joined
+      operationId: getJoinedProblemSets
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          exclusiveMinimum: 0
+      responses:
+        "200":
+          description: Successfully retrieved joined problem sets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+      security:
+      - cookieAuth: []
   /api/v1/files/temp/get:
     get:
       tags:
@@ -1174,71 +1403,22 @@ paths:
                 $ref: "#/components/schemas/CheckResultDto"
       security:
       - cookieAuth: []
-  /api/v1/bundles/{shareCode}:
+  /api/v1/books:
     get:
       tags:
-      - Bundles
-      summary: Get bundle by share code
-      description: Retrieves a bundle by its share code. Public bundles are accessible
-        to anyone; private bundles require membership.
-      operationId: getBundleByShareCode
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
+      - Books
+      summary: Get all books
+      description: Retrieves a list of all available books
+      operationId: getBooks
       responses:
         "200":
-          description: Successfully retrieved bundle
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "403":
-          description: Access denied - bundle is private and user is not a member
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BundleDto"
-  /api/v1/bundles/{shareCode}/users:
-    get:
-      tags:
-      - Bundles
-      summary: Get users in bundle
-      description: Retrieves a list of users in a bundle with their roles
-      operationId: getUserRoles
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "200":
-          description: Successfully retrieved users
+          description: Successfully retrieved book list
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/UserNameWithRole"
+                  $ref: "#/components/schemas/BookSummaryDto"
         "400":
           description: Validation failed
           content:
@@ -1246,243 +1426,77 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/UserNameWithRole"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserNameWithRole"
-        "403":
-          description: Access denied - Insufficient bundle permissions
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserNameWithRole"
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserNameWithRole"
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/{shareCode}/invited-users:
-    get:
-      tags:
-      - Bundles
-      summary: Get invited user names in bundle
-      description: Retrieves the list of invited (pending) user names
-      operationId: getInvitedUsers
-      parameters:
-      - name: shareCode
-        in: path
-        description: Bundle share code
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "200":
-          description: Successfully retrieved invited user names
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        "403":
-          description: Access denied - Insufficient bundle permissions
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        "404":
-          description: Bundle not found
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/public:
-    get:
-      tags:
-      - Bundles
-      summary: Get public bundles
-      description: Retrieves a paginated list of public bundles
-      operationId: getPublicBundles
-      parameters:
-      - name: page
-        in: query
-        description: Page number (zero-based)
-        required: false
-        schema:
-          type: string
-          minimum: 0
-      - name: size
-        in: query
-        description: Number of bundles per page
-        required: false
-        schema:
-          type: string
-          exclusiveMinimum: 0
-          maximum: 100
-          minimum: 1
-      responses:
-        "200":
-          description: Successfully retrieved public bundles
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
+                  $ref: "#/components/schemas/BookSummaryDto"
       security: []
-  /api/v1/bundles/owned:
+  /api/v1/books/{slug}:
     get:
       tags:
-      - Bundles
-      summary: Get owned bundles
-      description: Retrieves a paginated list of bundles owned by the authenticated
-        user
-      operationId: getOwnedBundles
+      - Books
+      summary: Get book by slug
+      description: Retrieves a specific book by its slug
+      operationId: getBookBySlug
       parameters:
-      - name: page
-        in: query
-        description: Page number (zero-based)
-        required: false
+      - name: slug
+        in: path
+        description: Book slug
+        required: true
         schema:
           type: string
-          minimum: 0
-      - name: size
-        in: query
-        description: Number of bundles per page
-        required: false
-        schema:
-          type: string
-          exclusiveMinimum: 0
-          maximum: 100
-          minimum: 1
+          minLength: 1
       responses:
         "200":
-          description: Successfully retrieved owned bundles
+          description: Successfully retrieved book
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
-        "400":
-          description: Validation failed
+                $ref: "#/components/schemas/BookDto"
+        "404":
+          description: Book not found
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
-      security:
-      - cookieAuth: []
-  /api/v1/bundles/joined:
+                $ref: "#/components/schemas/BookDto"
+      security: []
+  /api/v1/answers/{bookSlug}/{code}:
     get:
       tags:
-      - Bundles
-      summary: Get joined bundles
-      description: Retrieves a paginated list of bundles joined by the authenticated
-        user
-      operationId: getJoinedBundles
+      - Answers
+      summary: Get answer by problem key
+      description: Retrieves an answer for a specific problem
+      operationId: getAnswerByProblemKey
       parameters:
-      - name: page
-        in: query
-        description: Page number (zero-based)
-        required: false
+      - name: bookSlug
+        in: path
+        description: Book slug
+        required: true
         schema:
           type: string
-          minimum: 0
-      - name: size
-        in: query
-        description: Number of bundles per page
-        required: false
+      - name: code
+        in: path
+        description: Problem code
+        required: true
         schema:
           type: string
-          exclusiveMinimum: 0
-          maximum: 100
-          minimum: 1
       responses:
         "200":
-          description: Successfully retrieved joined bundles
+          description: Successfully retrieved answer
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
-        "400":
-          description: Validation failed
+                $ref: "#/components/schemas/AnswerDto"
+        "404":
+          description: Answer not found
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BundleMetadata"
-      security:
-      - cookieAuth: []
+                $ref: "#/components/schemas/AnswerDto"
+      security: []
 components:
   schemas:
     CreateSubmissionRequest:
       type: object
       properties:
-        problemId:
+        problemKey:
           type: string
           minLength: 1
         fileNames:
@@ -1492,13 +1506,14 @@ components:
           minItems: 1
       required:
       - fileNames
-      - problemId
+      - problemKey
     SubmissionDto:
       type: object
       properties:
         id:
-          type: string
-        problemId:
+          type: integer
+          format: int64
+        problemKey:
           type: string
         userName:
           type: string
@@ -1519,10 +1534,10 @@ components:
       - createdAt
       - fileUrls
       - id
-      - problemId
+      - problemKey
       - status
       - userName
-    CreateBundleRequest:
+    CreateProblemSetRequest:
       type: object
       properties:
         name:
@@ -1535,7 +1550,7 @@ components:
           minLength: 0
         isPublic:
           type: boolean
-        problemIds:
+        problemKeys:
           type: array
           items:
             type: string
@@ -1544,8 +1559,37 @@ components:
       - description
       - isPublic
       - name
-      - problemIds
-    BundleDto:
+      - problemKeys
+    ProblemMetadata:
+      type: object
+      properties:
+        key:
+          type: string
+        code:
+          type: string
+        bookSlug:
+          type: string
+        isHard:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+      required:
+      - bookSlug
+      - code
+      - isHard
+      - key
+      - status
+      - tags
+    ProblemSetDto:
       type: object
       properties:
         name:
@@ -1566,44 +1610,20 @@ components:
           type: string
       required:
       - admins
-      - description
       - isPublic
       - name
       - problems
       - shareCode
-    ProblemMetadata:
+    ChangeProblemSetProblemsRequest:
       type: object
       properties:
-        name:
-          type: string
-        isHard:
-          type: boolean
-        tags:
-          type: array
-          items:
-            type: string
-        status:
-          type: string
-          enum:
-          - SOLVED
-          - SOLVING
-          - FAILED
-          - NOT_SOLVED
-      required:
-      - isHard
-      - name
-      - status
-      - tags
-    ChangeBundleProblemsRequest:
-      type: object
-      properties:
-        problemIds:
+        problemKeys:
           type: array
           items:
             type: string
           minItems: 1
       required:
-      - problemIds
+      - problemKeys
     UserDto:
       type: object
       properties:
@@ -1619,28 +1639,14 @@ components:
       - name
       - roles
       - status
-    Result:
-      type: object
-      properties:
-        id:
-          type: string
-        text:
-          type: string
-        notes:
-          type: string
-        images:
-          type: array
-          items:
-            type: string
-      required:
-      - id
-      - images
-      - notes
-      - text
     ProblemDto:
       type: object
       properties:
-        id:
+        key:
+          type: string
+        code:
+          type: string
+        bookSlug:
           type: string
         isHard:
           type: boolean
@@ -1668,10 +1674,12 @@ components:
         hasResult:
           type: boolean
       required:
+      - bookSlug
+      - code
       - hasResult
-      - id
       - images
       - isHard
+      - key
       - status
       - subtasks
       - tags
@@ -1686,6 +1694,44 @@ components:
       required:
       - id
       - text
+    UserNameWithRole:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+          - USER
+          - MODERATOR
+          - ADMIN
+      required:
+      - name
+      - role
+    ProblemSetMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        admins:
+          type: array
+          items:
+            type: string
+        shareCode:
+          type: string
+        isPublic:
+          type: boolean
+        size:
+          type: integer
+          format: int64
+      required:
+      - admins
+      - isPublic
+      - name
+      - shareCode
+      - size
     FileMetadata:
       type: object
       properties:
@@ -1708,7 +1754,8 @@ components:
       type: object
       properties:
         id:
-          type: string
+          type: integer
+          format: int64
         status:
           type: string
           enum:
@@ -1759,45 +1806,51 @@ components:
       - explanation
       - status
       - trustLevel
-    UserNameWithRole:
+    BookSummaryDto:
       type: object
       properties:
-        name:
+        slug:
           type: string
-        role:
+        subject:
           type: string
-          enum:
-          - USER
-          - MODERATOR
-          - ADMIN
+        title:
+          type: string
       required:
-      - name
-      - role
-    BundleMetadata:
+      - slug
+      - subject
+      - title
+    BookDto:
       type: object
       properties:
-        name:
+        slug:
+          type: string
+        subject:
+          type: string
+        title:
+          type: string
+        citation:
           type: string
         description:
           type: string
-        admins:
+      required:
+      - citation
+      - slug
+      - subject
+      - title
+    AnswerDto:
+      type: object
+      properties:
+        text:
+          type: string
+        notes:
+          type: string
+        images:
           type: array
           items:
             type: string
-        shareCode:
-          type: string
-        isPublic:
-          type: boolean
-        size:
-          type: integer
-          format: int64
       required:
-      - admins
-      - description
-      - isPublic
-      - name
-      - shareCode
-      - size
+      - images
+      - text
   securitySchemes:
     cookieAuth:
       type: apiKey

@@ -58,6 +58,22 @@ subprojects {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Infrastructure (Docker Compose)
+// ---------------------------------------------------------------------------
+
+tasks.register<Exec>("infrastructureUp") {
+    group = "infrastructure"
+    description = "Starts all local infrastructure services (PostgreSQL, MongoDB, MinIO, RabbitMQ)."
+    commandLine("sh", "-c", "docker compose up -d")
+}
+
+tasks.register<Exec>("infrastructureDown") {
+    group = "infrastructure"
+    description = "Stops all local infrastructure services."
+    commandLine("sh", "-c", "docker compose down")
+}
+
 tasks.register("allReports") {
     group = "verification"
     description = "Generates all aggregated reports (tests + detekt)."

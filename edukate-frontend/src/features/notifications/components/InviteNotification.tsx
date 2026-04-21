@@ -20,7 +20,7 @@ export const InviteNotificationComponent: FC<InviteNotificationProps> = ({ notif
                 <Box>
                     <Box>
                         <Typography component={"span"} variant={"body1"}>
-                            Join a bundle {notification.bundleName}!
+                            Join a problem set {notification.problemSetName}!
                         </Typography>
                     </Box>
                     <Box>

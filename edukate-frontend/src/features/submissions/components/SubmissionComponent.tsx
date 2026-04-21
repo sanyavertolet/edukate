@@ -14,9 +14,9 @@ type SubmissionComponentProps = {
 export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }) => {
     const requestCheckMutation = useRequestCheckMutation();
     const requestCheck = (checkType: CheckType) => {
-        requestCheckMutation.mutate({ checkType, submissionId: submission.id });
+        requestCheckMutation.mutate({ checkType, submissionId: String(submission.id) });
     };
-    const { data: resultInfos, isLoading, error } = useCheckResultsRequest(submission.id);
+    const { data: resultInfos, isLoading, error } = useCheckResultsRequest(String(submission.id));
     const { user } = useAuthContext();
 
     const isSelfCheckDisabled = submission.status == "SUCCESS";
@@ -73,7 +73,7 @@ function SubmissionDetails({ submission }: SubmissionComponentProps) {
                     Submission Details
                 </Typography>
                 <Typography variant="body1">
-                    <strong>Problem ID:</strong> {submission.problemId}
+                    <strong>Problem:</strong> {submission.problemKey}
                 </Typography>
                 <Typography variant="body1">
                     <strong>Status:</strong> {submission.status}

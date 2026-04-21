@@ -7,8 +7,8 @@ import { SubmissionList } from "./SubmissionList";
 import type { Submission } from "@/features/submissions/types";
 
 const pendingSubmission: Submission = {
-    id: "sub-1",
-    problemId: "prob-1",
+    id: 1,
+    problemKey: "savchenko/1.1.1",
     userName: "alice",
     status: "PENDING",
     createdAt: "2024-06-01T10:00:00Z",
@@ -16,8 +16,8 @@ const pendingSubmission: Submission = {
 };
 
 const successSubmission: Submission = {
-    id: "sub-2",
-    problemId: "prob-1",
+    id: 2,
+    problemKey: "savchenko/1.1.1",
     userName: "alice",
     status: "SUCCESS",
     createdAt: "2024-06-02T11:00:00Z",
@@ -25,8 +25,8 @@ const successSubmission: Submission = {
 };
 
 const failedSubmission: Submission = {
-    id: "sub-3",
-    problemId: "prob-1",
+    id: 3,
+    problemKey: "savchenko/1.1.1",
     userName: "alice",
     status: "FAILED",
     createdAt: "2024-06-03T12:00:00Z",
@@ -36,7 +36,7 @@ const failedSubmission: Submission = {
 describe("SubmissionList — empty", () => {
     it("shows 'No submissions yet' stub when the list is empty", async () => {
         server.use(getGetMySubmissionsMockHandler([]));
-        render(<SubmissionList problemId="prob-1" />);
+        render(<SubmissionList problemKey="savchenko/1.1.1" />);
         await waitFor(() => {
             expect(screen.getByText("No submissions yet")).toBeInTheDocument();
         });
@@ -46,7 +46,7 @@ describe("SubmissionList — empty", () => {
 describe("SubmissionList — statuses", () => {
     it("renders PENDING submission as 'Pending review'", async () => {
         server.use(getGetMySubmissionsMockHandler([pendingSubmission]));
-        render(<SubmissionList problemId="prob-1" />);
+        render(<SubmissionList problemKey="savchenko/1.1.1" />);
         await waitFor(() => {
             expect(screen.getByText("Pending review")).toBeInTheDocument();
         });
@@ -54,7 +54,7 @@ describe("SubmissionList — statuses", () => {
 
     it("renders SUCCESS submission as 'Success'", async () => {
         server.use(getGetMySubmissionsMockHandler([successSubmission]));
-        render(<SubmissionList problemId="prob-1" />);
+        render(<SubmissionList problemKey="savchenko/1.1.1" />);
         await waitFor(() => {
             expect(screen.getByText("Success")).toBeInTheDocument();
         });
@@ -62,7 +62,7 @@ describe("SubmissionList — statuses", () => {
 
     it("renders FAILED submission as 'Failed'", async () => {
         server.use(getGetMySubmissionsMockHandler([failedSubmission]));
-        render(<SubmissionList problemId="prob-1" />);
+        render(<SubmissionList problemKey="savchenko/1.1.1" />);
         await waitFor(() => {
             expect(screen.getByText("Failed")).toBeInTheDocument();
         });
@@ -70,7 +70,7 @@ describe("SubmissionList — statuses", () => {
 
     it("renders attachment buttons for file URLs", async () => {
         server.use(getGetMySubmissionsMockHandler([successSubmission]));
-        render(<SubmissionList problemId="prob-1" />);
+        render(<SubmissionList problemKey="savchenko/1.1.1" />);
         await waitFor(() => {
             expect(screen.getByRole("button", { name: /open attachment 1/i })).toBeInTheDocument();
         });
@@ -80,7 +80,7 @@ describe("SubmissionList — statuses", () => {
 describe("SubmissionList — error state", () => {
     it("shows 'Failed to load submissions' on API error", async () => {
         server.use(http.get("*/api/v1/submissions/my", () => HttpResponse.json(null, { status: 500 })));
-        render(<SubmissionList problemId="prob-1" />);
+        render(<SubmissionList problemKey="savchenko/1.1.1" />);
         await waitFor(() => {
             expect(screen.getByText("Failed to load submissions")).toBeInTheDocument();
         });
@@ -90,7 +90,7 @@ describe("SubmissionList — error state", () => {
 describe("SubmissionList — navigation", () => {
     it("navigates to /submissions/:id when a list item is clicked", async () => {
         server.use(getGetMySubmissionsMockHandler([pendingSubmission]));
-        const { container } = render(<SubmissionList problemId="prob-1" />);
+        const { container } = render(<SubmissionList problemKey="savchenko/1.1.1" />);
         await waitFor(() => screen.getByText("Pending review"));
 
         // The ListItemButton is inside the list item

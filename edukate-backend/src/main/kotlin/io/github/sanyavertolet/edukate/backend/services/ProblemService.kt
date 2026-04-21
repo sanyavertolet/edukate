@@ -3,20 +3,13 @@ package io.github.sanyavertolet.edukate.backend.services
 import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
-import io.github.sanyavertolet.edukate.backend.utils.SemVerUtils.semVerSort
-import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.github.sanyavertolet.edukate.common.utils.monoId
-import org.bson.Document
+import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import org.springframework.cache.annotation.CacheConfig
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate
-import org.springframework.data.mongodb.core.aggregate
-import org.springframework.data.mongodb.core.aggregation.Aggregation
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation
-import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
@@ -26,27 +19,22 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
 @Service
-@CacheConfig(cacheNames = ["problems"])
+@CacheConfig(cacheNames = ["problems-by-id"])
 @Suppress("TooManyFunctions")
-class ProblemService(private val problemRepository: ProblemRepository, private val mongoTemplate: ReactiveMongoTemplate) {
+class ProblemService(private val problemRepository: ProblemRepository, private val bookService: BookService) {
     fun getFilteredProblems(
         filter: ProblemFilter,
         authentication: Authentication?,
         pageRequest: PageRequest,
     ): Flux<Problem> {
-        // For unauthenticated users, NOT_SOLVED is a no-op (all problems qualify), so strip it.
         val effectiveStatus = filter.status.takeIf { it != Problem.Status.NOT_SOLVED || authentication != null }
         val effectiveFilter = filter.copy(status = effectiveStatus)
         return when {
-            // Only prefix filtering — skip the aggregation pipeline entirely
-            !effectiveFilter.requiresAggregation() -> withPrefixFilter(filter.prefix, pageRequest)
-            // Status was stripped (NOT_SOLVED for anonymous) — aggregate without user lookup
-            effectiveStatus == null -> findByFilter(effectiveFilter, null, pageRequest)
-            // Status filter requires a user but none is authenticated — reject with 401
-            authentication == null ->
+            effectiveStatus != null && authentication == null ->
                 Flux.error(ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required to filter by status"))
-            // Full aggregation with per-user status lookup
-            else -> authentication.monoId().flatMapMany { userId -> findByFilter(effectiveFilter, userId, pageRequest) }
+            effectiveStatus != null ->
+                authentication.monoId().flatMapMany { userId -> withFilter(effectiveFilter, userId, pageRequest) }
+            else -> withFilter(effectiveFilter, null, pageRequest)
         }
     }
 
@@ -54,121 +42,139 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
         val effectiveStatus = filter.status.takeIf { it != Problem.Status.NOT_SOLVED || authentication != null }
         val effectiveFilter = filter.copy(status = effectiveStatus)
         return when {
-            // Only prefix filtering — skip the aggregation pipeline entirely
-            !effectiveFilter.requiresAggregation() -> countWithPrefixFilter(filter.prefix)
-            // Status was stripped (NOT_SOLVED for anonymous) — aggregate without user lookup
-            effectiveStatus == null -> countByFilter(effectiveFilter, null)
-            // Status filter requires a user but none is authenticated — reject with 401
-            authentication == null ->
+            effectiveStatus != null && authentication == null ->
                 ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required to filter by status").toMono()
-            // Full aggregation with per-user status lookup
-            else -> authentication.monoId().flatMap { userId -> countByFilter(effectiveFilter, userId) }
+            effectiveStatus != null -> authentication.monoId().flatMap { userId -> countWithFilter(effectiveFilter, userId) }
+            else -> countWithFilter(effectiveFilter, null)
         }
     }
 
-    @Cacheable(key = "#id") fun findProblemById(id: String): Mono<Problem> = problemRepository.findById(id)
+    @Cacheable(key = "#id") fun findProblemById(id: Long): Mono<Problem> = problemRepository.findById(id)
 
-    fun findProblemsByIds(problemIds: List<String>): Flux<Problem> = problemRepository.findProblemsByIdIn(problemIds)
+    @Cacheable(cacheNames = ["problems-by-key"], key = "#key")
+    fun findProblemByKey(key: String): Mono<Problem> = problemRepository.findByKey(key)
 
-    @CacheEvict(key = "#problem.id") fun updateProblem(problem: Problem): Mono<Problem> = problemRepository.save(problem)
+    fun findProblemsByIds(problemIds: List<Long>): Flux<Problem> = problemRepository.findByIdIn(problemIds)
 
-    @CacheEvict(allEntries = true)
-    fun updateProblemBatch(problems: Flux<Problem>): Mono<Long> = problemRepository.saveAll(problems).count()
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], key = "#problem.id", condition = "#problem.id != null"),
+                CacheEvict(cacheNames = ["problems-by-key"], key = "#problem.key", condition = "!#problem.key.isBlank()"),
+            ]
+    )
+    fun updateProblem(problem: Problem): Mono<Problem> = enrichWithKey(problem).flatMap { problemRepository.save(it) }
 
-    @CacheEvict(key = "#id") fun deleteProblemById(id: String): Mono<Void> = problemRepository.deleteById(id)
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], allEntries = true),
+                CacheEvict(cacheNames = ["problems-by-key"], allEntries = true),
+            ]
+    )
+    fun updateProblemBatch(problems: Flux<Problem>): Mono<Long> =
+        problems.concatMap { enrichWithKey(it) }.let { problemRepository.saveAll(it).count() }
 
-    fun getProblemIdsByPrefix(prefix: String, limit: Int): Flux<String> =
-        problemRepository.findProblemsByIdStartingWith(prefix, Pageable.ofSize(limit)).map { it.id }
+    private fun enrichWithKey(problem: Problem): Mono<Problem> =
+        if (problem.key.isNotBlank()) Mono.just(problem)
+        else
+            bookService.findById(problem.bookId).orNotFound("Book not found for problem ${problem.id}").map { book ->
+                problem.copy(key = "${book.slug}/${problem.code}")
+            }
 
-    fun getRandomUnsolvedProblemId(authentication: Authentication?): Mono<String> =
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["problems-by-id"], key = "#id"),
+                CacheEvict(cacheNames = ["problems-by-key"], allEntries = true),
+            ]
+    )
+    fun deleteProblemById(id: Long): Mono<Void> = problemRepository.deleteById(id)
+
+    fun getProblemCodesByPrefix(prefix: String, limit: Int): Flux<String> =
+        problemRepository.findByCodeStartingWith(prefix, limit).map { it.code }
+
+    fun getRandomUnsolvedProblemKey(authentication: Authentication?): Mono<String> =
         authentication
             .monoId()
-            .flatMap { problemRepository.findRandomUnsolvedProblemId(it) }
-            .switchIfEmpty(problemRepository.findRandomProblemId())
+            .flatMap { problemRepository.findRandomUnsolvedProblem(it).map { p -> p.key } }
+            .switchIfEmpty(problemRepository.findRandomProblem().map { it.key })
 
-    private fun findByFilter(filter: ProblemFilter, userId: String?, pageRequest: PageRequest): Flux<Problem> {
-        val operations = buildFilterStages(filter, userId)
-        operations += Aggregation.sort(semVerSort())
-        val offset = pageRequest.pageNumber.toLong() * pageRequest.pageSize
-        operations += Aggregation.skip(offset)
-        operations += Aggregation.limit(pageRequest.pageSize.toLong())
-        return mongoTemplate.aggregate<Problem>(Aggregation.newAggregation(Problem::class.java, operations))
-    }
+    private fun resolveBookId(slug: String): Mono<Long> =
+        bookService.findBySlug(slug).orNotFound("Book not found: $slug").map { requireNotNull(it.id) }
 
-    private fun countByFilter(filter: ProblemFilter, userId: String?): Mono<Long> {
-        val operations = buildFilterStages(filter, userId)
-        operations += Aggregation.count().`as`("count")
-        return mongoTemplate
-            .aggregate<Document>(Aggregation.newAggregation(Problem::class.java, operations))
-            .next()
-            .map { doc -> (doc.getInteger("count") ?: 0).toLong() }
-            .defaultIfEmpty(0L)
-    }
+    private fun statusToDbValue(status: Problem.Status?): String? =
+        when (status) {
+            Problem.Status.SOLVED -> "SUCCESS"
+            Problem.Status.FAILED -> "FAILED"
+            Problem.Status.SOLVING -> "PENDING"
+            Problem.Status.NOT_SOLVED,
+            null -> null
+        }
 
-    private fun buildFilterStages(filter: ProblemFilter, userId: String?): MutableList<AggregationOperation> {
-        val operations = mutableListOf<AggregationOperation>()
-        if (!filter.prefix.isNullOrBlank()) {
-            operations += Aggregation.match(Criteria.where("_id").regex("^${filter.prefix}"))
-        }
-        if (filter.isHard != null) {
-            operations += Aggregation.match(Criteria.where("isHard").`is`(filter.isHard))
-        }
-        if (filter.hasPictures != null) {
-            operations += Aggregation.match(Criteria.where("images.0").exists(filter.hasPictures))
-        }
-        if (filter.hasResult != null) {
-            operations += Aggregation.match(Criteria.where("result").exists(filter.hasResult))
-        }
-        if (filter.status != null && userId != null) {
-            operations += lookupProblemStatus(userId)
-            operations += Aggregation.match(statusCriteria(filter.status))
-        }
-        return operations
-    }
-
-    private fun lookupProblemStatus(userId: String): AggregationOperation = AggregationOperation { _ ->
-        Document(
-            $$"$lookup",
-            Document()
-                .append("from", "problem_status")
-                .append("let", Document("pid", $$"$_id"))
-                .append(
-                    "pipeline",
-                    listOf(
-                        Document(
-                            $$"$match",
-                            Document(
-                                $$"$expr",
-                                Document(
-                                    $$"$and",
-                                    listOf(
-                                        Document($$"$eq", listOf($$"$problemId", $$$"$$pid")),
-                                        Document($$"$eq", listOf($$"$userId", userId)),
-                                    ),
-                                ),
-                            ),
-                        )
-                    ),
+    private fun withFilter(filter: ProblemFilter, userId: Long?, pageRequest: PageRequest): Flux<Problem> {
+        val prefix = filter.prefix?.takeIf { it.isNotBlank() }
+        val notSolved = filter.status == Problem.Status.NOT_SOLVED
+        val bestStatus = statusToDbValue(filter.status)
+        val limit = pageRequest.pageSize
+        val offset = pageRequest.offset
+        if (!filter.bookSlug.isNullOrBlank()) {
+            return resolveBookId(filter.bookSlug).flatMapMany { bookId ->
+                problemRepository.findWithFilter(
+                    bookId,
+                    prefix,
+                    filter.isHard,
+                    filter.hasPictures,
+                    filter.hasResult,
+                    notSolved,
+                    bestStatus,
+                    userId,
+                    limit,
+                    offset,
                 )
-                .append("as", "ps"),
+            }
+        }
+        return problemRepository.findWithFilter(
+            null,
+            prefix,
+            filter.isHard,
+            filter.hasPictures,
+            filter.hasResult,
+            notSolved,
+            bestStatus,
+            userId,
+            limit,
+            offset,
         )
     }
 
-    private fun statusCriteria(status: Problem.Status): Criteria =
-        when (status) {
-            Problem.Status.SOLVED -> Criteria.where("ps.bestStatus").`is`(SubmissionStatus.SUCCESS.name)
-            Problem.Status.FAILED -> Criteria.where("ps.bestStatus").`is`(SubmissionStatus.FAILED.name)
-            Problem.Status.SOLVING -> Criteria.where("ps.bestStatus").`is`(SubmissionStatus.PENDING.name)
-            Problem.Status.NOT_SOLVED -> Criteria.where("ps").size(0)
+    private fun countWithFilter(filter: ProblemFilter, userId: Long?): Mono<Long> {
+        val prefix = filter.prefix?.takeIf { it.isNotBlank() }
+        val notSolved = filter.status == Problem.Status.NOT_SOLVED
+        val bestStatus = statusToDbValue(filter.status)
+        if (!filter.bookSlug.isNullOrBlank()) {
+            return resolveBookId(filter.bookSlug).flatMap { bookId ->
+                problemRepository.countWithFilter(
+                    bookId,
+                    prefix,
+                    filter.isHard,
+                    filter.hasPictures,
+                    filter.hasResult,
+                    notSolved,
+                    bestStatus,
+                    userId,
+                )
+            }
         }
-
-    private fun withPrefixFilter(prefix: String?, pageRequest: PageRequest): Flux<Problem> =
-        if (prefix.isNullOrBlank()) {
-            problemRepository.findAll(pageRequest.withSort(semVerSort()))
-        } else {
-            problemRepository.findProblemsByIdStartingWith(prefix, pageRequest.withSort(semVerSort()))
-        }
-
-    private fun countWithPrefixFilter(prefix: String?): Mono<Long> =
-        if (prefix.isNullOrBlank()) problemRepository.count() else problemRepository.countByIdStartingWith(prefix)
+        return problemRepository.countWithFilter(
+            null,
+            prefix,
+            filter.isHard,
+            filter.hasPictures,
+            filter.hasResult,
+            notSolved,
+            bestStatus,
+            userId,
+        )
+    }
 }

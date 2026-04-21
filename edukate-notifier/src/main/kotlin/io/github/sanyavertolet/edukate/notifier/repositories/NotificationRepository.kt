@@ -15,13 +15,13 @@ interface NotificationRepository : ReactiveMongoRepository<BaseNotification, Str
     @Query("{ 'uuid': ?0 }") fun findNotificationByUuid(uuid: String): Mono<BaseNotification>
 
     @Query("{ 'targetUserId': ?0, 'isRead': ?1 }")
-    fun findAllByTargetUserIdAndIsRead(targetUserId: String, isRead: Boolean, pageable: Pageable): Flux<BaseNotification>
+    fun findAllByTargetUserIdAndIsRead(targetUserId: Long, isRead: Boolean, pageable: Pageable): Flux<BaseNotification>
 
     @Query("{ 'targetUserId': ?0 }")
-    fun findAllByTargetUserId(targetUserId: String, pageable: Pageable): Flux<BaseNotification>
+    fun findAllByTargetUserId(targetUserId: Long, pageable: Pageable): Flux<BaseNotification>
 
     @Query($$"{ 'targetUserId': ?0, 'uuid': { $in: ?1 } }")
-    fun findByTargetUserIdAndUuidIn(targetUserId: String, uuid: List<String>): Flux<BaseNotification>
+    fun findByTargetUserIdAndUuidIn(targetUserId: Long, uuid: List<String>): Flux<BaseNotification>
 
     @Aggregation(
         pipeline =
@@ -37,5 +37,5 @@ interface NotificationRepository : ReactiveMongoRepository<BaseNotification, Str
                     "} }"),
             ]
     )
-    fun gatherStatistics(targetUserId: String): Mono<NotificationStatistics>
+    fun gatherStatistics(targetUserId: Long): Mono<NotificationStatistics>
 }

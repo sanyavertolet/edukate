@@ -24,14 +24,23 @@ Shared domain models, enums, security configuration, and utilities used across a
 
 ### Notification Create Requests (sealed hierarchy)
 
-Used by `edukate-backend` to send to `edukate-notifier` via RabbitMQ:
+Used by `edukate-backend` to send to `edukate-notifier` via RabbitMQ.
+All `targetUserId` fields are `Long` (PostgreSQL user IDs). `CheckedNotificationCreateRequest` uses
+`problemKey: String` (composite key like `savchenko/1.1.1`) and `submissionId: Long`.
+`InviteNotificationCreateRequest` uses `problemSetName` and `problemSetShareCode` (not "bundle").
 
-| Class                              | Purpose           |
-|------------------------------------|-------------------|
-| `BaseNotificationCreateRequest`    | Sealed parent     |
-| `SimpleNotificationCreateRequest`  | Plain text        |
-| `InviteNotificationCreateRequest`  | Bundle invitation |
-| `CheckedNotificationCreateRequest` | Check result      |
+| Class                              | Purpose                |
+|------------------------------------|------------------------|
+| `BaseNotificationCreateRequest`    | Sealed parent          |
+| `SimpleNotificationCreateRequest`  | Plain text             |
+| `InviteNotificationCreateRequest`  | Problem set invitation |
+| `CheckedNotificationCreateRequest` | Check result           |
+
+### Check Models
+
+- `CheckResultMessage` — RabbitMQ message from checker to backend; `submissionId: Long`
+- `CheckResultInfo` — lightweight check result reference; `id: Long`
+- `SubmissionContext` — payload sent to checker; `submissionId: Long`, `problemId: Long`
 
 ### Security Configuration
 
@@ -47,7 +56,7 @@ Used by `edukate-backend` to send to `edukate-notifier` via RabbitMQ:
 
 ### OpenAPI
 
-- `OpenApiConfiguration` — shared Swagger/OpenAPI bean
+- `OpenApiConfiguration` — shared Swagger/OpenAPI bean; sets server URL (from `gateway.url`), `cookieAuth` security scheme, and AGPL v3 license info
 
 ## Testing Notes
 

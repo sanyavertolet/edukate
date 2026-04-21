@@ -15,17 +15,17 @@ describe("SubmissionPage", () => {
 
     it("shows Submission Details card when MSW returns a submission", async () => {
         server.use(
-            getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: "sub-456", status: "PENDING" })),
+            getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: 456, status: "PENDING" })),
             getGetCheckResultsBySubmissionIdMockHandler([]),
         );
         renderAtPath("/submissions/sub-456", "/submissions/:id", <SubmissionPage />);
         expect(await screen.findByText(/submission details/i)).toBeInTheDocument();
-        expect(await screen.findByText(/problem id:/i)).toBeInTheDocument();
+        expect(await screen.findByText(/problem:/i)).toBeInTheDocument();
     });
 
     it("shows 'Consider as Solved' button for a PENDING submission", async () => {
         server.use(
-            getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: "sub-456", status: "PENDING" })),
+            getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: 456, status: "PENDING" })),
             getGetCheckResultsBySubmissionIdMockHandler([]),
         );
         renderAtPath("/submissions/sub-456", "/submissions/:id", <SubmissionPage />);
@@ -36,7 +36,7 @@ describe("SubmissionPage", () => {
 
     it("'Consider as Solved' button is disabled for a SUCCESS submission", async () => {
         server.use(
-            getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: "sub-456", status: "SUCCESS" })),
+            getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: 456, status: "SUCCESS" })),
             getGetCheckResultsBySubmissionIdMockHandler([]),
         );
         renderAtPath("/submissions/sub-456", "/submissions/:id", <SubmissionPage />);

@@ -128,12 +128,12 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
     ): Mono<FileObject> {
         val newPath = newKey.toString()
         val type = newKey.type()
-        val owner = newKey.owner().orEmpty()
+        val ownerUserId = newKey.owner() ?: 0L
 
         return fileObjectRepository
             .findByKeyPath(lookupKeyPath)
             .flatMap { existing ->
-                val updated = existing.withStorageState(newPath, newKey, type, owner, metadata)
+                val updated = existing.withStorageState(newPath, newKey, type, ownerUserId, metadata)
                 fileObjectRepository.save(updated).doOnSuccess { saved ->
                     log.trace("Updated file object: lookupKeyPath={} -> key={}", saved?.keyPath, saved?.key)
                 }
@@ -142,14 +142,14 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
                 fileObjectRepository
                     .findByKeyPath(newPath)
                     .flatMap { existing ->
-                        val updated = existing.withStorageState(newPath, newKey, type, owner, metadata)
+                        val updated = existing.withStorageState(newPath, newKey, type, ownerUserId, metadata)
                         fileObjectRepository.save(updated).doOnSuccess { saved ->
                             log.debug("Re-used existing file object: key={}", saved?.key)
                         }
                     }
                     .switchIfEmpty(
                         fileObjectRepository
-                            .save(FileObject.fromStorageState(newPath, newKey, type, owner, metadata))
+                            .save(FileObject.fromStorageState(newPath, newKey, type, ownerUserId, metadata))
                             .doOnSuccess { created -> log.debug("Created file object: key={}", created?.key) }
                     )
             )

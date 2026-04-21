@@ -5,19 +5,19 @@ import { ProblemComponent } from "@/features/problems/components/ProblemComponen
 import { useProblemRequest } from "@/features/problems/api";
 
 export default function ProblemPage() {
-    const { id } = useParams();
-    const { data: problem } = useProblemRequest(id);
+    const { bookSlug, code } = useParams();
+    const { data: problem } = useProblemRequest(bookSlug, code);
 
     return (
         <Box>
             <Stack direction="row" justifyContent="center" spacing={2} alignItems="center" paddingBottom={"2rem"}>
                 <Typography component="h1" variant="h5" color="primary">
-                    Problem {id}
+                    Problem {code}
                 </Typography>
                 <ProblemStatusIcon status={problem?.status} />
             </Stack>
 
-            {id && <ProblemComponent problemId={id} />}
+            {bookSlug && code && <ProblemComponent bookSlug={bookSlug} code={code} />}
         </Box>
     );
 }

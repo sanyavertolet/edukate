@@ -33,14 +33,14 @@ class TempFileControllerTest {
 
     private fun authenticatedClient(): WebTestClient =
         webTestClient.mutateWith(
-            SecurityMockServerConfigurers.mockAuthentication(BackendFixtures.mockAuthentication(userId = "user-1"))
+            SecurityMockServerConfigurers.mockAuthentication(BackendFixtures.mockAuthentication(userId = 1L))
         )
 
     // region POST /api/v1/files/temp
 
     @Test
     fun `uploadTempFile returns 200 with fileName`() {
-        every { fileManager.uploadFile(any(), any(), any()) } returns Mono.just(TempFileKey("user-1", "test-file.txt"))
+        every { fileManager.uploadFile(any(), any(), any()) } returns Mono.just(TempFileKey(1L, "test-file.txt"))
 
         val body = MultipartBodyBuilder()
         body.part("content", "file content".toByteArray())

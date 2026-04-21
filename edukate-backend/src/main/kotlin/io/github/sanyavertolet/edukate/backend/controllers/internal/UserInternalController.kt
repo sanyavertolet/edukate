@@ -5,6 +5,7 @@ import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.common.users.UserCredentials
 import io.github.sanyavertolet.edukate.common.users.UserStatus
 import io.swagger.v3.oas.annotations.Hidden
+import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono
 
 @Hidden
 @RestController
+@SecurityRequirements
 @RequestMapping("/internal/users")
 class UserInternalController(private val userService: UserService) {
     @PostMapping
@@ -28,11 +30,9 @@ class UserInternalController(private val userService: UserService) {
         userService.findUserByName(name).map { it.toCredentials() }
 
     @GetMapping("/by-id/{id}")
-    fun getUserById(@PathVariable id: String): Mono<UserCredentials> =
-        userService.findUserById(id).map { it.toCredentials() }
+    fun getUserById(@PathVariable id: Long): Mono<UserCredentials> = userService.findUserById(id).map { it.toCredentials() }
 
-    @DeleteMapping("/by-id/{id}")
-    fun deleteUserById(@PathVariable id: String): Mono<String> = userService.deleteUserById(id).thenReturn(id)
+    @DeleteMapping("/by-id/{id}") fun deleteUserById(@PathVariable id: Long): Mono<Void> = userService.deleteUserById(id)
 
     @PostMapping("/notify-all")
     fun notifyAllUsers(

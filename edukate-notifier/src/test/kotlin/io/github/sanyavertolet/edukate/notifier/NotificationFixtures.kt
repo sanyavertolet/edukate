@@ -14,7 +14,7 @@ import java.util.UUID
 import org.springframework.security.core.Authentication
 
 object NotificationFixtures {
-    fun simpleCreateRequest(userId: String = "user-1", uuid: String = UUID.randomUUID().toString()) =
+    fun simpleCreateRequest(userId: Long = 1L, uuid: String = UUID.randomUUID().toString()) =
         SimpleNotificationCreateRequest(
             uuid = uuid,
             targetUserId = userId,
@@ -23,30 +23,30 @@ object NotificationFixtures {
             source = "test-source",
         )
 
-    fun inviteCreateRequest(userId: String = "user-1", uuid: String = UUID.randomUUID().toString()) =
+    fun inviteCreateRequest(userId: Long = 1L, uuid: String = UUID.randomUUID().toString()) =
         InviteNotificationCreateRequest(
             uuid = uuid,
             targetUserId = userId,
             inviterName = "inviter",
-            bundleName = "My Bundle",
-            bundleShareCode = "SHARE123",
+            problemSetName = "My Bundle",
+            problemSetShareCode = "SHARE123",
         )
 
     fun checkedCreateRequest(
-        userId: String = "user-1",
+        userId: Long = 1L,
         uuid: String = UUID.randomUUID().toString(),
         status: CheckStatus = CheckStatus.SUCCESS,
     ) =
         CheckedNotificationCreateRequest(
             uuid = uuid,
             targetUserId = userId,
-            submissionId = "submission-1",
-            problemId = "problem-1",
+            submissionId = 1L,
+            problemKey = "problem-1",
             status = status,
         )
 
     fun simpleNotification(
-        userId: String = "user-1",
+        userId: Long = 1L,
         uuid: String = UUID.randomUUID().toString(),
         isRead: Boolean = false,
         createdAt: Instant? = Instant.now(),
@@ -62,7 +62,7 @@ object NotificationFixtures {
         )
 
     fun inviteNotification(
-        userId: String = "user-1",
+        userId: Long = 1L,
         uuid: String = UUID.randomUUID().toString(),
         isRead: Boolean = false,
         createdAt: Instant? = Instant.now(),
@@ -73,12 +73,12 @@ object NotificationFixtures {
             isRead = isRead,
             createdAt = createdAt,
             inviterName = "inviter",
-            bundleName = "My Bundle",
-            bundleShareCode = "SHARE123",
+            problemSetName = "My Bundle",
+            problemSetShareCode = "SHARE123",
         )
 
     fun checkedNotification(
-        userId: String = "user-1",
+        userId: Long = 1L,
         uuid: String = UUID.randomUUID().toString(),
         isRead: Boolean = false,
         createdAt: Instant? = Instant.now(),
@@ -89,12 +89,12 @@ object NotificationFixtures {
             targetUserId = userId,
             isRead = isRead,
             createdAt = createdAt,
-            submissionId = "submission-1",
-            problemId = "problem-1",
+            submissionId = 1L,
+            problemKey = "problem-1",
             status = status,
         )
 
-    fun mockAuthentication(userId: String = "user-1"): Authentication {
+    fun mockAuthentication(userId: Long = 1L): Authentication {
         val userDetails = EdukateUserDetails(userId, "testuser", emptySet(), UserStatus.ACTIVE, "token")
         return userDetails.toPreAuthenticatedAuthenticationToken()
     }

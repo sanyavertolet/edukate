@@ -10,8 +10,8 @@ import org.springframework.http.MediaType
 
 object CheckerFixtures {
     fun submissionContext(
-        submissionId: String = "sub-1",
-        problemId: String = "prob-1",
+        submissionId: Long = 1L,
+        problemId: Long = 1L,
         problemText: String = "Solve x^2 = 4",
         problemImageRawKeys: List<String> = listOf("problems/prob-1/img.png"),
         submissionImageRawKeys: List<String> = listOf("users/u1/submissions/prob-1/sub-1/img.png"),
@@ -25,7 +25,7 @@ object CheckerFixtures {
     ) = ModelResponse(status, trustLevel, errorType, explanation)
 
     fun checkResultMessage(
-        submissionId: String = "sub-1",
+        submissionId: Long = 1L,
         status: CheckStatus = CheckStatus.SUCCESS,
         trustLevel: Float = 0.9f,
         errorType: CheckErrorType = CheckErrorType.NONE,

@@ -52,7 +52,7 @@ npm run lint     # ESLint
 ### Infrastructure
 
 ```bash
-# Start local dependencies (MongoDB, MinIO, RabbitMQ)
+# Start local dependencies (PostgreSQL, MongoDB, MinIO, RabbitMQ)
 docker compose up -d
 ```
 
@@ -63,7 +63,7 @@ docker compose up -d
 | Module             | Port | Role                                                                                           |
 |--------------------|------|------------------------------------------------------------------------------------------------|
 | `edukate-gateway`  | 5810 | API Gateway — single entry point, routes to backend/notifier, aggregates Swagger at `/swagger` |
-| `edukate-backend`  | 5800 | Core business logic — problems, submissions, bundles, file storage                             |
+| `edukate-backend`  | 5800 | Core business logic — problems, submissions, problem sets, file storage                        |
 | `edukate-notifier` | 5820 | Async notification delivery via RabbitMQ                                                       |
 | `edukate-checker`  | —    | AI-powered problem checking (Spring AI + OpenAI)                                               |
 | `edukate-frontend` | 80   | React SPA                                                                                      |
@@ -81,7 +81,8 @@ docker compose up -d
 - The gateway handles authentication; downstream services trust the forwarded user context.
 - Spring profiles control feature flags: `dev` (local env), `secure` (enable security), `local` (MinIO local endpoint),
   `notifier` (enable HTTP notifier bean).
-- MongoDB is the data store for all services. Reactive MongoDB (`ReactiveMongoRepository`) is used.
+- PostgreSQL is the data store for the backend (via R2DBC + Flyway migrations). MongoDB is used by the notifier.
+- DTOs never expose raw numeric IDs — use human-readable identifiers (problem `key` = `bookSlug/code`, book `slug`, user `name`, problem set `shareCode`).
 - Async operations between backend and notifier go through RabbitMQ.
 - Dependency versions are centralized in `gradle/libs.versions.toml`.
 - Custom Gradle plugins live in `gradle/plugins/` (Spring Boot app config, Docker image build).

@@ -13,11 +13,11 @@ import org.springframework.data.mongodb.core.index.Indexed
 data class CheckedNotification(
     @field:Id override val id: String? = null,
     @field:Indexed(unique = true) override val uuid: String,
-    override val targetUserId: String,
+    override val targetUserId: Long,
     override val isRead: Boolean = false,
     @field:CreatedDate override val createdAt: Instant? = null,
-    val submissionId: String,
-    val problemId: String,
+    val submissionId: Long,
+    val problemKey: String,
     val status: CheckStatus,
 ) : BaseNotification() {
     override fun toDto() =
@@ -26,7 +26,7 @@ data class CheckedNotification(
             isRead = isRead,
             createdAt = requireNotNull(createdAt) { "createdAt is null for notification uuid=$uuid" },
             submissionId = submissionId,
-            problemId = problemId,
+            problemKey = problemKey,
             status = status,
         )
 
@@ -39,7 +39,7 @@ data class CheckedNotification(
                 uuid = creationRequest.uuid,
                 targetUserId = creationRequest.targetUserId,
                 submissionId = creationRequest.submissionId,
-                problemId = creationRequest.problemId,
+                problemKey = creationRequest.problemKey,
                 status = creationRequest.status,
             )
     }

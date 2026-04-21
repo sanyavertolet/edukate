@@ -4,8 +4,8 @@ import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import java.time.Instant
 
 data class SubmissionDto(
-    val id: String,
-    val problemId: String,
+    val id: Long,
+    val problemKey: String,
     val userName: String,
     val status: SubmissionStatus,
     val createdAt: Instant,

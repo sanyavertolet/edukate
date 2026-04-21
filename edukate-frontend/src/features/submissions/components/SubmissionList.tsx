@@ -5,10 +5,10 @@ import { ZoomingImageDialog } from "@/shared/components/images/ZoomingImageDialo
 import { EmptySubmissionListStub, ErrorListItem, StubListItem, SubmissionListItem } from "./SubmissionListItems";
 import { Submission } from "@/features/submissions/types";
 
-type SubmissionListProps = { problemId?: string };
+type SubmissionListProps = { problemKey?: string };
 
-export const SubmissionList: FC<SubmissionListProps> = ({ problemId }) => {
-    const { data: submissions, isLoading, isError, error } = useMySubmissionsQuery(problemId);
+export const SubmissionList: FC<SubmissionListProps> = ({ problemKey }) => {
+    const { data: submissions, isLoading, isError, error } = useMySubmissionsQuery(problemKey);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const showEmpty = !isLoading && !isError && submissions && submissions.length === 0;
@@ -50,5 +50,5 @@ export const SubmissionList: FC<SubmissionListProps> = ({ problemId }) => {
 };
 
 function composeSubmissionKey(s: Submission) {
-    return `${s.problemId}:${s.userName}:${s.createdAt}`;
+    return `${s.problemKey}:${s.userName}:${s.createdAt}`;
 }

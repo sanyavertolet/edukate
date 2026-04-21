@@ -27,7 +27,7 @@ class JwtTokenService(
     fun generateToken(userDetails: EdukateUserDetails): String {
         val now = Date()
         return Jwts.builder()
-            .subject(userDetails.id)
+            .subject(userDetails.id.toString())
             .issuedAt(now)
             .claim("name", userDetails.username)
             .claim("roles", UserRole.listToString(userDetails.roles))
@@ -46,8 +46,9 @@ class JwtTokenService(
             }
 
         log.debug("Token recognized, subject: {} ({})", claims.subject, claims["name", String::class.java])
+        val userId = claims.subject.toLongOrNull() ?: return null
         return EdukateUserDetails(
-            claims.subject,
+            userId,
             claims["name", String::class.java],
             UserRole.fromString(claims["roles", String::class.java]),
             UserStatus.valueOf(claims["status", String::class.java]),

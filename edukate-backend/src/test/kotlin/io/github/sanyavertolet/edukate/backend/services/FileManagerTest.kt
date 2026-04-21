@@ -38,13 +38,13 @@ class FileManagerTest {
         FileObjectMetadata(Instant.now(), size, contentType)
 
     private fun fileObject(key: ProblemFileKey, meta: FileObjectMetadata = meta()) =
-        FileObject(id = "fo-1", keyPath = key.toString(), key = key, type = "problem", ownerUserId = "", metadata = meta)
+        FileObject(id = 1L, keyPath = key.toString(), key = key, type = "problem", ownerUserId = 0L, metadata = meta)
 
     // region getFileObject
 
     @Test
     fun `getFileObject returns from repo`() {
-        val key = ProblemFileKey("1.0.0", "image.png")
+        val key = ProblemFileKey(111L, "image.png")
         val fo = fileObject(key)
         every { fileObjectRepository.findByKeyPath(key.toString()) } returns Mono.just(fo)
 
@@ -53,7 +53,7 @@ class FileManagerTest {
 
     @Test
     fun `getFileObject times out`() {
-        val key = ProblemFileKey("1.0.0", "image.png")
+        val key = ProblemFileKey(111L, "image.png")
         every { fileObjectRepository.findByKeyPath(key.toString()) } returns Mono.never()
 
         StepVerifier.withVirtualTime { fileManager.getFileObject(key) }
@@ -68,7 +68,7 @@ class FileManagerTest {
 
     @Test
     fun `getFileContent downloads from storage`() {
-        val key = ProblemFileKey("1.0.0", "image.png")
+        val key = ProblemFileKey(111L, "image.png")
         val buffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3))
         every { storage.getContent(key) } returns Flux.just(buffer)
 
@@ -81,7 +81,7 @@ class FileManagerTest {
 
     @Test
     fun `getPresignedUrl delegates to storage`() {
-        val key = ProblemFileKey("1.0.0", "image.png")
+        val key = ProblemFileKey(111L, "image.png")
         every { storage.generatePresignedUrl(key) } returns Mono.just("https://s3/presigned-url")
 
         StepVerifier.create(fileManager.getPresignedUrl(key)).expectNext("https://s3/presigned-url").verifyComplete()
@@ -93,7 +93,7 @@ class FileManagerTest {
 
     @Test
     fun `uploadFile saves Metadata to db`() {
-        val key = TempFileKey("user-1", "file.txt")
+        val key = TempFileKey(1L, "file.txt")
         val metadata = meta()
         val content = Flux.empty<ByteBuffer>()
 
@@ -111,18 +111,11 @@ class FileManagerTest {
 
     @Test
     fun `uploadFile updates existing file object`() {
-        val key = TempFileKey("user-1", "file.txt")
+        val key = TempFileKey(1L, "file.txt")
         val metadata = meta()
         val content = Flux.empty<ByteBuffer>()
         val existingFo =
-            FileObject(
-                id = "fo-existing",
-                keyPath = key.toString(),
-                key = key,
-                type = "tmp",
-                ownerUserId = "user-1",
-                metadata = meta(50L),
-            )
+            FileObject(id = 10L, keyPath = key.toString(), key = key, type = "tmp", ownerUserId = 1L, metadata = meta(50L))
 
         every { storage.upload(key, "text/plain", content) } returns Mono.just(key)
         every { storage.metadata(key) } returns Mono.just(metadata)
@@ -133,10 +126,7 @@ class FileManagerTest {
             .expectNext(key)
             .verifyComplete()
 
-        // save(existingFo updated) is called in flatMap; save(newFo) is also called eagerly as the
-        // switchIfEmpty argument, but its returned Mono is never subscribed. We verify the update
-        // happened.
-        verify(exactly = 1) { fileObjectRepository.save(match { it.id == "fo-existing" }) }
+        verify(exactly = 1) { fileObjectRepository.save(match { it.id == 10L }) }
     }
 
     // endregion
@@ -145,7 +135,7 @@ class FileManagerTest {
 
     @Test
     fun `deleteFile both storage and db`() {
-        val key = ProblemFileKey("1.0.0", "img.png")
+        val key = ProblemFileKey(111L, "img.png")
         every { storage.delete(key) } returns Mono.just(true)
         every { fileObjectRepository.deleteByKeyPath(key.toString()) } returns Mono.just(1L)
 
@@ -154,17 +144,16 @@ class FileManagerTest {
 
     @Test
     fun `deleteFile storage fails continues to db`() {
-        val key = ProblemFileKey("1.0.0", "img.png")
+        val key = ProblemFileKey(111L, "img.png")
         every { storage.delete(key) } returns Mono.error(RuntimeException("S3 unavailable"))
         every { fileObjectRepository.deleteByKeyPath(key.toString()) } returns Mono.just(1L)
 
-        // storageDeleted=false (error swallowed), dbDeleted=true → result true
         StepVerifier.create(fileManager.deleteFile(key)).expectNext(true).verifyComplete()
     }
 
     @Test
     fun `deleteFile no record is idempotent`() {
-        val key = ProblemFileKey("1.0.0", "img.png")
+        val key = ProblemFileKey(111L, "img.png")
         every { storage.delete(key) } returns Mono.just(false)
         every { fileObjectRepository.deleteByKeyPath(key.toString()) } returns Mono.just(0L)
 
@@ -177,7 +166,7 @@ class FileManagerTest {
 
     @Test
     fun `doesFileExist returns true when Metadata exists`() {
-        val key = ProblemFileKey("1.0.0", "img.png")
+        val key = ProblemFileKey(111L, "img.png")
         every { storage.metadata(key) } returns Mono.just(meta())
 
         StepVerifier.create(fileManager.doesFileExist(key)).expectNext(true).verifyComplete()
@@ -185,7 +174,7 @@ class FileManagerTest {
 
     @Test
     fun `doesFileExist returns false when empty`() {
-        val key = ProblemFileKey("1.0.0", "img.png")
+        val key = ProblemFileKey(111L, "img.png")
         every { storage.metadata(key) } returns Mono.empty()
 
         StepVerifier.create(fileManager.doesFileExist(key)).expectNext(false).verifyComplete()
@@ -193,8 +182,8 @@ class FileManagerTest {
 
     @Test
     fun `doFilesExist all exist`() {
-        val key1 = ProblemFileKey("1.0.0", "img1.png")
-        val key2 = ProblemFileKey("1.0.0", "img2.png")
+        val key1 = ProblemFileKey(111L, "img1.png")
+        val key2 = ProblemFileKey(111L, "img2.png")
         every { storage.metadata(key1) } returns Mono.just(meta())
         every { storage.metadata(key2) } returns Mono.just(meta(200L))
 
@@ -203,8 +192,8 @@ class FileManagerTest {
 
     @Test
     fun `doFilesExist one missing`() {
-        val key1 = ProblemFileKey("1.0.0", "img1.png")
-        val key2 = ProblemFileKey("1.0.0", "missing.png")
+        val key1 = ProblemFileKey(111L, "img1.png")
+        val key2 = ProblemFileKey(111L, "missing.png")
         every { storage.metadata(key1) } returns Mono.just(meta())
         every { storage.metadata(key2) } returns Mono.empty()
 
@@ -217,8 +206,8 @@ class FileManagerTest {
 
     @Test
     fun `moveFile updates KeyPath`() {
-        val oldKey = TempFileKey("user-1", "draft.txt")
-        val newKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "draft.txt")
+        val oldKey = TempFileKey(1L, "draft.txt")
+        val newKey = SubmissionFileKey(1L, 1L, 1L, "draft.txt")
         val metadata = meta()
 
         every { storage.move(oldKey, newKey) } returns Mono.just(true)
@@ -232,37 +221,34 @@ class FileManagerTest {
 
     @Test
     fun `moveFile reuses existing file object when old path missing but new path already exists`() {
-        val oldKey = TempFileKey("user-1", "draft.txt")
-        val newKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "draft.txt")
+        val oldKey = TempFileKey(1L, "draft.txt")
+        val newKey = SubmissionFileKey(1L, 1L, 1L, "draft.txt")
         val metadata = meta()
         val existingFo =
             FileObject(
-                id = "fo-existing",
+                id = 10L,
                 keyPath = newKey.toString(),
                 key = newKey,
                 type = "submission",
-                ownerUserId = "user-1",
+                ownerUserId = 1L,
                 metadata = meta(50L),
             )
 
         every { storage.move(oldKey, newKey) } returns Mono.just(true)
         every { storage.metadata(newKey) } returns Mono.just(metadata)
-        // Old tmp path not in DB (already moved in a previous attempt)
         every { fileObjectRepository.findByKeyPath(oldKey.toString()) } returns Mono.empty()
-        // New final path already has a record (from that previous attempt)
         every { fileObjectRepository.findByKeyPath(newKey.toString()) } returns Mono.just(existingFo)
         every { fileObjectRepository.save(any()) } answers { Mono.just(firstArg()) }
 
         StepVerifier.create(fileManager.moveFile(oldKey, newKey)).expectNext(newKey).verifyComplete()
 
-        // Must update the existing record, not create a new one
-        verify(exactly = 1) { fileObjectRepository.save(match { it.id == "fo-existing" }) }
+        verify(exactly = 1) { fileObjectRepository.save(match { it.id == 10L }) }
     }
 
     @Test
     fun `moveFile storage failure propagates`() {
-        val oldKey = TempFileKey("user-1", "draft.txt")
-        val newKey = SubmissionFileKey("user-1", "1.0.0", "sub-1", "draft.txt")
+        val oldKey = TempFileKey(1L, "draft.txt")
+        val newKey = SubmissionFileKey(1L, 1L, 1L, "draft.txt")
         every { storage.move(oldKey, newKey) } returns Mono.just(false)
 
         StepVerifier.create(fileManager.moveFile(oldKey, newKey)).expectError(IllegalStateException::class.java).verify()
@@ -274,16 +260,16 @@ class FileManagerTest {
 
     @Test
     fun `listFileMetadataWithPrefix maps to dto`() {
-        val prefix = "problems/1.0.0/"
-        val key = ProblemFileKey("1.0.0", "img.png")
+        val prefix = "problems/111/"
+        val key = ProblemFileKey(111L, "img.png")
         val now = Instant.now()
         val fo =
             FileObject(
-                id = "fo-1",
+                id = 1L,
                 keyPath = key.toString(),
                 key = key,
                 type = "problem",
-                ownerUserId = "",
+                ownerUserId = 0L,
                 metadata = FileObjectMetadata(now, 512L, "image/png"),
             )
         every { fileObjectRepository.findAllByKeyPathStartingWith(prefix) } returns Flux.just(fo)

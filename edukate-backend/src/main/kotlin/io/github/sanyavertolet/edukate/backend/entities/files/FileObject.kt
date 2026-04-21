@@ -5,38 +5,31 @@ import java.time.Instant
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.LastModifiedDate
-import org.springframework.data.mongodb.core.index.Indexed
-import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.relational.core.mapping.Table
 
-@Document("file_objects")
+@Table("file_objects")
 data class FileObject(
-    @field:Id val id: String? = null,
-    @field:Indexed(unique = true) val keyPath: String,
+    @Id val id: Long? = null,
+    val keyPath: String,
     val key: FileKey,
     val type: String,
-    val ownerUserId: String,
+    val ownerUserId: Long,
     val metadata: FileObjectMetadata,
-    @field:CreatedDate val createdAt: Instant? = null,
-    @field:LastModifiedDate val updatedAt: Instant? = null,
+    @CreatedDate val createdAt: Instant? = null,
+    @LastModifiedDate val updatedAt: Instant? = null,
     val metaVersion: Int = 1,
 ) {
-    @Suppress("DataClassContainsFunctions")
     fun withStorageState(
         keyPath: String,
         key: FileKey,
         type: String,
-        ownerUserId: String,
+        ownerUserId: Long,
         metadata: FileObjectMetadata,
     ): FileObject = copy(keyPath = keyPath, key = key, type = type, ownerUserId = ownerUserId, metadata = metadata)
 
     companion object {
         @JvmStatic
-        fun fromStorageState(
-            keyPath: String,
-            key: FileKey,
-            type: String,
-            ownerUserId: String,
-            metadata: FileObjectMetadata,
-        ) = FileObject(keyPath = keyPath, key = key, type = type, ownerUserId = ownerUserId, metadata = metadata)
+        fun fromStorageState(keyPath: String, key: FileKey, type: String, ownerUserId: Long, metadata: FileObjectMetadata) =
+            FileObject(keyPath = keyPath, key = key, type = type, ownerUserId = ownerUserId, metadata = metadata)
     }
 }

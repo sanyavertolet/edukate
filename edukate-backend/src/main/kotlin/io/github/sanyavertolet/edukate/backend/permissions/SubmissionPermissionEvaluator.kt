@@ -5,5 +5,5 @@ import org.springframework.stereotype.Component
 
 @Component
 class SubmissionPermissionEvaluator {
-    fun isOwner(submission: Submission, userId: String): Boolean = submission.userId == userId
+    fun isOwner(submission: Submission, userId: Long): Boolean = submission.userId == userId
 }

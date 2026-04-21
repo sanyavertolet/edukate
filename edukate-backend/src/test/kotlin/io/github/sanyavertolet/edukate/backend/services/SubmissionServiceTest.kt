@@ -7,6 +7,7 @@ import io.github.sanyavertolet.edukate.backend.entities.files.FileObject
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObjectMetadata
 import io.github.sanyavertolet.edukate.backend.permissions.SubmissionPermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository
+import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.repositories.SubmissionRepository
 import io.github.sanyavertolet.edukate.backend.services.files.SubmissionFileService
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
@@ -28,9 +29,11 @@ import reactor.test.StepVerifier
 
 class SubmissionServiceTest {
     private val submissionRepository: SubmissionRepository = mockk()
+    private val problemRepository: ProblemRepository = mockk()
     private val submissionFileService: SubmissionFileService = mockk()
     private val fileObjectRepository: FileObjectRepository = mockk()
     private val submissionPermissionEvaluator: SubmissionPermissionEvaluator = mockk()
+    private val problemProgressService: ProblemProgressService = mockk()
     private val meterRegistry = SimpleMeterRegistry()
     private lateinit var service: SubmissionService
 
@@ -39,9 +42,11 @@ class SubmissionServiceTest {
         service =
             SubmissionService(
                 submissionRepository,
+                problemRepository,
                 submissionFileService,
                 fileObjectRepository,
                 submissionPermissionEvaluator,
+                problemProgressService,
                 meterRegistry,
             )
     }
@@ -50,42 +55,48 @@ class SubmissionServiceTest {
 
     @Test
     fun `saveSubmission creates entity and moves files`() {
-        val request = BackendFixtures.createSubmissionRequest(problemId = "1.0.0", fileNames = listOf("solution.txt"))
-        val savedSubmission = BackendFixtures.submission(id = "sub-new", problemId = "1.0.0", userId = "user-1")
-        val fileKey = SubmissionFileKey("user-1", "1.0.0", "sub-new", "solution.txt")
+        val request =
+            BackendFixtures.createSubmissionRequest(problemKey = "savchenko/P1", fileNames = listOf("solution.txt"))
+        val problem = BackendFixtures.problem(id = 1L, code = "P1")
+        val savedSubmission = BackendFixtures.submission(id = 10L, problemId = 1L, userId = 1L)
+        val fileKey = SubmissionFileKey(1L, 1L, 10L, "solution.txt")
         val fileObject =
             FileObject(
-                id = "fo-1",
+                id = 1L,
                 keyPath = fileKey.toString(),
                 key = fileKey,
                 type = "submission",
-                ownerUserId = "user-1",
+                ownerUserId = 1L,
                 metadata = FileObjectMetadata(Instant.now(), 100L, "text/plain"),
             )
 
-        every { submissionRepository.save(match { it.id == null && it.problemId == "1.0.0" }) } returns
-            Mono.just(savedSubmission)
-        every { submissionFileService.moveSubmissionFiles("user-1", "sub-new", request) } returns Flux.empty()
+        every { problemRepository.findByKey("savchenko/P1") } returns Mono.just(problem)
+        every { submissionRepository.save(match { it.id == null && it.problemId == 1L }) } returns Mono.just(savedSubmission)
+        every { submissionFileService.moveSubmissionFiles(1L, 10L, 1L, request) } returns Flux.empty()
         every { fileObjectRepository.findByKeyPath(fileKey.toString()) } returns Mono.just(fileObject)
-        every { submissionRepository.save(match { it.id == "sub-new" && it.fileObjectIds == listOf("fo-1") }) } returns
-            Mono.just(savedSubmission.withFileObjectIds(listOf("fo-1")))
+        every { submissionRepository.save(match { it.id == 10L && it.fileObjectIds == listOf("1") }) } returns
+            Mono.just(savedSubmission.withFileObjectIds(listOf("1")))
+        every { problemProgressService.updateProgress(any()) } returns Mono.empty()
 
-        StepVerifier.create(service.saveSubmission("user-1", request))
-            .assertNext { sub -> assertThat(sub.fileObjectIds).containsExactly("fo-1") }
+        StepVerifier.create(service.saveSubmission(1L, request))
+            .assertNext { sub -> assertThat(sub.fileObjectIds).containsExactly("1") }
             .verifyComplete()
     }
 
     @Test
     fun `saveSubmission with auth extraction delegates`() {
         val request = BackendFixtures.createSubmissionRequest()
-        val savedSubmission = BackendFixtures.submission(id = "sub-1", problemId = "1.0.0", userId = "user-1")
-        val auth = BackendFixtures.mockAuthentication(userId = "user-1")
+        val problem = BackendFixtures.problem(id = 1L, code = "P1")
+        val savedSubmission = BackendFixtures.submission(id = 1L, problemId = 1L, userId = 1L)
+        val auth = BackendFixtures.mockAuthentication(userId = 1L)
 
+        every { problemRepository.findByKey("savchenko/P1") } returns Mono.just(problem)
         every { submissionRepository.save(match { it.id == null }) } returns Mono.just(savedSubmission)
-        every { submissionFileService.moveSubmissionFiles("user-1", "sub-1", request) } returns Flux.empty()
+        every { submissionFileService.moveSubmissionFiles(1L, 1L, 1L, request) } returns Flux.empty()
         every { fileObjectRepository.findByKeyPath(any()) } returns Mono.empty()
-        every { submissionRepository.save(match { it.id == "sub-1" }) } returns
+        every { submissionRepository.save(match { it.id == 1L }) } returns
             Mono.just(savedSubmission.withFileObjectIds(emptyList()))
+        every { problemProgressService.updateProgress(any()) } returns Mono.empty()
 
         StepVerifier.create(service.saveSubmission(request, auth)).expectNextCount(1).verifyComplete()
     }
@@ -98,6 +109,7 @@ class SubmissionServiceTest {
     fun `update delegates to repository`() {
         val submission = BackendFixtures.submission()
         every { submissionRepository.save(submission) } returns Mono.just(submission)
+        every { problemProgressService.updateProgress(submission) } returns Mono.empty()
 
         StepVerifier.create(service.update(submission)).expectNext(submission).verifyComplete()
 
@@ -111,10 +123,9 @@ class SubmissionServiceTest {
     @Test
     fun findSubmissionsByProblemIdAndUserId() {
         val submission = BackendFixtures.submission()
-        every { submissionRepository.findAllByProblemIdAndUserId("1.0.0", "user-1", Pageable.unpaged()) } returns
-            Flux.just(submission)
+        every { submissionRepository.findAllByProblemIdAndUserId(1L, 1L, Pageable.unpaged()) } returns Flux.just(submission)
 
-        StepVerifier.create(service.findSubmissionsByProblemIdAndUserId("1.0.0", "user-1", Pageable.unpaged()))
+        StepVerifier.create(service.findSubmissionsByProblemIdAndUserId(1L, 1L, Pageable.unpaged()))
             .expectNext(submission)
             .verifyComplete()
     }
@@ -122,20 +133,17 @@ class SubmissionServiceTest {
     @Test
     fun `findUserSubmissions with Problem id`() {
         val submission = BackendFixtures.submission()
-        every { submissionRepository.findAllByProblemIdAndUserId("1.0.0", "user-1", Pageable.unpaged()) } returns
-            Flux.just(submission)
+        every { submissionRepository.findAllByProblemIdAndUserId(1L, 1L, Pageable.unpaged()) } returns Flux.just(submission)
 
-        StepVerifier.create(service.findUserSubmissions("user-1", "1.0.0", Pageable.unpaged()))
-            .expectNext(submission)
-            .verifyComplete()
+        StepVerifier.create(service.findUserSubmissions(1L, 1L, Pageable.unpaged())).expectNext(submission).verifyComplete()
     }
 
     @Test
     fun `findUserSubmissions without Problem id`() {
         val submission = BackendFixtures.submission()
-        every { submissionRepository.findAllByUserId("user-1", Pageable.unpaged()) } returns Flux.just(submission)
+        every { submissionRepository.findAllByUserId(1L, Pageable.unpaged()) } returns Flux.just(submission)
 
-        StepVerifier.create(service.findUserSubmissions("user-1", null, Pageable.unpaged()))
+        StepVerifier.create(service.findUserSubmissions(1L, null, Pageable.unpaged()))
             .expectNext(submission)
             .verifyComplete()
     }
@@ -157,33 +165,32 @@ class SubmissionServiceTest {
 
     @Test
     fun `getSubmissionIfOwns success`() {
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1")
-        every { submissionRepository.findById("sub-1") } returns Mono.just(submission)
-        every { submissionPermissionEvaluator.isOwner(submission, "user-1") } returns true
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L)
+        every { submissionRepository.findById(1L) } returns Mono.just(submission)
+        every { submissionPermissionEvaluator.isOwner(submission, 1L) } returns true
 
-        StepVerifier.create(service.getSubmissionIfOwns("sub-1", "user-1")).expectNext(submission).verifyComplete()
+        StepVerifier.create(service.getSubmissionIfOwns(1L, 1L)).expectNext(submission).verifyComplete()
     }
 
     @Test
     fun `getSubmissionIfOwns not found`() {
-        every { submissionRepository.findById("nonexistent") } returns Mono.empty()
+        every { submissionRepository.findById(999L) } returns Mono.empty()
 
-        StepVerifier.create(service.getSubmissionIfOwns("nonexistent", "user-1"))
+        StepVerifier.create(service.getSubmissionIfOwns(999L, 1L))
             .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.NOT_FOUND }
             .verify()
     }
 
     @Test
     fun `getSubmissionIfOwns not owner`() {
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1")
-        every { submissionRepository.findById("sub-1") } returns Mono.just(submission)
-        every { submissionPermissionEvaluator.isOwner(submission, "other-user") } returns false
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L)
+        every { submissionRepository.findById(1L) } returns Mono.just(submission)
+        every { submissionPermissionEvaluator.isOwner(submission, 2L) } returns false
 
-        StepVerifier.create(service.getSubmissionIfOwns("sub-1", "other-user"))
+        StepVerifier.create(service.getSubmissionIfOwns(1L, 2L))
             .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.FORBIDDEN }
             .verify()
     }
 
     // endregion
-
 }

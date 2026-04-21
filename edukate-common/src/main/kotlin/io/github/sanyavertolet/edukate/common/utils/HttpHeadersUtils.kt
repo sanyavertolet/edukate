@@ -8,7 +8,7 @@ import org.springframework.http.HttpHeaders
 
 fun populateHeaders(httpHeaders: HttpHeaders, edukateUserDetails: EdukateUserDetails) {
     httpHeaders.apply {
-        set(AuthHeaders.AUTHORIZATION_ID.headerName, edukateUserDetails.id)
+        set(AuthHeaders.AUTHORIZATION_ID.headerName, edukateUserDetails.id.toString())
         set(AuthHeaders.AUTHORIZATION_NAME.headerName, edukateUserDetails.username)
         set(AuthHeaders.AUTHORIZATION_STATUS.headerName, edukateUserDetails.status.toString())
         set(AuthHeaders.AUTHORIZATION_ROLES.headerName, UserRole.listToString(edukateUserDetails.roles))
@@ -27,7 +27,8 @@ fun HttpHeaders.toEdukateUserDetails(): EdukateUserDetails? {
         return null
     }
 
-    return EdukateUserDetails(id, name, UserRole.fromString(rolesString), UserStatus.valueOf(statusString), "")
+    val numericId = id.toLongOrNull() ?: return null
+    return EdukateUserDetails(numericId, name, UserRole.fromString(rolesString), UserStatus.valueOf(statusString), "")
 }
 
 private val logger = LoggerFactory.getLogger("HttpHeadersUtils")

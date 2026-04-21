@@ -83,6 +83,16 @@ mongodb:
     backend: connectionString
     notifier: notifierConnectionString
 
+postgresql:
+  enabled: true
+  secretName: postgresql-secrets
+  secretKey:
+    backendR2dbc: backendR2dbcUrl
+    backendFlyway: backendFlywayUrl
+    backendFlywayUser: backendFlywayUser
+    backendFlywayPassword: backendFlywayPassword
+    gatewayR2dbc: gatewayR2dbcUrl
+
 jwt:
   secretName: jwt
   secretKey: key

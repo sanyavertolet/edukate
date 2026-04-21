@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 sealed class BaseNotification {
     abstract val id: String?
     abstract val uuid: String
-    abstract val targetUserId: String
+    abstract val targetUserId: Long
     abstract val isRead: Boolean
     abstract val createdAt: Instant?
 

@@ -16,19 +16,13 @@ class SubmissionPermissionEvaluatorTest {
 
     @Test
     fun `isOwner returns true when userId matches submission owner`() {
-        val submission = BackendFixtures.submission(userId = "user-1")
-        assertThat(evaluator.isOwner(submission, "user-1")).isTrue()
+        val submission = BackendFixtures.submission(userId = 1L)
+        assertThat(evaluator.isOwner(submission, 1L)).isTrue()
     }
 
     @Test
     fun `isOwner returns false when userId does not match submission owner`() {
-        val submission = BackendFixtures.submission(userId = "user-1")
-        assertThat(evaluator.isOwner(submission, "user-2")).isFalse()
-    }
-
-    @Test
-    fun `isOwner returns false for empty userId`() {
-        val submission = BackendFixtures.submission(userId = "user-1")
-        assertThat(evaluator.isOwner(submission, "")).isFalse()
+        val submission = BackendFixtures.submission(userId = 1L)
+        assertThat(evaluator.isOwner(submission, 2L)).isFalse()
     }
 }

@@ -16,14 +16,14 @@ class BaseNotificationTest {
 
     @Test
     fun `fromCreationRequest creates SimpleNotification from SimpleNotificationCreateRequest`() {
-        val request = NotificationFixtures.simpleCreateRequest(userId = "user-42", uuid = "uuid-1")
+        val request = NotificationFixtures.simpleCreateRequest(userId = 42L, uuid = "uuid-1")
 
         val result = BaseNotification.fromCreationRequest(request)
 
         assertThat(result).isInstanceOf(SimpleNotification::class.java)
         result as SimpleNotification
         assertThat(result.uuid).isEqualTo("uuid-1")
-        assertThat(result.targetUserId).isEqualTo("user-42")
+        assertThat(result.targetUserId).isEqualTo(42L)
         assertThat(result.title).isEqualTo("Test Title")
         assertThat(result.message).isEqualTo("Test Message")
         assertThat(result.source).isEqualTo("test-source")
@@ -33,34 +33,33 @@ class BaseNotificationTest {
 
     @Test
     fun `fromCreationRequest creates InviteNotification from InviteNotificationCreateRequest`() {
-        val request = NotificationFixtures.inviteCreateRequest(userId = "user-7", uuid = "uuid-2")
+        val request = NotificationFixtures.inviteCreateRequest(userId = 7L, uuid = "uuid-2")
 
         val result = BaseNotification.fromCreationRequest(request)
 
         assertThat(result).isInstanceOf(InviteNotification::class.java)
         result as InviteNotification
         assertThat(result.uuid).isEqualTo("uuid-2")
-        assertThat(result.targetUserId).isEqualTo("user-7")
+        assertThat(result.targetUserId).isEqualTo(7L)
         assertThat(result.inviterName).isEqualTo("inviter")
-        assertThat(result.bundleName).isEqualTo("My Bundle")
-        assertThat(result.bundleShareCode).isEqualTo("SHARE123")
+        assertThat(result.problemSetName).isEqualTo("My Bundle")
+        assertThat(result.problemSetShareCode).isEqualTo("SHARE123")
         assertThat(result.isRead).isFalse()
         assertThat(result.createdAt).isNull()
     }
 
     @Test
     fun `fromCreationRequest creates CheckedNotification with SUCCESS status`() {
-        val request =
-            NotificationFixtures.checkedCreateRequest(userId = "user-3", uuid = "uuid-3", status = CheckStatus.SUCCESS)
+        val request = NotificationFixtures.checkedCreateRequest(userId = 3L, uuid = "uuid-3", status = CheckStatus.SUCCESS)
 
         val result = BaseNotification.fromCreationRequest(request)
 
         assertThat(result).isInstanceOf(CheckedNotification::class.java)
         result as CheckedNotification
         assertThat(result.uuid).isEqualTo("uuid-3")
-        assertThat(result.targetUserId).isEqualTo("user-3")
-        assertThat(result.submissionId).isEqualTo("submission-1")
-        assertThat(result.problemId).isEqualTo("problem-1")
+        assertThat(result.targetUserId).isEqualTo(3L)
+        assertThat(result.submissionId).isEqualTo(1L)
+        assertThat(result.problemKey).isEqualTo("problem-1")
         assertThat(result.status).isEqualTo(CheckStatus.SUCCESS)
     }
 
@@ -117,12 +116,12 @@ class BaseNotificationTest {
 
     @Test
     fun `markAsRead preserves all other fields on SimpleNotification`() {
-        val original = NotificationFixtures.simpleNotification(userId = "user-x", uuid = "u-x", isRead = false)
+        val original = NotificationFixtures.simpleNotification(userId = 99L, uuid = "u-x", isRead = false)
 
         val marked = original.markAsRead() as SimpleNotification
 
         assertThat(marked.uuid).isEqualTo("u-x")
-        assertThat(marked.targetUserId).isEqualTo("user-x")
+        assertThat(marked.targetUserId).isEqualTo(99L)
         assertThat(marked.title).isEqualTo(original.title)
         assertThat(marked.message).isEqualTo(original.message)
     }
@@ -140,7 +139,7 @@ class BaseNotificationTest {
     @Test
     fun `SimpleNotification toDto returns SimpleNotificationDto with correct fields`() {
         val now = Instant.now()
-        val notification = NotificationFixtures.simpleNotification(uuid = "uuid-x", userId = "u1", createdAt = now)
+        val notification = NotificationFixtures.simpleNotification(uuid = "uuid-x", userId = 1L, createdAt = now)
 
         val dto = notification.toDto()
 
@@ -164,8 +163,8 @@ class BaseNotificationTest {
         assertThat(dto.uuid).isEqualTo("uuid-y")
         assertThat(dto.createdAt).isEqualTo(now)
         assertThat(dto.inviterName).isEqualTo("inviter")
-        assertThat(dto.bundleName).isEqualTo("My Bundle")
-        assertThat(dto.bundleShareCode).isEqualTo("SHARE123")
+        assertThat(dto.problemSetName).isEqualTo("My Bundle")
+        assertThat(dto.problemSetShareCode).isEqualTo("SHARE123")
     }
 
     @Test
@@ -179,8 +178,8 @@ class BaseNotificationTest {
         assertThat(dto).isInstanceOf(CheckedNotificationDto::class.java)
         assertThat(dto.uuid).isEqualTo("uuid-z")
         assertThat(dto.createdAt).isEqualTo(now)
-        assertThat(dto.submissionId).isEqualTo("submission-1")
-        assertThat(dto.problemId).isEqualTo("problem-1")
+        assertThat(dto.submissionId).isEqualTo(1L)
+        assertThat(dto.problemKey).isEqualTo("problem-1")
         assertThat(dto.status).isEqualTo(CheckStatus.INTERNAL_ERROR)
     }
 

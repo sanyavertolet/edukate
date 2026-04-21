@@ -78,11 +78,11 @@ class UserServiceTest {
 
     @Test
     fun `deleteUserById delegates to repository`() {
-        every { userRepository.deleteById("user-1") } returns Mono.empty()
+        every { userRepository.deleteById(1L) } returns Mono.empty()
 
-        StepVerifier.create(service.deleteUserById("user-1")).verifyComplete()
+        StepVerifier.create(service.deleteUserById(1L)).verifyComplete()
 
-        verify(exactly = 1) { userRepository.deleteById("user-1") }
+        verify(exactly = 1) { userRepository.deleteById(1L) }
     }
 
     // endregion
@@ -91,8 +91,8 @@ class UserServiceTest {
 
     @Test
     fun `notifyAllUsersWithStatus publishes to notifier`() {
-        val user1 = BackendFixtures.user(id = "user-1", name = "alice")
-        val user2 = BackendFixtures.user(id = "user-2", name = "bob")
+        val user1 = BackendFixtures.user(id = 1L, name = "alice")
+        val user2 = BackendFixtures.user(id = 2L, name = "bob")
         every { userRepository.findAllByStatus(UserStatus.ACTIVE) } returns Flux.just(user1, user2)
         every { notifier.notify(any<BaseNotificationCreateRequest>()) } returns Mono.just("notif-id")
 

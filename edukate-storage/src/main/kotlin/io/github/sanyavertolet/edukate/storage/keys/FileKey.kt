@@ -20,7 +20,7 @@ sealed interface FileKey {
 
     fun type(): String
 
-    fun owner(): String?
+    fun owner(): Long?
 }
 
 fun fileKey(rawKey: String) = SegmentFileKeyParser.parse(rawKey)

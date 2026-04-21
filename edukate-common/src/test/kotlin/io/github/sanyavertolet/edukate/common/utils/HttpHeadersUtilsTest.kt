@@ -12,11 +12,11 @@ class HttpHeadersUtilsTest {
     @Test
     fun `populateHeaders sets all four X-Authorization headers`() {
         val headers = HttpHeaders()
-        val details = CommonFixtures.userDetails(id = "u1", name = "alice", status = UserStatus.ACTIVE)
+        val details = CommonFixtures.userDetails(id = 1L, name = "alice", status = UserStatus.ACTIVE)
 
         populateHeaders(headers, details)
 
-        assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_ID.headerName)).isEqualTo("u1")
+        assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_ID.headerName)).isEqualTo("1")
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_NAME.headerName)).isEqualTo("alice")
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_STATUS.headerName)).isEqualTo("ACTIVE")
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_ROLES.headerName)).isEqualTo("USER")
@@ -26,7 +26,7 @@ class HttpHeadersUtilsTest {
     fun `toEdukateUserDetails round-trip preserves all fields`() {
         val details =
             CommonFixtures.userDetails(
-                id = "u2",
+                id = 2L,
                 name = "bob",
                 roles = setOf(UserRole.ADMIN, UserRole.MODERATOR),
                 status = UserStatus.PENDING,
@@ -37,7 +37,7 @@ class HttpHeadersUtilsTest {
         val parsed = headers.toEdukateUserDetails()
 
         assertThat(parsed).isNotNull
-        assertThat(parsed!!.id).isEqualTo("u2")
+        assertThat(parsed!!.id).isEqualTo(2L)
         assertThat(parsed.username).isEqualTo("bob")
         assertThat(parsed.roles).containsExactlyInAnyOrder(UserRole.ADMIN, UserRole.MODERATOR)
         assertThat(parsed.status).isEqualTo(UserStatus.PENDING)
@@ -61,11 +61,11 @@ class HttpHeadersUtilsTest {
     @Test
     fun `toEdukateUserDetails uses last value when header has multiple values`() {
         val headers = HttpHeaders()
-        populateHeaders(headers, CommonFixtures.userDetails(id = "first"))
-        headers.add(AuthHeaders.AUTHORIZATION_ID.headerName, "last")
+        populateHeaders(headers, CommonFixtures.userDetails(id = 1L))
+        headers.add(AuthHeaders.AUTHORIZATION_ID.headerName, "99")
 
         val parsed = headers.toEdukateUserDetails()
 
-        assertThat(parsed!!.id).isEqualTo("last")
+        assertThat(parsed!!.id).isEqualTo(99L)
     }
 }

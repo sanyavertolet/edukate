@@ -57,9 +57,9 @@ export function EdukateTopBar() {
                                 }}
                             />
                             <TopBarLink
-                                text="Bundles"
+                                text="Problem Sets"
                                 onClick={() => {
-                                    void navigate("/bundles");
+                                    void navigate("/problem-sets");
                                 }}
                             />
                         </Box>

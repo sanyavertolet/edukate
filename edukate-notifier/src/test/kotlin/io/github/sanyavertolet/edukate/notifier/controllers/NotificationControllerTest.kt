@@ -30,8 +30,8 @@ class NotificationControllerTest {
 
     @Test
     fun `getNotifications returns 200 with notification DTOs and statistics`() {
-        val simple = NotificationFixtures.simpleNotification(userId = "user-1")
-        val invite = NotificationFixtures.inviteNotification(userId = "user-1")
+        val simple = NotificationFixtures.simpleNotification(userId = 1L)
+        val invite = NotificationFixtures.inviteNotification(userId = 1L)
         val stats = NotificationStatistics(unread = 1, total = 2)
         every { notificationService.getUserNotifications(null, 10, 0, any()) } returns Flux.just(simple, invite)
         every { notificationService.gatherUserStatistics(any()) } returns Mono.just(stats)

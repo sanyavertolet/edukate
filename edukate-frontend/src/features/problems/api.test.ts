@@ -5,24 +5,28 @@ import { getGetProblemMockHandler, getGetProblemResponseMock } from "@/generated
 import { useProblemRequest } from "./api";
 
 describe("useProblemRequest", () => {
-    it("does not fetch when id is undefined", () => {
-        const { result } = renderHook(() => useProblemRequest(undefined), { wrapper: createWrapper() });
+    it("does not fetch when bookSlug is undefined", () => {
+        const { result } = renderHook(() => useProblemRequest(undefined, undefined), { wrapper: createWrapper() });
         expect(result.current.fetchStatus).toBe("idle");
         expect(result.current.data).toBeUndefined();
     });
 
     it("fetches problem data on mount", async () => {
-        server.use(getGetProblemMockHandler(getGetProblemResponseMock({ id: "p1" })));
-        const { result } = renderHook(() => useProblemRequest("p1"), { wrapper: createWrapper() });
+        server.use(getGetProblemMockHandler(getGetProblemResponseMock({ bookSlug: "savchenko", code: "1.1.1" })));
+        const { result } = renderHook(() => useProblemRequest("savchenko", "1.1.1"), { wrapper: createWrapper() });
         await waitFor(() => {
             expect(result.current.isSuccess).toBe(true);
         });
-        expect(result.current.data?.id).toBe("p1");
+        expect(result.current.data?.code).toBe("1.1.1");
     });
 
     it("surfaces all pinned fields correctly", async () => {
-        server.use(getGetProblemMockHandler(getGetProblemResponseMock({ id: "p2", isHard: true, tags: ["algebra"] })));
-        const { result } = renderHook(() => useProblemRequest("p2"), { wrapper: createWrapper() });
+        server.use(
+            getGetProblemMockHandler(
+                getGetProblemResponseMock({ bookSlug: "savchenko", code: "1.1.2", isHard: true, tags: ["algebra"] }),
+            ),
+        );
+        const { result } = renderHook(() => useProblemRequest("savchenko", "1.1.2"), { wrapper: createWrapper() });
         await waitFor(() => {
             expect(result.current.isSuccess).toBe(true);
         });

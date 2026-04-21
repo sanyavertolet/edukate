@@ -9,6 +9,6 @@ data class InviteNotificationDto(
     override val isRead: Boolean,
     override val createdAt: Instant,
     val inviterName: String,
-    val bundleName: String,
-    val bundleShareCode: String,
+    val problemSetName: String,
+    val problemSetShareCode: String,
 ) : BaseNotificationDto

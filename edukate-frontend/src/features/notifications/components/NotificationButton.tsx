@@ -7,11 +7,11 @@ import { InvitationDialog } from "./InvitationDialog";
 import { BaseNotification, InviteNotification } from "@/features/notifications/types";
 import { toast } from "react-toastify";
 import { useGetNotificationsRequest, useMarkNotificationsAsReadMutation } from "@/features/notifications/api";
-import { useBundleInvitationReplyMutation } from "@/features/bundles/api";
+import { useProblemSetInvitationReplyMutation } from "@/features/problem-sets/api";
 
-type BundleInviteInfo = {
-    bundleName: string;
-    bundleShareCode: string;
+type ProblemSetInviteInfo = {
+    problemSetName: string;
+    problemSetShareCode: string;
     inviterName: string;
     notificationUuid: string;
 };
@@ -28,26 +28,26 @@ export const NotificationButton: FC = () => {
     };
 
     const markAsReadMutation = useMarkNotificationsAsReadMutation();
-    const invitationReplyMutation = useBundleInvitationReplyMutation();
-    const [bundleInviteInfo, setBundleInviteInfo] = useState<BundleInviteInfo>();
+    const invitationReplyMutation = useProblemSetInvitationReplyMutation();
+    const [problemSetInviteInfo, setProblemSetInviteInfo] = useState<ProblemSetInviteInfo>();
 
     const onInvitationDialogClose = (response: boolean | undefined) => {
-        if (response != undefined && bundleInviteInfo != undefined) {
-            const { bundleName, bundleShareCode, notificationUuid } = bundleInviteInfo;
+        if (response != undefined && problemSetInviteInfo != undefined) {
+            const { problemSetName, problemSetShareCode, notificationUuid } = problemSetInviteInfo;
             invitationReplyMutation.mutate(
-                { shareCode: bundleShareCode, isAccepted: response },
+                { shareCode: problemSetShareCode, isAccepted: response },
                 {
                     onSuccess: () => {
                         markAsReadMutation.mutate([notificationUuid]);
-                        toast.success(`You have joined ${bundleName} bundle!`);
+                        toast.success(`You have joined ${problemSetName} problem set!`);
                     },
                     onError: () => {
-                        toast.error(`You could not join ${bundleName} bundle due to some error...`);
+                        toast.error(`You could not join ${problemSetName} problem set due to some error...`);
                     },
                 },
             );
         }
-        setBundleInviteInfo(undefined);
+        setProblemSetInviteInfo(undefined);
     };
 
     // todo: rework
@@ -56,14 +56,14 @@ export const NotificationButton: FC = () => {
         if (_type === "simple" || _type === "checked") {
             markAsReadMutation.mutate([uuid]);
         } else if (_type === "invite") {
-            const { bundleName, bundleShareCode, inviterName } = notification as InviteNotification;
-            setBundleInviteInfo({ bundleName, inviterName, bundleShareCode, notificationUuid: uuid });
+            const { problemSetName, problemSetShareCode, inviterName } = notification as InviteNotification;
+            setProblemSetInviteInfo({ problemSetName, inviterName, problemSetShareCode, notificationUuid: uuid });
         }
     };
 
     return (
         <Box>
-            <InvitationDialog bundleInfo={bundleInviteInfo} onClose={onInvitationDialogClose} />
+            <InvitationDialog problemSetInfo={problemSetInviteInfo} onClose={onInvitationDialogClose} />
             <NotificationMenu onNotificationClick={onNotificationClick} anchorEl={anchorEl} onClose={handleClose} />
             {isAuthorized && (
                 <IconButton

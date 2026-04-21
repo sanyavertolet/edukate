@@ -36,7 +36,7 @@ class CheckerControllerTest {
     private fun authenticatedClient(role: UserRole = UserRole.USER): WebTestClient =
         webTestClient.mutateWith(
             SecurityMockServerConfigurers.mockAuthentication(
-                BackendFixtures.mockAuthentication(userId = "user-1", roles = setOf(role))
+                BackendFixtures.mockAuthentication(userId = 1L, roles = setOf(role))
             )
         )
 
@@ -44,30 +44,19 @@ class CheckerControllerTest {
 
     @Test
     fun `aiCheck returns 202 when submission found and check scheduled`() {
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1")
-        every { submissionService.getSubmissionIfOwns("sub-1", "user-1") } returns Mono.just(submission)
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L)
+        every { submissionService.getSubmissionIfOwns(1L, 1L) } returns Mono.just(submission)
         every { checkerSchedulerService.scheduleCheck(submission) } returns Mono.empty()
 
-        // currently for moderators only
-        authenticatedClient(UserRole.MODERATOR)
-            .post()
-            .uri("/api/v1/checker/ai?id=sub-1")
-            .exchange()
-            .expectStatus()
-            .isAccepted
+        authenticatedClient(UserRole.MODERATOR).post().uri("/api/v1/checker/ai?id=1").exchange().expectStatus().isAccepted
     }
 
     @Test
     fun `aiCheck returns 404 when submission not found`() {
-        every { submissionService.getSubmissionIfOwns("missing", "user-1") } returns
+        every { submissionService.getSubmissionIfOwns(999L, 1L) } returns
             Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND))
 
-        authenticatedClient(UserRole.MODERATOR)
-            .post()
-            .uri("/api/v1/checker/ai?id=missing")
-            .exchange()
-            .expectStatus()
-            .isNotFound
+        authenticatedClient(UserRole.MODERATOR).post().uri("/api/v1/checker/ai?id=999").exchange().expectStatus().isNotFound
     }
 
     // endregion
@@ -76,12 +65,12 @@ class CheckerControllerTest {
 
     @Test
     fun `selfCheck returns 202 when submission found`() {
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1")
-        val checkResult = BackendFixtures.checkResult(submissionId = "sub-1")
-        every { submissionService.getSubmissionIfOwns("sub-1", "user-1") } returns Mono.just(submission)
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L)
+        val checkResult = BackendFixtures.checkResult(submissionId = 1L)
+        every { submissionService.getSubmissionIfOwns(1L, 1L) } returns Mono.just(submission)
         every { checkResultService.saveAndUpdateSubmission(any()) } returns Mono.just(checkResult to submission)
 
-        authenticatedClient().post().uri("/api/v1/checker/self?id=sub-1").exchange().expectStatus().isAccepted
+        authenticatedClient().post().uri("/api/v1/checker/self?id=1").exchange().expectStatus().isAccepted
     }
 
     // endregion
@@ -92,7 +81,7 @@ class CheckerControllerTest {
     fun `supervisorCheck returns 501 not implemented`() {
         authenticatedClient()
             .post()
-            .uri("/api/v1/checker/supervisor?id=sub-1")
+            .uri("/api/v1/checker/supervisor?id=1")
             .exchange()
             .expectStatus()
             .isEqualTo(HttpStatus.NOT_IMPLEMENTED)
@@ -104,15 +93,15 @@ class CheckerControllerTest {
 
     @Test
     fun `getCheckResultById returns 200 with DTO when found and user owns submission`() {
-        val checkResult = BackendFixtures.checkResult(id = "cr-1", submissionId = "sub-1")
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1")
+        val checkResult = BackendFixtures.checkResult(id = 1L, submissionId = 1L)
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L)
 
-        every { checkResultService.findById("cr-1") } returns Mono.just(checkResult)
-        every { submissionService.getSubmissionIfOwns("sub-1", "user-1") } returns Mono.just(submission)
+        every { checkResultService.findById(1L) } returns Mono.just(checkResult)
+        every { submissionService.getSubmissionIfOwns(1L, 1L) } returns Mono.just(submission)
 
         authenticatedClient()
             .get()
-            .uri("/api/v1/checker/by-id/cr-1")
+            .uri("/api/v1/checker/by-id/1")
             .exchange()
             .expectStatus()
             .isOk
@@ -123,9 +112,9 @@ class CheckerControllerTest {
 
     @Test
     fun `getCheckResultById returns 404 when check result not found`() {
-        every { checkResultService.findById("missing") } returns Mono.empty()
+        every { checkResultService.findById(999L) } returns Mono.empty()
 
-        authenticatedClient().get().uri("/api/v1/checker/by-id/missing").exchange().expectStatus().isNotFound
+        authenticatedClient().get().uri("/api/v1/checker/by-id/999").exchange().expectStatus().isNotFound
     }
 
     // endregion
@@ -134,14 +123,14 @@ class CheckerControllerTest {
 
     @Test
     fun `getCheckResultsBySubmissionId returns list for owned submission`() {
-        val submission = BackendFixtures.submission(id = "sub-1", userId = "user-1")
-        val checkResult = BackendFixtures.checkResult(id = "cr-1", submissionId = "sub-1")
-        every { submissionService.getSubmissionIfOwns("sub-1", "user-1") } returns Mono.just(submission)
-        every { checkResultService.findAllBySubmissionId("sub-1") } returns Flux.just(checkResult)
+        val submission = BackendFixtures.submission(id = 1L, userId = 1L)
+        val checkResult = BackendFixtures.checkResult(id = 1L, submissionId = 1L)
+        every { submissionService.getSubmissionIfOwns(1L, 1L) } returns Mono.just(submission)
+        every { checkResultService.findAllBySubmissionId(1L) } returns Flux.just(checkResult)
 
         authenticatedClient()
             .get()
-            .uri("/api/v1/checker/submissions/sub-1")
+            .uri("/api/v1/checker/submissions/1")
             .exchange()
             .expectStatus()
             .isOk

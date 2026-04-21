@@ -57,7 +57,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findAllByTargetUserIdAndIsRead returns only read notifications for user`() {
-        val user = "user-read-filter"
+        val user = 1L
         repository.save(NotificationFixtures.simpleNotification(userId = user, isRead = true)).block()
         repository.save(NotificationFixtures.simpleNotification(userId = user, isRead = false)).block()
 
@@ -70,7 +70,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findAllByTargetUserIdAndIsRead returns only unread notifications for user`() {
-        val user = "user-unread-filter"
+        val user = 2L
         repository.save(NotificationFixtures.simpleNotification(userId = user, isRead = true)).block()
         repository.save(NotificationFixtures.inviteNotification(userId = user, isRead = false)).block()
 
@@ -83,11 +83,11 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findAllByTargetUserIdAndIsRead does not return notifications from other users`() {
-        repository.save(NotificationFixtures.simpleNotification(userId = "other-user", isRead = true)).block()
+        repository.save(NotificationFixtures.simpleNotification(userId = 3L, isRead = true)).block()
 
         val pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt")
 
-        StepVerifier.create(repository.findAllByTargetUserIdAndIsRead("target-user", true, pageable)).verifyComplete()
+        StepVerifier.create(repository.findAllByTargetUserIdAndIsRead(4L, true, pageable)).verifyComplete()
     }
 
     // endregion
@@ -96,7 +96,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findAllByTargetUserId returns all notifications for user regardless of read status`() {
-        val user = "user-all"
+        val user = 5L
         repository.save(NotificationFixtures.simpleNotification(userId = user, isRead = true)).block()
         repository.save(NotificationFixtures.inviteNotification(userId = user, isRead = false)).block()
         repository.save(NotificationFixtures.checkedNotification(userId = user, isRead = false)).block()
@@ -108,16 +108,16 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findAllByTargetUserId does not return notifications from other users`() {
-        repository.save(NotificationFixtures.simpleNotification(userId = "other-user")).block()
+        repository.save(NotificationFixtures.simpleNotification(userId = 6L)).block()
 
         val pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "createdAt")
 
-        StepVerifier.create(repository.findAllByTargetUserId("target-user", pageable)).verifyComplete()
+        StepVerifier.create(repository.findAllByTargetUserId(7L, pageable)).verifyComplete()
     }
 
     @Test
     fun `findAllByTargetUserId respects page size`() {
-        val user = "user-paged"
+        val user = 8L
         repeat(5) { repository.save(NotificationFixtures.simpleNotification(userId = user)).block() }
 
         val pageable = PageRequest.of(0, 3, Sort.Direction.DESC, "createdAt")
@@ -127,7 +127,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findAllByTargetUserId returns second page correctly`() {
-        val user = "user-page2"
+        val user = 9L
         repeat(5) { repository.save(NotificationFixtures.simpleNotification(userId = user)).block() }
 
         val pageable = PageRequest.of(1, 3, Sort.Direction.DESC, "createdAt")
@@ -137,7 +137,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findAllByTargetUserId sorts by createdAt descending`() {
-        val user = "user-sorted"
+        val user = 10L
         // @CreatedDate overrides any provided createdAt for new entities (no id).
         // Save in sequence with a small gap to guarantee distinct timestamps.
         val savedFirst = repository.save(NotificationFixtures.simpleNotification(userId = user, createdAt = null)).block()!!
@@ -163,7 +163,7 @@ class NotificationRepositoryTest {
     @Test
     @Suppress("UnusedPrivateProperty")
     fun `findByTargetUserIdAndUuidIn returns matching notifications for user`() {
-        val user = "user-uuid-in"
+        val user = 11L
 
         repository.save(NotificationFixtures.simpleNotification(userId = user, uuid = "uuid-in-1")).block()!!
         repository.save(NotificationFixtures.inviteNotification(userId = user, uuid = "uuid-in-2")).block()!!
@@ -176,14 +176,14 @@ class NotificationRepositoryTest {
 
     @Test
     fun `findByTargetUserIdAndUuidIn does not return notifications from other users even if UUID matches`() {
-        repository.save(NotificationFixtures.simpleNotification(userId = "other-user", uuid = "shared-uuid")).block()
+        repository.save(NotificationFixtures.simpleNotification(userId = 12L, uuid = "shared-uuid")).block()
 
-        StepVerifier.create(repository.findByTargetUserIdAndUuidIn("target-user", listOf("shared-uuid"))).verifyComplete()
+        StepVerifier.create(repository.findByTargetUserIdAndUuidIn(13L, listOf("shared-uuid"))).verifyComplete()
     }
 
     @Test
     fun `findByTargetUserIdAndUuidIn returns empty flux when UUID list has no matches`() {
-        val user = "user-no-match"
+        val user = 14L
         repository.save(NotificationFixtures.simpleNotification(userId = user, uuid = "existing-uuid")).block()
 
         StepVerifier.create(repository.findByTargetUserIdAndUuidIn(user, listOf("nonexistent-uuid"))).verifyComplete()
@@ -195,7 +195,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `gatherStatistics returns correct unread and total counts`() {
-        val user = "user-stats"
+        val user = 15L
         repository.save(NotificationFixtures.simpleNotification(userId = user, isRead = false)).block()
         repository.save(NotificationFixtures.simpleNotification(userId = user, isRead = false)).block()
         repository.save(NotificationFixtures.inviteNotification(userId = user, isRead = true)).block()
@@ -210,7 +210,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `gatherStatistics returns zeros when user has no notifications`() {
-        StepVerifier.create(repository.gatherStatistics("user-no-notifications"))
+        StepVerifier.create(repository.gatherStatistics(16L))
             .assertNext { stats ->
                 assertThat(stats.unread).isEqualTo(0)
                 assertThat(stats.total).isEqualTo(0)
@@ -220,9 +220,9 @@ class NotificationRepositoryTest {
 
     @Test
     fun `gatherStatistics does not count notifications from other users`() {
-        repository.save(NotificationFixtures.simpleNotification(userId = "other-user", isRead = false)).block()
+        repository.save(NotificationFixtures.simpleNotification(userId = 17L, isRead = false)).block()
 
-        StepVerifier.create(repository.gatherStatistics("target-user"))
+        StepVerifier.create(repository.gatherStatistics(18L))
             .assertNext { stats ->
                 assertThat(stats.unread).isEqualTo(0)
                 assertThat(stats.total).isEqualTo(0)
@@ -232,7 +232,7 @@ class NotificationRepositoryTest {
 
     @Test
     fun `gatherStatistics returns zero unread when all notifications are read`() {
-        val user = "user-all-read"
+        val user = 19L
         repository.save(NotificationFixtures.simpleNotification(userId = user, isRead = true)).block()
         repository.save(NotificationFixtures.inviteNotification(userId = user, isRead = true)).block()
 
@@ -274,7 +274,7 @@ class NotificationRepositoryTest {
                 assertThat(retrieved).isInstanceOf(InviteNotification::class.java)
                 retrieved as InviteNotification
                 assertThat(retrieved.inviterName).isEqualTo("inviter")
-                assertThat(retrieved.bundleShareCode).isEqualTo("SHARE123")
+                assertThat(retrieved.problemSetShareCode).isEqualTo("SHARE123")
             }
             .verifyComplete()
     }
@@ -288,8 +288,8 @@ class NotificationRepositoryTest {
             .assertNext { retrieved ->
                 assertThat(retrieved).isInstanceOf(CheckedNotification::class.java)
                 retrieved as CheckedNotification
-                assertThat(retrieved.submissionId).isEqualTo("submission-1")
-                assertThat(retrieved.problemId).isEqualTo("problem-1")
+                assertThat(retrieved.submissionId).isEqualTo(1L)
+                assertThat(retrieved.problemKey).isEqualTo("problem-1")
             }
             .verifyComplete()
     }

@@ -18,7 +18,14 @@ describe("ProblemListPage", () => {
     it("renders problem rows returned by the server", async () => {
         server.use(
             getGetProblemListMockHandler([
-                { name: "problem-smoke", isHard: false, tags: ["algebra"], status: "NOT_SOLVED" },
+                {
+                    key: "savchenko/problem-smoke",
+                    code: "problem-smoke",
+                    bookSlug: "savchenko",
+                    isHard: false,
+                    tags: ["algebra"],
+                    status: "NOT_SOLVED",
+                },
             ]),
             getCountMockHandler(1),
         );

@@ -26,7 +26,7 @@ object SegmentFileKeyParser {
 
         // users/{userId}/tmp/{fileName}
         if (segments.size == TMP_SEGMENT_COUNT && segments[0] == "users" && segments[PATH_TYPE_INDEX] == "tmp") {
-            return TempFileKey(segments[USER_ID_INDEX], segments[TMP_FILE_NAME_INDEX])
+            return TempFileKey(segments[USER_ID_INDEX].toLong(), segments[TMP_FILE_NAME_INDEX])
         }
 
         // users/{userId}/submissions/{problemId}/{submissionId}/{fileName}
@@ -34,21 +34,21 @@ object SegmentFileKeyParser {
             segments.size == SUBMISSION_SEGMENT_COUNT && segments[0] == "users" && segments[PATH_TYPE_INDEX] == "submissions"
         ) {
             return SubmissionFileKey(
-                segments[USER_ID_INDEX],
-                segments[SUBMISSION_PROBLEM_ID_INDEX],
-                segments[SUBMISSION_SUBMISSION_ID_INDEX],
+                segments[USER_ID_INDEX].toLong(),
+                segments[SUBMISSION_PROBLEM_ID_INDEX].toLong(),
+                segments[SUBMISSION_SUBMISSION_ID_INDEX].toLong(),
                 segments[SUBMISSION_FILE_NAME_INDEX],
             )
         }
 
         // problems/{problemId}/{fileName}
         if (segments.size == SIMPLE_SEGMENT_COUNT && segments[0] == "problems") {
-            return ProblemFileKey(segments[1], segments[2])
+            return ProblemFileKey(segments[1].toLong(), segments[2])
         }
 
         // results/{problemId}/{fileName}
         if (segments.size == SIMPLE_SEGMENT_COUNT && segments[0] == "results") {
-            return ResultFileKey(segments[1], segments[2])
+            return ResultFileKey(segments[1].toLong(), segments[2])
         }
 
         throw IllegalArgumentException("Invalid key format: '$rawKey' (normalized: '${segments.joinToString("/")}')")

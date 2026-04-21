@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ProblemStatus } from "@/features/problems/types";
 
@@ -28,6 +28,7 @@ export function useProblemTableParams() {
         getSearchParamAsBoolean(searchParams, "hasPictures"),
     );
     const [hasResult, setHasResult] = useState<boolean | undefined>(getSearchParamAsBoolean(searchParams, "hasResult"));
+    const [bookSlug, setBookSlug] = useState<string | undefined>(searchParams.get("bookSlug") ?? undefined);
 
     useEffect(() => {
         setPage(getSearchParamAsInt(searchParams, "page", 0));
@@ -37,6 +38,7 @@ export function useProblemTableParams() {
         setIsHard(getSearchParamAsBoolean(searchParams, "isHard"));
         setHasPictures(getSearchParamAsBoolean(searchParams, "hasPictures"));
         setHasResult(getSearchParamAsBoolean(searchParams, "hasResult"));
+        setBookSlug(searchParams.get("bookSlug") ?? undefined);
     }, [searchParams]);
 
     const updateSearchParams = (
@@ -48,6 +50,7 @@ export function useProblemTableParams() {
             isHard: boolean | undefined;
             hasPictures: boolean | undefined;
             hasResult: boolean | undefined;
+            bookSlug: string | undefined;
         }>,
     ) => {
         const next = new URLSearchParams(searchParams);
@@ -80,6 +83,10 @@ export function useProblemTableParams() {
             if (params.hasResult === undefined) next.delete("hasResult");
             else next.set("hasResult", String(params.hasResult));
         }
+        if ("bookSlug" in params) {
+            if (params.bookSlug === undefined) next.delete("bookSlug");
+            else next.set("bookSlug", params.bookSlug);
+        }
         setSearchParams(next);
     };
 
@@ -94,8 +101,8 @@ export function useProblemTableParams() {
             onChangePrefix: (newPrefix: string) => {
                 updateSearchParams({ page: 0, prefix: newPrefix });
             },
-            onChangeRowsPerPage: (event: ChangeEvent<HTMLInputElement>) => {
-                updateSearchParams({ page: 0, pageSize: parseInt(event.target.value, 10) });
+            onChangeRowsPerPage: (value: number) => {
+                updateSearchParams({ page: 0, pageSize: value });
             },
             onChangeIsHard: (value: boolean | undefined) => {
                 updateSearchParams({ page: 0, isHard: value });
@@ -106,9 +113,12 @@ export function useProblemTableParams() {
             onChangeHasResult: (checked: boolean) => {
                 updateSearchParams({ page: 0, hasResult: checked || undefined });
             },
+            onChangeBookSlug: (slug: string | undefined) => {
+                updateSearchParams({ page: 0, bookSlug: slug });
+            },
         }),
         [searchParams],
     );
 
-    return { page, rowsPerPage, status, prefix, isHard, hasPictures, hasResult, handlers };
+    return { page, rowsPerPage, status, prefix, isHard, hasPictures, hasResult, bookSlug, handlers };
 }

@@ -1,7 +1,7 @@
 import { Problem } from "@/features/problems/types";
 import { Card, CardContent, Stack, Typography } from "@mui/material";
 import { FileUpload } from "@/features/files/components/FileUpload";
-import { ResultAccordionComponent } from "@/features/problems/components/ResultAccordion";
+import { AnswerAccordionComponent } from "@/features/problems/components/AnswerAccordion";
 import { useSubmitProblemMutation } from "@/features/submissions/api";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
 import { MobileFileUpload } from "@/features/files/components/MobileFileUpload";
@@ -22,7 +22,7 @@ export default function SolutionCard({ problem }: SolutionCardProps) {
         }
 
         submitFilesMutation.mutate(
-            { problemId: problem.id, fileNames },
+            { problemKey: problem.key, fileNames },
             {
                 onSuccess: () => toast.success("Your solution has been submitted successfully!"),
             },
@@ -45,7 +45,7 @@ export default function SolutionCard({ problem }: SolutionCardProps) {
                     ) : (
                         <FileUpload accept="image/*" maxFiles={5} onSubmit={handleSubmit} />
                     )}
-                    <ResultAccordionComponent problem={problem} />
+                    <AnswerAccordionComponent problem={problem} />
                 </Stack>
             </CardContent>
         </Card>

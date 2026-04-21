@@ -10,7 +10,7 @@ object AuthFixtures {
     const val HOSTNAME = "localhost"
 
     fun userDetails(
-        id: String = "user-1",
+        id: Long = 1L,
         name: String = "Test User",
         roles: Set<UserRole> = setOf(UserRole.USER),
         status: UserStatus = UserStatus.ACTIVE,

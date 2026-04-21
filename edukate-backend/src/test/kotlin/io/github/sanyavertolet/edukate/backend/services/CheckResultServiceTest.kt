@@ -35,18 +35,18 @@ class CheckResultServiceTest {
 
     @Test
     fun `saveAndUpdateSubmission saves check result and updates submission status`() {
-        val submission = BackendFixtures.submission(id = "sub-1", status = SubmissionStatus.PENDING)
-        val checkResult = BackendFixtures.checkResult(submissionId = "sub-1")
-        val savedResult = checkResult.copy(id = "cr-saved")
+        val submission = BackendFixtures.submission(id = 1L, status = SubmissionStatus.PENDING)
+        val checkResult = BackendFixtures.checkResult(submissionId = 1L)
+        val savedResult = checkResult.copy(id = 10L)
 
-        every { submissionService.findById("sub-1") } returns Mono.just(submission)
+        every { submissionService.findById(1L) } returns Mono.just(submission)
         every { checkResultRepository.save(checkResult) } returns Mono.just(savedResult)
         every { submissionService.update(any()) } answers { Mono.just(firstArg()) }
 
         StepVerifier.create(service.saveAndUpdateSubmission(checkResult))
             .assertNext { (saved, sub) ->
-                assertThat(saved.id).isEqualTo("cr-saved")
-                assertThat(sub.id).isEqualTo("sub-1")
+                assertThat(saved.id).isEqualTo(10L)
+                assertThat(sub.id).isEqualTo(1L)
             }
             .verifyComplete()
 
@@ -55,8 +55,8 @@ class CheckResultServiceTest {
 
     @Test
     fun `saveAndUpdateSubmission emits NOT_FOUND when submission is missing`() {
-        val checkResult = BackendFixtures.checkResult(submissionId = "missing")
-        every { submissionService.findById("missing") } returns Mono.empty()
+        val checkResult = BackendFixtures.checkResult(submissionId = 999L)
+        every { submissionService.findById(999L) } returns Mono.empty()
 
         StepVerifier.create(service.saveAndUpdateSubmission(checkResult))
             .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.NOT_FOUND }
@@ -71,17 +71,17 @@ class CheckResultServiceTest {
 
     @Test
     fun `findById delegates to repository`() {
-        val result = BackendFixtures.checkResult(id = "cr-1")
-        every { checkResultRepository.findById("cr-1") } returns Mono.just(result)
+        val result = BackendFixtures.checkResult(id = 1L)
+        every { checkResultRepository.findById(1L) } returns Mono.just(result)
 
-        StepVerifier.create(service.findById("cr-1")).expectNext(result).verifyComplete()
+        StepVerifier.create(service.findById(1L)).expectNext(result).verifyComplete()
     }
 
     @Test
     fun `findById returns empty Mono when not found`() {
-        every { checkResultRepository.findById("nonexistent") } returns Mono.empty()
+        every { checkResultRepository.findById(999L) } returns Mono.empty()
 
-        StepVerifier.create(service.findById("nonexistent")).verifyComplete()
+        StepVerifier.create(service.findById(999L)).verifyComplete()
     }
 
     // endregion
@@ -90,20 +90,20 @@ class CheckResultServiceTest {
 
     @Test
     fun `findAllBySubmissionId delegates to repository sorted by createdAt DESC`() {
-        val r1 = BackendFixtures.checkResult(id = "cr-1", submissionId = "sub-1")
-        val r2 = BackendFixtures.checkResult(id = "cr-2", submissionId = "sub-1")
+        val r1 = BackendFixtures.checkResult(id = 1L, submissionId = 1L)
+        val r2 = BackendFixtures.checkResult(id = 2L, submissionId = 1L)
         val expectedSort = Sort.by(Sort.Direction.DESC, "createdAt")
-        every { checkResultRepository.findBySubmissionId("sub-1", expectedSort) } returns Flux.just(r1, r2)
+        every { checkResultRepository.findBySubmissionId(1L, expectedSort) } returns Flux.just(r1, r2)
 
-        StepVerifier.create(service.findAllBySubmissionId("sub-1")).expectNext(r1, r2).verifyComplete()
+        StepVerifier.create(service.findAllBySubmissionId(1L)).expectNext(r1, r2).verifyComplete()
     }
 
     @Test
     fun `findAllBySubmissionId returns empty flux when no results exist`() {
         val expectedSort = Sort.by(Sort.Direction.DESC, "createdAt")
-        every { checkResultRepository.findBySubmissionId("sub-99", expectedSort) } returns Flux.empty()
+        every { checkResultRepository.findBySubmissionId(99L, expectedSort) } returns Flux.empty()
 
-        StepVerifier.create(service.findAllBySubmissionId("sub-99")).verifyComplete()
+        StepVerifier.create(service.findAllBySubmissionId(99L)).verifyComplete()
     }
 
     // endregion

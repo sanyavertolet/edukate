@@ -15,7 +15,7 @@ const homeNavigationElement: NavigationElement = {
 
 export const desktopNavigationElements: NavigationElement[] = [
     { text: "Problems", href: "/problems" },
-    { text: "Bundles", href: "/bundles" },
+    { text: "Problem Sets", href: "/problem-sets" },
 ];
 
 export const mobileNavigationElements: NavigationElement[] = [homeNavigationElement, ...desktopNavigationElements];

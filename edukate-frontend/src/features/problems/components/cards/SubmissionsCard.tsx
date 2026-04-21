@@ -2,10 +2,10 @@ import { Card, CardContent, Paper, Typography } from "@mui/material";
 import { SubmissionList } from "@/features/submissions/components/SubmissionList";
 
 interface SubmissionsCardProps {
-    problemId: string;
+    problemKey: string;
 }
 
-export default function SubmissionsCard({ problemId }: SubmissionsCardProps) {
+export default function SubmissionsCard({ problemKey }: SubmissionsCardProps) {
     return (
         <Card>
             <CardContent>
@@ -13,7 +13,7 @@ export default function SubmissionsCard({ problemId }: SubmissionsCardProps) {
                     Submissions
                 </Typography>
                 <Paper elevation={0} variant={"outlined"} sx={{ width: "80%", justifyContent: "center", margin: "auto" }}>
-                    <SubmissionList problemId={problemId} />
+                    <SubmissionList problemKey={problemKey} />
                 </Paper>
             </CardContent>
         </Card>

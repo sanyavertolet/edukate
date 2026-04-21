@@ -23,7 +23,7 @@ src/
 ├── features/              # Self-contained domain modules
 │   ├── auth/              #   api.ts, components/, context.tsx, types.ts
 │   ├── problems/          #   api.ts, components/, hooks/, types.ts
-│   ├── bundles/           #   api.ts, components/, types.ts
+│   ├── problem-sets/      #   api.ts, components/, types.ts
 │   ├── submissions/       #   api.ts, components/, types.ts
 │   ├── notifications/     #   api.ts, components/, types.ts
 │   ├── checks/            #   api.ts, components/, types.ts
@@ -47,12 +47,12 @@ src/
 |--------------------|----------------------|---------------|
 | `/`                | `IndexPage`          | No            |
 | `/problems`        | `ProblemListPage`    | No            |
-| `/problems/:id`    | `ProblemPage`        | No            |
+| `/problems/:bookSlug/:code` | `ProblemPage` | No           |
 | `/sign-in`         | `SignInPage`         | No            |
 | `/sign-up`         | `SignUpPage`         | No            |
-| `/bundles`         | `BundleListPage`     | No            |
-| `/bundles/new`     | `BundleCreationPage` | Yes           |
-| `/bundles/:code`   | `BundlePage`         | Yes           |
+| `/problem-sets`         | `ProblemSetListPage`     | No            |
+| `/problem-sets/new`     | `ProblemSetCreationPage` | Yes           |
+| `/problem-sets/:code`   | `ProblemSetPage`         | Yes           |
 | `/submissions/:id` | `SubmissionPage`     | Yes           |
 
 ## Key Patterns
@@ -93,10 +93,10 @@ Generated files live in `src/generated/`. Feature API files (`features/*/api.ts`
 that add auth guards and cache-invalidation logic on top of the generated hooks:
 
 ```ts
-// features/bundles/api.ts — example wrapper
-export function useBundleUserListQuery(shareCode: string) {
+// features/problem-sets/api.ts — example wrapper
+export function useProblemSetUserListQuery(shareCode: string) {
     const {isAuthorized} = useAuthContext();
-    return useGetBundleUsers(shareCode, {query: {enabled: isAuthorized}});
+    return useGetUserRoles(shareCode, {query: {enabled: isAuthorized}});
 }
 ```
 
@@ -199,10 +199,10 @@ import {getGetProblemMockHandler, getGetProblemResponseMock} from "@/generated/b
 import {useProblemRequest} from "@/features/problems/api";
 
 it("returns problem data", async () => {
-    server.use(getGetProblemMockHandler(getGetProblemResponseMock({id: "prob-1"})));
-    const {result} = renderHook(() => useProblemRequest("prob-1"), {wrapper: createWrapper()});
+    server.use(getGetProblemMockHandler(getGetProblemResponseMock({code: "1.1", bookSlug: "savchenko"})));
+    const {result} = renderHook(() => useProblemRequest("savchenko", "1.1"), {wrapper: createWrapper()});
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.id).toBe("prob-1");
+    expect(result.current.data?.code).toBe("1.1");
 });
 ```
 
@@ -212,9 +212,9 @@ it("returns problem data", async () => {
 import {renderAtPath, screen} from "@/test/render";
 import ProblemPage from "./ProblemPage";
 
-it("renders heading with id from URL", () => {
-    renderAtPath("/problems/prob-123", "/problems/:id", <ProblemPage/>);
-    expect(screen.getByRole("heading", {name: /prob-123/i})).toBeInTheDocument();
+it("renders heading with code from URL", () => {
+    renderAtPath("/problems/savchenko/1.1", "/problems/:bookSlug/:code", <ProblemPage/>);
+    expect(screen.getByRole("heading", {name: /1\.1/i})).toBeInTheDocument();
 });
 ```
 

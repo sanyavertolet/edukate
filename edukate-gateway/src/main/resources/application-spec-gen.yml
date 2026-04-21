@@ -13,6 +13,8 @@ spring:
       enabled: false
   rabbitmq:
     addresses: localhost:5672
+  r2dbc:
+    url: r2dbc:postgresql://admin:secret@localhost:5432/edukate
   cloud:
     discovery:
       enabled: false

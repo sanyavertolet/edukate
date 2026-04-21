@@ -26,7 +26,7 @@ class UserInternalControllerTest {
 
     @MockkBean private lateinit var userService: UserService
 
-    private fun credentials(id: String? = "user-1") =
+    private fun credentials(id: Long? = 1L) =
         UserCredentials(id, "testuser", "password", "test@example.com", setOf(UserRole.USER), UserStatus.ACTIVE)
 
     // region POST /internal/users
@@ -83,24 +83,24 @@ class UserInternalControllerTest {
     @Test
     fun `getUserById returns 200 with user credentials when found`() {
         val user = BackendFixtures.user()
-        every { userService.findUserById("user-1") } returns Mono.just(user)
+        every { userService.findUserById(1L) } returns Mono.just(user)
 
         webTestClient
             .get()
-            .uri("/internal/users/by-id/user-1")
+            .uri("/internal/users/by-id/1")
             .exchange()
             .expectStatus()
             .isOk
             .expectBody()
             .jsonPath("$.id")
-            .isEqualTo("user-1")
+            .isEqualTo("1")
     }
 
     @Test
     fun `getUserById returns 200 with empty body when user not found`() {
-        every { userService.findUserById("nonexistent") } returns Mono.empty()
+        every { userService.findUserById(999L) } returns Mono.empty()
 
-        webTestClient.get().uri("/internal/users/by-id/nonexistent").exchange().expectStatus().isOk.expectBody().isEmpty
+        webTestClient.get().uri("/internal/users/by-id/999").exchange().expectStatus().isOk.expectBody().isEmpty
     }
 
     // endregion
@@ -109,16 +109,9 @@ class UserInternalControllerTest {
 
     @Test
     fun `deleteUserById returns 200 with deleted user id`() {
-        every { userService.deleteUserById("user-1") } returns Mono.empty()
+        every { userService.deleteUserById(1L) } returns Mono.empty()
 
-        webTestClient
-            .delete()
-            .uri("/internal/users/by-id/user-1")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody(String::class.java)
-            .isEqualTo("user-1")
+        webTestClient.delete().uri("/internal/users/by-id/1").exchange().expectStatus().isOk.expectBody().isEmpty
     }
 
     // endregion

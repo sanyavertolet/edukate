@@ -39,6 +39,7 @@ out/
 /mongo-data/
 /minio-data/
 /rabbitmq-data/
+/postgres-data/
 /pdf-cracker/data/
 /.claude/settings.local.json
 
@@ -49,3 +50,5 @@ out/
 # Helm subchart tarballs — reproducible via `helm dependency update edukate-chart/`
 # Chart.lock pins the exact versions; commit that, not the binaries.
 edukate-chart/charts/*.tgz
+
+/edukate-vault/

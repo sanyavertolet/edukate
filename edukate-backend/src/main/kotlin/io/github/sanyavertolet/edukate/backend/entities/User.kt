@@ -4,13 +4,12 @@ import io.github.sanyavertolet.edukate.common.users.UserCredentials
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.github.sanyavertolet.edukate.common.users.UserStatus
 import org.springframework.data.annotation.Id
-import org.springframework.data.mongodb.core.index.Indexed
-import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.relational.core.mapping.Table
 
-@Document("users")
+@Table("users")
 data class User(
-    @field:Id val id: String? = null,
-    @field:Indexed(unique = true) val name: String,
+    @Id val id: Long? = null,
+    val name: String,
     val email: String? = null,
     val token: String,
     val roles: Set<UserRole>,

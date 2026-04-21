@@ -4,6 +4,6 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 
 data class CreateSubmissionRequest(
-    @field:NotBlank val problemId: String,
+    @field:NotBlank val problemKey: String,
     @field:NotEmpty val fileNames: List<@NotBlank String>,
 )

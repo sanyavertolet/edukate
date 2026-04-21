@@ -7,7 +7,7 @@ import java.util.UUID
 @JsonTypeName("simple")
 data class SimpleNotificationCreateRequest(
     override val uuid: String = UUID.randomUUID().toString(),
-    @field:NotBlank override val targetUserId: String,
+    override val targetUserId: Long,
     @field:NotBlank val title: String,
     @field:NotBlank val message: String,
     @field:NotBlank val source: String,

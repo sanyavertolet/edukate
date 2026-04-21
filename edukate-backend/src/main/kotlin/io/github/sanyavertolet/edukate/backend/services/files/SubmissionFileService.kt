@@ -10,8 +10,13 @@ import reactor.kotlin.core.publisher.toFlux
 
 @Service
 class SubmissionFileService(private val fileManager: FileManager) {
-    fun moveSubmissionFiles(userId: String, submissionId: String, request: CreateSubmissionRequest): Flux<FileKey> =
+    fun moveSubmissionFiles(
+        userId: Long,
+        submissionId: Long,
+        problemId: Long,
+        request: CreateSubmissionRequest,
+    ): Flux<FileKey> =
         request.fileNames.toFlux().flatMapSequential { file ->
-            fileManager.moveFile(TempFileKey(userId, file), SubmissionFileKey(userId, request.problemId, submissionId, file))
+            fileManager.moveFile(TempFileKey(userId, file), SubmissionFileKey(userId, problemId, submissionId, file))
         }
 }

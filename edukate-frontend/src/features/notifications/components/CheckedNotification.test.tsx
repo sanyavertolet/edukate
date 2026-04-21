@@ -7,8 +7,8 @@ const makeChecked = (overrides: Partial<CheckedNotification> = {}): CheckedNotif
     isRead: false,
     createdAt: "2024-09-10T15:45:00Z",
     _type: "checked",
-    submissionId: "sub-99",
-    problemId: "prob-42",
+    submissionId: 99,
+    problemKey: "prob-42",
     status: "SUCCESS",
     ...overrides,
 });
@@ -19,8 +19,8 @@ describe("CheckedNotificationComponent", () => {
         expect(screen.getByText("Submission Checked")).toBeInTheDocument();
     });
 
-    it("renders the problem ID in the body", () => {
-        render(<CheckedNotificationComponent notification={makeChecked({ problemId: "prob-42" })} />);
+    it("renders the problem key in the body", () => {
+        render(<CheckedNotificationComponent notification={makeChecked({ problemKey: "prob-42" })} />);
         expect(screen.getByText(/prob-42/)).toBeInTheDocument();
     });
 

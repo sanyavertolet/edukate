@@ -9,6 +9,7 @@ import {
     MenuItem,
     FormControlLabel,
     Checkbox,
+    Chip,
 } from "@mui/material";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
 import CloseIcon from "@mui/icons-material/CloseOutlined";
@@ -30,6 +31,8 @@ type Props = {
     onHasPicturesChange: (checked: boolean) => void;
     hasResult: boolean | undefined;
     onHasResultChange: (checked: boolean) => void;
+    bookSlug: string | undefined;
+    onBookSlugChange: (slug: string | undefined) => void;
     rightSlot?: ReactNode;
 };
 
@@ -56,6 +59,8 @@ export const ProblemTableToolbar: FC<Props> = ({
     onHasPicturesChange,
     hasResult,
     onHasResultChange,
+    bookSlug,
+    onBookSlugChange,
     rightSlot,
 }) => {
     const { isAuthorized } = useAuthContext();
@@ -70,6 +75,17 @@ export const ProblemTableToolbar: FC<Props> = ({
                         onPrefixChange(e.target.value);
                     }}
                 />
+
+                {bookSlug && (
+                    <Chip
+                        label={`Book: ${bookSlug}`}
+                        onDelete={() => {
+                            onBookSlugChange(undefined);
+                        }}
+                        color="primary"
+                        variant="outlined"
+                    />
+                )}
 
                 {isAuthorized && (
                     <FormControl size="small" sx={{ minWidth: 160 }}>
@@ -149,7 +165,7 @@ export const ProblemTableToolbar: FC<Props> = ({
                             }}
                         />
                     }
-                    label="With result"
+                    label="With answer"
                 />
             </Box>
 
