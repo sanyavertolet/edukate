@@ -68,7 +68,7 @@ class CheckerControllerTest {
         val submission = BackendFixtures.submission(id = 1L, userId = 1L)
         val checkResult = BackendFixtures.checkResult(submissionId = 1L)
         every { submissionService.getSubmissionIfOwns(1L, 1L) } returns Mono.just(submission)
-        every { checkResultService.saveAndUpdateSubmission(any()) } returns Mono.just(checkResult to submission)
+        every { checkResultService.saveCheckResult(any()) } returns Mono.just(checkResult)
 
         authenticatedClient().post().uri("/api/v1/checker/self?id=1").exchange().expectStatus().isAccepted
     }

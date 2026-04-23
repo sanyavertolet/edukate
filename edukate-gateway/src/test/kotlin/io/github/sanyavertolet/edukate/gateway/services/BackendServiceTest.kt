@@ -87,7 +87,7 @@ class BackendServiceTest {
     @Test
     fun `getUserById returns credentials from repository`() {
         val user = GatewayFixtures.gatewayUser()
-        every { gatewayUserRepository.findById(GatewayFixtures.USER_ID.toLong()) } returns Mono.just(user)
+        every { gatewayUserRepository.findById(GatewayFixtures.USER_ID) } returns Mono.just(user)
 
         StepVerifier.create(backendService.getUserById(GatewayFixtures.USER_ID))
             .expectNextMatches { it.id == GatewayFixtures.USER_ID }
@@ -96,7 +96,7 @@ class BackendServiceTest {
 
     @Test
     fun `getUserById returns empty Mono when user not found`() {
-        every { gatewayUserRepository.findById(GatewayFixtures.USER_ID.toLong()) } returns Mono.empty()
+        every { gatewayUserRepository.findById(GatewayFixtures.USER_ID) } returns Mono.empty()
 
         StepVerifier.create(backendService.getUserById(GatewayFixtures.USER_ID)).verifyComplete()
     }

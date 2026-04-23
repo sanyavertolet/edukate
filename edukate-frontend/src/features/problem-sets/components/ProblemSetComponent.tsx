@@ -1,5 +1,5 @@
 import { useProblemSetRequest } from "@/features/problem-sets/api";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Box, Card, Typography } from "@mui/material";
 import { ProblemSetProblemSelector } from "./ProblemSetProblemSelector";
 import { ProblemMetadata } from "@/features/problems/types";
@@ -16,9 +16,9 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
     const { isMobile } = useDeviceContext();
     const { data: problemSet } = useProblemSetRequest(problemSetCode);
     const [selectedProblemMetadata, setSelectedProblemMetadata] = useState<ProblemMetadata>();
-    const onProblemSelect = (problemOrUndefined?: ProblemMetadata) => {
+    const onProblemSelect = useCallback((problemOrUndefined?: ProblemMetadata) => {
         setSelectedProblemMetadata(problemOrUndefined);
-    };
+    }, []);
     return (
         <Box>
             {problemSet?.name && (

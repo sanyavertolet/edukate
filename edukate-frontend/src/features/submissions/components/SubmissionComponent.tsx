@@ -1,9 +1,10 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Box, Button, Card, CardContent, CardHeader, Tooltip, Typography } from "@mui/material";
 import { Submission } from "@/features/submissions/types";
 import { useCheckResultsRequest, useRequestCheckMutation } from "@/features/checks/api";
 import { CheckType } from "@/features/checks/types";
 import { CheckResultInfoList } from "@/features/checks/components/CheckResultInfoList";
+import { CheckResultDetailDialog } from "@/features/checks/components/CheckResultDetailDialog";
 import { useAuthContext } from "@/features/auth/context";
 import { Role } from "@/features/auth/types";
 
@@ -18,14 +19,22 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
     };
     const { data: resultInfos, isLoading, error } = useCheckResultsRequest(String(submission.id));
     const { user } = useAuthContext();
+    const [selectedCheckResultId, setSelectedCheckResultId] = useState<number | null>(null);
 
     const isSelfCheckDisabled = submission.status == "SUCCESS";
     const isAiCheckDisabled = !["MODERATOR" as Role, "ADMIN" as Role].some((role) => user?.roles.includes(role));
+
     return (
         <Box sx={{ p: 2 }}>
+            <CheckResultDetailDialog
+                checkResultId={selectedCheckResultId}
+                onClose={() => {
+                    setSelectedCheckResultId(null);
+                }}
+            />
             <SubmissionDetails submission={submission} />
             <Card>
-                <CardHeader title={"Check Results"} />
+                <CardHeader title="Check Results" />
                 <CardContent>
                     <Tooltip title={isSelfCheckDisabled ? "Already solved" : "Self check"}>
                         <span>
@@ -57,8 +66,10 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
                     </Tooltip>
                     {isLoading && <Typography>Loading check results...</Typography>}
                     {error && <Typography color="error">Error loading check results</Typography>}
-                    {resultInfos && resultInfos.length == 0 && <Typography>No check results found</Typography>}
-                    {resultInfos && resultInfos.length > 0 && <CheckResultInfoList data={resultInfos} />}
+                    {resultInfos && resultInfos.length === 0 && <Typography>No check results found</Typography>}
+                    {resultInfos && resultInfos.length > 0 && (
+                        <CheckResultInfoList data={resultInfos} onItemClick={setSelectedCheckResultId} />
+                    )}
                 </CardContent>
             </Card>
         </Box>

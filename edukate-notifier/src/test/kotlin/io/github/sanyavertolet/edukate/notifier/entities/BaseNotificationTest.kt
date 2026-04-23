@@ -118,7 +118,7 @@ class BaseNotificationTest {
     fun `markAsRead preserves all other fields on SimpleNotification`() {
         val original = NotificationFixtures.simpleNotification(userId = 99L, uuid = "u-x", isRead = false)
 
-        val marked = original.markAsRead() as SimpleNotification
+        val marked = original.markAsRead()
 
         assertThat(marked.uuid).isEqualTo("u-x")
         assertThat(marked.targetUserId).isEqualTo(99L)

@@ -19,7 +19,15 @@ import PendingIcon from "@mui/icons-material/PendingOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
 import { useNavigate } from "react-router-dom";
 
-export function SubmissionListItem({ submission, setImage }: { submission: Submission; setImage: (image: string) => void }) {
+export function SubmissionListItem({
+    submission,
+    setImage,
+    onSelect,
+}: {
+    submission: Submission;
+    setImage: (image: string) => void;
+    onSelect?: (submission: Submission) => void;
+}) {
     const { icon, color } = getStatusVisuals(submission.status);
 
     const attachments = useMemo(() => submission.fileUrls, [submission.fileUrls]);
@@ -28,7 +36,11 @@ export function SubmissionListItem({ submission, setImage }: { submission: Submi
         <ListItem disablePadding secondaryAction={AttachmentButtonList(attachments, setImage)}>
             <ListItemButton
                 onClick={() => {
-                    void navigate(`/submissions/${String(submission.id)}`);
+                    if (onSelect) {
+                        onSelect(submission);
+                    } else {
+                        void navigate(`/submissions/${String(submission.id)}`);
+                    }
                 }}
             >
                 <ListItemAvatar>

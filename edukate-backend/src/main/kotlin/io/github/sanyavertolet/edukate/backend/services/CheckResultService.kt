@@ -1,37 +1,44 @@
 package io.github.sanyavertolet.edukate.backend.services
 
 import io.github.sanyavertolet.edukate.backend.entities.CheckResult
-import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.backend.repositories.CheckResultRepository
-import io.github.sanyavertolet.edukate.common.SubmissionStatus
+import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
 class CheckResultService(
     private val checkResultRepository: CheckResultRepository,
-    private val submissionService: SubmissionService,
     private val meterRegistry: MeterRegistry,
 ) {
-    @Transactional
-    fun saveAndUpdateSubmission(checkResult: CheckResult): Mono<Pair<CheckResult, Submission>> =
-        submissionService
-            .findById(checkResult.submissionId)
-            .orNotFound("Submission not found")
-            .flatMap { submission -> checkResultRepository.save(checkResult).map { saved -> Pair(saved, submission) } }
-            .flatMap { (saved, submission) ->
-                val newStatus = SubmissionStatus.from(saved.status)
-                val updatedSubmission = submission.withStatus(SubmissionStatus.best(submission.status, newStatus))
-                submissionService
-                    .update(updatedSubmission)
-                    .doOnNext { meterRegistry.counter("check.outcomes", "status", saved.status.name).increment() }
-                    .thenReturn(Pair(saved, submission))
+    /** Direct insert — used for self-check. The DB trigger handles submission status update. */
+    fun saveCheckResult(checkResult: CheckResult): Mono<CheckResult> =
+        checkResultRepository.save(checkResult).doOnNext {
+            meterRegistry.counter("check.outcomes", "status", it.status.name).increment()
+        }
+
+    /**
+     * Finds the stub by its ID and updates it in-place with the checker result. The DB trigger handles submission status +
+     * problem_progress update automatically.
+     */
+    fun updateFromMessage(message: CheckResultMessage): Mono<CheckResult> =
+        checkResultRepository
+            .findById(message.checkResultId)
+            .orNotFound("CheckResult ${message.checkResultId} not found")
+            .map { stub ->
+                stub.copy(
+                    status = message.status,
+                    trustLevel = message.trustLevel,
+                    errorType = message.errorType,
+                    explanation = message.explanation,
+                )
             }
+            .flatMap { checkResultRepository.save(it) }
+            .doOnNext { meterRegistry.counter("check.outcomes", "status", it.status.name).increment() }
 
     fun findById(id: Long): Mono<CheckResult> = checkResultRepository.findById(id)
 

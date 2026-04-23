@@ -28,17 +28,13 @@ class SubmissionService(
     private val submissionFileService: SubmissionFileService,
     private val fileObjectRepository: FileObjectRepository,
     private val submissionPermissionEvaluator: SubmissionPermissionEvaluator,
-    private val problemProgressService: ProblemProgressService,
     private val meterRegistry: MeterRegistry,
 ) {
     @Transactional
     fun saveSubmission(submissionRequest: CreateSubmissionRequest, authentication: Authentication): Mono<Submission> =
         authentication.monoId().flatMap { userId -> saveSubmission(userId, submissionRequest) }
 
-    fun update(submission: Submission): Mono<Submission> =
-        submissionRepository.save(submission).flatMap { saved ->
-            problemProgressService.updateProgress(saved).thenReturn(saved)
-        }
+    fun update(submission: Submission): Mono<Submission> = submissionRepository.save(submission)
 
     @Transactional
     fun saveSubmission(userId: Long, submissionRequest: CreateSubmissionRequest): Mono<Submission> =
@@ -60,7 +56,6 @@ class SubmissionService(
                                 .collectList()
                         )
                         .flatMap { ids -> submissionRepository.save(submission.withFileObjectIds(ids)) }
-                        .flatMap { saved -> problemProgressService.updateProgress(saved).thenReturn(saved) }
                         .doOnNext {
                             meterRegistry
                                 .counter("submissions.created", "problemKey", submissionRequest.problemKey)

@@ -102,6 +102,89 @@ CREATE TABLE file_objects (
 CREATE INDEX idx_problems_book_id ON problems(book_id);
 CREATE INDEX idx_submissions_user_id ON submissions(user_id);
 CREATE INDEX idx_submissions_problem_id ON submissions(problem_id);
+CREATE INDEX idx_submissions_user_problem ON submissions(user_id, problem_id);
 CREATE INDEX idx_problem_progress_user_id ON problem_progress(user_id);
 CREATE INDEX idx_problem_set_problems_problem ON problem_set_problems(problem_id);
 CREATE INDEX idx_check_results_submission_id ON check_results(submission_id);
+
+-- ── Trigger 1: sync submissions.status from check_results ────────────────────
+
+CREATE OR REPLACE FUNCTION fn_sync_submission_status()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_new_status VARCHAR(20);
+BEGIN
+    SELECT CASE
+        WHEN COUNT(*) FILTER (WHERE status = 'SUCCESS')                        > 0 THEN 'SUCCESS'
+        WHEN COUNT(*) FILTER (WHERE status IN ('MISTAKE', 'INTERNAL_ERROR'))   > 0 THEN 'FAILED'
+        ELSE 'PENDING'
+    END
+    INTO v_new_status
+    FROM check_results
+    WHERE submission_id = NEW.submission_id
+      AND status != 'PENDING';
+
+    UPDATE submissions
+    SET status = COALESCE(v_new_status, 'PENDING')
+    WHERE id = NEW.submission_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_check_result_change
+AFTER INSERT OR UPDATE ON check_results
+FOR EACH ROW EXECUTE FUNCTION fn_sync_submission_status();
+
+-- ── Trigger 2: upsert problem_progress when submission status promotes ────────
+
+CREATE OR REPLACE FUNCTION fn_update_problem_progress()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.status = NEW.status THEN
+        RETURN NEW;
+    END IF;
+
+    IF (OLD.status = 'PENDING' AND NEW.status IN ('FAILED', 'SUCCESS'))
+    OR (OLD.status = 'FAILED'  AND NEW.status = 'SUCCESS') THEN
+
+        INSERT INTO problem_progress (
+            user_id, problem_id,
+            latest_status, latest_time, latest_submission_id,
+            best_status,   best_time,   best_submission_id
+        )
+        SELECT
+            NEW.user_id, NEW.problem_id,
+            latest.status, latest.created_at, latest.id,
+            best.status,   best.created_at,   best.id
+        FROM (
+            SELECT id, status, created_at
+            FROM   submissions
+            WHERE  user_id = NEW.user_id AND problem_id = NEW.problem_id
+            ORDER  BY created_at DESC
+            LIMIT  1
+        ) AS latest,
+        (
+            SELECT id, status, created_at
+            FROM   submissions
+            WHERE  user_id = NEW.user_id AND problem_id = NEW.problem_id
+            ORDER  BY CASE status WHEN 'SUCCESS' THEN 2 WHEN 'FAILED' THEN 1 ELSE 0 END DESC,
+                      created_at ASC
+            LIMIT  1
+        ) AS best
+        ON CONFLICT (user_id, problem_id) DO UPDATE SET
+            latest_status        = EXCLUDED.latest_status,
+            latest_time          = EXCLUDED.latest_time,
+            latest_submission_id = EXCLUDED.latest_submission_id,
+            best_status          = EXCLUDED.best_status,
+            best_time            = EXCLUDED.best_time,
+            best_submission_id   = EXCLUDED.best_submission_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER on_submission_status_change
+AFTER UPDATE OF status ON submissions
+FOR EACH ROW EXECUTE FUNCTION fn_update_problem_progress();

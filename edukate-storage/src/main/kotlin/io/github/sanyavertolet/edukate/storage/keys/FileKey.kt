@@ -12,7 +12,7 @@ import io.github.sanyavertolet.edukate.storage.utils.SegmentFileKeyParser
     JsonSubTypes.Type(value = SubmissionFileKey::class, name = "submission"),
     JsonSubTypes.Type(value = TempFileKey::class, name = "tmp"),
     JsonSubTypes.Type(value = ProblemFileKey::class, name = "problem"),
-    JsonSubTypes.Type(value = ResultFileKey::class, name = "result"),
+    JsonSubTypes.Type(value = AnswerFileKey::class, name = "answer"),
 )
 @JsonTypeName("base")
 sealed interface FileKey {
@@ -20,7 +20,7 @@ sealed interface FileKey {
 
     fun type(): String
 
-    fun owner(): Long?
+    fun owner(): Long? = null
 }
 
 fun fileKey(rawKey: String) = SegmentFileKeyParser.parse(rawKey)

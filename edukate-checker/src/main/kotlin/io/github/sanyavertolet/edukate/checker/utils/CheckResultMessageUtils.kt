@@ -9,6 +9,7 @@ import io.github.sanyavertolet.edukate.common.checks.SubmissionContext
 fun success(modelResponse: ModelResponse, submissionContext: SubmissionContext): CheckResultMessage =
     CheckResultMessage(
         submissionContext.submissionId,
+        submissionContext.checkResultId,
         modelResponse.status,
         modelResponse.trustLevel.coerceIn(0f, 1f),
         if (modelResponse.status == CheckStatus.SUCCESS) CheckErrorType.NONE else modelResponse.errorType,
@@ -18,6 +19,7 @@ fun success(modelResponse: ModelResponse, submissionContext: SubmissionContext):
 fun error(submissionContext: SubmissionContext): CheckResultMessage =
     CheckResultMessage(
         submissionContext.submissionId,
+        submissionContext.checkResultId,
         CheckStatus.INTERNAL_ERROR,
         0f,
         CheckErrorType.NONE,

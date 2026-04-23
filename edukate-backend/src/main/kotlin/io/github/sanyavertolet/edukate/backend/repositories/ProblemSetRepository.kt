@@ -22,4 +22,23 @@ interface ProblemSetRepository : ReactiveCrudRepository<ProblemSet, Long> {
         """
     )
     fun findByUserId(userId: Long, pageable: Pageable): Flux<ProblemSet>
+
+    @Query(
+        """
+        SELECT ps.* FROM problem_sets ps
+        WHERE ps.user_id_role_map ->> CAST(:userId AS TEXT) = 'ADMIN'
+        ORDER BY ps.id
+        """
+    )
+    fun findOwnedByUserId(userId: Long, pageable: Pageable): Flux<ProblemSet>
+
+    @Query(
+        """
+        SELECT ps.* FROM problem_sets ps
+        WHERE ps.user_id_role_map -> CAST(:userId AS TEXT) IS NOT NULL
+          AND ps.user_id_role_map ->> CAST(:userId AS TEXT) != 'ADMIN'
+        ORDER BY ps.id
+        """
+    )
+    fun findJoinedByUserId(userId: Long, pageable: Pageable): Flux<ProblemSet>
 }

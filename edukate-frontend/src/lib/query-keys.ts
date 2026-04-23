@@ -44,6 +44,7 @@ export const queryKeys = {
     checks: {
         all: ["checks"] as const,
         bySubmission: (id: string) => ["checks", "by-submission", id] as const,
+        detail: (id: string) => ["checks", "detail", id] as const,
     },
     files: {
         all: ["files"] as const,

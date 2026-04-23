@@ -4,7 +4,7 @@ package io.github.sanyavertolet.edukate.backend.services
 
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.repositories.CheckResultRepository
-import io.github.sanyavertolet.edukate.common.SubmissionStatus
+import io.github.sanyavertolet.edukate.common.checks.CheckStatus
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.mockk.every
 import io.mockk.mockk
@@ -22,43 +22,59 @@ import reactor.test.StepVerifier
 class CheckResultServiceTest {
 
     private val checkResultRepository: CheckResultRepository = mockk()
-    private val submissionService: SubmissionService = mockk()
     private val meterRegistry = SimpleMeterRegistry()
     private lateinit var service: CheckResultService
 
     @BeforeEach
     fun setUp() {
-        service = CheckResultService(checkResultRepository, submissionService, meterRegistry)
+        service = CheckResultService(checkResultRepository, meterRegistry)
     }
 
-    // region saveAndUpdateSubmission
+    // region saveCheckResult
 
     @Test
-    fun `saveAndUpdateSubmission saves check result and updates submission status`() {
-        val submission = BackendFixtures.submission(id = 1L, status = SubmissionStatus.PENDING)
-        val checkResult = BackendFixtures.checkResult(submissionId = 1L)
-        val savedResult = checkResult.copy(id = 10L)
+    fun `saveCheckResult persists the result and increments counter`() {
+        val checkResult = BackendFixtures.checkResult(id = null, submissionId = 1L, status = CheckStatus.SUCCESS)
+        val saved = checkResult.copy(id = 10L)
 
-        every { submissionService.findById(1L) } returns Mono.just(submission)
-        every { checkResultRepository.save(checkResult) } returns Mono.just(savedResult)
-        every { submissionService.update(any()) } answers { Mono.just(firstArg()) }
+        every { checkResultRepository.save(checkResult) } returns Mono.just(saved)
 
-        StepVerifier.create(service.saveAndUpdateSubmission(checkResult))
-            .assertNext { (saved, sub) ->
-                assertThat(saved.id).isEqualTo(10L)
-                assertThat(sub.id).isEqualTo(1L)
-            }
+        StepVerifier.create(service.saveCheckResult(checkResult))
+            .assertNext { assertThat(it.id).isEqualTo(10L) }
             .verifyComplete()
 
-        verify(exactly = 1) { submissionService.update(any()) }
+        assertThat(meterRegistry.counter("check.outcomes", "status", "SUCCESS").count()).isEqualTo(1.0)
+    }
+
+    // endregion
+
+    // region updateFromMessage
+
+    @Test
+    fun `updateFromMessage looks up stub by checkResultId, updates it, and increments counter`() {
+        val message = BackendFixtures.checkResultMessage(submissionId = 5L, checkResultId = 3L, status = CheckStatus.SUCCESS)
+        val stub = BackendFixtures.checkResult(id = 3L, submissionId = 5L, status = CheckStatus.PENDING)
+        val updated =
+            stub.copy(status = CheckStatus.SUCCESS, trustLevel = message.trustLevel, explanation = message.explanation)
+
+        every { checkResultRepository.findById(3L) } returns Mono.just(stub)
+        every { checkResultRepository.save(any()) } returns Mono.just(updated)
+
+        StepVerifier.create(service.updateFromMessage(message))
+            .assertNext { saved -> assertThat(saved.status).isEqualTo(CheckStatus.SUCCESS) }
+            .verifyComplete()
+
+        verify(exactly = 1) { checkResultRepository.save(any()) }
+        assertThat(meterRegistry.counter("check.outcomes", "status", "SUCCESS").count()).isEqualTo(1.0)
     }
 
     @Test
-    fun `saveAndUpdateSubmission emits NOT_FOUND when submission is missing`() {
-        val checkResult = BackendFixtures.checkResult(submissionId = 999L)
-        every { submissionService.findById(999L) } returns Mono.empty()
+    fun `updateFromMessage emits NOT_FOUND when checkResultId does not exist`() {
+        val message = BackendFixtures.checkResultMessage(checkResultId = 999L)
 
-        StepVerifier.create(service.saveAndUpdateSubmission(checkResult))
+        every { checkResultRepository.findById(999L) } returns Mono.empty()
+
+        StepVerifier.create(service.updateFromMessage(message))
             .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.NOT_FOUND }
             .verify()
 

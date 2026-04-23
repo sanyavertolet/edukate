@@ -5,7 +5,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Answer
 import io.github.sanyavertolet.edukate.backend.repositories.AnswerRepository
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
-import io.github.sanyavertolet.edukate.storage.keys.ResultFileKey
+import io.github.sanyavertolet.edukate.storage.keys.AnswerFileKey
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Caching
 import org.springframework.stereotype.Service
@@ -38,22 +38,23 @@ class AnswerService(
     fun saveAnswerBatch(answers: Flux<Answer>): Mono<Long> = answerRepository.saveAll(answers).count()
 
     fun findByProblemKey(problemKey: String): Mono<AnswerDto> =
-        problemRepository
-            .findByKey(problemKey)
-            .flatMap { problem -> answerRepository.findByProblemId(requireNotNull(problem.id)) }
-            .flatMap { answer -> toDto(answer) }
+        problemRepository.findByKey(problemKey).flatMap { problem ->
+            answerRepository.findByProblemId(requireNotNull(problem.id)).flatMap { answer -> toDto(answer, problem.key) }
+        }
 
     fun hasAnswer(problemId: Long): Mono<Boolean> = answerRepository.findByProblemId(problemId).hasElement()
 
-    private fun toDto(answer: Answer): Mono<AnswerDto> =
-        getAnswerImageUrls(answer).defaultIfEmpty(emptyList()).map { imageUrls ->
+    private fun toDto(answer: Answer, problemKey: String): Mono<AnswerDto> {
+        val (bookSlug, problemCode) = problemKey.split("/", limit = 2)
+        return getAnswerImageUrls(answer, bookSlug, problemCode).defaultIfEmpty(emptyList()).map { imageUrls ->
             AnswerDto(answer.text, answer.notes, imageUrls)
         }
+    }
 
-    private fun getAnswerImageUrls(answer: Answer): Mono<List<String>> =
+    private fun getAnswerImageUrls(answer: Answer, bookSlug: String, problemCode: String): Mono<List<String>> =
         answer.images
             .toFlux()
-            .map { fileName -> ResultFileKey(answer.problemId, fileName) }
+            .map { fileName -> AnswerFileKey(bookSlug, problemCode, fileName) }
             .flatMap { fileManager.getPresignedUrl(it) }
             .collectList()
 }

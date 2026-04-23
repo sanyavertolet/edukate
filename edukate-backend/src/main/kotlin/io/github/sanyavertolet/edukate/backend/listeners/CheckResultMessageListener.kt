@@ -4,6 +4,7 @@ import io.github.sanyavertolet.edukate.backend.entities.CheckResult
 import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.services.CheckResultService
+import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
 import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationCreateRequest
 import io.github.sanyavertolet.edukate.common.services.Notifier
@@ -20,6 +21,7 @@ import reactor.kotlin.core.publisher.toMono
 @Profile("!spec-gen")
 class CheckResultMessageListener(
     private val checkResultService: CheckResultService,
+    private val submissionService: SubmissionService,
     private val problemRepository: ProblemRepository,
     private val notifier: Notifier,
 ) {
@@ -27,12 +29,18 @@ class CheckResultMessageListener(
     fun onCheckResultMessage(checkResultMessage: CheckResultMessage) {
         log.debug("Received result for submission {}", checkResultMessage.submissionId)
 
-        CheckResult.fromCheckResultMessage(checkResultMessage)
+        checkResultMessage
             .toMono()
-            .flatMap { checkResultService.saveAndUpdateSubmission(it) }
-            .flatMap { (checkResult, submission) -> prepareNotification(checkResult, submission) }
+            .flatMap { checkResultService.updateFromMessage(it) }
+            .flatMap { checkResult ->
+                val submissionId = checkResultMessage.submissionId
+                submissionService.findById(submissionId).orNotFound("Submission $submissionId not found").flatMap {
+                    submission ->
+                    prepareNotification(checkResult, submission)
+                }
+            }
             .flatMap { notifier.notify(it) }
-            .doOnError { ex -> log.error("Failed to persist result {}", checkResultMessage.submissionId, ex) }
+            .doOnError { ex -> log.error("Failed to process result {}", checkResultMessage.submissionId, ex) }
             .block()
     }
 

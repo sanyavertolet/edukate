@@ -30,9 +30,10 @@ export function EdukateTopBar() {
 
     const { isAuthorized } = useAuthContext();
     const navigate = useNavigate();
-    const location = useLocation();
-    const isSignUpPage = location.pathname === "/sign-up";
-    const isSignInPage = location.pathname === "/sign-in";
+    const { pathname } = useLocation();
+    const isSignUpPage = pathname === "/sign-up";
+    const isSignInPage = pathname === "/sign-in";
+    const isNavActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
     return (
         <AppBar position="fixed" enableColorOnDark sx={appBarSx}>
             <Container maxWidth="lg">
@@ -52,12 +53,14 @@ export function EdukateTopBar() {
                         <Box sx={{ display: { xs: "none", md: "flex" } }}>
                             <TopBarLink
                                 text="Problems"
+                                isActive={isNavActive("/problems")}
                                 onClick={() => {
                                     void navigate("/problems");
                                 }}
                             />
                             <TopBarLink
                                 text="Problem Sets"
+                                isActive={isNavActive("/problem-sets")}
                                 onClick={() => {
                                     void navigate("/problem-sets");
                                 }}
@@ -101,11 +104,18 @@ type TopBarLinkProps = {
     onClick: () => void;
     disabled?: boolean;
     variant?: "text" | "contained";
+    isActive?: boolean;
 };
 
-const TopBarLink: FC<TopBarLinkProps> = ({ text, onClick, variant = "text", disabled = false }) => {
+const TopBarLink: FC<TopBarLinkProps> = ({ text, onClick, variant = "text", disabled = false, isActive = false }) => {
     return (
-        <Button variant={variant} color="primary" size="small" onClick={onClick} disabled={disabled}>
+        <Button
+            variant={variant}
+            color={isActive ? "secondary" : "primary"}
+            size="small"
+            onClick={onClick}
+            disabled={disabled}
+        >
             {text}
         </Button>
     );

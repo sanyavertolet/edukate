@@ -77,6 +77,7 @@ object BackendFixtures {
 
     fun checkResultMessage(
         submissionId: Long = 1L,
+        checkResultId: Long = 10L,
         status: CheckStatus = CheckStatus.SUCCESS,
         trustLevel: Float = 0.85f,
         errorType: CheckErrorType = CheckErrorType.NONE,
@@ -84,6 +85,7 @@ object BackendFixtures {
     ) =
         CheckResultMessage(
             submissionId = submissionId,
+            checkResultId = checkResultId,
             status = status,
             trustLevel = trustLevel,
             errorType = errorType,
