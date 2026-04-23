@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box, Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { mobileNavigationElements } from "./NavigationElement";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
@@ -11,7 +11,10 @@ interface MobileDrawerComponentProps {
 
 export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, setIsOpen }) => {
     const navigate = useNavigate();
+    const { pathname } = useLocation();
     const { pageSpecificNavigation } = useDeviceContext();
+
+    const isNavActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
     return (
         <Drawer
@@ -34,7 +37,7 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
                                 onClick={() => {
                                     void navigate(element.href);
                                 }}
-                                selected={window.location.href.endsWith(element.href)}
+                                selected={isNavActive(element.href)}
                             >
                                 {element.icon && <ListItemIcon>{element.icon}</ListItemIcon>}
                                 <ListItemText primary={element.text} />

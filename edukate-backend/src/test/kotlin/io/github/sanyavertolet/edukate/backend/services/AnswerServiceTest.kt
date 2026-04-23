@@ -7,7 +7,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Answer
 import io.github.sanyavertolet.edukate.backend.repositories.AnswerRepository
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
-import io.github.sanyavertolet.edukate.storage.keys.ResultFileKey
+import io.github.sanyavertolet.edukate.storage.keys.AnswerFileKey
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -63,13 +63,13 @@ class AnswerServiceTest {
         val problem = BackendFixtures.problem(id = 1L, code = "P1")
         val answer =
             BackendFixtures.answer(id = 1L, problemId = 1L, text = "Answer", notes = "Notes", images = listOf("img.png"))
-        val resultKey = ResultFileKey(1L, "img.png")
 
-        every { problemRepository.findByKey("P1") } returns Mono.just(problem)
+        every { problemRepository.findByKey("savchenko/P1") } returns Mono.just(problem)
         every { answerRepository.findByProblemId(1L) } returns Mono.just(answer)
-        every { fileManager.getPresignedUrl(resultKey) } returns Mono.just("https://s3/result-img.png")
+        every { fileManager.getPresignedUrl(AnswerFileKey("savchenko", "P1", "img.png")) } returns
+            Mono.just("https://s3/result-img.png")
 
-        StepVerifier.create(service.findByProblemKey("P1"))
+        StepVerifier.create(service.findByProblemKey("savchenko/P1"))
             .assertNext { r -> assertThat(r.images).containsExactly("https://s3/result-img.png") }
             .verifyComplete()
     }

@@ -39,10 +39,10 @@ class ProblemSetService(
     @Cacheable(key = "#shareCode") fun findByShareCode(shareCode: String): Mono<ProblemSet> = loadProblemSet(shareCode)
 
     fun getOwnedProblemSets(pageable: PageRequest, authentication: Authentication): Flux<ProblemSet> =
-        authentication.monoId().flatMapMany { userId -> problemSetRepository.findByUserId(userId, pageable) }
+        authentication.monoId().flatMapMany { userId -> problemSetRepository.findOwnedByUserId(userId, pageable) }
 
     fun getJoinedProblemSets(pageable: PageRequest, authentication: Authentication): Flux<ProblemSet> =
-        authentication.monoId().flatMapMany { userId -> problemSetRepository.findByUserId(userId, pageable) }
+        authentication.monoId().flatMapMany { userId -> problemSetRepository.findJoinedByUserId(userId, pageable) }
 
     fun getPublicProblemSets(pageable: PageRequest): Flux<ProblemSet> = problemSetRepository.findByIsPublic(true, pageable)
 
@@ -69,11 +69,6 @@ class ProblemSetService(
                         problemSetProblemRepository.saveAll(entries).then(Mono.just(saved))
                     }
             }
-        }
-
-    fun getProblemIds(shareCode: String): Flux<Long> =
-        loadProblemSet(shareCode).flatMapMany { ps ->
-            problemSetProblemRepository.findByProblemSetIdOrderByPosition(requireNotNull(ps.id)).map { it.problemId }
         }
 
     @CacheEvict(key = "#shareCode")

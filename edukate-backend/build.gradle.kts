@@ -42,7 +42,7 @@ dependencies {
     implementation(libs.caffeine)
     implementation(libs.spring.boot.starter.data.r2dbc)
     implementation(libs.r2dbc.postgresql)
-    implementation(libs.flyway.core)
+    implementation(libs.spring.boot.starter.flyway)
     implementation(libs.flyway.database.postgresql)
     runtimeOnly(libs.postgresql)
     implementation(libs.springdoc.openapi.starter.webflux.ui)

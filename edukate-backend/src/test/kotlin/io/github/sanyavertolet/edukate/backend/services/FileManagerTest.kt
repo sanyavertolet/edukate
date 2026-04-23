@@ -44,7 +44,7 @@ class FileManagerTest {
 
     @Test
     fun `getFileObject returns from repo`() {
-        val key = ProblemFileKey(111L, "image.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "image.png")
         val fo = fileObject(key)
         every { fileObjectRepository.findByKeyPath(key.toString()) } returns Mono.just(fo)
 
@@ -53,7 +53,7 @@ class FileManagerTest {
 
     @Test
     fun `getFileObject times out`() {
-        val key = ProblemFileKey(111L, "image.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "image.png")
         every { fileObjectRepository.findByKeyPath(key.toString()) } returns Mono.never()
 
         StepVerifier.withVirtualTime { fileManager.getFileObject(key) }
@@ -68,7 +68,7 @@ class FileManagerTest {
 
     @Test
     fun `getFileContent downloads from storage`() {
-        val key = ProblemFileKey(111L, "image.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "image.png")
         val buffer = ByteBuffer.wrap(byteArrayOf(1, 2, 3))
         every { storage.getContent(key) } returns Flux.just(buffer)
 
@@ -81,7 +81,7 @@ class FileManagerTest {
 
     @Test
     fun `getPresignedUrl delegates to storage`() {
-        val key = ProblemFileKey(111L, "image.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "image.png")
         every { storage.generatePresignedUrl(key) } returns Mono.just("https://s3/presigned-url")
 
         StepVerifier.create(fileManager.getPresignedUrl(key)).expectNext("https://s3/presigned-url").verifyComplete()
@@ -135,7 +135,7 @@ class FileManagerTest {
 
     @Test
     fun `deleteFile both storage and db`() {
-        val key = ProblemFileKey(111L, "img.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "img.png")
         every { storage.delete(key) } returns Mono.just(true)
         every { fileObjectRepository.deleteByKeyPath(key.toString()) } returns Mono.just(1L)
 
@@ -144,7 +144,7 @@ class FileManagerTest {
 
     @Test
     fun `deleteFile storage fails continues to db`() {
-        val key = ProblemFileKey(111L, "img.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "img.png")
         every { storage.delete(key) } returns Mono.error(RuntimeException("S3 unavailable"))
         every { fileObjectRepository.deleteByKeyPath(key.toString()) } returns Mono.just(1L)
 
@@ -153,7 +153,7 @@ class FileManagerTest {
 
     @Test
     fun `deleteFile no record is idempotent`() {
-        val key = ProblemFileKey(111L, "img.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "img.png")
         every { storage.delete(key) } returns Mono.just(false)
         every { fileObjectRepository.deleteByKeyPath(key.toString()) } returns Mono.just(0L)
 
@@ -166,7 +166,7 @@ class FileManagerTest {
 
     @Test
     fun `doesFileExist returns true when Metadata exists`() {
-        val key = ProblemFileKey(111L, "img.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "img.png")
         every { storage.metadata(key) } returns Mono.just(meta())
 
         StepVerifier.create(fileManager.doesFileExist(key)).expectNext(true).verifyComplete()
@@ -174,7 +174,7 @@ class FileManagerTest {
 
     @Test
     fun `doesFileExist returns false when empty`() {
-        val key = ProblemFileKey(111L, "img.png")
+        val key = ProblemFileKey("savchenko", "1.1.1", "img.png")
         every { storage.metadata(key) } returns Mono.empty()
 
         StepVerifier.create(fileManager.doesFileExist(key)).expectNext(false).verifyComplete()
@@ -182,8 +182,8 @@ class FileManagerTest {
 
     @Test
     fun `doFilesExist all exist`() {
-        val key1 = ProblemFileKey(111L, "img1.png")
-        val key2 = ProblemFileKey(111L, "img2.png")
+        val key1 = ProblemFileKey("savchenko", "1.1.1", "img1.png")
+        val key2 = ProblemFileKey("savchenko", "1.1.1", "img2.png")
         every { storage.metadata(key1) } returns Mono.just(meta())
         every { storage.metadata(key2) } returns Mono.just(meta(200L))
 
@@ -192,8 +192,8 @@ class FileManagerTest {
 
     @Test
     fun `doFilesExist one missing`() {
-        val key1 = ProblemFileKey(111L, "img1.png")
-        val key2 = ProblemFileKey(111L, "missing.png")
+        val key1 = ProblemFileKey("savchenko", "1.1.1", "img1.png")
+        val key2 = ProblemFileKey("savchenko", "1.1.1", "missing.png")
         every { storage.metadata(key1) } returns Mono.just(meta())
         every { storage.metadata(key2) } returns Mono.empty()
 
@@ -260,8 +260,8 @@ class FileManagerTest {
 
     @Test
     fun `listFileMetadataWithPrefix maps to dto`() {
-        val prefix = "problems/111/"
-        val key = ProblemFileKey(111L, "img.png")
+        val prefix = "books/savchenko/problems/1.1.1/"
+        val key = ProblemFileKey("savchenko", "1.1.1", "img.png")
         val now = Instant.now()
         val fo =
             FileObject(

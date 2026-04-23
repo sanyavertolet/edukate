@@ -151,8 +151,8 @@ class NotificationRepositoryTest {
         val secondMs = savedSecond.createdAt!!.truncatedTo(ChronoUnit.MILLIS)
 
         StepVerifier.create(repository.findAllByTargetUserId(user, pageable))
-            .assertNext { assertThat(it?.createdAt).isEqualTo(secondMs) }
-            .assertNext { assertThat(it?.createdAt).isEqualTo(firstMs) }
+            .assertNext { assertThat(it.createdAt).isEqualTo(secondMs) }
+            .assertNext { assertThat(it.createdAt).isEqualTo(firstMs) }
             .verifyComplete()
     }
 

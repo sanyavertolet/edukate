@@ -34,7 +34,8 @@ class ProblemMapperTest {
         val auth = BackendFixtures.mockAuthentication()
         val problem = BackendFixtures.problem(id = 1L, code = "1.1.1", images = listOf("img.png"))
         every { problemStatusDecisionManager.getStatus(1L, auth) } returns Mono.just(Problem.Status.SOLVED)
-        every { fileManager.getPresignedUrl(ProblemFileKey(1L, "img.png")) } returns Mono.just("https://s3/img.png")
+        every { fileManager.getPresignedUrl(ProblemFileKey("savchenko", "1.1.1", "img.png")) } returns
+            Mono.just("https://s3/img.png")
         every { answerService.hasAnswer(1L) } returns Mono.just(false)
         every { bookService.findById(any()) } returns Mono.just(BackendFixtures.book())
 

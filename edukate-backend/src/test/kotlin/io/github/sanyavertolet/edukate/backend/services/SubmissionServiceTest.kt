@@ -33,7 +33,6 @@ class SubmissionServiceTest {
     private val submissionFileService: SubmissionFileService = mockk()
     private val fileObjectRepository: FileObjectRepository = mockk()
     private val submissionPermissionEvaluator: SubmissionPermissionEvaluator = mockk()
-    private val problemProgressService: ProblemProgressService = mockk()
     private val meterRegistry = SimpleMeterRegistry()
     private lateinit var service: SubmissionService
 
@@ -46,7 +45,6 @@ class SubmissionServiceTest {
                 submissionFileService,
                 fileObjectRepository,
                 submissionPermissionEvaluator,
-                problemProgressService,
                 meterRegistry,
             )
     }
@@ -76,7 +74,6 @@ class SubmissionServiceTest {
         every { fileObjectRepository.findByKeyPath(fileKey.toString()) } returns Mono.just(fileObject)
         every { submissionRepository.save(match { it.id == 10L && it.fileObjectIds == listOf("1") }) } returns
             Mono.just(savedSubmission.withFileObjectIds(listOf("1")))
-        every { problemProgressService.updateProgress(any()) } returns Mono.empty()
 
         StepVerifier.create(service.saveSubmission(1L, request))
             .assertNext { sub -> assertThat(sub.fileObjectIds).containsExactly("1") }
@@ -96,7 +93,6 @@ class SubmissionServiceTest {
         every { fileObjectRepository.findByKeyPath(any()) } returns Mono.empty()
         every { submissionRepository.save(match { it.id == 1L }) } returns
             Mono.just(savedSubmission.withFileObjectIds(emptyList()))
-        every { problemProgressService.updateProgress(any()) } returns Mono.empty()
 
         StepVerifier.create(service.saveSubmission(request, auth)).expectNextCount(1).verifyComplete()
     }
@@ -109,7 +105,6 @@ class SubmissionServiceTest {
     fun `update delegates to repository`() {
         val submission = BackendFixtures.submission()
         every { submissionRepository.save(submission) } returns Mono.just(submission)
-        every { problemProgressService.updateProgress(submission) } returns Mono.empty()
 
         StepVerifier.create(service.update(submission)).expectNext(submission).verifyComplete()
 

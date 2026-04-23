@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.common.checks
 
 data class CheckResultMessage(
     val submissionId: Long,
+    val checkResultId: Long,
     val status: CheckStatus,
     val trustLevel: Float,
     val errorType: CheckErrorType,

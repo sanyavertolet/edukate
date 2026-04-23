@@ -78,12 +78,14 @@ class SubmissionMapperTest {
         every { problemService.findProblemById(1L) } returns Mono.just(problem)
         every { fileObjectRepository.findAllById(listOf(1L)) } returns Flux.just(fileObject)
 
-        StepVerifier.create(mapper.prepareContext(submission))
+        StepVerifier.create(mapper.prepareContext(submission, checkResultId = 10L))
             .assertNext { ctx ->
                 assertThat(ctx.submissionId).isEqualTo(1L)
+                assertThat(ctx.checkResultId).isEqualTo(10L)
                 assertThat(ctx.problemId).isEqualTo(1L)
                 assertThat(ctx.problemText).isEqualTo("Solve it")
-                assertThat(ctx.problemImageRawKeys).containsExactly(ProblemFileKey(1L, "img.png").toString())
+                assertThat(ctx.problemImageRawKeys)
+                    .containsExactly(ProblemFileKey("savchenko", "1.1.1", "img.png").toString())
                 assertThat(ctx.submissionImageRawKeys).containsExactly(fileKey.toString())
             }
             .verifyComplete()

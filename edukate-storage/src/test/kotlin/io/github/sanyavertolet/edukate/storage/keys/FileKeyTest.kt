@@ -27,21 +27,29 @@ class FileKeyTest {
                 assertThat(k.fileName).isEqualTo("answer.zip")
             })
 
-        assertThat(fileKey("problems/10/statement.pdf"))
+        assertThat(fileKey("books/savchenko/problems/1.1.1/statement.pdf"))
             .isInstanceOf(ProblemFileKey::class.java)
-            .extracting({ (it as ProblemFileKey).problemId }, { it.fileName })
-            .containsExactly(10L, "statement.pdf")
+            .satisfies({ key ->
+                val k = key as ProblemFileKey
+                assertThat(k.bookSlug).isEqualTo("savchenko")
+                assertThat(k.problemCode).isEqualTo("1.1.1")
+                assertThat(k.fileName).isEqualTo("statement.pdf")
+            })
 
-        assertThat(fileKey("results/10/result.json"))
-            .isInstanceOf(ResultFileKey::class.java)
-            .extracting({ (it as ResultFileKey).problemId }, { it.fileName })
-            .containsExactly(10L, "result.json")
+        assertThat(fileKey("books/savchenko/answers/1.1.1/result.json"))
+            .isInstanceOf(AnswerFileKey::class.java)
+            .satisfies({ key ->
+                val k = key as AnswerFileKey
+                assertThat(k.bookSlug).isEqualTo("savchenko")
+                assertThat(k.problemCode).isEqualTo("1.1.1")
+                assertThat(k.fileName).isEqualTo("result.json")
+            })
     }
 
     @Test
     fun `fileKey() normalises leading slash and double slashes`() {
         assertThat(fileKey("/users/1/tmp/file.txt")).isInstanceOf(TempFileKey::class.java)
-        assertThat(fileKey("problems//10//file.txt")).isInstanceOf(ProblemFileKey::class.java)
+        assertThat(fileKey("books//savchenko//problems//1.1.1//file.txt")).isInstanceOf(ProblemFileKey::class.java)
     }
 
     // Region 2 — fileKey() invalid paths
@@ -50,28 +58,37 @@ class FileKeyTest {
         assertThatIllegalArgumentException().isThrownBy { fileKey("") }
         assertThatIllegalArgumentException().isThrownBy { fileKey("   ") }
         assertThatIllegalArgumentException().isThrownBy { fileKey("users/1/tmp") }
-        assertThatIllegalArgumentException().isThrownBy { fileKey("unknown/10/file.txt") }
+        assertThatIllegalArgumentException().isThrownBy { fileKey("unknown/savchenko/problems/1.1.1/file.txt") }
     }
 
     // Region 3 — toString() and round-trip
     @Test
     fun `toString() produces correct paths and round-trip via fileKey() preserves type and fields`() {
         assertThat(TempFileKey(1L, "file.txt").toString()).isEqualTo("users/1/tmp/file.txt")
-        assertThat(ProblemFileKey(10L, "stmt.pdf").toString()).isEqualTo("problems/10/stmt.pdf")
-        assertThat(ResultFileKey(10L, "res.json").toString()).isEqualTo("results/10/res.json")
+        assertThat(ProblemFileKey("savchenko", "1.1.1", "stmt.pdf").toString())
+            .isEqualTo("books/savchenko/problems/1.1.1/stmt.pdf")
+        assertThat(AnswerFileKey("savchenko", "1.1.1", "res.json").toString())
+            .isEqualTo("books/savchenko/answers/1.1.1/res.json")
         assertThat(SubmissionFileKey(1L, 10L, 100L, "ans.zip").toString()).isEqualTo("users/1/submissions/10/100/ans.zip")
 
         val original = SubmissionFileKey(2L, 20L, 200L, "code.py")
         val roundTripped = fileKey(original.toString())
         assertThat(roundTripped).isInstanceOf(SubmissionFileKey::class.java).isEqualTo(original)
+
+        val problemKey = ProblemFileKey("savchenko", "2.3.4", "img.jpg")
+        assertThat(fileKey(problemKey.toString())).isEqualTo(problemKey)
+
+        val answerKey = AnswerFileKey("savchenko", "2.3.4", "ans.jpg")
+        assertThat(fileKey(answerKey.toString())).isEqualTo(answerKey)
     }
 
     // Region 4 — prefix()
     @Test
     fun `prefix() returns correct path prefix for each type`() {
         assertThat(TempFileKey.prefix(1L)).isEqualTo("users/1/tmp/")
-        assertThat(ProblemFileKey.prefix(10L)).isEqualTo("problems/10/")
-        assertThat(ResultFileKey.prefix(10L)).isEqualTo("results/10/")
+        assertThat(ProblemFileKey.prefix("savchenko", "1.1.1")).isEqualTo("books/savchenko/problems/1.1.1/")
+        assertThat(ProblemFileKey.bookPrefix("savchenko")).isEqualTo("books/savchenko/problems/")
+        assertThat(AnswerFileKey.prefix("savchenko", "1.1.1")).isEqualTo("books/savchenko/answers/1.1.1/")
         assertThat(SubmissionFileKey.prefix(1L, 10L, 100L)).isEqualTo("users/1/submissions/10/100/")
     }
 
@@ -80,21 +97,22 @@ class FileKeyTest {
     fun `type() and owner() return correct values for each subtype`() {
         assertThat(TempFileKey(1L, "f").type()).isEqualTo("tmp")
         assertThat(SubmissionFileKey(1L, 10L, 100L, "f").type()).isEqualTo("submission")
-        assertThat(ProblemFileKey(10L, "f").type()).isEqualTo("problem")
-        assertThat(ResultFileKey(10L, "f").type()).isEqualTo("result")
+        assertThat(ProblemFileKey("savchenko", "1.1.1", "f").type()).isEqualTo("problem")
+        assertThat(AnswerFileKey("savchenko", "1.1.1", "f").type()).isEqualTo("answer")
 
         assertThat(TempFileKey(1L, "f").owner()).isEqualTo(1L)
         assertThat(SubmissionFileKey(1L, 10L, 100L, "f").owner()).isEqualTo(1L)
-        assertThat(ProblemFileKey(10L, "f").owner()).isNull()
-        assertThat(ResultFileKey(10L, "f").owner()).isNull()
+        assertThat(ProblemFileKey("savchenko", "1.1.1", "f").owner()).isNull()
+        assertThat(AnswerFileKey("savchenko", "1.1.1", "f").owner()).isNull()
     }
 
     // Region 6 — equals and hashCode
     @Test
     fun `equals() and hashCode() include all fields`() {
-        assertThat(ProblemFileKey(10L, "a.pdf")).isEqualTo(ProblemFileKey(10L, "a.pdf"))
-        assertThat(ProblemFileKey(10L, "a.pdf")).isNotEqualTo(ProblemFileKey(10L, "b.pdf"))
-        assertThat(ProblemFileKey(10L, "a.pdf")).isNotEqualTo(ProblemFileKey(20L, "a.pdf"))
+        assertThat(ProblemFileKey("savchenko", "1.1.1", "a.pdf")).isEqualTo(ProblemFileKey("savchenko", "1.1.1", "a.pdf"))
+        assertThat(ProblemFileKey("savchenko", "1.1.1", "a.pdf")).isNotEqualTo(ProblemFileKey("savchenko", "1.1.1", "b.pdf"))
+        assertThat(ProblemFileKey("savchenko", "1.1.1", "a.pdf")).isNotEqualTo(ProblemFileKey("savchenko", "1.1.2", "a.pdf"))
+        assertThat(ProblemFileKey("savchenko", "1.1.1", "a.pdf")).isNotEqualTo(ProblemFileKey("other", "1.1.1", "a.pdf"))
 
         assertThat(TempFileKey(1L, "a.txt")).isEqualTo(TempFileKey(1L, "a.txt"))
         assertThat(TempFileKey(1L, "a.txt")).isNotEqualTo(TempFileKey(1L, "b.txt"))
@@ -111,11 +129,11 @@ class FileKeyTest {
         val keys: List<FileKey> =
             listOf(
                 TempFileKey(1L, "file.txt"),
-                ProblemFileKey(10L, "stmt.pdf"),
-                ResultFileKey(10L, "res.json"),
+                ProblemFileKey("savchenko", "1.1.1", "stmt.pdf"),
+                AnswerFileKey("savchenko", "1.1.1", "res.json"),
                 SubmissionFileKey(1L, 10L, 100L, "ans.zip"),
             )
-        val expectedTypes = listOf("tmp", "problem", "result", "submission")
+        val expectedTypes = listOf("tmp", "problem", "answer", "submission")
 
         keys.zip(expectedTypes).forEach { (key, expectedType) ->
             val json = objectMapper.writeValueAsString(key)

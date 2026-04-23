@@ -10,6 +10,7 @@ enum class SubmissionStatus {
     companion object {
         fun from(checkStatus: CheckStatus) =
             when (checkStatus) {
+                CheckStatus.PENDING -> PENDING
                 CheckStatus.SUCCESS -> SUCCESS
                 CheckStatus.INTERNAL_ERROR -> FAILED
                 CheckStatus.MISTAKE -> FAILED

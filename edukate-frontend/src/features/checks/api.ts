@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { aiCheck, getCheckResultsBySubmissionId, selfCheck, supervisorCheck } from "@/generated/backend";
+import { aiCheck, getCheckResultById, getCheckResultsBySubmissionId, selfCheck, supervisorCheck } from "@/generated/backend";
 import { useAuthContext } from "@/features/auth/context";
 import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
@@ -25,5 +25,14 @@ export function useCheckResultsRequest(submissionId: string) {
         queryKey: queryKeys.checks.bySubmission(submissionId),
         enabled: isAuthorized,
         queryFn: ({ signal }) => getCheckResultsBySubmissionId(submissionId, signal),
+    });
+}
+
+export function useCheckResultDetailQuery(checkResultId: number | null) {
+    const { isAuthorized } = useAuthContext();
+    return useQuery({
+        queryKey: queryKeys.checks.detail(String(checkResultId ?? "")),
+        enabled: isAuthorized && checkResultId !== null,
+        queryFn: ({ signal }) => getCheckResultById(String(checkResultId ?? ""), signal),
     });
 }

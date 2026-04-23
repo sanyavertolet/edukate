@@ -64,9 +64,11 @@ class ProblemMapper(
             }
     }
 
-    private fun imageUrls(problem: Problem): Flux<String> =
-        problem.images
+    private fun imageUrls(problem: Problem): Flux<String> {
+        val (bookSlug, problemCode) = problem.key.split("/", limit = 2)
+        return problem.images
             .toFlux()
-            .map { ProblemFileKey(requireNotNull(problem.id), it) }
+            .map { ProblemFileKey(bookSlug, problemCode, it) }
             .flatMap { fileManager.getPresignedUrl(it) }
+    }
 }

@@ -49,6 +49,16 @@ data class CheckResult(
             )
 
         @JvmStatic
+        fun stub(submissionId: Long) =
+            CheckResult(
+                submissionId = submissionId,
+                status = CheckStatus.PENDING,
+                trustLevel = 0f,
+                errorType = CheckErrorType.NONE,
+                explanation = "AI check scheduled, awaiting result.",
+            )
+
+        @JvmStatic
         fun fromCheckResultMessage(checkResultMessage: CheckResultMessage) =
             CheckResult(
                 submissionId = checkResultMessage.submissionId,

@@ -35,12 +35,14 @@ class SubmissionMapper(
                 )
             }
 
-    fun prepareContext(submission: Submission): Mono<SubmissionContext> =
+    fun prepareContext(submission: Submission, checkResultId: Long): Mono<SubmissionContext> =
         problemService.findProblemById(submission.problemId).flatMap { problem ->
-            val problemRawKeys = problem.images.map { ProblemFileKey(requireNotNull(problem.id), it).toString() }
+            val (bookSlug, problemCode) = problem.key.split("/", limit = 2)
+            val problemRawKeys = problem.images.map { ProblemFileKey(bookSlug, problemCode, it).toString() }
             collectFileKeyPaths(submission).map { submissionRawKeys ->
                 SubmissionContext(
                     requireNotNull(submission.id) { "Submission id must not be null" },
+                    checkResultId,
                     requireNotNull(problem.id),
                     problem.text,
                     problemRawKeys,

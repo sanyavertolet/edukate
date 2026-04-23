@@ -102,8 +102,8 @@ class CheckerController(
         submissionService
             .getSubmissionIfOwns(submissionId, requireNotNull(authentication.id()))
             .map { submission -> CheckResult.self(requireNotNull(submission.id)) }
-            .flatMap { checkResultService.saveAndUpdateSubmission(it) }
-            .map { ResponseEntity.accepted().build() }
+            .flatMap { checkResultService.saveCheckResult(it) }
+            .map { ResponseEntity.accepted().build<Void>() }
 
     @Suppress("unused")
     @PostMapping("/supervisor")
