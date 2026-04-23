@@ -16,7 +16,7 @@ export function PrefixOptionInputForm({
     optionsUrl,
     onSelectedOptionsChange,
     debounceTime = 500,
-    selectedOptions = [],
+    selectedOptions,
     placeholderText,
     label,
 }: PrefixOptionInputFormProps) {

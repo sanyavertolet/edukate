@@ -28,13 +28,7 @@ interface ImageLightboxProps {
     renderAnnotationLayer?: AnnotationLayerRenderer;
 }
 
-export const ImageLightbox: FC<ImageLightboxProps> = ({
-    images,
-    index,
-    open,
-    onClose,
-    renderAnnotationLayer: _renderAnnotationLayer, // eslint-disable-line @typescript-eslint/no-unused-vars
-}) => {
+export const ImageLightbox: FC<ImageLightboxProps> = ({ images, index, open, onClose }) => {
     const slides: SlideImage[] = images.map((src) => ({ src }));
 
     return (
