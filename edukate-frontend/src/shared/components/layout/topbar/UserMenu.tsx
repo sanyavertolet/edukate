@@ -61,7 +61,7 @@ export function UserMenu() {
                 anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                 open={isMenuOpen}
                 onClose={handleClose}
-                MenuListProps={{ "aria-labelledby": "user-menu-button" }}
+                slotProps={{ list: { "aria-labelledby": "user-menu-button" } }}
                 keepMounted
             >
                 {user ? signedInMenuItems : signedOutMenuItems}

@@ -11,7 +11,7 @@ export function parseDate(input: DateInput): Date {
     if (typeof input === "number") return new Date(input);
     const d = new Date(input);
     if (isNaN(d.getTime())) {
-        throw new Error(`Invalid date input: ${String(input)}`);
+        throw new Error(`Invalid date input: ${input}`);
     }
     return d;
 }

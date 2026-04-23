@@ -340,17 +340,21 @@ ON CONFLICT (problem_id) DO NOTHING;
 
 -- ── Submissions (problem 1.1.4, user admin) ───────────────────────────────────
 -- Four submissions covering every observable state for UI testing:
---   Sub 1 (09:00) → check_result PENDING      → submission stays  PENDING
---   Sub 2 (10:00) → check_result MISTAKE       → trigger → FAILED
---   Sub 3 (11:00) → check_result SUCCESS        → trigger → SUCCESS
---   Sub 4 (12:00) → check_result INTERNAL_ERROR → trigger → FAILED
+--   Sub 1 (id=1, 09:00) → check_result PENDING      → submission stays  PENDING
+--   Sub 2 (id=2, 10:00) → check_result MISTAKE       → trigger → FAILED
+--   Sub 3 (id=3, 11:00) → check_result SUCCESS        → trigger → SUCCESS
+--   Sub 4 (id=4, 12:00) → check_result INTERNAL_ERROR → trigger → FAILED
 -- problem_progress after all triggers: latest=FAILED (sub 4), best=SUCCESS (sub 3)
+--
+-- All IDs are hardcoded so ON CONFLICT (id) DO NOTHING makes inserts idempotent
+-- even if individual rows were deleted and the script is re-run.
 --
 -- Submission image (put this file in MinIO before testing):
 --   users/1/submissions/16/1/solution.jpg
 --   (userId=1=admin, problemId=16=1.1.4 by insertion order, submissionId=1)
 
-INSERT INTO file_objects (key_path, key, type, owner_user_id, metadata, created_at, updated_at) VALUES (
+INSERT INTO file_objects (id, key_path, key, type, owner_user_id, metadata, created_at, updated_at) VALUES (
+    1,
     'users/1/submissions/16/1/solution.jpg',
     '{"_type": "submission", "userId": 1, "problemId": 16, "submissionId": 1, "fileName": "solution.jpg"}',
     'submission',
@@ -358,50 +362,44 @@ INSERT INTO file_objects (key_path, key, type, owner_user_id, metadata, created_
     '{"lastModified": "2026-04-23T09:00:00Z", "contentLength": 45678, "contentType": "image/jpeg"}',
     '2026-04-23 09:00:00+00',
     '2026-04-23 09:00:00+00'
-) ON CONFLICT (key_path) DO NOTHING;
+) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO submissions (problem_id, user_id, status, file_object_ids, created_at)
-SELECT
+INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at)
+VALUES (
+    1,
     (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
     (SELECT id FROM users WHERE name = 'admin'),
     'PENDING',
-    jsonb_agg(fo.id),
+    '[1]',
     '2026-04-23 09:00:00+00'
-FROM file_objects fo WHERE fo.key_path = 'users/1/submissions/16/1/solution.jpg';
+) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO submissions (problem_id, user_id, status, file_object_ids, created_at) VALUES
-    ((SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
-     (SELECT id FROM users WHERE name = 'admin'),
-     'PENDING', '[]', '2026-04-23 10:00:00+00'),
-    ((SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
-     (SELECT id FROM users WHERE name = 'admin'),
-     'PENDING', '[]', '2026-04-23 11:00:00+00'),
-    ((SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
-     (SELECT id FROM users WHERE name = 'admin'),
-     'PENDING', '[]', '2026-04-23 12:00:00+00');
+INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at)
+VALUES
+    (2, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 10:00:00+00'),
+    (3, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 11:00:00+00'),
+    (4, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 12:00:00+00')
+ON CONFLICT (id) DO NOTHING;
 
 -- Check results — triggers will update submission status and problem_progress automatically.
-INSERT INTO check_results (submission_id, status, trust_level, error_type, explanation, created_at)
-SELECT id, 'PENDING', 0.0, 'NONE', '', '2026-04-23 09:05:00+00'
-FROM submissions WHERE created_at = '2026-04-23 09:00:00+00';
+INSERT INTO check_results (id, submission_id, status, trust_level, error_type, explanation, created_at)
+VALUES
+    (1, 1, 'PENDING', 0.0, 'NONE', '', '2026-04-23 09:05:00+00'),
+    (2, 2, 'MISTAKE', 0.3, 'ALGEBRAIC',
+        'The sign of the velocity component was incorrect; the displacement should be measured from counter B, not A.',
+        '2026-04-23 10:05:00+00'),
+    (3, 3, 'SUCCESS', 0.95, 'NONE',
+        'Correct. The time difference Δt = 10⁻⁹ s and c = 3×10⁸ m/s give an offset of 0.15 m from the midpoint, placing the decay point 1.15 m from counter A.',
+        '2026-04-23 11:05:00+00'),
+    (4, 4, 'INTERNAL_ERROR', 0.0, 'UNCLEAR',
+        'Checker could not parse the submitted image; please re-upload a clearer scan.',
+        '2026-04-23 12:05:00+00')
+ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO check_results (submission_id, status, trust_level, error_type, explanation, created_at)
-SELECT id, 'MISTAKE', 0.3, 'ALGEBRAIC',
-    'The sign of the velocity component was incorrect; the displacement should be measured from counter B, not A.',
-    '2026-04-23 10:05:00+00'
-FROM submissions WHERE created_at = '2026-04-23 10:00:00+00';
-
-INSERT INTO check_results (submission_id, status, trust_level, error_type, explanation, created_at)
-SELECT id, 'SUCCESS', 0.95, 'NONE',
-    'Correct. The time difference Δt = 10⁻⁹ s and c = 3×10⁸ m/s give an offset of 0.15 m from the midpoint, placing the decay point 1.15 m from counter A.',
-    '2026-04-23 11:05:00+00'
-FROM submissions WHERE created_at = '2026-04-23 11:00:00+00';
-
-INSERT INTO check_results (submission_id, status, trust_level, error_type, explanation, created_at)
-SELECT id, 'INTERNAL_ERROR', 0.0, 'UNCLEAR',
-    'Checker could not parse the submitted image; please re-upload a clearer scan.',
-    '2026-04-23 12:05:00+00'
-FROM submissions WHERE created_at = '2026-04-23 12:00:00+00';
+-- Advance sequences past the hardcoded IDs so future inserts don't collide.
+SELECT setval('file_objects_id_seq',  GREATEST((SELECT MAX(id) FROM file_objects),  1));
+SELECT setval('submissions_id_seq',   GREATEST((SELECT MAX(id) FROM submissions),   1));
+SELECT setval('check_results_id_seq', GREATEST((SELECT MAX(id) FROM check_results), 1));
 
 -- ── Problem sets ──────────────────────────────────────────────────────────────
 -- Three problem sets covering every interesting membership scenario:
@@ -467,7 +465,8 @@ SELECT
 FROM (VALUES
     ('savchenko/1.1.4',  0),
     ('savchenko/1.3.13', 1)
-) AS p(key, pos);
+) AS p(key, pos)
+ON CONFLICT (problem_set_id, problem_id) DO NOTHING;
 
 -- Set 2: Classical Mechanics — 2.4.34, 2.1.30, 3.2.7, 4.3.12, 5.6.19
 INSERT INTO problem_set_problems (problem_set_id, problem_id, position)
@@ -481,7 +480,8 @@ FROM (VALUES
     ('savchenko/3.2.7',  2),
     ('savchenko/4.3.12', 3),
     ('savchenko/5.6.19', 4)
-) AS p(key, pos);
+) AS p(key, pos)
+ON CONFLICT (problem_set_id, problem_id) DO NOTHING;
 
 -- Set 3: Introduction to Physics — one problem from each of six different chapters
 INSERT INTO problem_set_problems (problem_set_id, problem_id, position)
@@ -496,4 +496,5 @@ FROM (VALUES
     ('savchenko/10.1.21', 3),
     ('savchenko/13.3.10', 4),
     ('savchenko/14.3.19', 5)
-) AS p(key, pos);
+) AS p(key, pos)
+ON CONFLICT (problem_set_id, problem_id) DO NOTHING;

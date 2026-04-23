@@ -21,11 +21,11 @@ import { useNavigate } from "react-router-dom";
 
 export function SubmissionListItem({
     submission,
-    setImage,
+    openImages,
     onSelect,
 }: {
     submission: Submission;
-    setImage: (image: string) => void;
+    openImages: (images: string[], index: number) => void;
     onSelect?: (submission: Submission) => void;
 }) {
     const { icon, color } = getStatusVisuals(submission.status);
@@ -33,7 +33,7 @@ export function SubmissionListItem({
     const attachments = useMemo(() => submission.fileUrls, [submission.fileUrls]);
     const navigate = useNavigate();
     return (
-        <ListItem disablePadding secondaryAction={AttachmentButtonList(attachments, setImage)}>
+        <ListItem disablePadding secondaryAction={AttachmentButtonList(attachments, openImages)}>
             <ListItemButton
                 onClick={() => {
                     if (onSelect) {
@@ -52,10 +52,10 @@ export function SubmissionListItem({
     );
 }
 
-export function AttachmentButtonList(attachments: string[] = [], openImage: (image: string) => void) {
+export function AttachmentButtonList(attachments: string[] = [], openImages: (images: string[], index: number) => void) {
     return (
         <Box sx={{ display: "flex", gap: 1 }}>
-            {attachments.map((fileUrl, i) => (
+            {attachments.map((_, i) => (
                 <Button
                     key={i}
                     variant="text"
@@ -63,7 +63,7 @@ export function AttachmentButtonList(attachments: string[] = [], openImage: (ima
                     aria-label={`Open attachment ${String(i + 1)}`}
                     onClick={(e) => {
                         e.stopPropagation();
-                        openImage(fileUrl);
+                        openImages(attachments, i);
                     }}
                 >
                     {i + 1}

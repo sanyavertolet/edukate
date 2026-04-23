@@ -13,14 +13,14 @@ describe("SubmissionPage", () => {
         expect(screen.getByRole("heading", { name: /submission sub-456/i })).toBeInTheDocument();
     });
 
-    it("shows Submission Details card when MSW returns a submission", async () => {
+    it("shows submission data when MSW returns a submission", async () => {
         server.use(
             getGetSubmissionByIdMockHandler(getGetSubmissionByIdResponseMock({ id: 456, status: "PENDING" })),
             getGetCheckResultsBySubmissionIdMockHandler([]),
         );
         renderAtPath("/submissions/sub-456", "/submissions/:id", <SubmissionPage />);
-        expect(await screen.findByText(/submission details/i)).toBeInTheDocument();
-        expect(await screen.findByText(/problem:/i)).toBeInTheDocument();
+        expect(await screen.findByText(/pending review/i)).toBeInTheDocument();
+        expect(await screen.findByText(/^problem$/i)).toBeInTheDocument();
     });
 
     it("shows 'Consider as Solved' button for a PENDING submission", async () => {

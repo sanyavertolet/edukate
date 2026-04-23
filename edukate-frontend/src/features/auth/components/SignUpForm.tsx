@@ -1,4 +1,4 @@
-import { FocusEvent, FormEvent, useState } from "react";
+import { FocusEvent, SyntheticEvent, useState } from "react";
 import { Box, Button, Link, TextField, Typography } from "@mui/material";
 import { useSignUpMutation } from "@/features/auth/api";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +38,7 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
         setPasswordError(validate("password", e.target.value));
     };
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: SyntheticEvent) => {
         event.preventDefault();
         const uErr = validate("username", username);
         const eErr = validate("email", email);

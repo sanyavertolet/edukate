@@ -61,8 +61,10 @@ export const NotificationMenu: FC<NotificationMenuProps> = ({ anchorEl, onClose,
             anchorEl={anchorEl}
             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             transformOrigin={{ vertical: "top", horizontal: "right" }}
-            MenuListProps={{ "aria-labelledby": "notifications-button" }}
-            slotProps={{ paper: { style: { maxHeight: "400px", width: "350px" } } }}
+            slotProps={{
+                list: { "aria-labelledby": "notifications-button" },
+                paper: { style: { maxHeight: "400px", width: "350px" } },
+            }}
         >
             <Box key="notifications-menu-header" sx={notificationsMenuPrefixSx}>
                 <Typography variant="subtitle2" fontWeight="bold">

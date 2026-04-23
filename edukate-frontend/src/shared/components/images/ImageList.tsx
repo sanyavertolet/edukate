@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Container, ImageList, ImageListItem } from "@mui/material";
-import { ZoomingImageDialog } from "./ZoomingImageDialog";
+import { ImageLightbox } from "./ImageLightbox";
 
 const imageListItemSx = {
     justifyContent: "center",
@@ -16,14 +16,7 @@ interface ImageListComponentProps {
 }
 
 export function ImageListComponent({ images }: ImageListComponentProps) {
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-    const handleImageClick = (imageUrl: string) => {
-        setSelectedImage(imageUrl);
-    };
-    const handleClose = () => {
-        setSelectedImage(null);
-    };
+    const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
     return (
         <Container sx={containerSx}>
@@ -35,10 +28,10 @@ export function ImageListComponent({ images }: ImageListComponentProps) {
                         tabIndex={0}
                         sx={imageListItemSx}
                         onClick={() => {
-                            handleImageClick(imageUrl);
+                            setSelectedIndex(index);
                         }}
                         onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") handleImageClick(imageUrl);
+                            if (e.key === "Enter" || e.key === " ") setSelectedIndex(index);
                         }}
                     >
                         <img
@@ -51,7 +44,14 @@ export function ImageListComponent({ images }: ImageListComponentProps) {
                 ))}
             </ImageList>
 
-            <ZoomingImageDialog selectedImage={selectedImage} handleClose={handleClose} />
+            <ImageLightbox
+                images={images}
+                index={selectedIndex}
+                open={selectedIndex >= 0}
+                onClose={() => {
+                    setSelectedIndex(-1);
+                }}
+            />
         </Container>
     );
 }

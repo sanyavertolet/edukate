@@ -12,7 +12,7 @@ export interface OptionPickerComponentProps {
 
 export function OptionPickerComponent({
     optionsUrl,
-    selectedOptions = [],
+    selectedOptions,
     debounceTime = 500,
     onOptionsChange,
     placeholderText,

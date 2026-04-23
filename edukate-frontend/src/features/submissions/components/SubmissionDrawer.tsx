@@ -15,7 +15,7 @@ export const SubmissionDrawer: FC<SubmissionDrawerProps> = ({ submission, onClos
             anchor="right"
             open={submission !== null}
             onClose={onClose}
-            PaperProps={{ sx: { width: { xs: "100%", sm: 520 } } }}
+            slotProps={{ paper: { sx: { width: { xs: "100%", sm: 520 } } } }}
         >
             <Stack direction="row" alignItems="center" justifyContent="space-between" px={2} py={1.5}>
                 <Typography variant="h6">Submission #{submission?.id ?? ""}</Typography>

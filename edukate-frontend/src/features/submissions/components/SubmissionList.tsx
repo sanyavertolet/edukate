@@ -1,7 +1,7 @@
 import { useMySubmissionsQuery } from "@/features/submissions/api";
 import { FC, useState } from "react";
 import { Box, List } from "@mui/material";
-import { ZoomingImageDialog } from "@/shared/components/images/ZoomingImageDialog";
+import { ImageLightbox } from "@/shared/components/images/ImageLightbox";
 import { EmptySubmissionListStub, ErrorListItem, StubListItem, SubmissionListItem } from "./SubmissionListItems";
 import { Submission } from "@/features/submissions/types";
 
@@ -9,17 +9,21 @@ type SubmissionListProps = { problemKey?: string; onSubmissionClick?: (submissio
 
 export const SubmissionList: FC<SubmissionListProps> = ({ problemKey, onSubmissionClick }) => {
     const { data: submissions, isLoading, isError, error } = useMySubmissionsQuery(problemKey);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
     const showEmpty = !isLoading && !isError && submissions && submissions.length === 0;
     return (
         <Box>
-            <ZoomingImageDialog
-                selectedImage={selectedImage}
-                handleClose={() => {
-                    setSelectedImage(null);
-                }}
-            />
+            {lightbox && (
+                <ImageLightbox
+                    images={lightbox.images}
+                    index={lightbox.index}
+                    open
+                    onClose={() => {
+                        setLightbox(null);
+                    }}
+                />
+            )}
             <List disablePadding>
                 {isLoading && (
                     <>
@@ -41,7 +45,9 @@ export const SubmissionList: FC<SubmissionListProps> = ({ problemKey, onSubmissi
                         <SubmissionListItem
                             key={composeSubmissionKey(submission)}
                             submission={submission}
-                            setImage={setSelectedImage}
+                            openImages={(images, index) => {
+                                setLightbox({ images, index });
+                            }}
                             onSelect={onSubmissionClick}
                         />
                     ))}
