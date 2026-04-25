@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cache.annotation.Caching
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 
@@ -39,6 +40,13 @@ class UserService(private val userRepository: UserRepository, private val notifi
             ]
     )
     fun deleteUserById(id: Long): Mono<Void> = userRepository.deleteById(id)
+
+    fun getUserNamesByPrefix(prefix: String, limit: Int, excludeIds: Set<Long> = emptySet()): Flux<String> =
+        userRepository
+            .findByNamePrefix(prefix, limit + excludeIds.size)
+            .filter { it.id !in excludeIds }
+            .take(limit.toLong())
+            .map { it.name }
 
     fun hasUserPermissionToSubmit(user: User): Mono<Boolean> = (user.status == UserStatus.ACTIVE).toMono()
 

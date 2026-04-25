@@ -4,9 +4,9 @@ import { getGetProblemSetByShareCodeMockHandler, getGetProblemSetByShareCodeResp
 import ProblemSetPage from "./ProblemSetPage";
 
 describe("ProblemSetPage", () => {
-    it("renders 'Index' as the selector label before data loads", () => {
+    it("renders 'Description' as the selector label before data loads", () => {
         renderAtPath("/problem-sets/test-code", "/problem-sets/:code", <ProblemSetPage />);
-        expect(screen.getByText("Index")).toBeInTheDocument();
+        expect(screen.getByText("Description")).toBeInTheDocument();
     });
 
     it("renders the problem set name as a heading once MSW responds", async () => {

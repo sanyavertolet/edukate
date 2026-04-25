@@ -1,68 +1,101 @@
-import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider } from "@mui/material";
+import { Box, Divider, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import { ProblemMetadata } from "@/features/problems/types";
 import { ProblemStatusIcon } from "@/features/problems/components/ProblemStatusIcon";
 import { useDeviceContext, usePageSpecificNavigation } from "@/shared/context/DeviceContext";
 import { AdditionalNavigationElement } from "@/shared/context/DeviceContext";
 import { useMemo } from "react";
 
+export type ProblemSetSelection =
+    | { type: "description" }
+    | { type: "settings" }
+    | { type: "problem"; problem: ProblemMetadata };
+
 interface ProblemSetProblemSelectorProps {
-    problemSetName: string;
     problems: ProblemMetadata[];
-    onProblemSelect: (problem?: ProblemMetadata) => void;
-    selectedProblem?: ProblemMetadata;
+    selection: ProblemSetSelection;
+    onSelectionChange: (selection: ProblemSetSelection) => void;
+    isAdmin: boolean;
 }
 
 export function ProblemSetProblemSelector({
     problems,
-    problemSetName,
-    onProblemSelect,
-    selectedProblem,
+    selection,
+    onSelectionChange,
+    isAdmin,
 }: ProblemSetProblemSelectorProps) {
     const { isMobile } = useDeviceContext();
 
     const pageSpecificNavigation: AdditionalNavigationElement[] = useMemo(
         () => [
             {
-                text: problemSetName,
+                text: "Description",
                 onClick: () => {
-                    onProblemSelect(undefined);
+                    onSelectionChange({ type: "description" });
                 },
-                isSelected: selectedProblem === undefined,
+                isSelected: selection.type === "description",
             },
+            ...(isAdmin
+                ? [
+                      {
+                          text: "Settings",
+                          onClick: () => {
+                              onSelectionChange({ type: "settings" });
+                          },
+                          isSelected: selection.type === "settings",
+                      },
+                  ]
+                : []),
             ...problems.map((problem) => ({
                 text: problem.code,
                 onClick: () => {
-                    onProblemSelect(problem);
+                    onSelectionChange({ type: "problem", problem });
                 },
-                isSelected: problem.code == selectedProblem?.code,
+                isSelected: selection.type === "problem" && problem.code === selection.problem.code,
             })),
         ],
-        [problems, selectedProblem, onProblemSelect, problemSetName],
+        [problems, selection, onSelectionChange, isAdmin],
     );
     usePageSpecificNavigation(pageSpecificNavigation);
 
     if (!isMobile) {
         return (
             <Box>
-                <List>
-                    <ListItem key={problemSetName} disablePadding>
+                <List disablePadding>
+                    <ListItemButton
+                        selected={selection.type === "description"}
+                        onClick={() => {
+                            onSelectionChange({ type: "description" });
+                        }}
+                    >
+                        <ListItemIcon>
+                            <InfoOutlinedIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Description" />
+                    </ListItemButton>
+                    {isAdmin && (
                         <ListItemButton
+                            selected={selection.type === "settings"}
                             onClick={() => {
-                                onProblemSelect(undefined);
+                                onSelectionChange({ type: "settings" });
                             }}
                         >
-                            <ListItemText primary={problemSetName} />
+                            <ListItemIcon>
+                                <SettingsOutlinedIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Settings" />
                         </ListItemButton>
-                    </ListItem>
+                    )}
                 </List>
                 <Divider />
-                <List>
+                <List disablePadding>
                     {problems.map((problem) => (
                         <ListItemButton
                             key={problem.code}
-                            selected={problem.code == selectedProblem?.code}
+                            selected={selection.type === "problem" && problem.code === selection.problem.code}
                             onClick={() => {
-                                onProblemSelect(problem);
+                                onSelectionChange({ type: "problem", problem });
                             }}
                         >
                             <ListItemIcon>

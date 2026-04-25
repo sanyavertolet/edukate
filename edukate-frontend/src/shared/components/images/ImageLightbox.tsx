@@ -45,6 +45,10 @@ export const ImageLightbox: FC<ImageLightboxProps> = ({ images, index, open, onC
                 doubleClickDelay: 300,
                 scrollToZoom: true,
             }}
+            styles={{
+                container: { backgroundColor: "rgba(0, 0, 0, 0.75)" },
+            }}
+            controller={{ closeOnBackdropClick: true }}
         />
     );
 };

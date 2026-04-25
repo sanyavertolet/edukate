@@ -2,6 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     changeUserRole,
     ChangeUserRoleRequestedRole,
+    changeVisibility,
     createProblemSet,
     expireInvite,
     getProblemSetByShareCode,
@@ -59,8 +60,10 @@ export function useProblemSetInviteUserMutation() {
     return useMutation({
         mutationFn: ({ username, shareCode }: { username: string; shareCode: string }) =>
             inviteToProblemSet(shareCode, { inviteeName: username }),
-        onSuccess: (_data, { shareCode }) =>
-            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.invitedUsers(shareCode) }),
+        onSuccess: (_data, { shareCode }) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.invitedUsers(shareCode) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.users.byPrefix });
+        },
     });
 }
 
@@ -77,10 +80,15 @@ export function useProblemSetInvitationReplyMutation() {
 
 export function useProblemSetChangeUserRoleMutation() {
     return useMutation({
-        mutationFn: ({ username, role, shareCode }: { username: string; role: string; shareCode: string }) =>
-            changeUserRole(shareCode, { username, requestedRole: role as ChangeUserRoleRequestedRole }),
-        onSuccess: (_data, { shareCode }) =>
-            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.users(shareCode) }),
+        mutationFn: ({ username, role, shareCode }: { username: string; role?: string; shareCode: string }) =>
+            changeUserRole(shareCode, {
+                username,
+                requestedRole: role as ChangeUserRoleRequestedRole | undefined,
+            }),
+        onSuccess: (_data, { shareCode }) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.users(shareCode) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.users.byPrefix });
+        },
     });
 }
 
@@ -106,7 +114,20 @@ export function useProblemSetExpireInviteMutation() {
     return useMutation({
         mutationFn: ({ shareCode, username }: { shareCode: string; username: string }) =>
             expireInvite(shareCode, { inviteeName: username }),
-        onSuccess: (_data, { shareCode }) =>
-            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.invitedUsers(shareCode) }),
+        onSuccess: (_data, { shareCode }) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.invitedUsers(shareCode) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.users.byPrefix });
+        },
+    });
+}
+
+export function useProblemSetChangeVisibilityMutation() {
+    return useMutation({
+        mutationFn: ({ shareCode, isPublic }: { shareCode: string; isPublic: boolean }) =>
+            changeVisibility(shareCode, { isPublic }),
+        onSuccess: (_data, { shareCode }) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.detail(shareCode) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.all });
+        },
     });
 }

@@ -84,6 +84,17 @@ class ProblemSetService(
 
     @CacheEvict(key = "#shareCode")
     @Transactional
+    fun removeUserByModerator(shareCode: String, targetUserId: Long, authentication: Authentication): Mono<ProblemSet> =
+        mutate(shareCode, { it.withoutUser(targetUserId) }) { mono ->
+            mono
+                .notFoundIf("Target user not found in problem set") { !it.isUserInProblemSet(targetUserId) }
+                .forbiddenIf("Not enough permissions to remove user") {
+                    !problemSetPermissionEvaluator.hasRemovePermission(it, requireNotNull(authentication.id()), targetUserId)
+                }
+        }
+
+    @CacheEvict(key = "#shareCode")
+    @Transactional
     fun inviteUser(shareCode: String, inviterId: Long, inviteeId: Long): Mono<ProblemSet> =
         mutate(shareCode, { it.withInvitedUser(inviteeId) }) { mono ->
             mono

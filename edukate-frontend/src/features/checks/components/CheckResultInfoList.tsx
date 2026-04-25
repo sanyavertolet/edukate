@@ -4,6 +4,7 @@ import { CheckResultInfo } from "@/features/checks/types";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
 import InternalIcon from "@mui/icons-material/Storage";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { formatDate } from "@/shared/utils/date";
 
 type CheckResultInfoListProps = {
@@ -43,9 +44,9 @@ function CheckResultInfoItem({ resultInfo, onItemClick }: CheckResultInfoItemPro
         </>
     );
 
-    if (onItemClick) {
+    if (onItemClick && resultInfo.status !== "PENDING") {
         return (
-            <ListItem disablePadding divider>
+            <ListItem disablePadding>
                 <ListItemButton
                     onClick={() => {
                         onItemClick(resultInfo.id);
@@ -57,7 +58,7 @@ function CheckResultInfoItem({ resultInfo, onItemClick }: CheckResultInfoItemPro
         );
     }
 
-    return <ListItem divider>{content}</ListItem>;
+    return <ListItem>{content}</ListItem>;
 }
 
 function getStatusVisuals(status: CheckResultInfo["status"]): { icon: ReactNode; color: string; tooltip?: string } {
@@ -68,6 +69,8 @@ function getStatusVisuals(status: CheckResultInfo["status"]): { icon: ReactNode;
             return { icon: <ErrorIcon />, color: "error.main", tooltip: "Solution contains a mistake" };
         case "INTERNAL_ERROR":
             return { icon: <InternalIcon />, color: "error.main", tooltip: "Server checking error" };
+        case "PENDING":
+            return { icon: <HourglassEmptyIcon />, color: "grey.500", tooltip: "Requested" };
         default:
             return { icon: <ErrorIcon />, color: "error.main", tooltip: "Unknown" };
     }

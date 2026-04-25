@@ -7,4 +7,5 @@ data class ProblemSetMetadata(
     val shareCode: String,
     val isPublic: Boolean,
     val size: Long,
+    val solvedCount: Long,
 )

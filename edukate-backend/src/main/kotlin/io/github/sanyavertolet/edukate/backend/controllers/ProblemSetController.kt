@@ -92,7 +92,7 @@ class ProblemSetController(
         authentication: Authentication,
     ): Flux<ProblemSetMetadata> =
         problemSetService.getOwnedProblemSets(PageRequest.of(page, size), authentication).flatMap {
-            problemSetMapper.toMetadata(it)
+            problemSetMapper.toMetadata(it, authentication)
         }
 
     @GetMapping("/joined")
@@ -116,7 +116,7 @@ class ProblemSetController(
         authentication: Authentication,
     ): Flux<ProblemSetMetadata> =
         problemSetService.getJoinedProblemSets(PageRequest.of(page, size), authentication).flatMap {
-            problemSetMapper.toMetadata(it)
+            problemSetMapper.toMetadata(it, authentication)
         }
 
     @GetMapping("/public")
@@ -135,8 +135,11 @@ class ProblemSetController(
     fun getPublicProblemSets(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
+        authentication: Authentication?,
     ): Flux<ProblemSetMetadata> =
-        problemSetService.getPublicProblemSets(PageRequest.of(page, size)).flatMap { problemSetMapper.toMetadata(it) }
+        problemSetService.getPublicProblemSets(PageRequest.of(page, size)).flatMap {
+            problemSetMapper.toMetadata(it, authentication)
+        }
 
     @GetMapping("/{shareCode}")
     @SecurityRequirements
@@ -315,29 +318,34 @@ class ProblemSetController(
     @PostMapping("/{shareCode}/role")
     @SecurityRequirement(name = "cookieAuth")
     @Operation(
-        summary = "Change user role",
-        description = "Updates the role of a user within the problem set; requires moderator access",
+        summary = "Change or remove user role",
+        description =
+            "Updates the role of a user within the problem set, or removes the user if role is not provided. " +
+                "Requires moderator access and a higher role than the target user.",
     )
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Role updated"),
+                ApiResponse(responseCode = "200", description = "Role updated or user removed"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "403", description = "Caller does not have sufficient permissions"),
                 ApiResponse(responseCode = "404", description = "Problem set or user not found"),
             ]
     )
     fun changeUserRole(
         @PathVariable @NotBlank shareCode: String,
         @RequestParam @NotBlank username: String,
-        @RequestParam @NotNull requestedRole: UserRole,
+        @RequestParam(required = false) requestedRole: UserRole?,
         authentication: Authentication,
     ): Mono<UserRole> =
         userService
             .findUserByName(username)
             .orNotFound("User $username not found")
             .mapNotNull { it.id }
-            .flatMap { userId -> problemSetService.changeUserRole(shareCode, userId, requestedRole, authentication) }
+            .flatMap { userId ->
+                requestedRole?.let { problemSetService.changeUserRole(shareCode, userId, it, authentication) }
+                    ?: problemSetService.removeUserByModerator(shareCode, userId, authentication).then(Mono.empty())
+            }
 
     @PostMapping("/{shareCode}/visibility")
     @SecurityRequirement(name = "cookieAuth")

@@ -35,4 +35,9 @@ class ProblemSetPermissionEvaluator {
         val requesterRoleIsHigherThanRequestedRole = hasRoleHigherThan(problemSet, requesterId, requestedRole)
         return requesterRoleIsHigherThanUserRole && requesterRoleIsHigherThanRequestedRole
     }
+
+    fun hasRemovePermission(problemSet: ProblemSet, requesterId: Long, targetUserId: Long): Boolean {
+        val targetRole = problemSet.getUserRole(targetUserId) ?: return false
+        return hasRole(problemSet, requesterId, UserRole.MODERATOR) && hasRoleHigherThan(problemSet, requesterId, targetRole)
+    }
 }
