@@ -3,7 +3,6 @@ import { server } from "@/test/server";
 import { getGetPublicProblemSetsMockHandler } from "@/generated/backend";
 import { ProblemSetCategoryList } from "./ProblemSetCategoryList";
 import { ProblemSetMetadata } from "@/features/problem-sets/types";
-import { HttpResponse } from "msw";
 
 const sampleSets: ProblemSetMetadata[] = [
     {
@@ -29,9 +28,8 @@ const sampleSets: ProblemSetMetadata[] = [
 describe("ProblemSetCategoryList", () => {
     it("shows skeleton items while loading", () => {
         server.use(
-            getGetPublicProblemSetsMockHandler(async () => {
-                await new Promise(() => {});
-                return HttpResponse.json([]);
+            getGetPublicProblemSetsMockHandler(async (): Promise<ProblemSetMetadata[]> => {
+                return new Promise<ProblemSetMetadata[]>(() => {});
             }),
         );
         render(<ProblemSetCategoryList tab="public" />);
