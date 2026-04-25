@@ -4,6 +4,7 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import com.ninjasquad.springmockk.MockkBean
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
+import io.github.sanyavertolet.edukate.backend.services.ProblemSetService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
 import io.mockk.every
@@ -23,6 +24,7 @@ class UserControllerTest {
     @Autowired private lateinit var webTestClient: WebTestClient
 
     @MockkBean private lateinit var userService: UserService
+    @Suppress("unused") @MockkBean private lateinit var problemSetService: ProblemSetService
 
     private fun authenticatedClient(): WebTestClient =
         webTestClient.mutateWith(

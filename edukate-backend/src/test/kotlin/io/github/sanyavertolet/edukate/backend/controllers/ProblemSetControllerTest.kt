@@ -84,7 +84,7 @@ class ProblemSetControllerTest {
     fun `getPublicProblemSets returns 200 with metadata list (no auth required)`() {
         val ps = BackendFixtures.problemSet(isPublic = true)
         every { problemSetService.getPublicProblemSets(any()) } returns Flux.just(ps)
-        every { problemSetMapper.toMetadata(ps) } returns Mono.just(psMetadata())
+        every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
 
         webTestClient
             .get()
@@ -104,7 +104,7 @@ class ProblemSetControllerTest {
     fun `getOwnedProblemSets returns 200 with owned metadata`() {
         val ps = BackendFixtures.problemSet()
         every { problemSetService.getOwnedProblemSets(any(), any()) } returns Flux.just(ps)
-        every { problemSetMapper.toMetadata(ps) } returns Mono.just(psMetadata())
+        every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
 
         authenticatedClient()
             .get()
@@ -155,7 +155,7 @@ class ProblemSetControllerTest {
     fun `getJoinedProblemSets returns 200 with joined metadata`() {
         val ps = BackendFixtures.problemSet()
         every { problemSetService.getJoinedProblemSets(any(), any()) } returns Flux.just(ps)
-        every { problemSetMapper.toMetadata(ps) } returns Mono.just(psMetadata())
+        every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
 
         authenticatedClient()
             .get()

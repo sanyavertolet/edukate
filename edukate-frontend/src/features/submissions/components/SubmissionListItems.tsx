@@ -124,11 +124,7 @@ export function StubListItem() {
             </ListItemAvatar>
             <ListItemText
                 primary={<Skeleton variant="text" width="40%" />}
-                secondary={
-                    <Box sx={{ mt: 0.5 }}>
-                        <Skeleton variant="text" width="25%" />
-                    </Box>
-                }
+                secondary={<Skeleton variant="text" width="25%" sx={{ mt: 0.5 }} />}
             />
         </ListItem>
     );
