@@ -1,12 +1,13 @@
 import { useProblemSetRequest } from "@/features/problem-sets/api";
-import { useCallback, useState } from "react";
-import { Box, Card, Typography } from "@mui/material";
-import { ProblemSetProblemSelector } from "./ProblemSetProblemSelector";
-import { ProblemMetadata } from "@/features/problems/types";
+import { useCallback, useMemo, useState } from "react";
+import { Box, Card, Paper, Typography } from "@mui/material";
+import { ProblemSetProblemSelector, ProblemSetSelection } from "./ProblemSetProblemSelector";
 import { ProblemComponent } from "@/features/problems/components/ProblemComponent";
-import { ProblemSetIndexCard } from "./ProblemSetIndexCard";
+import { ProblemSetDescriptionTab } from "./ProblemSetDescriptionTab";
+import { ProblemSetSettingsTab } from "./ProblemSetSettingsTab";
 import Grid from "@mui/material/Grid2";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
+import { useAuthContext } from "@/features/auth/context";
 
 interface ProblemSetComponentProps {
     problemSetCode?: string;
@@ -14,11 +15,19 @@ interface ProblemSetComponentProps {
 
 export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps) {
     const { isMobile } = useDeviceContext();
+    const { user } = useAuthContext();
     const { data: problemSet } = useProblemSetRequest(problemSetCode);
-    const [selectedProblemMetadata, setSelectedProblemMetadata] = useState<ProblemMetadata>();
-    const onProblemSelect = useCallback((problemOrUndefined?: ProblemMetadata) => {
-        setSelectedProblemMetadata(problemOrUndefined);
+    const [selection, setSelection] = useState<ProblemSetSelection>({ type: "description" });
+
+    const isAdmin = useMemo(
+        () => (user && problemSet && problemSet.admins.some((value) => value === user.name)) || false,
+        [user, problemSet],
+    );
+
+    const onSelectionChange = useCallback((newSelection: ProblemSetSelection) => {
+        setSelection(newSelection);
     }, []);
+
     return (
         <Box>
             {problemSet?.name && (
@@ -30,19 +39,25 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
                 <Grid sx={{ sm: "none", md: "block" }} key={"left-grid"} size={"grow"}>
                     <Card>
                         <ProblemSetProblemSelector
-                            problemSetName={problemSet ? problemSet.name : "Index"}
                             problems={problemSet ? problemSet.problems : []}
-                            onProblemSelect={onProblemSelect}
-                            selectedProblem={selectedProblemMetadata}
+                            selection={selection}
+                            onSelectionChange={onSelectionChange}
+                            isAdmin={isAdmin}
                         />
                     </Card>
                 </Grid>
                 <Grid key={"central-grid"} size={isMobile ? 12 : 10}>
-                    {selectedProblemMetadata ? (
-                        <ProblemComponent bookSlug={selectedProblemMetadata.bookSlug} code={selectedProblemMetadata.code} />
-                    ) : (
-                        <ProblemSetIndexCard problemSet={problemSet} />
-                    )}
+                    {selection.type === "problem" ? (
+                        <ProblemComponent bookSlug={selection.problem.bookSlug} code={selection.problem.code} />
+                    ) : selection.type === "settings" && problemSet ? (
+                        <Paper variant="outlined">
+                            <ProblemSetSettingsTab problemSet={problemSet} />
+                        </Paper>
+                    ) : problemSet ? (
+                        <Paper variant="outlined">
+                            <ProblemSetDescriptionTab problemSet={problemSet} />
+                        </Paper>
+                    ) : null}
                 </Grid>
             </Grid>
         </Box>

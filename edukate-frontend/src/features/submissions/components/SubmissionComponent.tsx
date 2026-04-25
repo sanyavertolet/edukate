@@ -1,18 +1,5 @@
 import { FC, ReactNode, useState } from "react";
-import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Dialog,
-    DialogContent,
-    Divider,
-    Paper,
-    Skeleton,
-    Stack,
-    Tooltip,
-    Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Chip, Divider, Paper, Skeleton, Stack, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -27,6 +14,7 @@ import { CheckResultDetailDialog } from "@/features/checks/components/CheckResul
 import { useAuthContext } from "@/features/auth/context";
 import { Role } from "@/features/auth/types";
 import { formatDate } from "@/shared/utils/date";
+import { ImageLightbox } from "@/shared/components/images/ImageLightbox";
 
 type PaletteColor = "success" | "warning" | "error";
 
@@ -48,7 +36,7 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
     const { data: resultInfos, isLoading, error } = useCheckResultsRequest(String(submission.id));
     const { user } = useAuthContext();
     const [selectedCheckResultId, setSelectedCheckResultId] = useState<number | null>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [lightboxIndex, setLightboxIndex] = useState(-1);
 
     const isSelfCheckDisabled = submission.status == "SUCCESS";
     const isAiCheckDisabled = !["MODERATOR" as Role, "ADMIN" as Role].some((role) => user?.roles.includes(role));
@@ -62,30 +50,20 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
                 }}
             />
 
-            <Dialog
-                open={previewUrl !== null}
+            <ImageLightbox
+                images={submission.fileUrls}
+                index={lightboxIndex}
+                open={lightboxIndex >= 0}
                 onClose={() => {
-                    setPreviewUrl(null);
+                    setLightboxIndex(-1);
                 }}
-                maxWidth="md"
-            >
-                <DialogContent sx={{ p: 1 }}>
-                    {previewUrl && (
-                        <Box
-                            component="img"
-                            src={previewUrl}
-                            alt="Submitted file"
-                            sx={{ maxWidth: "100%", display: "block" }}
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
+            />
 
             <StatusHero submission={submission} />
 
             <DetailsSection submission={submission} />
 
-            {submission.fileUrls.length > 0 && <FilesSection fileUrls={submission.fileUrls} onPreview={setPreviewUrl} />}
+            {submission.fileUrls.length > 0 && <FilesSection fileUrls={submission.fileUrls} onPreview={setLightboxIndex} />}
 
             <CheckResultsSection
                 isLoading={isLoading}
@@ -150,14 +128,14 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     );
 }
 
-function FilesSection({ fileUrls, onPreview }: { fileUrls: string[]; onPreview: (url: string) => void }) {
+function FilesSection({ fileUrls, onPreview }: { fileUrls: string[]; onPreview: (index: number) => void }) {
     return (
         <Box>
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
                 Attached files
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {fileUrls.map((url, i) => (
+                {fileUrls.map((_, i) => (
                     <Chip
                         key={i}
                         icon={<AttachFileIcon />}
@@ -165,7 +143,7 @@ function FilesSection({ fileUrls, onPreview }: { fileUrls: string[]; onPreview: 
                         size="small"
                         variant="outlined"
                         onClick={() => {
-                            onPreview(url);
+                            onPreview(i);
                         }}
                         clickable
                     />

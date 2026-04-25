@@ -51,7 +51,7 @@ class ProblemSetControllerTest {
         ProblemSetDto("Test ProblemSet", "Description", listOf("admin-1"), false, emptyList(), shareCode)
 
     private fun psMetadata(shareCode: String = "SHARE123") =
-        ProblemSetMetadata("Test ProblemSet", "Description", listOf("admin-1"), shareCode, false, 1L)
+        ProblemSetMetadata("Test ProblemSet", "Description", listOf("admin-1"), shareCode, false, 1L, 0L)
 
     // region POST /api/v1/problem-sets
 

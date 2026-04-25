@@ -1,48 +1,49 @@
 import { Box, Container, Tab, Tabs, Typography } from "@mui/material";
 import { ProblemSetCategoryList } from "@/features/problem-sets/components/ProblemSetCategoryList";
-import { ProblemSetJoinForm } from "@/features/problem-sets/components/ProblemSetJoinForm";
-import { ProblemSetInfoCards } from "@/features/problem-sets/components/ProblemSetInfoCards";
+import { ProblemSetToolbar } from "@/features/problem-sets/components/ProblemSetToolbar";
+import { ProblemSetWelcomeBanner } from "@/features/problem-sets/components/ProblemSetWelcomeBanner";
 import { SyntheticEvent, useState } from "react";
 import { ProblemSetCategory } from "@/features/problem-sets/types";
 import { useAuthContext } from "@/features/auth/context";
 import { AuthRequired } from "@/features/auth/components/AuthRequired";
 
-type ExtendedProblemSetCategory = ProblemSetCategory | "info";
-
 export default function ProblemSetListPage() {
-    const [tab, setTab] = useState<ExtendedProblemSetCategory>("info");
-    const onTabChange = (_: SyntheticEvent, newValue: ExtendedProblemSetCategory) => {
+    const { isAuthorized } = useAuthContext();
+    const [tab, setTab] = useState<ProblemSetCategory>(isAuthorized ? "owned" : "public");
+
+    const onTabChange = (_: SyntheticEvent, newValue: ProblemSetCategory) => {
         setTab(newValue);
     };
-    const { isAuthorized } = useAuthContext();
+
     return (
         <Box>
             <Container>
                 <Typography component="h1" color="primary" variant="h5" align="center">
                     Problem Sets
                 </Typography>
+
+                <Box pt={2}>
+                    {!isAuthorized && <ProblemSetWelcomeBanner />}
+
+                    <ProblemSetToolbar disabled={!isAuthorized} />
+
+                    <Tabs value={tab} onChange={onTabChange} centered sx={{ mt: 2 }}>
+                        <Tab value={"joined"} label="Joined" />
+                        <Tab value={"owned"} label="Owned" />
+                        <Tab value={"public"} label="Public" />
+                    </Tabs>
+                </Box>
             </Container>
 
-            <Box>
-                <Container>
-                    <Box pt={2} width={"100%"}>
-                        <ProblemSetJoinForm disabled={!isAuthorized} />
-                    </Box>
-                    <Tabs value={tab} onChange={onTabChange} centered>
-                        <Tab key={"info"} value={"info"} label="Info" />
-                        <Tab key={"joined"} value={"joined"} label="Joined" />
-                        <Tab key={"owned"} value={"owned"} label="Owned" />
-                        <Tab key={"public"} value={"public"} label="Public" />
-                    </Tabs>
-                </Container>
-
-                {tab == "info" && <ProblemSetInfoCards />}
-                {tab != "info" && (
+            <Container sx={{ pt: 2 }}>
+                {tab === "public" ? (
+                    <ProblemSetCategoryList tab={tab} onTabSwitch={setTab} />
+                ) : (
                     <AuthRequired>
-                        <ProblemSetCategoryList tab={tab} />
+                        <ProblemSetCategoryList tab={tab} onTabSwitch={setTab} />
                     </AuthRequired>
                 )}
-            </Box>
+            </Container>
         </Box>
     );
 }

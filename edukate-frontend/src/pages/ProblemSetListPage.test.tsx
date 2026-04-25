@@ -8,8 +8,6 @@ import {
 } from "@/generated/backend";
 import ProblemSetListPage from "./ProblemSetListPage";
 
-// Return empty lists so ProblemSetEmptyList renders instead of ProblemSetCard,
-// keeping tab-switch smoke tests focused on navigation behaviour only.
 const EMPTY_PROBLEM_SET_HANDLERS = [
     getGetJoinedProblemSetsMockHandler([]),
     getGetOwnedProblemSetsMockHandler([]),
@@ -22,19 +20,22 @@ describe("ProblemSetListPage", () => {
         expect(screen.getByRole("heading", { name: /problem sets/i, level: 1 })).toBeInTheDocument();
     });
 
-    it("renders all four tabs", () => {
+    it("renders all three tabs", () => {
         render(<ProblemSetListPage />);
-        expect(screen.getByRole("tab", { name: /info/i })).toBeInTheDocument();
         expect(screen.getByRole("tab", { name: /joined/i })).toBeInTheDocument();
         expect(screen.getByRole("tab", { name: /owned/i })).toBeInTheDocument();
         expect(screen.getByRole("tab", { name: /public/i })).toBeInTheDocument();
     });
 
-    it("shows the info tab content by default", () => {
+    it("defaults to Public tab when unauthenticated", () => {
         render(<ProblemSetListPage />);
-        expect(screen.getByRole("tab", { name: /info/i })).toHaveAttribute("aria-selected", "true");
-        // ProblemSetInfoCards unique static text
-        expect(screen.getByText(/hit the road/i)).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: /public/i })).toHaveAttribute("aria-selected", "true");
+    });
+
+    it("renders welcome banner for unauthenticated users", () => {
+        localStorage.removeItem("edukate:problem-sets-banner-dismissed");
+        render(<ProblemSetListPage />);
+        expect(screen.getByText(/problem sets let you organize/i)).toBeInTheDocument();
     });
 
     it("switches to the Joined tab on click", async () => {
@@ -42,13 +43,13 @@ describe("ProblemSetListPage", () => {
         render(<ProblemSetListPage />);
         await userEvent.click(screen.getByRole("tab", { name: /joined/i }));
         expect(screen.getByRole("tab", { name: /joined/i })).toHaveAttribute("aria-selected", "true");
-        expect(screen.getByRole("tab", { name: /info/i })).toHaveAttribute("aria-selected", "false");
+        expect(screen.getByRole("tab", { name: /public/i })).toHaveAttribute("aria-selected", "false");
     });
 
-    it("switches to the Public tab on click", async () => {
+    it("switches to the Owned tab on click", async () => {
         server.use(...EMPTY_PROBLEM_SET_HANDLERS);
         render(<ProblemSetListPage />);
-        await userEvent.click(screen.getByRole("tab", { name: /public/i }));
-        expect(screen.getByRole("tab", { name: /public/i })).toHaveAttribute("aria-selected", "true");
+        await userEvent.click(screen.getByRole("tab", { name: /owned/i }));
+        expect(screen.getByRole("tab", { name: /owned/i })).toHaveAttribute("aria-selected", "true");
     });
 });

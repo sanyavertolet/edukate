@@ -1,8 +1,10 @@
-import { FC, KeyboardEventHandler, useState } from "react";
+import React, { FC, SyntheticEvent, useState } from "react";
 import { useProblemSetInviteUserMutation } from "@/features/problem-sets/api";
+import { useDebounce } from "@/shared/hooks/useDebounce";
+import { useOptionsRequest } from "@/shared/hooks/useOptionsRequest";
 import { toast } from "react-toastify";
-import { IconButton, InputBase, Paper } from "@mui/material";
-import AddIcon from "@mui/icons-material/AddOutlined";
+import { Autocomplete, ListItem, ListItemAvatar, ListItemText, TextField } from "@mui/material";
+import { UserAvatar } from "@/shared/components/UserAvatar";
 
 interface UserSearchInputProps {
     problemSetShareCode: string;
@@ -10,59 +12,55 @@ interface UserSearchInputProps {
 }
 
 export const UserSearchInput: FC<UserSearchInputProps> = ({ problemSetShareCode, onInvited }) => {
-    const [username, setUsername] = useState("");
+    const [inputValue, setInputValue] = useState("");
+    const debouncedInput = useDebounce(inputValue, 300);
+    const { data: options, isLoading } = useOptionsRequest("/api/v1/users/by-prefix", debouncedInput, 5, {
+        problemSetShareCode,
+    });
     const inviteUserMutation = useProblemSetInviteUserMutation();
 
-    const canInvite = username.trim().length > 0 && !inviteUserMutation.isPending;
-
-    const onAddClick = () => {
-        if (!canInvite) return;
-        const normalized = username.trim();
+    const handleSelect = (_: SyntheticEvent, value: string | null) => {
+        if (!value) return;
         inviteUserMutation.mutate(
-            { username: normalized, shareCode: problemSetShareCode },
+            { username: value, shareCode: problemSetShareCode },
             {
                 onSuccess: () => {
-                    toast.success(`User ${normalized} has been invited!`);
-                    setUsername("");
-                    onInvited?.(normalized);
+                    toast.success(`User ${value} has been invited!`);
+                    setInputValue("");
+                    onInvited?.(value);
                 },
                 onError: () => {
-                    toast.error(`Could not invite ${normalized}!`);
+                    toast.error(`Could not invite ${value}!`);
                 },
             },
         );
     };
 
-    const onKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            onAddClick();
-        }
-    };
-
     return (
-        <Paper
-            component="form"
-            variant={"outlined"}
-            sx={{ p: "0px 1px", display: "flex", alignItems: "center", border: 0 }}
-            onSubmit={(e) => {
-                e.preventDefault();
-                onAddClick();
+        <Autocomplete
+            freeSolo={false}
+            value={null}
+            inputValue={inputValue}
+            onInputChange={(_, newValue) => {
+                setInputValue(newValue);
             }}
-        >
-            <InputBase
-                sx={{ ml: 1, flex: 1 }}
-                placeholder="Username"
-                value={username}
-                onChange={(e) => {
-                    setUsername(e.target.value);
-                }}
-                onKeyDown={onKeyDown}
-                inputProps={{ "aria-label": "username" }}
-            />
-            <IconButton color="primary" aria-label="add user" onClick={onAddClick} disabled={!canInvite}>
-                <AddIcon />
-            </IconButton>
-        </Paper>
+            onChange={handleSelect}
+            options={options ?? []}
+            loading={isLoading}
+            filterOptions={(x) => x}
+            noOptionsText={inputValue.length > 0 ? "No users found" : "Type to search"}
+            renderOption={({ key, ...rest }: React.HTMLAttributes<HTMLLIElement> & { key: string }, option) => (
+                <ListItem key={key} {...rest} dense>
+                    <ListItemAvatar sx={{ minWidth: 40 }}>
+                        <UserAvatar name={option} size="small" />
+                    </ListItemAvatar>
+                    <ListItemText primary={option} />
+                </ListItem>
+            )}
+            renderInput={(params) => (
+                <TextField {...params} placeholder="Search users to invite..." size="small" variant="standard" />
+            )}
+            sx={{ px: 1.5, py: 0.5 }}
+        />
     );
 };

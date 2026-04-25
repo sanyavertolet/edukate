@@ -51,6 +51,9 @@ export const queryKeys = {
         temp: ["files", "temp"] as const,
         tempFile: (path: string) => ["files", "temp", path] as const,
     },
+    users: {
+        byPrefix: ["/api/v1/users/by-prefix"] as const,
+    },
     auth: {
         whoami: ["auth", "whoami"] as const,
     },

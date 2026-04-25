@@ -146,9 +146,10 @@ paths:
     post:
       tags:
       - Problem Sets
-      summary: Change user role
-      description: Updates the role of a user within the problem set; requires moderator
-        access
+      summary: Change or remove user role
+      description: "Updates the role of a user within the problem set, or removes\
+        \ the user if role is not provided. Requires moderator access and a higher\
+        \ role than the target user."
       operationId: changeUserRole
       parameters:
       - name: shareCode
@@ -165,7 +166,7 @@ paths:
           minLength: 1
       - name: requestedRole
         in: query
-        required: true
+        required: false
         schema:
           type: string
           enum:
@@ -174,7 +175,7 @@ paths:
           - ADMIN
       responses:
         "200":
-          description: Role updated
+          description: Role updated or user removed
           content:
             application/json:
               schema:
@@ -194,7 +195,7 @@ paths:
                 - MODERATOR
                 - ADMIN
         "403":
-          description: Caller does not have moderator access
+          description: Caller does not have sufficient permissions
           content:
             application/json:
               schema:
@@ -609,6 +610,57 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDto"
+      security:
+      - cookieAuth: []
+  /api/v1/users/by-prefix:
+    get:
+      tags:
+      - Users
+      summary: Get usernames by prefix
+      description: "Retrieves a list of usernames matching the given prefix, ordered\
+        \ alphabetically. When problemSetShareCode is provided, excludes users who\
+        \ are already members or invited."
+      operationId: getUserNamesByPrefix
+      parameters:
+      - name: prefix
+        in: query
+        description: The prefix to match usernames against
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: Maximum number of results to return
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 5
+          exclusiveMinimum: 0
+      - name: problemSetShareCode
+        in: query
+        description: "If provided, excludes members and invited users of this problem\
+          \ set"
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successfully retrieved usernames
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
       security:
       - cookieAuth: []
   /api/v1/submissions/{bookSlug}/{code}/{username}:
@@ -1726,12 +1778,16 @@ components:
         size:
           type: integer
           format: int64
+        solvedCount:
+          type: integer
+          format: int64
       required:
       - admins
       - isPublic
       - name
       - shareCode
       - size
+      - solvedCount
     FileMetadata:
       type: object
       properties:
