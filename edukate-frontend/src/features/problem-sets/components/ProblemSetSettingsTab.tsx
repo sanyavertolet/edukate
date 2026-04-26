@@ -42,7 +42,7 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                             variant="determinate"
                             value={percentage}
                             color={percentage === 100 ? "success" : "primary"}
-                            sx={{ flexGrow: 1, height: 6, borderRadius: 3 }}
+                            sx={{ flexGrow: 1 }}
                         />
                         <Typography variant="caption" color="text.secondary" noWrap>
                             {solved}/{total} solved

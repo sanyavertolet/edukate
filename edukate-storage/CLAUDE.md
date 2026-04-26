@@ -6,8 +6,9 @@ Shared library providing a generic S3/MinIO object storage abstraction. Used by 
 
 ### `ReadOnlyStorage<Key, Metadata>`
 
-- `metadata(key)` → object metadata
-- `getContent(key)` → reactive content stream
+- `metadata(key)` → object metadata (HEAD request)
+- `getContent(key)` → reactive content stream (GET request, metadata discarded)
+- `getContentWithMetadata(key)` → `ContentWithMetadata<Metadata>` (single GET request returning both content stream and metadata)
 - `generatePresignedUrl(key)` → temporary download URL
 - `prefixed(prefix)` → list objects by prefix
 
@@ -26,7 +27,7 @@ Shared library providing a generic S3/MinIO object storage abstraction. Used by 
 | `FileKey`           | Generic files           |
 | `ProblemFileKey`    | Problem assets          |
 | `SubmissionFileKey` | User submission files   |
-| `ResultFileKey`     | AI check result files   |
+| `AnswerFileKey`     | Reference answer files  |
 | `TempFileKey`       | Temporary/staging files |
 
 ## Configuration (`S3Properties`)

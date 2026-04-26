@@ -13,7 +13,7 @@ type FileDragAndDropProps = {
 };
 
 const headerListItemSx = {
-    backgroundColor: "rgb(0,0,0,0.04)",
+    backgroundColor: "action.hover",
     mb: 1,
     borderRadius: 1,
     border: "1px solid",

@@ -13,7 +13,8 @@ object PublicEndpoints {
             "/api/v1/auth/*",
             "/swagger/**",
             "/swagger-ui/**",
-            "/api/v1/bundles/public",
+            "/api/v1/problem-sets/public",
+            "/api/v1/problem-sets/*",
         )
 
     val exchangeMatcher: ServerWebExchangeMatcher =

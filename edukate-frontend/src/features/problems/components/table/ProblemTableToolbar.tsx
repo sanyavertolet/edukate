@@ -65,18 +65,105 @@ export const ProblemTableToolbar: FC<Props> = ({
 }) => {
     const { isAuthorized } = useAuthContext();
     return (
-        <Toolbar sx={{ display: "flex", gap: 2, justifyContent: "space-between", flexWrap: "wrap" }}>
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
-                <TextField
-                    label="Search by prefix"
-                    size="small"
-                    value={prefix}
-                    onChange={(e) => {
-                        onPrefixChange(e.target.value);
-                    }}
-                />
+        <Box>
+            <Toolbar sx={{ display: "flex", gap: 2, justifyContent: "space-between", flexWrap: "wrap" }}>
+                <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+                    <TextField
+                        label="Search by prefix"
+                        size="small"
+                        value={prefix}
+                        onChange={(e) => {
+                            onPrefixChange(e.target.value);
+                        }}
+                    />
 
-                {bookSlug && (
+                    {isAuthorized && (
+                        <FormControl size="small" sx={{ minWidth: 160 }}>
+                            <InputLabel size={"small"} id="status-filter-label">
+                                Status
+                            </InputLabel>
+                            <Select
+                                labelId="status-filter-label"
+                                size={"small"}
+                                label="Status"
+                                value={status ?? "ALL"}
+                                onChange={(e) => {
+                                    onStatusChange((e.target.value || "ALL") as StatusFilter);
+                                }}
+                            >
+                                <MenuItem value="ALL">All</MenuItem>
+                                <MenuItem value="SOLVED">
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                        <DoneIcon color="success" fontSize="small" />
+                                        Solved
+                                    </Box>
+                                </MenuItem>
+                                <MenuItem value="SOLVING">
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                        <PendingIcon color="warning" fontSize="small" />
+                                        Solving
+                                    </Box>
+                                </MenuItem>
+                                <MenuItem value="FAILED">
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                        <CloseIcon color="error" fontSize="small" />
+                                        Failed
+                                    </Box>
+                                </MenuItem>
+                                <MenuItem value="NOT_SOLVED">Not solved</MenuItem>
+                            </Select>
+                        </FormControl>
+                    )}
+
+                    <FormControl size="small" sx={{ minWidth: 130 }}>
+                        <InputLabel size={"small"} id="difficulty-filter-label">
+                            Difficulty
+                        </InputLabel>
+                        <Select
+                            labelId="difficulty-filter-label"
+                            size={"small"}
+                            label="Difficulty"
+                            value={difficultyToSelectValue(isHard)}
+                            onChange={(e) => {
+                                onIsHardChange(selectValueToDifficulty(e.target.value));
+                            }}
+                        >
+                            <MenuItem value="ANY">Any</MenuItem>
+                            <MenuItem value="HARD">Hard</MenuItem>
+                            <MenuItem value="MEDIUM">Medium</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={!!hasPictures}
+                                onChange={(e) => {
+                                    onHasPicturesChange(e.target.checked);
+                                }}
+                            />
+                        }
+                        label="With pictures"
+                    />
+
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={!!hasResult}
+                                onChange={(e) => {
+                                    onHasResultChange(e.target.checked);
+                                }}
+                            />
+                        }
+                        label="With answer"
+                    />
+                </Box>
+
+                <Box sx={{ marginLeft: "auto" }}>{rightSlot}</Box>
+            </Toolbar>
+
+            {bookSlug && (
+                <Box sx={{ px: 3, pb: 1, display: "flex", justifyContent: "flex-start" }}>
                     <Chip
                         label={`Book: ${bookSlug}`}
                         onDelete={() => {
@@ -84,92 +171,10 @@ export const ProblemTableToolbar: FC<Props> = ({
                         }}
                         color="primary"
                         variant="outlined"
+                        size="small"
                     />
-                )}
-
-                {isAuthorized && (
-                    <FormControl size="small" sx={{ minWidth: 160 }}>
-                        <InputLabel size={"small"} id="status-filter-label">
-                            Status
-                        </InputLabel>
-                        <Select
-                            labelId="status-filter-label"
-                            size={"small"}
-                            label="Status"
-                            value={status ?? "ALL"}
-                            onChange={(e) => {
-                                onStatusChange((e.target.value || "ALL") as StatusFilter);
-                            }}
-                        >
-                            <MenuItem value="ALL">All</MenuItem>
-                            <MenuItem value="SOLVED">
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <DoneIcon color="success" fontSize="small" />
-                                    Solved
-                                </Box>
-                            </MenuItem>
-                            <MenuItem value="SOLVING">
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <PendingIcon color="warning" fontSize="small" />
-                                    Solving
-                                </Box>
-                            </MenuItem>
-                            <MenuItem value="FAILED">
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <CloseIcon color="error" fontSize="small" />
-                                    Failed
-                                </Box>
-                            </MenuItem>
-                            <MenuItem value="NOT_SOLVED">Not solved</MenuItem>
-                        </Select>
-                    </FormControl>
-                )}
-
-                <FormControl size="small" sx={{ minWidth: 130 }}>
-                    <InputLabel size={"small"} id="difficulty-filter-label">
-                        Difficulty
-                    </InputLabel>
-                    <Select
-                        labelId="difficulty-filter-label"
-                        size={"small"}
-                        label="Difficulty"
-                        value={difficultyToSelectValue(isHard)}
-                        onChange={(e) => {
-                            onIsHardChange(selectValueToDifficulty(e.target.value));
-                        }}
-                    >
-                        <MenuItem value="ANY">Any</MenuItem>
-                        <MenuItem value="HARD">Hard</MenuItem>
-                        <MenuItem value="MEDIUM">Medium</MenuItem>
-                    </Select>
-                </FormControl>
-
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={!!hasPictures}
-                            onChange={(e) => {
-                                onHasPicturesChange(e.target.checked);
-                            }}
-                        />
-                    }
-                    label="With pictures"
-                />
-
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={!!hasResult}
-                            onChange={(e) => {
-                                onHasResultChange(e.target.checked);
-                            }}
-                        />
-                    }
-                    label="With answer"
-                />
-            </Box>
-
-            <Box sx={{ marginLeft: "auto" }}>{rightSlot}</Box>
-        </Toolbar>
+                </Box>
+            )}
+        </Box>
     );
 };

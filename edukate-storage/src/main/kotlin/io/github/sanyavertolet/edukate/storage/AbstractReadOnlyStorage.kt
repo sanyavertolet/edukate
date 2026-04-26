@@ -8,6 +8,7 @@ import reactor.kotlin.core.publisher.toFlux
 import software.amazon.awssdk.core.async.AsyncResponseTransformer
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import software.amazon.awssdk.services.s3.model.GetObjectResponse
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request
@@ -27,6 +28,15 @@ abstract class AbstractReadOnlyStorage<Key : Any, Metadata : Any>(
 
     protected abstract fun buildMetadata(headObjectResponse: HeadObjectResponse): Metadata
 
+    protected open fun buildMetadata(getObjectResponse: GetObjectResponse): Metadata =
+        buildMetadata(
+            HeadObjectResponse.builder()
+                .contentType(getObjectResponse.contentType())
+                .contentLength(getObjectResponse.contentLength())
+                .lastModified(getObjectResponse.lastModified())
+                .build()
+        )
+
     override fun metadata(key: Key): Mono<Metadata> {
         val request = HeadObjectRequest.builder().bucket(s3Properties.bucket).key(key.toString()).build()
 
@@ -45,6 +55,18 @@ abstract class AbstractReadOnlyStorage<Key : Any, Metadata : Any>(
                 if (e.statusCode() == HTTP_NOT_FOUND) Mono.empty() else Mono.error(e)
             }
             .flatMapMany { Flux.from(it) }
+    }
+
+    override fun getContentWithMetadata(key: Key): Mono<ContentWithMetadata<Metadata>> {
+        val request = GetObjectRequest.builder().bucket(s3Properties.bucket).key(key.toString()).build()
+
+        return Mono.fromFuture { s3AsyncClient.getObject(request, AsyncResponseTransformer.toPublisher()) }
+            .onErrorResume(S3Exception::class.java) { e ->
+                if (e.statusCode() == HTTP_NOT_FOUND) Mono.empty() else Mono.error(e)
+            }
+            .map { publisher ->
+                ContentWithMetadata(metadata = buildMetadata(publisher.response()), content = Flux.from(publisher))
+            }
     }
 
     override fun generatePresignedUrl(key: Key): Mono<String> =

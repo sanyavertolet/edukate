@@ -94,11 +94,9 @@ class FileManagerTest {
     @Test
     fun `uploadFile saves Metadata to db`() {
         val key = TempFileKey(1L, "file.txt")
-        val metadata = meta()
-        val content = Flux.empty<ByteBuffer>()
+        val content = Flux.just(ByteBuffer.wrap("hello".toByteArray()))
 
-        every { storage.upload(key, "text/plain", content) } returns Mono.just(key)
-        every { storage.metadata(key) } returns Mono.just(metadata)
+        every { storage.upload(key, any<Long>(), "text/plain", any()) } returns Mono.just(key)
         every { fileObjectRepository.findByKeyPath(key.toString()) } returns Mono.empty()
         every { fileObjectRepository.save(any()) } answers { Mono.just(firstArg()) }
 
@@ -112,13 +110,11 @@ class FileManagerTest {
     @Test
     fun `uploadFile updates existing file object`() {
         val key = TempFileKey(1L, "file.txt")
-        val metadata = meta()
-        val content = Flux.empty<ByteBuffer>()
+        val content = Flux.just(ByteBuffer.wrap("hello".toByteArray()))
         val existingFo =
             FileObject(id = 10L, keyPath = key.toString(), key = key, type = "tmp", ownerUserId = 1L, metadata = meta(50L))
 
-        every { storage.upload(key, "text/plain", content) } returns Mono.just(key)
-        every { storage.metadata(key) } returns Mono.just(metadata)
+        every { storage.upload(key, any<Long>(), "text/plain", any()) } returns Mono.just(key)
         every { fileObjectRepository.findByKeyPath(key.toString()) } returns Mono.just(existingFo)
         every { fileObjectRepository.save(any()) } answers { Mono.just(firstArg()) }
 

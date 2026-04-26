@@ -43,10 +43,10 @@ export default function ParticlesComponent() {
             },
             particles: {
                 color: {
-                    value: "#851691",
+                    value: themes[theme].palette.primary.main,
                 },
                 links: {
-                    color: "#007E8A",
+                    color: themes[theme].palette.secondary.main,
                     distance: 125,
                     enable: true,
                     opacity: 0.25,

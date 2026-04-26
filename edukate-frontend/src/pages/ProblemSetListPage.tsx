@@ -9,7 +9,7 @@ import { AuthRequired } from "@/features/auth/components/AuthRequired";
 
 export default function ProblemSetListPage() {
     const { isAuthorized } = useAuthContext();
-    const [tab, setTab] = useState<ProblemSetCategory>(isAuthorized ? "owned" : "public");
+    const [tab, setTab] = useState<ProblemSetCategory>("public");
 
     const onTabChange = (_: SyntheticEvent, newValue: ProblemSetCategory) => {
         setTab(newValue);
@@ -28,9 +28,9 @@ export default function ProblemSetListPage() {
                     <ProblemSetToolbar disabled={!isAuthorized} />
 
                     <Tabs value={tab} onChange={onTabChange} centered sx={{ mt: 2 }}>
+                        <Tab value={"public"} label="Public" />
                         <Tab value={"joined"} label="Joined" />
                         <Tab value={"owned"} label="Owned" />
-                        <Tab value={"public"} label="Public" />
                     </Tabs>
                 </Box>
             </Container>
