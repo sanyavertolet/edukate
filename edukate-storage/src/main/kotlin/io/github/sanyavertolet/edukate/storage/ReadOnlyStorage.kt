@@ -9,6 +9,8 @@ interface ReadOnlyStorage<Key : Any, Metadata : Any> {
 
     fun getContent(key: Key): Flux<ByteBuffer>
 
+    fun getContentWithMetadata(key: Key): Mono<ContentWithMetadata<Metadata>>
+
     fun generatePresignedUrl(key: Key): Mono<String>
 
     fun prefixed(rawKeyPrefix: String): Flux<Key>

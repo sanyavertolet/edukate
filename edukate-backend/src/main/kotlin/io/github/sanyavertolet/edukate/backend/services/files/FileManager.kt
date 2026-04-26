@@ -8,6 +8,7 @@ import io.github.sanyavertolet.edukate.backend.storage.FileKeyStorage
 import io.github.sanyavertolet.edukate.storage.keys.FileKey
 import java.nio.ByteBuffer
 import java.time.Duration
+import java.time.Instant
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -43,10 +44,15 @@ class FileManager(private val fileObjectRepository: FileObjectRepository, privat
 
     @Transactional
     fun uploadFile(key: FileKey, contentType: MediaType, content: Flux<ByteBuffer>): Mono<FileKey> =
-        storage
-            .upload(key, contentType.toString(), content)
-            .flatMap { k ->
-                storage.metadata(k).flatMap { meta -> saveOrUpdateByKeyPath(k.toString(), k, meta) }.thenReturn(k)
+        content
+            .collectList()
+            .flatMap { buffers ->
+                val contentLength = buffers.sumOf { it.remaining().toLong() }
+                val contentTypeStr = contentType.toString()
+                storage.upload(key, contentLength, contentTypeStr, Flux.fromIterable(buffers)).flatMap { k ->
+                    val meta = FileObjectMetadata(Instant.now(), contentLength, contentTypeStr)
+                    saveOrUpdateByKeyPath(k.toString(), k, meta).thenReturn(k)
+                }
             }
             .timeout(DEFAULT_TIMEOUT)
             .doOnSubscribe { log.debug("Uploading: key={}", key) }

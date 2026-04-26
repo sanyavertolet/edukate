@@ -53,4 +53,9 @@ tasks.named<JacocoReport>("jacocoTestReport") {
         xml.required.set(true)
         html.required.set(true)
     }
+    classDirectories.setFrom(
+        classDirectories.files.map { dir ->
+            fileTree(dir) { exclude("**/configs/**") }
+        }
+    )
 }
