@@ -19,6 +19,7 @@ export function AppFooter() {
                 py: 1,
                 opacity: 0.4,
                 pointerEvents: "none",
+                color: "text.primary",
             }}
         >
             <Typography variant="caption">build {buildTime}</Typography>

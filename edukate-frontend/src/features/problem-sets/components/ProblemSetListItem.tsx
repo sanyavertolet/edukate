@@ -47,7 +47,7 @@ export const ProblemSetListItem: FC<ProblemSetListItemProps> = ({ problemSetMeta
                                 variant="determinate"
                                 value={percentage}
                                 color={isComplete ? "success" : "primary"}
-                                sx={{ width: { xs: 60, sm: 100, md: 120 }, height: 6, borderRadius: 3 }}
+                                sx={{ width: { xs: 60, sm: 100, md: 120 } }}
                             />
                             <Typography variant="caption" color="text.secondary" noWrap>
                                 {problemSetMetadata.solvedCount}/{problemSetMetadata.size} solved

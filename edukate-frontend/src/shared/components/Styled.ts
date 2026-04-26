@@ -13,7 +13,7 @@ export const BlurryToolbar = styled(Toolbar)(({ theme }) => ({
     borderColor: theme.palette.divider,
     backgroundColor: alpha(theme.palette.background.default, 0.4),
     boxShadow: theme.shadows[1],
-    padding: "8px 12px",
+    padding: theme.spacing(1, 1.5),
 }));
 
 export const SignCard = styled(Card)(({ theme }) => ({
@@ -27,9 +27,9 @@ export const SignCard = styled(Card)(({ theme }) => ({
     [theme.breakpoints.up("sm")]: {
         maxWidth: "450px",
     },
-    boxShadow: "hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px",
+    boxShadow: theme.shadows[2],
     ...theme.applyStyles("dark", {
-        boxShadow: "hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px",
+        boxShadow: theme.shadows[4],
     }),
 }));
 

@@ -52,11 +52,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/problem-sets/:code",
-                element: (
-                    <AuthRequired>
-                        <ProblemSetPage />
-                    </AuthRequired>
-                ),
+                element: <ProblemSetPage />,
             },
             {
                 path: "/submissions/:id",
