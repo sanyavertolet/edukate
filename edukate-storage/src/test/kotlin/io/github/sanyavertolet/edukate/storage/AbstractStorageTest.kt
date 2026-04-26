@@ -169,9 +169,7 @@ class AbstractStorageTest {
     fun `metadata sends correct bucket and key in request`() {
         every { s3Client.headObject(any<HeadObjectRequest>()) } returns CompletableFuture.completedFuture(headResponse())
 
-        StepVerifier.create(storage.metadata("books/savchenko/problems/1.1.1/img.png"))
-            .expectNextCount(1)
-            .verifyComplete()
+        StepVerifier.create(storage.metadata("books/savchenko/problems/1.1.1/img.png")).expectNextCount(1).verifyComplete()
 
         verify {
             s3Client.headObject(
