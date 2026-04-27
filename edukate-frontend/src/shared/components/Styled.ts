@@ -1,6 +1,13 @@
-import { Card, Stack, styled } from "@mui/material";
+import { Card, Stack, styled, Theme } from "@mui/material";
 import Toolbar from "@mui/material/Toolbar";
-import { alpha } from "@mui/material/styles";
+import { alpha, CSSObject } from "@mui/material/styles";
+
+export function frostedGlass(theme: Theme, opacity = 0.5): CSSObject {
+    return {
+        backdropFilter: "blur(10px)",
+        backgroundColor: alpha(theme.palette.background.default, opacity),
+    };
+}
 
 export const BlurryToolbar = styled(Toolbar)(({ theme }) => ({
     display: "flex",
@@ -8,10 +15,9 @@ export const BlurryToolbar = styled(Toolbar)(({ theme }) => ({
     justifyContent: "space-between",
     flexShrink: 0,
     borderRadius: `calc(${String(theme.shape.borderRadius)}px + 8px)`,
-    backdropFilter: "blur(24px)",
+    ...frostedGlass(theme),
     border: "1px solid",
     borderColor: theme.palette.divider,
-    backgroundColor: alpha(theme.palette.background.default, 0.4),
     boxShadow: theme.shadows[1],
     padding: theme.spacing(1, 1.5),
 }));
