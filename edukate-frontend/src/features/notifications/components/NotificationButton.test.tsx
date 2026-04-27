@@ -43,7 +43,7 @@ describe("NotificationButton — authenticated", () => {
         });
     });
 
-    it("opens the notification menu on button click", async () => {
+    it("opens the notification panel on button click", async () => {
         server.use(
             getGetNotificationsMockHandler(getGetNotificationsResponseMock({ statistics: { unread: 0, total: 0 } })),
             http.get("*/api/v1/notifications", () =>
@@ -58,7 +58,7 @@ describe("NotificationButton — authenticated", () => {
         });
     });
 
-    it("closes the menu after opening", async () => {
+    it("closes the panel after opening", async () => {
         server.use(
             getGetNotificationsMockHandler(getGetNotificationsResponseMock({ statistics: { unread: 0, total: 0 } })),
             http.get("*/api/v1/notifications", () =>

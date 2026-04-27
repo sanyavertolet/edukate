@@ -1,10 +1,11 @@
 import React, { FC, useState } from "react";
-import { Badge, Box, IconButton } from "@mui/material";
-import { NotificationMenu } from "./NotificationMenu";
+import { Badge, IconButton } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/features/auth/context";
 import { InvitationDialog } from "./InvitationDialog";
-import { BaseNotification, InviteNotification } from "@/features/notifications/types";
+import { NotificationPanel } from "./NotificationPanel";
+import { BaseNotification, CheckedNotification, InviteNotification } from "@/features/notifications/types";
 import { toast } from "react-toastify";
 import { useGetNotificationsRequest, useMarkNotificationsAsReadMutation } from "@/features/notifications/api";
 import { useProblemSetInvitationReplyMutation } from "@/features/problem-sets/api";
@@ -20,6 +21,8 @@ export const NotificationButton: FC = () => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
     const { isAuthorized } = useAuthContext();
     const { data: page } = useGetNotificationsRequest();
+    const navigate = useNavigate();
+
     const handleClose = () => {
         setAnchorEl(undefined);
     };
@@ -50,35 +53,45 @@ export const NotificationButton: FC = () => {
         setProblemSetInviteInfo(undefined);
     };
 
-    // todo: rework
     const onNotificationClick = (notification: BaseNotification) => {
         const { _type, uuid } = notification;
-        if (_type === "simple" || _type === "checked") {
+        if (_type === "simple") {
             markAsReadMutation.mutate([uuid]);
+        } else if (_type === "checked") {
+            markAsReadMutation.mutate([uuid]);
+            handleClose();
+            void navigate(`/submissions/${String((notification as CheckedNotification).submissionId)}`);
         } else if (_type === "invite") {
             const { problemSetName, problemSetShareCode, inviterName } = notification as InviteNotification;
             setProblemSetInviteInfo({ problemSetName, inviterName, problemSetShareCode, notificationUuid: uuid });
         }
     };
 
+    if (!isAuthorized) return null;
+
     return (
-        <Box>
+        <>
             <InvitationDialog problemSetInfo={problemSetInviteInfo} onClose={onInvitationDialogClose} />
-            <NotificationMenu onNotificationClick={onNotificationClick} anchorEl={anchorEl} onClose={handleClose} />
-            {isAuthorized && (
-                <IconButton
-                    aria-label="show notifications"
-                    aria-haspopup="true"
-                    aria-expanded={Boolean(anchorEl)}
-                    color={"primary"}
-                    edge="end"
-                    onClick={handleOpen}
-                >
-                    <Badge badgeContent={page?.statistics.unread || 0} color="primary">
-                        <NotificationsIcon />
-                    </Badge>
-                </IconButton>
-            )}
-        </Box>
+            <NotificationPanel
+                onNotificationClick={onNotificationClick}
+                onMarkAsRead={(n) => {
+                    markAsReadMutation.mutate([n.uuid]);
+                }}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+            />
+            <IconButton
+                aria-label="show notifications"
+                aria-haspopup="true"
+                aria-expanded={Boolean(anchorEl)}
+                color="primary"
+                edge="end"
+                onClick={handleOpen}
+            >
+                <Badge badgeContent={page?.statistics.unread || 0} color="primary">
+                    <NotificationsIcon />
+                </Badge>
+            </IconButton>
+        </>
     );
 };
