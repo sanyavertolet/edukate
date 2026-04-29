@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SubmissionStatus } from "@/features/submissions/types";
 
@@ -30,44 +30,47 @@ export function useSubmissionTableParams() {
         setProblemCode(searchParams.get("problemCode") || "");
     }, [searchParams]);
 
-    const updateSearchParams = (
-        params: Partial<{
-            page: number;
-            pageSize: number;
-            status: StatusFilter;
-            userName: string;
-            bookSlug: string;
-            problemCode: string;
-        }>,
-    ) => {
-        const next = new URLSearchParams(searchParams);
+    const updateSearchParams = useCallback(
+        (
+            params: Partial<{
+                page: number;
+                pageSize: number;
+                status: StatusFilter;
+                userName: string;
+                bookSlug: string;
+                problemCode: string;
+            }>,
+        ) => {
+            const next = new URLSearchParams(searchParams);
 
-        if (params.page !== undefined) {
-            if (params.page === 0) next.delete("page");
-            else next.set("page", String(params.page));
-        }
-        if (params.pageSize !== undefined) {
-            if (params.pageSize === DEFAULT_PAGE_SIZE) next.delete("pageSize");
-            else next.set("pageSize", String(params.pageSize));
-        }
-        if (params.status !== undefined) {
-            if (params.status === "ALL") next.delete("status");
-            else next.set("status", params.status);
-        }
-        if (params.userName !== undefined) {
-            if (!params.userName) next.delete("userName");
-            else next.set("userName", params.userName);
-        }
-        if (params.bookSlug !== undefined) {
-            if (!params.bookSlug) next.delete("bookSlug");
-            else next.set("bookSlug", params.bookSlug);
-        }
-        if (params.problemCode !== undefined) {
-            if (!params.problemCode) next.delete("problemCode");
-            else next.set("problemCode", params.problemCode);
-        }
-        setSearchParams(next);
-    };
+            if (params.page !== undefined) {
+                if (params.page === 0) next.delete("page");
+                else next.set("page", String(params.page));
+            }
+            if (params.pageSize !== undefined) {
+                if (params.pageSize === DEFAULT_PAGE_SIZE) next.delete("pageSize");
+                else next.set("pageSize", String(params.pageSize));
+            }
+            if (params.status !== undefined) {
+                if (params.status === "ALL") next.delete("status");
+                else next.set("status", params.status);
+            }
+            if (params.userName !== undefined) {
+                if (!params.userName) next.delete("userName");
+                else next.set("userName", params.userName);
+            }
+            if (params.bookSlug !== undefined) {
+                if (!params.bookSlug) next.delete("bookSlug");
+                else next.set("bookSlug", params.bookSlug);
+            }
+            if (params.problemCode !== undefined) {
+                if (!params.problemCode) next.delete("problemCode");
+                else next.set("problemCode", params.problemCode);
+            }
+            setSearchParams(next);
+        },
+        [searchParams, setSearchParams],
+    );
 
     const handlers = useMemo(
         () => ({
@@ -90,8 +93,7 @@ export function useSubmissionTableParams() {
                 updateSearchParams({ page: 0, pageSize: value });
             },
         }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [searchParams],
+        [updateSearchParams],
     );
 
     return { page, rowsPerPage, status, userName, bookSlug, problemCode, handlers };
