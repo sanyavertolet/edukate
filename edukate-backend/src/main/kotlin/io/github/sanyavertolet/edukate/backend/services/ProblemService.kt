@@ -91,6 +91,9 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
     )
     fun deleteProblemById(id: Long): Mono<Void> = problemRepository.deleteById(id)
 
+    fun findCodeToIdMap(bookId: Long): Mono<Map<String, Long>> =
+        problemRepository.findAllByBookId(bookId).collectMap({ it.code }, { requireNotNull(it.id) })
+
     fun getProblemCodesByPrefix(prefix: String, limit: Int): Flux<String> =
         problemRepository.findByCodeStartingWith(prefix, limit).map { it.code }
 

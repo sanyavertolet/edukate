@@ -85,7 +85,7 @@ mongodb:
 
 postgresql:
   enabled: true
-  secretName: postgresql-secrets
+  secretName: postgres-secrets
   secretKey:
     backendR2dbc: backendR2dbcUrl
     backendFlyway: backendFlywayUrl

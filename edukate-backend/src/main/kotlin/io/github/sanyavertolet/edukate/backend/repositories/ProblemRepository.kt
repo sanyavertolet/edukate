@@ -17,6 +17,8 @@ interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSor
 
     fun findByIdIn(ids: Collection<Long>): Flux<Problem>
 
+    fun findAllByBookId(bookId: Long): Flux<Problem>
+
     @Query("SELECT * FROM problems WHERE code LIKE :prefix || '%' ORDER BY string_to_array(code, '.')::int[] LIMIT :limit")
     fun findByCodeStartingWith(prefix: String, limit: Int): Flux<Problem>
 

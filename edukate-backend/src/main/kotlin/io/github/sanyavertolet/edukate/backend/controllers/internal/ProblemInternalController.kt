@@ -5,10 +5,12 @@ import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -22,6 +24,9 @@ class ProblemInternalController(private val problemService: ProblemService) {
 
     @PostMapping("/batch")
     fun postProblemBatch(@RequestBody problems: Flux<Problem>): Mono<Long> = problemService.updateProblemBatch(problems)
+
+    @GetMapping("/code-to-id")
+    fun getCodeToIdMap(@RequestParam bookId: Long): Mono<Map<String, Long>> = problemService.findCodeToIdMap(bookId)
 
     @DeleteMapping("/{id}") fun deleteProblem(@PathVariable id: Long): Mono<Void> = problemService.deleteProblemById(id)
 }
