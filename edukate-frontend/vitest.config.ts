@@ -11,11 +11,25 @@ export default defineConfig({
         typecheck: {
             tsconfig: "./tsconfig.test.json",
         },
+        deps: {
+            optimizer: {
+                web: {
+                    enabled: true,
+                },
+            },
+        },
         coverage: {
             provider: "v8",
             reporter: ["text", "lcov", "html"],
             include: ["src/**/*.{ts,tsx}"],
-            exclude: ["src/generated/**", "src/test/**", "src/**/*.d.ts", "src/main.tsx", "src/app/router.tsx"],
+            exclude: [
+                "src/generated/**",
+                "src/test/**",
+                "src/**/*.d.ts",
+                "src/main.tsx",
+                "src/pwa.ts",
+                "src/app/router.tsx",
+            ],
             thresholds: {
                 statements: 62,
                 branches: 61,
