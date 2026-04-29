@@ -50,13 +50,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: postgres-persistent-volume
-  namespace: {{ .Values.namespace }}
+  name: postgres-pv
   labels:
     io.kompose.service: postgresql
 spec:
   capacity:
-    storage: 2Gi
+    storage: 10Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
@@ -70,7 +69,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-persistent-volume-claim
+  name: postgres-pvc
   namespace: {{ .Values.namespace }}
 spec:
   resources:
