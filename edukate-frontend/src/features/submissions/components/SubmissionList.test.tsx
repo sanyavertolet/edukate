@@ -12,6 +12,7 @@ const pendingSubmission: Submission = {
     userName: "alice",
     status: "PENDING",
     createdAt: "2024-06-01T10:00:00Z",
+    updatedAt: "2024-06-01T10:00:00Z",
     fileUrls: [],
 };
 
@@ -21,6 +22,7 @@ const successSubmission: Submission = {
     userName: "alice",
     status: "SUCCESS",
     createdAt: "2024-06-02T11:00:00Z",
+    updatedAt: "2024-06-02T11:00:00Z",
     fileUrls: ["https://example.com/img1.jpg"],
 };
 
@@ -30,6 +32,7 @@ const failedSubmission: Submission = {
     userName: "alice",
     status: "FAILED",
     createdAt: "2024-06-03T12:00:00Z",
+    updatedAt: "2024-06-03T12:00:00Z",
     fileUrls: [],
 };
 

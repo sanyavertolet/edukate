@@ -1,5 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getMySubmissions, getSubmissionById, uploadSubmission } from "@/generated/backend";
+import {
+    getMySubmissions,
+    getSubmissionById,
+    searchSubmissions,
+    SearchSubmissionsStatus,
+    uploadSubmission,
+} from "@/generated/backend";
 import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
 import { useAuthContext } from "@/features/auth/context";
@@ -30,5 +36,32 @@ export function useSubmissionQuery(submissionId: string | undefined) {
         queryKey: queryKeys.submissions.detail(submissionId ?? ""),
         queryFn: ({ signal }) => getSubmissionById(Number(submissionId), signal),
         enabled: !!submissionId,
+    });
+}
+
+export function useSubmissionSearchQuery(
+    page: number,
+    size: number,
+    userPrefix?: string,
+    bookSlugPrefix?: string,
+    problemCodePrefix?: string,
+    status?: string,
+) {
+    const { isAuthorized } = useAuthContext();
+    return useQuery({
+        queryKey: queryKeys.submissions.search(page, size, userPrefix, bookSlugPrefix, problemCodePrefix, status),
+        queryFn: ({ signal }) =>
+            searchSubmissions(
+                {
+                    page,
+                    size,
+                    userPrefix: userPrefix || undefined,
+                    bookSlugPrefix: bookSlugPrefix || undefined,
+                    problemCodePrefix: problemCodePrefix || undefined,
+                    status: status as SearchSubmissionsStatus | undefined,
+                },
+                signal,
+            ),
+        enabled: isAuthorized,
     });
 }

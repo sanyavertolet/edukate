@@ -7,9 +7,10 @@ import { SubmissionComponent } from "@/features/submissions/components/Submissio
 type SubmissionDrawerProps = {
     submission: Submission | null;
     onClose: () => void;
+    isOwner?: boolean;
 };
 
-export const SubmissionDrawer: FC<SubmissionDrawerProps> = ({ submission, onClose }) => {
+export const SubmissionDrawer: FC<SubmissionDrawerProps> = ({ submission, onClose, isOwner }) => {
     return (
         <Drawer
             anchor="right"
@@ -26,7 +27,9 @@ export const SubmissionDrawer: FC<SubmissionDrawerProps> = ({ submission, onClos
 
             <Divider />
 
-            <Box sx={{ overflowY: "auto", flex: 1 }}>{submission && <SubmissionComponent submission={submission} />}</Box>
+            <Box sx={{ overflowY: "auto", flex: 1 }}>
+                {submission && <SubmissionComponent submission={submission} isOwner={isOwner} />}
+            </Box>
         </Drawer>
     );
 };

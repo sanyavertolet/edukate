@@ -44,7 +44,8 @@ CREATE TABLE submissions (
     user_id         BIGINT NOT NULL REFERENCES users(id),
     status          VARCHAR(20) NOT NULL,
     file_object_ids JSONB NOT NULL DEFAULT '[]',
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE problem_progress (
@@ -103,6 +104,7 @@ CREATE INDEX idx_problems_book_id ON problems(book_id);
 CREATE INDEX idx_submissions_user_id ON submissions(user_id);
 CREATE INDEX idx_submissions_problem_id ON submissions(problem_id);
 CREATE INDEX idx_submissions_user_problem ON submissions(user_id, problem_id);
+CREATE INDEX idx_submissions_updated_at ON submissions(updated_at DESC);
 CREATE INDEX idx_problem_progress_user_id ON problem_progress(user_id);
 CREATE INDEX idx_problem_set_problems_problem ON problem_set_problems(problem_id);
 CREATE INDEX idx_check_results_submission_id ON check_results(submission_id);
@@ -125,7 +127,8 @@ BEGIN
       AND status != 'PENDING';
 
     UPDATE submissions
-    SET status = COALESCE(v_new_status, 'PENDING')
+    SET status = COALESCE(v_new_status, 'PENDING'),
+        updated_at = NOW()
     WHERE id = NEW.submission_id;
 
     RETURN NEW;

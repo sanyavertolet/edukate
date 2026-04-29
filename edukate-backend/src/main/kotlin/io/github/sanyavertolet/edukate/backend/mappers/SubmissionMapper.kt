@@ -18,9 +18,9 @@ class SubmissionMapper(
     private val userService: UserService,
     private val problemService: ProblemService,
 ) {
-    fun toDto(submission: Submission): Mono<SubmissionDto> =
+    fun toDto(submission: Submission, includeFiles: Boolean = true): Mono<SubmissionDto> =
         Mono.zip(
-                collectFileUrls(submission),
+                if (includeFiles) collectFileUrls(submission) else Mono.just(emptyList()),
                 userService.findUserById(submission.userId).map { it.name }.defaultIfEmpty("UNKNOWN"),
                 problemService.findProblemById(submission.problemId).map { it.key }.defaultIfEmpty("UNKNOWN"),
             )
@@ -31,6 +31,7 @@ class SubmissionMapper(
                     tuple.t2,
                     submission.status,
                     requireNotNull(submission.createdAt) { "Submission creation timestamp cannot be null" },
+                    requireNotNull(submission.updatedAt) { "Submission update timestamp cannot be null" },
                     tuple.t1,
                 )
             }

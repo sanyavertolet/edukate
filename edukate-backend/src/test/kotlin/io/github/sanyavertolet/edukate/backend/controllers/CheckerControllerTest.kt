@@ -125,7 +125,7 @@ class CheckerControllerTest {
     fun `getCheckResultsBySubmissionId returns list for owned submission`() {
         val submission = BackendFixtures.submission(id = 1L, userId = 1L)
         val checkResult = BackendFixtures.checkResult(id = 1L, submissionId = 1L)
-        every { submissionService.getSubmissionIfOwns(1L, 1L) } returns Mono.just(submission)
+        every { submissionService.findById(1L) } returns Mono.just(submission)
         every { checkResultService.findAllBySubmissionId(1L) } returns Flux.just(checkResult)
 
         authenticatedClient()

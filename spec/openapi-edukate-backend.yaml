@@ -694,14 +694,14 @@ paths:
         description: Page number (zero-based)
         required: false
         schema:
-          type: string
+          type: integer
           minimum: 0
       - name: size
         in: query
         description: Number of submissions per page
         required: false
         schema:
-          type: string
+          type: integer
           maximum: 100
           minimum: 1
       responses:
@@ -729,6 +729,73 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SubmissionDto"
+  /api/v1/submissions/search:
+    get:
+      tags:
+      - Submissions
+      summary: Search submissions
+      description: Search and filter submissions with pagination. File URLs are only
+        included for submissions owned by the authenticated user.
+      operationId: searchSubmissions
+      parameters:
+      - name: userPrefix
+        in: query
+        description: Filter by username prefix
+        required: false
+        schema:
+          type: string
+      - name: bookSlugPrefix
+        in: query
+        description: Filter by book slug prefix
+        required: false
+        schema:
+          type: string
+      - name: problemCodePrefix
+        in: query
+        description: Filter by problem code prefix (e.g. '1.1')
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: Filter by submission status
+        required: false
+        schema:
+          type: string
+          enum:
+          - PENDING
+          - FAILED
+          - SUCCESS
+      - name: page
+        in: query
+        description: Page number (zero-based)
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+      - name: size
+        in: query
+        description: Number of submissions per page (max 100)
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          description: Successfully retrieved submissions page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageResponseSubmissionDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageResponseSubmissionDto"
+      security:
+      - cookieAuth: []
   /api/v1/submissions/my:
     get:
       tags:
@@ -751,14 +818,14 @@ paths:
         description: Page number (zero-based)
         required: false
         schema:
-          type: string
+          type: integer
           minimum: 0
       - name: size
         in: query
         description: Number of submissions per page (max 100)
         required: false
         schema:
-          type: string
+          type: integer
           maximum: 100
           minimum: 1
       responses:
@@ -842,14 +909,14 @@ paths:
         description: Page number (zero-based)
         required: false
         schema:
-          type: string
+          type: integer
           minimum: 0
       - name: size
         in: query
         description: Number of problems per page
         required: false
         schema:
-          type: string
+          type: integer
           maximum: 100
           minimum: 1
       - name: bookSlug
@@ -1377,8 +1444,7 @@ paths:
       tags:
       - Checker
       summary: Get check results for submission
-      description: Retrieves all check results (lightweight info) for a submission
-        owned by the user
+      description: Retrieves all check results (lightweight info) for any submission
       operationId: getCheckResultsBySubmissionId
       parameters:
       - name: submissionId
@@ -1404,8 +1470,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CheckResultInfo"
-        "403":
-          description: Access denied
+        "404":
+          description: Submission not found
           content:
             application/json:
               schema:
@@ -1578,6 +1644,9 @@ components:
         createdAt:
           type: string
           format: date-time
+        updatedAt:
+          type: string
+          format: date-time
         fileUrls:
           type: array
           items:
@@ -1588,6 +1657,7 @@ components:
       - id
       - problemKey
       - status
+      - updatedAt
       - userName
     CreateProblemSetRequest:
       type: object
@@ -1691,6 +1761,31 @@ components:
       - name
       - roles
       - status
+    PageResponseSubmissionDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubmissionDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+      required:
+      - content
+      - page
+      - size
+      - totalElements
+      - totalPages
     ProblemDto:
       type: object
       properties:
@@ -1822,11 +1917,22 @@ components:
         trustLevel:
           type: number
           format: float
+        errorType:
+          type: string
+          enum:
+          - ALGEBRAIC
+          - CONCEPTUAL
+          - INCOMPLETE
+          - NONE
+          - NUMERICAL
+          - UNCLEAR
+          - UNIT
         createdAt:
           type: string
           format: date-time
       required:
       - createdAt
+      - errorType
       - id
       - status
       - trustLevel

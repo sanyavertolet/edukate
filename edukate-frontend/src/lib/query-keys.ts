@@ -34,6 +34,14 @@ export const queryKeys = {
         all: ["submissions"] as const,
         detail: (id: string) => ["submissions", "detail", id] as const,
         byProblem: (problemKey: string) => ["submissions", "by-problem", problemKey] as const,
+        search: (
+            page: number,
+            size: number,
+            userPrefix?: string,
+            bookSlugPrefix?: string,
+            problemCodePrefix?: string,
+            status?: string,
+        ) => ["submissions", "search", page, size, userPrefix, bookSlugPrefix, problemCodePrefix, status] as const,
     },
     notifications: {
         all: ["notifications"] as const,

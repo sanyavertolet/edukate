@@ -9,5 +9,6 @@ data class SubmissionDto(
     val userName: String,
     val status: SubmissionStatus,
     val createdAt: Instant,
+    val updatedAt: Instant,
     val fileUrls: List<String> = emptyList(),
 )

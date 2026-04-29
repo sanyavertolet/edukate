@@ -1,6 +1,7 @@
 export type {
     CheckResultInfo,
     CheckResultInfoStatus as CheckStatus,
+    CheckResultInfoErrorType,
     CheckResultDto,
     CheckResultDtoErrorType,
 } from "@/generated/backend";

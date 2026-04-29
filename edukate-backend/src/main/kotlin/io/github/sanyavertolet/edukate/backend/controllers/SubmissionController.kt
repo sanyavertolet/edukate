@@ -2,11 +2,14 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest
 import io.github.sanyavertolet.edukate.backend.dtos.SubmissionDto
+import io.github.sanyavertolet.edukate.backend.filters.SubmissionFilter
 import io.github.sanyavertolet.edukate.backend.mappers.SubmissionMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
+import io.github.sanyavertolet.edukate.common.SubmissionStatus
+import io.github.sanyavertolet.edukate.common.dtos.PageResponse
 import io.github.sanyavertolet.edukate.common.utils.monoId
 import io.github.sanyavertolet.edukate.common.utils.orForbidden
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
@@ -155,13 +158,13 @@ class SubmissionController(
                     name = "page",
                     description = "Page number (zero-based)",
                     `in` = ParameterIn.QUERY,
-                    schema = Schema(minimum = "0"),
+                    schema = Schema(type = "integer", minimum = "0"),
                 ),
                 Parameter(
                     name = "size",
                     description = "Number of submissions per page",
                     `in` = ParameterIn.QUERY,
-                    schema = Schema(minimum = "1", maximum = "100"),
+                    schema = Schema(type = "integer", minimum = "1", maximum = "100"),
                 ),
             ]
     )
@@ -214,13 +217,13 @@ class SubmissionController(
                     name = "page",
                     `in` = ParameterIn.QUERY,
                     description = "Page number (zero-based)",
-                    schema = Schema(minimum = "0"),
+                    schema = Schema(type = "integer", minimum = "0"),
                 ),
                 Parameter(
                     name = "size",
                     `in` = ParameterIn.QUERY,
                     description = "Number of submissions per page (max 100)",
-                    schema = Schema(minimum = "1", maximum = "100"),
+                    schema = Schema(type = "integer", minimum = "1", maximum = "100"),
                 ),
             ]
     )
@@ -242,6 +245,86 @@ class SubmissionController(
                 }
             }
             .flatMapSequential { submissionMapper.toDto(it) }
+
+    @GetMapping("/search")
+    @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Search submissions",
+        description =
+            "Search and filter submissions with pagination. " +
+                "File URLs are only included for submissions owned by the authenticated user.",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved submissions page"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+            ]
+    )
+    @Parameters(
+        value =
+            [
+                Parameter(name = "userPrefix", `in` = ParameterIn.QUERY, description = "Filter by username prefix"),
+                Parameter(name = "bookSlugPrefix", `in` = ParameterIn.QUERY, description = "Filter by book slug prefix"),
+                Parameter(
+                    name = "problemCodePrefix",
+                    `in` = ParameterIn.QUERY,
+                    description = "Filter by problem code prefix (e.g. '1.1')",
+                ),
+                Parameter(
+                    name = "status",
+                    `in` = ParameterIn.QUERY,
+                    description = "Filter by submission status",
+                    schema = Schema(implementation = SubmissionStatus::class),
+                ),
+                Parameter(
+                    name = "page",
+                    `in` = ParameterIn.QUERY,
+                    description = "Page number (zero-based)",
+                    schema = Schema(type = "integer", minimum = "0"),
+                ),
+                Parameter(
+                    name = "size",
+                    `in` = ParameterIn.QUERY,
+                    description = "Number of submissions per page (max 100)",
+                    schema = Schema(type = "integer", minimum = "1", maximum = "100"),
+                ),
+            ]
+    )
+    fun searchSubmissions(
+        @RequestParam(required = false) userPrefix: String?,
+        @RequestParam(required = false) bookSlugPrefix: String?,
+        @RequestParam(required = false) problemCodePrefix: String?,
+        @RequestParam(required = false) status: SubmissionStatus?,
+        @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
+        @RequestParam(defaultValue = "10") @Min(1) size: Int,
+        authentication: Authentication,
+    ): Mono<PageResponse<SubmissionDto>> =
+        authentication.monoId().flatMap { currentUserId ->
+            val filter =
+                SubmissionFilter(
+                    userPrefix = userPrefix,
+                    bookSlugPrefix = bookSlugPrefix,
+                    problemCodePrefix = problemCodePrefix,
+                    status = status,
+                )
+            submissionService.searchSubmissions(filter, PageRequest.of(page, size)).flatMap { (submissions, total) ->
+                Flux.fromIterable(submissions)
+                    .flatMapSequential { submission ->
+                        submissionMapper.toDto(submission, includeFiles = submission.userId == currentUserId)
+                    }
+                    .collectList()
+                    .map { dtos ->
+                        PageResponse(
+                            content = dtos,
+                            page = page,
+                            size = size,
+                            totalElements = total,
+                            totalPages = ((total + size - 1) / size).toInt(),
+                        )
+                    }
+            }
+        }
 
     private fun resolveProblemId(key: String): Mono<Long> =
         problemService.findProblemByKey(key).orNotFound("Problem $key not found").mapNotNull { problem -> problem.id }

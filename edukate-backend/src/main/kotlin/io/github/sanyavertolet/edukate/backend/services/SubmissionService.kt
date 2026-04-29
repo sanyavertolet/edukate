@@ -2,6 +2,7 @@ package io.github.sanyavertolet.edukate.backend.services
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest
 import io.github.sanyavertolet.edukate.backend.entities.Submission
+import io.github.sanyavertolet.edukate.backend.filters.SubmissionFilter
 import io.github.sanyavertolet.edukate.backend.permissions.SubmissionPermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.repositories.FileObjectRepository
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
@@ -13,6 +14,7 @@ import io.github.sanyavertolet.edukate.common.utils.orForbidden
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey
 import io.micrometer.core.instrument.MeterRegistry
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.util.function.component1
+import reactor.kotlin.core.util.function.component2
 
 @Service
 class SubmissionService(
@@ -82,4 +86,26 @@ class SubmissionService(
             .orNotFound("Submission not found")
             .filter { submission -> submissionPermissionEvaluator.isOwner(submission, userId) }
             .orForbidden("Access denied")
+
+    fun searchSubmissions(filter: SubmissionFilter, pageRequest: PageRequest): Mono<Pair<List<Submission>, Long>> {
+        val userPrefix = filter.userPrefix?.takeIf { it.isNotBlank() }
+        val bookSlugPrefix = filter.bookSlugPrefix?.takeIf { it.isNotBlank() }
+        val problemCodePrefix = filter.problemCodePrefix?.takeIf { it.isNotBlank() }
+        val statusName = filter.status?.name
+
+        return Mono.zip(
+                submissionRepository
+                    .findWithFilter(
+                        userPrefix,
+                        bookSlugPrefix,
+                        problemCodePrefix,
+                        statusName,
+                        pageRequest.pageSize,
+                        pageRequest.offset,
+                    )
+                    .collectList(),
+                submissionRepository.countWithFilter(userPrefix, bookSlugPrefix, problemCodePrefix, statusName),
+            )
+            .map { (submissions, count) -> submissions to count }
+    }
 }
