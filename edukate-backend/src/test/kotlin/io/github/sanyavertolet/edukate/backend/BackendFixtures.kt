@@ -46,6 +46,7 @@ object BackendFixtures {
         status: SubmissionStatus = SubmissionStatus.PENDING,
         fileObjectIds: List<String> = emptyList(),
         createdAt: Instant? = Instant.now(),
+        updatedAt: Instant? = Instant.now(),
     ) =
         Submission(
             id = id,
@@ -54,6 +55,7 @@ object BackendFixtures {
             status = status,
             fileObjectIds = fileObjectIds,
             createdAt = createdAt,
+            updatedAt = updatedAt,
         )
 
     fun checkResult(

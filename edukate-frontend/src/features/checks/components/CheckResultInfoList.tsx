@@ -1,6 +1,6 @@
 import { FC, ReactNode } from "react";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Tooltip } from "@mui/material";
-import { CheckResultInfo } from "@/features/checks/types";
+import { CheckResultInfo, CheckResultInfoErrorType } from "@/features/checks/types";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
 import InternalIcon from "@mui/icons-material/Storage";
@@ -39,7 +39,11 @@ function CheckResultInfoItem({ resultInfo, onItemClick }: CheckResultInfoItemPro
             </ListItemAvatar>
             <ListItemText
                 primary={`Trust level: ${String(Math.round(resultInfo.trustLevel * 100))}%`}
-                secondary={formatDate(resultInfo.createdAt)}
+                secondary={
+                    resultInfo.errorType !== "NONE"
+                        ? `${formatErrorType(resultInfo.errorType)} — ${formatDate(resultInfo.createdAt)}`
+                        : formatDate(resultInfo.createdAt)
+                }
             />
         </>
     );
@@ -59,6 +63,10 @@ function CheckResultInfoItem({ resultInfo, onItemClick }: CheckResultInfoItemPro
     }
 
     return <ListItem>{content}</ListItem>;
+}
+
+function formatErrorType(errorType: CheckResultInfoErrorType): string {
+    return errorType.charAt(0) + errorType.slice(1).toLowerCase();
 }
 
 function getStatusVisuals(status: CheckResultInfo["status"]): { icon: ReactNode; color: string; tooltip?: string } {

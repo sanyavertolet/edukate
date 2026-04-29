@@ -26,9 +26,10 @@ type StatusVisuals = {
 
 type SubmissionComponentProps = {
     submission: Submission;
+    isOwner?: boolean;
 };
 
-export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }) => {
+export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission, isOwner = true }) => {
     const requestCheckMutation = useRequestCheckMutation();
     const requestCheck = (checkType: CheckType) => {
         requestCheckMutation.mutate({ checkType, submissionId: String(submission.id) });
@@ -43,36 +44,43 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission }
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
-            <CheckResultDetailDialog
-                checkResultId={selectedCheckResultId}
-                onClose={() => {
-                    setSelectedCheckResultId(null);
-                }}
-            />
+            {isOwner && (
+                <CheckResultDetailDialog
+                    checkResultId={selectedCheckResultId}
+                    onClose={() => {
+                        setSelectedCheckResultId(null);
+                    }}
+                />
+            )}
 
-            <ImageLightbox
-                images={submission.fileUrls}
-                index={lightboxIndex}
-                open={lightboxIndex >= 0}
-                onClose={() => {
-                    setLightboxIndex(-1);
-                }}
-            />
+            {isOwner && (
+                <ImageLightbox
+                    images={submission.fileUrls}
+                    index={lightboxIndex}
+                    open={lightboxIndex >= 0}
+                    onClose={() => {
+                        setLightboxIndex(-1);
+                    }}
+                />
+            )}
 
             <StatusHero submission={submission} />
 
             <DetailsSection submission={submission} />
 
-            {submission.fileUrls.length > 0 && <FilesSection fileUrls={submission.fileUrls} onPreview={setLightboxIndex} />}
+            {isOwner && submission.fileUrls.length > 0 && (
+                <FilesSection fileUrls={submission.fileUrls} onPreview={setLightboxIndex} />
+            )}
 
             <CheckResultsSection
                 isLoading={isLoading}
                 error={error}
                 resultInfos={resultInfos}
-                onItemClick={setSelectedCheckResultId}
+                onItemClick={isOwner ? setSelectedCheckResultId : undefined}
                 isSelfCheckDisabled={isSelfCheckDisabled}
                 isAiCheckDisabled={isAiCheckDisabled}
                 onRequestCheck={requestCheck}
+                showActions={isOwner}
             />
         </Box>
     );
@@ -157,10 +165,11 @@ type CheckResultsSectionProps = {
     isLoading: boolean;
     error: unknown;
     resultInfos: ReturnType<typeof useCheckResultsRequest>["data"];
-    onItemClick: (id: number) => void;
+    onItemClick?: (id: number) => void;
     isSelfCheckDisabled: boolean;
     isAiCheckDisabled: boolean;
     onRequestCheck: (checkType: CheckType) => void;
+    showActions?: boolean;
 };
 
 function CheckResultsSection({
@@ -171,6 +180,7 @@ function CheckResultsSection({
     isSelfCheckDisabled,
     isAiCheckDisabled,
     onRequestCheck,
+    showActions = true,
 }: CheckResultsSectionProps) {
     const count = resultInfos?.length ?? 0;
 
@@ -205,42 +215,46 @@ function CheckResultsSection({
                 <CheckResultInfoList data={resultInfos} onItemClick={onItemClick} />
             )}
 
-            <Divider sx={{ my: 2 }}>
-                <Typography variant="caption" color="text.secondary">
-                    Actions
-                </Typography>
-            </Divider>
+            {showActions && (
+                <>
+                    <Divider sx={{ my: 2 }}>
+                        <Typography variant="caption" color="text.secondary">
+                            Actions
+                        </Typography>
+                    </Divider>
 
-            <Stack direction="row" spacing={1}>
-                <Tooltip title={isSelfCheckDisabled ? "Already solved" : "Mark this submission as solved"}>
-                    <span>
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            disabled={isSelfCheckDisabled}
-                            onClick={() => {
-                                onRequestCheck("self");
-                            }}
-                        >
-                            Consider as Solved
-                        </Button>
-                    </span>
-                </Tooltip>
-                <Tooltip title={isAiCheckDisabled ? "Available for moderators only" : "Request an AI-powered check"}>
-                    <span>
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            disabled={isAiCheckDisabled}
-                            onClick={() => {
-                                onRequestCheck("ai");
-                            }}
-                        >
-                            Request AI Check
-                        </Button>
-                    </span>
-                </Tooltip>
-            </Stack>
+                    <Stack direction="row" spacing={1}>
+                        <Tooltip title={isSelfCheckDisabled ? "Already solved" : "Mark this submission as solved"}>
+                            <span>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    disabled={isSelfCheckDisabled}
+                                    onClick={() => {
+                                        onRequestCheck("self");
+                                    }}
+                                >
+                                    Consider as Solved
+                                </Button>
+                            </span>
+                        </Tooltip>
+                        <Tooltip title={isAiCheckDisabled ? "Available for moderators only" : "Request an AI-powered check"}>
+                            <span>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    disabled={isAiCheckDisabled}
+                                    onClick={() => {
+                                        onRequestCheck("ai");
+                                    }}
+                                >
+                                    Request AI Check
+                                </Button>
+                            </span>
+                        </Tooltip>
+                    </Stack>
+                </>
+            )}
         </Box>
     );
 }

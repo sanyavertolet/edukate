@@ -103,7 +103,7 @@ class CheckerController(
             .getSubmissionIfOwns(submissionId, requireNotNull(authentication.id()))
             .map { submission -> CheckResult.self(requireNotNull(submission.id)) }
             .flatMap { checkResultService.saveCheckResult(it) }
-            .map { ResponseEntity.accepted().build<Void>() }
+            .map { ResponseEntity.accepted().build() }
 
     @Suppress("unused")
     @PostMapping("/supervisor")
@@ -173,14 +173,14 @@ class CheckerController(
     @GetMapping("/submissions/{submissionId}")
     @Operation(
         summary = "Get check results for submission",
-        description = "Retrieves all check results (lightweight info) for a submission owned by the user",
+        description = "Retrieves all check results (lightweight info) for any submission",
     )
     @ApiResponses(
         value =
             [
                 ApiResponse(responseCode = "200", description = "Successfully retrieved check results"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Access denied"),
+                ApiResponse(responseCode = "404", description = "Submission not found"),
             ]
     )
     @Parameters(
@@ -195,12 +195,10 @@ class CheckerController(
                 )
             ]
     )
-    fun getCheckResultsBySubmissionId(
-        @PathVariable submissionId: Long,
-        authentication: Authentication,
-    ): Flux<CheckResultInfo> =
+    fun getCheckResultsBySubmissionId(@PathVariable submissionId: Long): Flux<CheckResultInfo> =
         submissionService
-            .getSubmissionIfOwns(submissionId, requireNotNull(authentication.id()))
+            .findById(submissionId)
+            .orNotFound("Submission not found")
             .mapNotNull { it.id }
             .flatMapMany { checkResultService.findAllBySubmissionId(it) }
             .map { it.toCheckResultInfo() }

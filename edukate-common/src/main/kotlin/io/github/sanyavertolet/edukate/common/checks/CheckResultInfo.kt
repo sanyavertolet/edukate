@@ -2,4 +2,10 @@ package io.github.sanyavertolet.edukate.common.checks
 
 import java.time.Instant
 
-data class CheckResultInfo(val id: Long, val status: CheckStatus, val trustLevel: Float, val createdAt: Instant)
+data class CheckResultInfo(
+    val id: Long,
+    val status: CheckStatus,
+    val trustLevel: Float,
+    val errorType: CheckErrorType,
+    val createdAt: Instant,
+)

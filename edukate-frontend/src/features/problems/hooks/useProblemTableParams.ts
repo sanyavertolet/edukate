@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ProblemStatus } from "@/features/problems/types";
 
@@ -41,54 +41,57 @@ export function useProblemTableParams() {
         setBookSlug(searchParams.get("bookSlug") ?? undefined);
     }, [searchParams]);
 
-    const updateSearchParams = (
-        params: Partial<{
-            page: number;
-            pageSize: number;
-            status: StatusFilter;
-            prefix: string;
-            isHard: boolean | undefined;
-            hasPictures: boolean | undefined;
-            hasResult: boolean | undefined;
-            bookSlug: string | undefined;
-        }>,
-    ) => {
-        const next = new URLSearchParams(searchParams);
+    const updateSearchParams = useCallback(
+        (
+            params: Partial<{
+                page: number;
+                pageSize: number;
+                status: StatusFilter;
+                prefix: string;
+                isHard: boolean | undefined;
+                hasPictures: boolean | undefined;
+                hasResult: boolean | undefined;
+                bookSlug: string | undefined;
+            }>,
+        ) => {
+            const next = new URLSearchParams(searchParams);
 
-        if (params.page !== undefined) {
-            if (params.page === 0) next.delete("page");
-            else next.set("page", String(params.page));
-        }
-        if (params.pageSize !== undefined) {
-            if (params.pageSize === DEFAULT_PAGE_SIZE) next.delete("pageSize");
-            else next.set("pageSize", String(params.pageSize));
-        }
-        if (params.status !== undefined) {
-            if (params.status === "ALL") next.delete("status");
-            else next.set("status", params.status);
-        }
-        if (params.prefix !== undefined) {
-            if (!params.prefix) next.delete("prefix");
-            else next.set("prefix", params.prefix);
-        }
-        if ("isHard" in params) {
-            if (params.isHard === undefined) next.delete("isHard");
-            else next.set("isHard", String(params.isHard));
-        }
-        if ("hasPictures" in params) {
-            if (params.hasPictures === undefined) next.delete("hasPictures");
-            else next.set("hasPictures", String(params.hasPictures));
-        }
-        if ("hasResult" in params) {
-            if (params.hasResult === undefined) next.delete("hasResult");
-            else next.set("hasResult", String(params.hasResult));
-        }
-        if ("bookSlug" in params) {
-            if (params.bookSlug === undefined) next.delete("bookSlug");
-            else next.set("bookSlug", params.bookSlug);
-        }
-        setSearchParams(next);
-    };
+            if (params.page !== undefined) {
+                if (params.page === 0) next.delete("page");
+                else next.set("page", String(params.page));
+            }
+            if (params.pageSize !== undefined) {
+                if (params.pageSize === DEFAULT_PAGE_SIZE) next.delete("pageSize");
+                else next.set("pageSize", String(params.pageSize));
+            }
+            if (params.status !== undefined) {
+                if (params.status === "ALL") next.delete("status");
+                else next.set("status", params.status);
+            }
+            if (params.prefix !== undefined) {
+                if (!params.prefix) next.delete("prefix");
+                else next.set("prefix", params.prefix);
+            }
+            if ("isHard" in params) {
+                if (params.isHard === undefined) next.delete("isHard");
+                else next.set("isHard", String(params.isHard));
+            }
+            if ("hasPictures" in params) {
+                if (params.hasPictures === undefined) next.delete("hasPictures");
+                else next.set("hasPictures", String(params.hasPictures));
+            }
+            if ("hasResult" in params) {
+                if (params.hasResult === undefined) next.delete("hasResult");
+                else next.set("hasResult", String(params.hasResult));
+            }
+            if ("bookSlug" in params) {
+                if (params.bookSlug === undefined) next.delete("bookSlug");
+                else next.set("bookSlug", params.bookSlug);
+            }
+            setSearchParams(next);
+        },
+        [searchParams, setSearchParams],
+    );
 
     const handlers = useMemo(
         () => ({
@@ -117,7 +120,7 @@ export function useProblemTableParams() {
                 updateSearchParams({ page: 0, bookSlug: slug });
             },
         }),
-        [searchParams],
+        [updateSearchParams],
     );
 
     return { page, rowsPerPage, status, prefix, isHard, hasPictures, hasResult, bookSlug, handlers };

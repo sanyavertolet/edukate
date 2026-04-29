@@ -364,21 +364,22 @@ INSERT INTO file_objects (id, key_path, key, type, owner_user_id, metadata, crea
     '2026-04-23 09:00:00+00'
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at)
+INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
 VALUES (
     1,
     (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
     (SELECT id FROM users WHERE name = 'admin'),
     'PENDING',
     '[1]',
+    '2026-04-23 09:00:00+00',
     '2026-04-23 09:00:00+00'
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at)
+INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
 VALUES
-    (2, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 10:00:00+00'),
-    (3, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 11:00:00+00'),
-    (4, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 12:00:00+00')
+    (2, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 10:00:00+00', '2026-04-23 10:00:00+00'),
+    (3, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 11:00:00+00', '2026-04-23 11:00:00+00'),
+    (4, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 12:00:00+00', '2026-04-23 12:00:00+00')
 ON CONFLICT (id) DO NOTHING;
 
 -- Check results — triggers will update submission status and problem_progress automatically.
@@ -396,10 +397,159 @@ VALUES
         '2026-04-23 12:05:00+00')
 ON CONFLICT (id) DO NOTHING;
 
+-- ── Submissions by all three users across many problems ───────────────────────
+-- 15 total submissions (4 admin above + 5 moderator + 6 user) with varied
+-- statuses, problems, and file attachments for /submissions search page testing.
+--
+-- Submission file objects (put these files in MinIO bucket edukate-bucket):
+-- ┌────┬──────────────────────────────────────────────────────┬──────────┐
+-- │ id │ S3 key (MinIO)                                       │ user     │
+-- ├────┼──────────────────────────────────────────────────────┼──────────┤
+-- │  2 │ users/2/submissions/2/5/solution.jpg                  │ moderator│
+-- │  3 │ users/2/submissions/5/7/scan.jpg                      │ moderator│
+-- │  4 │ users/2/submissions/8/9/diagram.jpg                   │ moderator│
+-- │  5 │ users/3/submissions/16/10/solution.jpg                │ user     │
+-- │  6 │ users/3/submissions/4/11/page1.jpg                    │ user     │
+-- │  7 │ users/3/submissions/4/11/page2.jpg                    │ user     │
+-- │  8 │ users/3/submissions/1/13/attempt.jpg                  │ user     │
+-- │  9 │ users/3/submissions/11/15/solution.jpg                │ user     │
+-- └────┴──────────────────────────────────────────────────────┴──────────┘
+
+INSERT INTO file_objects (id, key_path, key, type, owner_user_id, metadata, created_at, updated_at) VALUES
+    -- moderator files
+    (2,
+     'users/2/submissions/2/5/solution.jpg',
+     '{"_type": "submission", "userId": 2, "problemId": 2, "submissionId": 5, "fileName": "solution.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'moderator'),
+     '{"lastModified": "2026-04-24T14:00:00Z", "contentLength": 52340, "contentType": "image/jpeg"}',
+     '2026-04-24 14:00:00+00', '2026-04-24 14:00:00+00'),
+    (3,
+     'users/2/submissions/5/7/scan.jpg',
+     '{"_type": "submission", "userId": 2, "problemId": 5, "submissionId": 7, "fileName": "scan.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'moderator'),
+     '{"lastModified": "2026-04-24T16:00:00Z", "contentLength": 67100, "contentType": "image/jpeg"}',
+     '2026-04-24 16:00:00+00', '2026-04-24 16:00:00+00'),
+    (4,
+     'users/2/submissions/8/9/diagram.jpg',
+     '{"_type": "submission", "userId": 2, "problemId": 8, "submissionId": 9, "fileName": "diagram.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'moderator'),
+     '{"lastModified": "2026-04-24T18:00:00Z", "contentLength": 43200, "contentType": "image/jpeg"}',
+     '2026-04-24 18:00:00+00', '2026-04-24 18:00:00+00'),
+    -- user files
+    (5,
+     'users/3/submissions/16/10/solution.jpg',
+     '{"_type": "submission", "userId": 3, "problemId": 16, "submissionId": 10, "fileName": "solution.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'user'),
+     '{"lastModified": "2026-04-25T09:00:00Z", "contentLength": 38910, "contentType": "image/jpeg"}',
+     '2026-04-25 09:00:00+00', '2026-04-25 09:00:00+00'),
+    (6,
+     'users/3/submissions/4/11/page1.jpg',
+     '{"_type": "submission", "userId": 3, "problemId": 4, "submissionId": 11, "fileName": "page1.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'user'),
+     '{"lastModified": "2026-04-25T10:00:00Z", "contentLength": 71200, "contentType": "image/jpeg"}',
+     '2026-04-25 10:00:00+00', '2026-04-25 10:00:00+00'),
+    (7,
+     'users/3/submissions/4/11/page2.jpg',
+     '{"_type": "submission", "userId": 3, "problemId": 4, "submissionId": 11, "fileName": "page2.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'user'),
+     '{"lastModified": "2026-04-25T10:00:00Z", "contentLength": 63450, "contentType": "image/jpeg"}',
+     '2026-04-25 10:00:00+00', '2026-04-25 10:00:00+00'),
+    (8,
+     'users/3/submissions/1/13/attempt.jpg',
+     '{"_type": "submission", "userId": 3, "problemId": 1, "submissionId": 13, "fileName": "attempt.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'user'),
+     '{"lastModified": "2026-04-25T14:00:00Z", "contentLength": 55600, "contentType": "image/jpeg"}',
+     '2026-04-25 14:00:00+00', '2026-04-25 14:00:00+00'),
+    (9,
+     'users/3/submissions/11/15/solution.jpg',
+     '{"_type": "submission", "userId": 3, "problemId": 11, "submissionId": 15, "fileName": "solution.jpg"}',
+     'submission',
+     (SELECT id FROM users WHERE name = 'user'),
+     '{"lastModified": "2026-04-26T09:00:00Z", "contentLength": 48300, "contentType": "image/jpeg"}',
+     '2026-04-26 09:00:00+00', '2026-04-26 09:00:00+00')
+ON CONFLICT (id) DO NOTHING;
+
+-- ── Moderator submissions (5 subs: ids 5–9) ─────────────────────────────────
+--   Sub  5: moderator → 2.4.34  (solution.jpg) → SUCCESS
+--   Sub  6: moderator → 1.3.13  (no files)     → PENDING
+--   Sub  7: moderator → 4.3.12  (scan.jpg)     → FAILED
+--   Sub  8: moderator → 5.6.19  (no files)     → SUCCESS
+--   Sub  9: moderator → 7.4.10  (diagram.jpg)  → FAILED
+
+INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
+VALUES
+    (5,  (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '["2"]',  '2026-04-24 14:00:00+00', '2026-04-24 14:00:00+00'),
+    (6,  (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '[]',     '2026-04-24 15:00:00+00', '2026-04-24 15:00:00+00'),
+    (7,  (SELECT id FROM problems WHERE key = 'savchenko/4.3.12'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '["3"]',  '2026-04-24 16:00:00+00', '2026-04-24 16:00:00+00'),
+    (8,  (SELECT id FROM problems WHERE key = 'savchenko/5.6.19'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '[]',     '2026-04-24 17:00:00+00', '2026-04-24 17:00:00+00'),
+    (9,  (SELECT id FROM problems WHERE key = 'savchenko/7.4.10'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '["4"]',  '2026-04-24 18:00:00+00', '2026-04-24 18:00:00+00')
+ON CONFLICT (id) DO NOTHING;
+
+-- ── User submissions (6 subs: ids 10–15) ────────────────────────────────────
+--   Sub 10: user → 1.1.4   (solution.jpg)          → FAILED
+--   Sub 11: user → 3.2.7   (page1.jpg + page2.jpg) → SUCCESS
+--   Sub 12: user → 6.4.2   (no files)              → PENDING
+--   Sub 13: user → 1.3.13  (attempt.jpg)           → FAILED
+--   Sub 14: user → 2.4.34  (no files)              → SUCCESS
+--   Sub 15: user → 10.1.21 (solution.jpg)          → PENDING
+
+INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
+VALUES
+    (10, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', '["5"]',     '2026-04-25 09:00:00+00', '2026-04-25 09:00:00+00'),
+    (11, (SELECT id FROM problems WHERE key = 'savchenko/3.2.7'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', '["6","7"]', '2026-04-25 10:00:00+00', '2026-04-25 10:00:00+00'),
+    (12, (SELECT id FROM problems WHERE key = 'savchenko/6.4.2'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', '[]',        '2026-04-25 12:00:00+00', '2026-04-25 12:00:00+00'),
+    (13, (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'), (SELECT id FROM users WHERE name = 'user'), 'PENDING', '["8"]',     '2026-04-25 14:00:00+00', '2026-04-25 14:00:00+00'),
+    (14, (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'), (SELECT id FROM users WHERE name = 'user'), 'PENDING', '[]',        '2026-04-25 16:00:00+00', '2026-04-25 16:00:00+00'),
+    (15, (SELECT id FROM problems WHERE key = 'savchenko/10.1.21'),(SELECT id FROM users WHERE name = 'user'), 'PENDING', '["9"]',     '2026-04-26 09:00:00+00', '2026-04-26 09:00:00+00')
+ON CONFLICT (id) DO NOTHING;
+
+-- ── Check results for submissions 5–15 ──────────────────────────────────────
+-- Triggers fire: fn_sync_submission_status → update status + updated_at,
+--                fn_update_problem_progress → upsert progress.
+-- Subs 6, 12, 15 have no non-PENDING check results → stay PENDING.
+
+INSERT INTO check_results (id, submission_id, status, trust_level, error_type, explanation, created_at)
+VALUES
+    -- moderator results
+    (5,  5,  'SUCCESS', 0.92, 'NONE',
+        'Correct application of energy conservation and inelastic collision conditions.',
+        '2026-04-24 14:10:00+00'),
+    (6,  7,  'MISTAKE', 0.35, 'ALGEBRAIC',
+        'The ratio H/h was applied to velocity instead of the square root; exponent should be 5/2, not 3/2.',
+        '2026-04-24 16:15:00+00'),
+    (7,  8,  'SUCCESS', 0.90, 'NONE',
+        'Correct thermodynamic analysis. Temperature and volume expressions match expected results.',
+        '2026-04-24 17:12:00+00'),
+    (8,  9,  'INTERNAL_ERROR', 0.0, 'UNCLEAR',
+        'Diagram too blurry to parse; please re-upload a higher resolution scan.',
+        '2026-04-24 18:08:00+00'),
+    -- user results
+    (9,  10, 'MISTAKE', 0.45, 'ALGEBRAIC',
+        'The distance was calculated from the wrong counter; the answer should be 1.15 m from A, not B.',
+        '2026-04-25 09:20:00+00'),
+    (10, 11, 'SUCCESS', 0.88, 'NONE',
+        'Both subtasks solved correctly. Magnetic force and equilibrium angle match expected values.',
+        '2026-04-25 10:25:00+00'),
+    (11, 13, 'MISTAKE', 0.40, 'PHYSICAL',
+        'The envelope equation is correct, but the minimum velocity formula has a sign error under the radical.',
+        '2026-04-25 14:18:00+00'),
+    (12, 14, 'SUCCESS', 0.94, 'NONE',
+        'Clean solution. Energy balance and inelastic collision heat loss correctly derived.',
+        '2026-04-25 16:10:00+00')
+ON CONFLICT (id) DO NOTHING;
+
 -- Advance sequences past the hardcoded IDs so future inserts don't collide.
 SELECT setval('file_objects_id_seq',  GREATEST((SELECT MAX(id) FROM file_objects),  1));
 SELECT setval('submissions_id_seq',   GREATEST((SELECT MAX(id) FROM submissions),   1));
 SELECT setval('check_results_id_seq', GREATEST((SELECT MAX(id) FROM check_results), 1));
+SELECT setval('problem_sets_id_seq',  GREATEST((SELECT MAX(id) FROM problem_sets),  1));
 
 -- ── Problem sets ──────────────────────────────────────────────────────────────
 -- Three problem sets covering every interesting membership scenario:
@@ -410,7 +560,8 @@ SELECT setval('check_results_id_seq', GREATEST((SELECT MAX(id) FROM check_result
 --
 -- UserRole values (problem-set level): ADMIN · USER · MODERATOR
 
-INSERT INTO problem_sets (name, description, is_public, share_code, user_id_role_map, invited_user_ids) VALUES (
+INSERT INTO problem_sets (id, name, description, is_public, share_code, user_id_role_map, invited_user_ids) VALUES (
+    1,
     'Kinematics Practice',
     'A focused selection of kinematics problems from Savchenko''s collection. '
     'Covers constant-velocity motion and projectile problems at introductory level. '
@@ -422,9 +573,10 @@ INSERT INTO problem_sets (name, description, is_public, share_code, user_id_role
         CAST((SELECT id FROM users WHERE name = 'user')  AS TEXT), 'USER'
     ),
     '[]'
-);
+) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO problem_sets (name, description, is_public, share_code, user_id_role_map, invited_user_ids) VALUES (
+INSERT INTO problem_sets (id, name, description, is_public, share_code, user_id_role_map, invited_user_ids) VALUES (
+    2,
     'Classical Mechanics',
     'Problems spanning dynamics, oscillations, and fluid mechanics, drawn from chapters 2–5. '
     'Suitable as a supplementary problem set for an undergraduate mechanics course. '
@@ -437,9 +589,10 @@ INSERT INTO problem_sets (name, description, is_public, share_code, user_id_role
         CAST((SELECT id FROM users WHERE name = 'user')      AS TEXT), 'USER'
     ),
     '[]'
-);
+) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO problem_sets (name, description, is_public, share_code, user_id_role_map, invited_user_ids) VALUES (
+INSERT INTO problem_sets (id, name, description, is_public, share_code, user_id_role_map, invited_user_ids) VALUES (
+    3,
     'Introduction to Physics',
     'A beginner-friendly tour of physics: kinematics, molecular physics, electrostatics, optics, '
     'and a touch of special relativity. Publicly accessible — anyone with the share code can join. '
@@ -452,7 +605,7 @@ INSERT INTO problem_sets (name, description, is_public, share_code, user_id_role
         CAST((SELECT id FROM users WHERE name = 'user')      AS TEXT), 'USER'
     ),
     '[]'
-);
+) ON CONFLICT (id) DO NOTHING;
 
 -- ── Problem set problems ──────────────────────────────────────────────────────
 

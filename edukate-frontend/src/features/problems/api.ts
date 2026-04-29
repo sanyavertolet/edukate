@@ -1,7 +1,6 @@
 import { isAxiosError } from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { getProblem, getProblemList, getRandomUnsolvedProblemKey, getAnswerByProblemKey } from "@/generated/backend";
-import type { GetProblemListParams } from "@/generated/backend";
 import { client } from "@/lib/axios";
 import { queryKeys } from "@/lib/query-keys";
 import type { StatusFilter } from "@/features/problems/hooks/useProblemTableParams";
@@ -34,15 +33,15 @@ export function useProblemListRequest(
         queryFn: ({ signal }) =>
             getProblemList(
                 {
-                    page: String(page),
-                    size: String(size),
-                    ...(prefix ? { prefix } : {}),
-                    ...(effectiveStatus ? { status: effectiveStatus } : {}),
-                    ...(isHard !== undefined ? { isHard: String(isHard) } : {}),
-                    ...(hasPictures !== undefined ? { hasPictures: String(hasPictures) } : {}),
-                    ...(hasResult !== undefined ? { hasResult: String(hasResult) } : {}),
-                    ...(bookSlug ? { bookSlug } : {}),
-                } as GetProblemListParams,
+                    page,
+                    size,
+                    prefix: prefix || undefined,
+                    status: effectiveStatus,
+                    isHard,
+                    hasPictures,
+                    hasResult,
+                    bookSlug,
+                },
                 signal,
             ),
     });

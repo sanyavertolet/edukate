@@ -57,13 +57,13 @@ class ProblemController(private val problemService: ProblemService, private val 
                     name = "page",
                     description = "Page number (zero-based)",
                     `in` = ParameterIn.QUERY,
-                    schema = Schema(minimum = "0"),
+                    schema = Schema(type = "integer", minimum = "0"),
                 ),
                 Parameter(
                     name = "size",
                     description = "Number of problems per page",
                     `in` = ParameterIn.QUERY,
-                    schema = Schema(minimum = "1", maximum = "100"),
+                    schema = Schema(type = "integer", minimum = "1", maximum = "100"),
                 ),
             ]
     )

@@ -34,6 +34,7 @@ data class CheckResult(
             requireNotNull(id) { "Initialized CheckResult ID cannot be null" },
             status,
             trustLevel,
+            errorType,
             requireNotNull(createdAt) { "Initialized CheckResult createdAt cannot be null" },
         )
 

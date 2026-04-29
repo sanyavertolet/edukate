@@ -7,6 +7,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { SiteMark } from "./SiteMark";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MobileDrawerComponent } from "./MobileDrawer";
+import { desktopNavigationElements } from "./NavigationElement";
 import { FC, useState } from "react";
 import { useAuthContext } from "@/features/auth/context";
 import { NotificationButton } from "@/features/notifications/components/NotificationButton";
@@ -51,20 +52,16 @@ export function EdukateTopBar() {
                             }}
                         />
                         <Box sx={{ display: { xs: "none", md: "flex" } }}>
-                            <TopBarLink
-                                text="Problems"
-                                isActive={isNavActive("/problems")}
-                                onClick={() => {
-                                    void navigate("/problems");
-                                }}
-                            />
-                            <TopBarLink
-                                text="Problem Sets"
-                                isActive={isNavActive("/problem-sets")}
-                                onClick={() => {
-                                    void navigate("/problem-sets");
-                                }}
-                            />
+                            {desktopNavigationElements.map((el) => (
+                                <TopBarLink
+                                    key={el.href}
+                                    text={el.text}
+                                    isActive={isNavActive(el.href)}
+                                    onClick={() => {
+                                        void navigate(el.href);
+                                    }}
+                                />
+                            ))}
                         </Box>
                     </Box>
 
