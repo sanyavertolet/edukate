@@ -1,11 +1,11 @@
 import { FC } from "react";
 import { useRandomProblemKeyQuery } from "@/features/problems/api";
 import { useNavigate } from "react-router-dom";
-import { IconButton, Tooltip } from "@mui/material";
+import { Fab, IconButton, Tooltip } from "@mui/material";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import { toast } from "react-toastify";
 
-export const RandomProblemButton: FC = () => {
+function useRandomProblemNavigation() {
     const randomProblemQuery = useRandomProblemKeyQuery();
     const navigate = useNavigate();
     const onClick = () => {
@@ -19,6 +19,11 @@ export const RandomProblemButton: FC = () => {
             },
         );
     };
+    return onClick;
+}
+
+export const RandomProblemButton: FC = () => {
+    const onClick = useRandomProblemNavigation();
 
     return (
         <Tooltip title={"Randomize problem"}>
@@ -26,5 +31,15 @@ export const RandomProblemButton: FC = () => {
                 <ShuffleIcon sx={{ fontSize: 30 }} />
             </IconButton>
         </Tooltip>
+    );
+};
+
+export const RandomProblemFab: FC = () => {
+    const onClick = useRandomProblemNavigation();
+
+    return (
+        <Fab color="primary" aria-label="random-problem" onClick={onClick} sx={{ position: "fixed", bottom: 24, right: 24 }}>
+            <ShuffleIcon />
+        </Fab>
     );
 };

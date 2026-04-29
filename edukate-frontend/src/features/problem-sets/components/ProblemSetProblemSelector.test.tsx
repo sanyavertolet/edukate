@@ -4,8 +4,24 @@ import { ProblemSetProblemSelector, ProblemSetSelection } from "./ProblemSetProb
 import { ProblemMetadata } from "@/features/problems/types";
 
 const problems: ProblemMetadata[] = [
-    { key: "savchenko/1.1", code: "1.1", bookSlug: "savchenko", isHard: false, tags: [], status: "SOLVED" },
-    { key: "savchenko/1.2", code: "1.2", bookSlug: "savchenko", isHard: true, tags: [], status: "NOT_SOLVED" },
+    {
+        key: "savchenko/1.1",
+        code: "1.1",
+        bookSlug: "savchenko",
+        isHard: false,
+        tags: [],
+        status: "SOLVED",
+        createdAt: "2026-01-01T00:00:00Z",
+    },
+    {
+        key: "savchenko/1.2",
+        code: "1.2",
+        bookSlug: "savchenko",
+        isHard: true,
+        tags: [],
+        status: "NOT_SOLVED",
+        createdAt: "2026-01-01T00:00:00Z",
+    },
 ];
 
 const defaultSelection: ProblemSetSelection = { type: "description" };

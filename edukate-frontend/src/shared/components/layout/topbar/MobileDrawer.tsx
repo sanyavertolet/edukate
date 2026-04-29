@@ -1,8 +1,11 @@
 import { FC } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Box, Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import LoginOutlined from "@mui/icons-material/LoginOutlined";
+import PersonAddOutlined from "@mui/icons-material/PersonAddOutlined";
 import { mobileNavigationElements } from "./NavigationElement";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
+import { useAuthContext } from "@/features/auth/context";
 
 interface MobileDrawerComponentProps {
     isOpen: boolean;
@@ -13,8 +16,9 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const { pageSpecificNavigation } = useDeviceContext();
+    const { isAuthorized } = useAuthContext();
 
-    const isNavActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+    const isNavActive = (href: string) => pathname === href;
 
     return (
         <Drawer
@@ -24,7 +28,7 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
             }}
         >
             <Box
-                sx={{ width: 250 }}
+                sx={{ width: "min(250px, 80vw)" }}
                 role="presentation"
                 onClick={() => {
                     setIsOpen(false);
@@ -64,6 +68,40 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
                             </ListItem>
                         ))}
                     </List>
+                )}
+
+                {!isAuthorized && (
+                    <>
+                        <Divider />
+                        <List>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    onClick={() => {
+                                        void navigate("/sign-in");
+                                    }}
+                                    selected={pathname === "/sign-in"}
+                                >
+                                    <ListItemIcon>
+                                        <LoginOutlined />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Sign In" />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem disablePadding>
+                                <ListItemButton
+                                    onClick={() => {
+                                        void navigate("/sign-up");
+                                    }}
+                                    selected={pathname === "/sign-up"}
+                                >
+                                    <ListItemIcon>
+                                        <PersonAddOutlined />
+                                    </ListItemIcon>
+                                    <ListItemText primary="Sign Up" />
+                                </ListItemButton>
+                            </ListItem>
+                        </List>
+                    </>
                 )}
             </Box>
         </Drawer>

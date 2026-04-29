@@ -21,7 +21,7 @@ export default function SubmissionsCard({ problemKey }: SubmissionsCardProps) {
                     <Paper
                         elevation={0}
                         variant={"outlined"}
-                        sx={{ width: "80%", justifyContent: "center", margin: "auto" }}
+                        sx={{ width: { xs: "100%", sm: "80%" }, justifyContent: "center", margin: "auto" }}
                     >
                         <SubmissionList problemKey={problemKey} onSubmissionClick={setSelectedSubmission} />
                     </Paper>

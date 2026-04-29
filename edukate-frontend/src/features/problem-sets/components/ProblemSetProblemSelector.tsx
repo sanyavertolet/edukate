@@ -69,7 +69,7 @@ export function ProblemSetProblemSelector({
                             onSelectionChange({ type: "description" });
                         }}
                     >
-                        <ListItemIcon>
+                        <ListItemIcon sx={{ minWidth: { md: 36, lg: 56 } }}>
                             <InfoOutlinedIcon />
                         </ListItemIcon>
                         <ListItemText primary="Description" />
@@ -81,7 +81,7 @@ export function ProblemSetProblemSelector({
                                 onSelectionChange({ type: "settings" });
                             }}
                         >
-                            <ListItemIcon>
+                            <ListItemIcon sx={{ minWidth: { md: 36, lg: 56 } }}>
                                 <SettingsOutlinedIcon />
                             </ListItemIcon>
                             <ListItemText primary="Settings" />
@@ -98,7 +98,7 @@ export function ProblemSetProblemSelector({
                                 onSelectionChange({ type: "problem", problem });
                             }}
                         >
-                            <ListItemIcon>
+                            <ListItemIcon sx={{ minWidth: { md: 36, lg: 56 } }}>
                                 <ProblemStatusIcon status={problem.status} />
                             </ListItemIcon>
                             <ListItemText primary={problem.code} />

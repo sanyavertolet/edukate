@@ -4,7 +4,15 @@ import { ProblemSet } from "@/features/problem-sets/types";
 import { ProblemMetadata } from "@/features/problems/types";
 
 function makeProblem(status: ProblemMetadata["status"], code: string = "1.1"): ProblemMetadata {
-    return { key: `savchenko/${code}`, code, bookSlug: "savchenko", isHard: false, tags: [], status };
+    return {
+        key: `savchenko/${code}`,
+        code,
+        bookSlug: "savchenko",
+        isHard: false,
+        tags: [],
+        status,
+        createdAt: "2026-01-01T00:00:00Z",
+    };
 }
 
 const baseProblemSet: ProblemSet = {

@@ -1,6 +1,7 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { GroupAdd } from "@mui/icons-material";
 import { FC } from "react";
+import { useDeviceContext } from "@/shared/context/DeviceContext";
 
 type ProblemSetInviteInfo = {
     problemSetName: string;
@@ -13,9 +14,12 @@ interface InvitationDialogProps {
 }
 
 export const InvitationDialog: FC<InvitationDialogProps> = ({ problemSetInfo, onClose }) => {
+    const { isMobile } = useDeviceContext();
     return (
         <Dialog
             open={problemSetInfo != undefined}
+            fullWidth
+            fullScreen={isMobile}
             onClose={() => {
                 onClose(undefined);
             }}

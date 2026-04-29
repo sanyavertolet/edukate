@@ -33,7 +33,7 @@ export default function SubmissionListComponent() {
     return (
         <Box>
             <SubmissionTable
-                headerCells={["", "Problem", "User", "Updated"]}
+                headerCells={["", "Book", "Problem", "User", "Updated"]}
                 toolbar={
                     <SubmissionTableToolbar
                         status={status}
@@ -62,6 +62,8 @@ export default function SubmissionListComponent() {
                     loading={isLoading}
                     error={error}
                     onRowClick={setSelectedSubmission}
+                    onBookSlugClick={handlers.onChangeBookSlug}
+                    onUserNameClick={handlers.onChangeUserName}
                 />
             </SubmissionTable>
             <SubmissionDrawer

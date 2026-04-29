@@ -25,10 +25,10 @@ export const SubmissionTablePagination: FC<Props> = ({
     return (
         <TableFooter>
             <TableRow>
-                <TableCell colSpan={4} sx={{ py: 1 }}>
+                <TableCell colSpan={5} sx={{ py: 1 }}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" sx={{ display: { xs: "none", md: "block" } }}>
                                 Rows per page:
                             </Typography>
                             <Select
@@ -57,7 +57,11 @@ export const SubmissionTablePagination: FC<Props> = ({
 
                         <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
                             <Typography variant="body2" color="text.secondary">
-                                {from}–{to} of {count} submissions
+                                {from}–{to} of {count}
+                                <Box component="span" sx={{ display: { xs: "none", md: "inline" } }}>
+                                    {" "}
+                                    submissions
+                                </Box>
                             </Typography>
                         </Box>
                     </Box>

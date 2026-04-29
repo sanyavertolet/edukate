@@ -6,6 +6,9 @@ import { lazy, Suspense, useEffect } from "react";
 import { toast } from "react-toastify";
 import { AppFooter } from "./AppFooter";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
+import { OfflineBanner } from "@/shared/components/pwa/OfflineBanner";
+import { InstallPrompt } from "@/shared/components/pwa/InstallPrompt";
+import { UpdatePrompt } from "@/shared/components/pwa/UpdatePrompt";
 
 const ParticlesComponent = lazy(() => import("@/shared/components/Particles"));
 
@@ -34,8 +37,9 @@ export default function PageSkeleton() {
 
     return (
         <Box>
+            <OfflineBanner />
             <EdukateTopBar />
-            <Container maxWidth={"lg"} sx={{ pt: { xs: "80px", md: "120px" }, pb: "2rem" }}>
+            <Container maxWidth={"lg"} sx={{ pt: "120px", pb: "2rem" }}>
                 <ErrorBoundary FallbackComponent={RouteFallback}>
                     <Suspense
                         fallback={
@@ -52,6 +56,8 @@ export default function PageSkeleton() {
                 </Suspense>
             </Container>
             <AppFooter />
+            <InstallPrompt />
+            <UpdatePrompt />
         </Box>
     );
 }

@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.entities
 
+import java.time.Instant
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
@@ -14,6 +15,7 @@ data class Problem(
     val text: String,
     val subtasks: List<Subtask> = emptyList(),
     val images: List<String> = emptyList(),
+    val createdAt: Instant = Instant.now(),
 ) {
     data class Subtask(val id: String, val text: String)
 

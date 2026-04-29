@@ -34,7 +34,7 @@ export function EdukateTopBar() {
     const { pathname } = useLocation();
     const isSignUpPage = pathname === "/sign-up";
     const isSignInPage = pathname === "/sign-in";
-    const isNavActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+    const isNavActive = (href: string) => pathname === href;
     return (
         <AppBar position="fixed" enableColorOnDark sx={appBarSx}>
             <Container maxWidth="lg">
@@ -74,7 +74,7 @@ export function EdukateTopBar() {
                                 <UserMenu />
                             </Box>
                         ) : (
-                            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                            <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
                                 <TopBarLink
                                     text={"Sign In"}
                                     onClick={() => {

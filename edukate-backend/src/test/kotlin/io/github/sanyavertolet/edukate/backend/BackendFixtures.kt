@@ -125,6 +125,7 @@ object BackendFixtures {
         text: String = "Test problem text",
         subtasks: List<Problem.Subtask> = emptyList(),
         images: List<String> = emptyList(),
+        createdAt: Instant = Instant.parse("2025-06-01T10:00:00Z"),
     ) =
         Problem(
             id = id,
@@ -136,6 +137,7 @@ object BackendFixtures {
             text = text,
             subtasks = subtasks,
             images = images,
+            createdAt = createdAt,
         )
 
     fun problemProgress(

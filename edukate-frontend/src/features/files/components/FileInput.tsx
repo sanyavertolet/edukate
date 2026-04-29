@@ -5,7 +5,7 @@ import { defaultTooltipSlotProps, formatFileSize } from "@/shared/utils/utils";
 import { FileDragAndDrop } from "./FileDragAndDrop";
 import { FileStatusIcon } from "./FileStatusIcon";
 import { useFileUpload } from "@/features/files/hooks/useFileUpload";
-import { FilePreviewDialog } from "./FilePreviewDialog";
+import { FileLightbox } from "./FileLightbox";
 import { toast } from "react-toastify";
 
 type FileInputProps = {
@@ -119,7 +119,7 @@ export const FileInput: FC<FileInputProps> = ({
                 </ListItem>
             ))}
 
-            <FilePreviewDialog open={previewDialogOpen} fileKey={selectedFileKey} onClose={handleClosePreview} />
+            <FileLightbox open={previewDialogOpen} fileKey={selectedFileKey} onClose={handleClosePreview} />
         </List>
     );
 };

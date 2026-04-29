@@ -6,10 +6,12 @@ import { ProblemTableToolbar } from "./table/ProblemTableToolbar";
 import { ProblemTableRows } from "./table/ProblemTableRows";
 import { ProblemTablePagination } from "./table/ProblemTablePagination";
 import { useProblemTableParams, DEFAULT_PAGE_SIZE } from "@/features/problems/hooks/useProblemTableParams";
-import { RandomProblemButton } from "./table/RandomProblemButton";
+import { RandomProblemButton, RandomProblemFab } from "./table/RandomProblemButton";
+import { useDeviceContext } from "@/shared/context/DeviceContext";
 
 export default function ProblemListComponent() {
     const navigate = useNavigate();
+    const { isMobile } = useDeviceContext();
     const navigateToProblem = (problemKey: string) => {
         void navigate(`/problems/${problemKey}`);
     };
@@ -34,7 +36,7 @@ export default function ProblemListComponent() {
     return (
         <Box>
             <ProblemTable
-                headerCells={["", "Book", "Name", "Tags"]}
+                headerCells={["", "Book", "Name", "Tags", "Created"]}
                 toolbar={
                     <ProblemTableToolbar
                         status={status}
@@ -49,7 +51,7 @@ export default function ProblemListComponent() {
                         onHasResultChange={handlers.onChangeHasResult}
                         bookSlug={bookSlug}
                         onBookSlugChange={handlers.onChangeBookSlug}
-                        rightSlot={<RandomProblemButton />}
+                        rightSlot={!isMobile && <RandomProblemButton />}
                     />
                 }
                 footer={
@@ -71,6 +73,7 @@ export default function ProblemListComponent() {
                     onBookSlugClick={handlers.onChangeBookSlug}
                 />
             </ProblemTable>
+            {isMobile && <RandomProblemFab />}
         </Box>
     );
 }

@@ -55,6 +55,8 @@ it("renders table with correct column headers", async () => {
     render(<SubmissionListComponent />);
 
     await waitFor(() => {
+        // "Book" appears both as a column header and toolbar label
+        expect(screen.getAllByText("Book").length).toBeGreaterThanOrEqual(2);
         expect(screen.getByText("Problem")).toBeInTheDocument();
         expect(screen.getByText("User")).toBeInTheDocument();
         expect(screen.getByText("Updated")).toBeInTheDocument();
@@ -67,8 +69,8 @@ it("renders submission rows from API response", async () => {
     render(<SubmissionListComponent />);
 
     await waitFor(() => {
-        expect(screen.getByText("savchenko/1.1.1")).toBeInTheDocument();
-        expect(screen.getByText("savchenko/1.1.2")).toBeInTheDocument();
+        expect(screen.getByText("1.1.1")).toBeInTheDocument();
+        expect(screen.getByText("1.1.2")).toBeInTheDocument();
         expect(screen.getByText("testuser")).toBeInTheDocument();
         expect(screen.getByText("alice")).toBeInTheDocument();
     });
@@ -93,10 +95,10 @@ it("opens submission drawer when a row is clicked", async () => {
     render(<SubmissionListComponent />);
 
     await waitFor(() => {
-        expect(screen.getByText("savchenko/1.1.1")).toBeInTheDocument();
+        expect(screen.getByText("1.1.1")).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByText("savchenko/1.1.1"));
+    await userEvent.click(screen.getByText("1.1.1"));
 
     await waitFor(() => {
         expect(screen.getByText("Submission #1")).toBeInTheDocument();
@@ -117,7 +119,9 @@ it("renders empty state when no submissions", async () => {
     render(<SubmissionListComponent />);
 
     await waitFor(() => {
-        expect(screen.getByText("0–0 of 0 submissions")).toBeInTheDocument();
+        expect(
+            screen.getByText((_, el) => el !== null && el.tagName === "P" && el.textContent === "0–0 of 0 submissions"),
+        ).toBeInTheDocument();
     });
 });
 
@@ -127,7 +131,11 @@ it("displays pagination info", async () => {
     render(<SubmissionListComponent />);
 
     await waitFor(() => {
-        expect(screen.getByText((content) => content.includes("of 2 submissions"))).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                (_, el) => el !== null && el.tagName === "P" && (el.textContent?.includes("of 2 submissions") ?? false),
+            ),
+        ).toBeInTheDocument();
     });
 });
 

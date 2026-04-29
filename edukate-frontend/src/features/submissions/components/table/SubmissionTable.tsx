@@ -8,6 +8,12 @@ type SubmissionTableProps = {
     footer?: ReactNode;
 };
 
+const headerTableCellSx = { minWidth: 44, maxWidth: 44, width: 44, p: 0.5 } as const;
+/** Per-column responsive visibility: Updated (4) hidden below md */
+const columnVisibility: Record<number, object> = {
+    4: { display: { xs: "none", md: "table-cell" } },
+};
+
 export const SubmissionTable: FC<SubmissionTableProps> = ({ headerCells, toolbar, children, footer }) => {
     return (
         <TableContainer component={Paper} sx={{ borderRadius: 3, overflow: "hidden" }}>
@@ -19,7 +25,10 @@ export const SubmissionTable: FC<SubmissionTableProps> = ({ headerCells, toolbar
                             <TableCell
                                 key={`header-${String(i)}`}
                                 align={i === 0 ? "center" : undefined}
-                                sx={i === 0 ? { minWidth: 44, maxWidth: 44, width: 44, p: 0.5 } : undefined}
+                                sx={{
+                                    ...(i === 0 ? headerTableCellSx : {}),
+                                    ...columnVisibility[i],
+                                }}
                             >
                                 {h}
                             </TableCell>
