@@ -1,8 +1,10 @@
 import { FC } from "react";
-import { TableRow, TableCell, Skeleton, Stack, Chip } from "@mui/material";
+import { TableRow, TableCell, Skeleton, Stack, SxProps, Theme } from "@mui/material";
 import { ProblemMetadata } from "@/features/problems/types";
 import { ProblemStatusIcon } from "@/features/problems/components/ProblemStatusIcon";
 import { TagChip } from "@/shared/components/TagChip";
+import { BookChip } from "@/shared/components/BookChip";
+import { formatRelative } from "@/shared/utils/date";
 
 type ProblemTableRowsProps = {
     items: ProblemMetadata[] | undefined;
@@ -10,6 +12,12 @@ type ProblemTableRowsProps = {
     error: unknown;
     onRowClick: (key: string) => void;
     onBookSlugClick: (slug: string) => void;
+};
+
+/** Per-column responsive visibility: Tags (3) hidden below md, Created (4) hidden on xs only */
+const columnVisibility: Record<number, SxProps<Theme>> = {
+    3: { display: { xs: "none", md: "table-cell" } },
+    4: { display: { xs: "none", sm: "table-cell" } },
 };
 
 export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, error, onRowClick, onBookSlugClick }) => {
@@ -27,7 +35,10 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
                         <TableCell>
                             <Skeleton variant="rounded" />
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={columnVisibility[3]}>
+                            <Skeleton variant="rounded" />
+                        </TableCell>
+                        <TableCell sx={columnVisibility[4]}>
                             <Skeleton variant="rounded" />
                         </TableCell>
                     </TableRow>
@@ -55,28 +66,20 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
                         <ProblemStatusIcon status={item.status} />
                     </TableCell>
                     <TableCell>
-                        <Chip
-                            label={item.bookSlug}
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onBookSlugClick(item.bookSlug);
-                            }}
-                        />
+                        <BookChip bookSlug={item.bookSlug} onClick={onBookSlugClick} />
                     </TableCell>
                     <TableCell>
                         {item.code}
                         {item.isHard ? "*" : ""}
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={columnVisibility[3]}>
                         <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 0.5, md: 1 }}>
                             {item.tags.map((tag) => (
                                 <TagChip key={`${item.key}-${tag}`} label={tag} />
                             ))}
                         </Stack>
                     </TableCell>
+                    <TableCell sx={columnVisibility[4]}>{formatRelative(item.createdAt)}</TableCell>
                 </TableRow>
             ))}
         </>

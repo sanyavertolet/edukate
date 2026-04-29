@@ -3,6 +3,7 @@
 package io.github.sanyavertolet.edukate.backend.mappers
 
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
+import io.github.sanyavertolet.edukate.backend.entities.Book
 import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.services.AnswerService
 import io.github.sanyavertolet.edukate.backend.services.BookService
@@ -11,6 +12,7 @@ import io.github.sanyavertolet.edukate.backend.services.files.FileManager
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -56,6 +58,45 @@ class ProblemMapperTest {
 
         StepVerifier.create(mapper.toMetadata(problem, auth))
             .assertNext { meta -> assertThat(meta.status).isEqualTo(Problem.Status.SOLVING) }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `toMetadata propagates createdAt from entity`() {
+        val auth = BackendFixtures.mockAuthentication()
+        val timestamp = Instant.parse("2026-03-15T12:00:00Z")
+        val problem = BackendFixtures.problem(id = 1L, code = "2.1.1", createdAt = timestamp)
+        every { problemStatusDecisionManager.getStatus(1L, auth) } returns Mono.just(Problem.Status.NOT_SOLVED)
+        every { bookService.findById(any()) } returns Mono.just(BackendFixtures.book())
+
+        StepVerifier.create(mapper.toMetadata(problem, auth))
+            .assertNext { meta ->
+                assertThat(meta.createdAt).isEqualTo(timestamp)
+                assertThat(meta.code).isEqualTo("2.1.1")
+            }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `toMetadata resolves bookSlug from book service`() {
+        val auth = BackendFixtures.mockAuthentication()
+        val problem = BackendFixtures.problem(id = 1L, bookId = 5L)
+        every { problemStatusDecisionManager.getStatus(1L, auth) } returns Mono.just(Problem.Status.NOT_SOLVED)
+        every { bookService.findById(5L) } returns Mono.just(BackendFixtures.book(id = 5L, slug = "irodov"))
+
+        StepVerifier.create(mapper.toMetadata(problem, auth))
+            .assertNext { meta -> assertThat(meta.bookSlug).isEqualTo("irodov") }
+            .verifyComplete()
+    }
+
+    @Test
+    fun `toMetadata defaults bookSlug to unknown when book is missing`() {
+        val problem = BackendFixtures.problem(id = 1L, bookId = 999L)
+        every { problemStatusDecisionManager.getStatus(1L, null) } returns Mono.just(Problem.Status.NOT_SOLVED)
+        every { bookService.findById(999L) } returns Mono.empty<Book>()
+
+        StepVerifier.create(mapper.toMetadata(problem, null))
+            .assertNext { meta -> assertThat(meta.bookSlug).isEqualTo("unknown") }
             .verifyComplete()
     }
 }

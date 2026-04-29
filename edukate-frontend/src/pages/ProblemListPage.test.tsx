@@ -25,6 +25,7 @@ describe("ProblemListPage", () => {
                     isHard: false,
                     tags: ["algebra"],
                     status: "NOT_SOLVED",
+                    createdAt: "2026-01-01T00:00:00Z",
                 },
             ]),
             getCountMockHandler(1),

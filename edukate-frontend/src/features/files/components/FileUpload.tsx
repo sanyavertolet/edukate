@@ -18,7 +18,7 @@ export function FileUpload({ accept = "*", maxSize = 50 * 1024 * 1024, maxFiles 
         setUploadedFileNames((prevState) => prevState.filter((key) => key !== fileKey));
     };
     return (
-        <Paper elevation={2} sx={{ p: 1, borderRadius: 2, width: "80%" }}>
+        <Paper elevation={2} sx={{ p: 1, borderRadius: 2, width: { xs: "100%", sm: "80%" } }}>
             <Box gap={2}>
                 <FileInput
                     onTempFileUploaded={addFileKey}

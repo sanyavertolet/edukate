@@ -9,6 +9,11 @@ type ProblemTableProps = {
 };
 
 const headerTableCellSx = { minWidth: 44, maxWidth: 44, width: 44, p: 0.5 } as const;
+/** Per-column responsive visibility: Tags (3) hidden below md, Created (4) hidden on xs only */
+const columnVisibility: Record<number, object> = {
+    3: { display: { xs: "none", md: "table-cell" } },
+    4: { display: { xs: "none", sm: "table-cell" } },
+};
 
 export const ProblemTable: FC<ProblemTableProps> = ({ headerCells, toolbar, children, footer }) => {
     return (
@@ -21,7 +26,10 @@ export const ProblemTable: FC<ProblemTableProps> = ({ headerCells, toolbar, chil
                             <TableCell
                                 key={`header-${String(i)}`}
                                 align={i === 0 ? "center" : undefined}
-                                sx={i === 0 ? headerTableCellSx : undefined}
+                                sx={{
+                                    ...(i === 0 ? headerTableCellSx : {}),
+                                    ...columnVisibility[i],
+                                }}
                             >
                                 {h}
                             </TableCell>

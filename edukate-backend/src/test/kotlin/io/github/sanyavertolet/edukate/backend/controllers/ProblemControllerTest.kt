@@ -12,6 +12,7 @@ import io.github.sanyavertolet.edukate.backend.mappers.ProblemMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest
@@ -33,7 +34,7 @@ class ProblemControllerTest {
     @MockkBean private lateinit var problemMapper: ProblemMapper
 
     private fun metadata(code: String = "1.1.1") =
-        ProblemMetadata("savchenko/$code", code, "savchenko", false, emptyList(), Problem.Status.NOT_SOLVED)
+        ProblemMetadata("savchenko/$code", code, "savchenko", false, emptyList(), Problem.Status.NOT_SOLVED, Instant.now())
 
     private fun dto(code: String = "1.1.1") =
         ProblemDto(

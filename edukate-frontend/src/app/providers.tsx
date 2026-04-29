@@ -6,6 +6,7 @@ import { CookiesProvider } from "react-cookie";
 import { queryClient } from "@/lib/query-client";
 import { CssBaseline } from "@mui/material";
 import { DeviceProvider } from "@/shared/context/DeviceContext";
+import { PwaProvider } from "@/shared/context/PwaContext";
 
 interface ProvidersProps {
     children: ReactNode;
@@ -13,15 +14,17 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
     return (
-        <QueryClientProvider client={queryClient}>
-            <CssBaseline />
-            <ThemeProvider>
-                <AuthProvider>
-                    <CookiesProvider defaultSetOptions={{ path: "/" }}>
-                        <DeviceProvider>{children}</DeviceProvider>
-                    </CookiesProvider>
-                </AuthProvider>
-            </ThemeProvider>
-        </QueryClientProvider>
+        <PwaProvider>
+            <QueryClientProvider client={queryClient}>
+                <CssBaseline />
+                <ThemeProvider>
+                    <AuthProvider>
+                        <CookiesProvider defaultSetOptions={{ path: "/" }}>
+                            <DeviceProvider>{children}</DeviceProvider>
+                        </CookiesProvider>
+                    </AuthProvider>
+                </ThemeProvider>
+            </QueryClientProvider>
+        </PwaProvider>
     );
 }

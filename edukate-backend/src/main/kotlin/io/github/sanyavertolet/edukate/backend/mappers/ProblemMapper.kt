@@ -60,6 +60,7 @@ class ProblemMapper(
                     isHard = problem.isHard,
                     tags = problem.tags,
                     status = tuple.t1,
+                    createdAt = problem.createdAt,
                 )
             }
     }

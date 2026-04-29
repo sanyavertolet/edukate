@@ -1,8 +1,8 @@
 import { ProblemStatus } from "@/features/problems/types";
 import { Box, Tooltip } from "@mui/material";
-import DoneIcon from "@mui/icons-material/DoneOutlined";
-import CloseIcon from "@mui/icons-material/CloseOutlined";
-import PendingIcon from "@mui/icons-material/PendingOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { defaultTooltipSlotProps } from "@/shared/utils/utils";
 
 interface ProblemStatusIconProps {
@@ -14,17 +14,17 @@ export function ProblemStatusIcon({ status }: ProblemStatusIconProps) {
         <Box justifyContent={"left"} alignContent={"center"} display={"flex"}>
             {status == "SOLVED" && (
                 <Tooltip title={"Solved"} slotProps={defaultTooltipSlotProps}>
-                    <DoneIcon color="success" />
+                    <CheckCircleOutlineIcon color="success" />
                 </Tooltip>
             )}
             {status == "FAILED" && (
                 <Tooltip title={"Failed"} slotProps={defaultTooltipSlotProps}>
-                    <CloseIcon color="error" />
+                    <CancelOutlinedIcon color="error" />
                 </Tooltip>
             )}
             {status == "SOLVING" && (
                 <Tooltip title={"Pending review"} slotProps={defaultTooltipSlotProps}>
-                    <PendingIcon color="warning" />
+                    <HourglassEmptyIcon color="warning" />
                 </Tooltip>
             )}
         </Box>

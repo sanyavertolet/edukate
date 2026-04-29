@@ -47,7 +47,7 @@ export const ImageLightbox: FC<ImageLightboxProps> = ({ images, index, open, onC
             }}
             // Lightbox backdrop — intentionally hardcoded (YARL styles prop doesn't support theme tokens)
             styles={{ container: { backgroundColor: "rgba(0, 0, 0, 0.75)" } }}
-            controller={{ closeOnBackdropClick: true }}
+            controller={{ closeOnBackdropClick: true, closeOnPullDown: true }}
         />
     );
 };

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Container, ImageList, ImageListItem } from "@mui/material";
 import { ImageLightbox } from "./ImageLightbox";
+import { useDeviceContext } from "@/shared/context/DeviceContext";
 
 const imageListItemSx = {
     justifyContent: "center",
@@ -17,10 +18,11 @@ interface ImageListComponentProps {
 
 export function ImageListComponent({ images }: ImageListComponentProps) {
     const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+    const { isMobile } = useDeviceContext();
 
     return (
         <Container sx={containerSx}>
-            <ImageList gap={3} cols={images.length} variant="woven">
+            <ImageList gap={3} cols={isMobile ? 1 : Math.min(images.length, 3)} variant="woven">
                 {images.map((imageUrl, index) => (
                     <ImageListItem
                         key={imageUrl}
@@ -38,7 +40,7 @@ export function ImageListComponent({ images }: ImageListComponentProps) {
                             srcSet={imageUrl}
                             alt={`Image ${String(index + 1)}`}
                             loading="lazy"
-                            style={{ maxWidth: "25rem" }}
+                            style={{ maxWidth: isMobile ? "90vw" : "25rem" }}
                         />
                     </ImageListItem>
                 ))}

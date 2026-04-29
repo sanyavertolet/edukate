@@ -17,6 +17,7 @@ import DoneIcon from "@mui/icons-material/DoneOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
 import InternalIcon from "@mui/icons-material/Storage";
 import { useCheckResultDetailQuery } from "@/features/checks/api";
+import { useDeviceContext } from "@/shared/context/DeviceContext";
 import { CheckResultDto, CheckResultDtoErrorType } from "@/features/checks/types";
 import { formatDate } from "@/shared/utils/date";
 
@@ -27,9 +28,10 @@ type CheckResultDetailDialogProps = {
 
 export const CheckResultDetailDialog: FC<CheckResultDetailDialogProps> = ({ checkResultId, onClose }) => {
     const { data, isLoading } = useCheckResultDetailQuery(checkResultId);
+    const { isMobile } = useDeviceContext();
 
     return (
-        <Dialog open={checkResultId !== null} onClose={onClose} maxWidth="sm" fullWidth>
+        <Dialog open={checkResultId !== null} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
             <DialogTitle component="div">
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Stack direction="row" alignItems="center" spacing={1.5}>

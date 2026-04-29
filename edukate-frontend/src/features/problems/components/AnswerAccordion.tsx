@@ -15,7 +15,7 @@ export function AnswerAccordionComponent({ problem }: AnswerComponentProps) {
     if (!result) return null;
 
     return (
-        <Box width={"80%"}>
+        <Box sx={{ width: { xs: "100%", sm: "80%" } }}>
             <Accordion disabled={!isAuthorized}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="answer-content" id="answer-header">
                     <Typography component="span">Show the answer</Typography>

@@ -36,7 +36,7 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
                 </Typography>
             )}
             <Grid container spacing={1} paddingTop={"1rem"}>
-                <Grid sx={{ sm: "none", md: "block" }} key={"left-grid"} size={"grow"}>
+                <Grid sx={{ display: { xs: "none", md: "block" } }} key={"left-grid"} size={"grow"}>
                     <Card>
                         <ProblemSetProblemSelector
                             problems={problemSet ? problemSet.problems : []}

@@ -26,6 +26,7 @@ CREATE TABLE problems (
     text        TEXT NOT NULL,
     subtasks    JSONB NOT NULL DEFAULT '[]',
     images      JSONB NOT NULL DEFAULT '[]',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (book_id, code),
     UNIQUE (code)
 );

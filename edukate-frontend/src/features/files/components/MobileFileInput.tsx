@@ -6,7 +6,7 @@ import { FileStatusIcon } from "./FileStatusIcon";
 import { useFileUpload } from "@/features/files/hooks/useFileUpload";
 import { useFileStatsDisplayValues } from "@/features/files/hooks/useFileStatsDisplayValues";
 import UploadIcon from "@mui/icons-material/Upload";
-import { FilePreviewDialog } from "./FilePreviewDialog";
+import { FileLightbox } from "./FileLightbox";
 import { toast } from "react-toastify";
 
 type MobileFileInputProps = {
@@ -65,7 +65,7 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
                 inputProps={{ multiple: true, accept: accept }}
             />
 
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1 }}>
                 <Box sx={{ display: "flex", flexDirection: "column" }}>
                     <Typography variant="subtitle1" textAlign={"start"}>
                         {primaryText}
@@ -136,7 +136,7 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
                 </ListItem>
             ))}
 
-            <FilePreviewDialog open={previewDialogOpen} fileKey={selectedFileKey} onClose={handleClosePreview} />
+            <FileLightbox open={previewDialogOpen} fileKey={selectedFileKey} onClose={handleClosePreview} />
         </List>
     );
 };

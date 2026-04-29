@@ -1,21 +1,11 @@
 import { FC, ReactNode } from "react";
-import {
-    Toolbar,
-    Box,
-    TextField,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    FormControlLabel,
-    Checkbox,
-    Chip,
-} from "@mui/material";
+import { Box, FormControl, InputLabel, Select, MenuItem, FormControlLabel, Checkbox, Stack } from "@mui/material";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
 import CloseIcon from "@mui/icons-material/CloseOutlined";
 import PendingIcon from "@mui/icons-material/PendingOutlined";
 import { useAuthContext } from "@/features/auth/context";
 import { ProblemStatus } from "@/features/problems/types";
+import { ClearableTextField } from "@/shared/components/ClearableTextField";
 
 export type StatusFilter = ProblemStatus | "ALL" | undefined;
 type DifficultyFilter = boolean | undefined;
@@ -65,75 +55,104 @@ export const ProblemTableToolbar: FC<Props> = ({
 }) => {
     const { isAuthorized } = useAuthContext();
     return (
-        <Box>
-            <Toolbar sx={{ display: "flex", gap: 2, justifyContent: "space-between", flexWrap: "wrap" }}>
-                <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
-                    <TextField
-                        label="Search by prefix"
-                        size="small"
-                        value={prefix}
-                        onChange={(e) => {
-                            onPrefixChange(e.target.value);
-                        }}
-                    />
+        <Box sx={{ position: "relative" }}>
+            {rightSlot && <Box sx={{ position: "absolute", top: 8, right: 8 }}>{rightSlot}</Box>}
+            <Stack
+                direction="column"
+                spacing={2}
+                sx={{
+                    px: { xs: 1, md: 2 },
+                    pt: 1,
+                }}
+            >
+                {/* Row 1 on lg+: all four inputs. On xs/sm/md: book+code on one row, selectors on another */}
+                <Stack direction={{ xs: "column", lg: "row" }} spacing={2} sx={{ alignItems: { lg: "center" } }}>
+                    <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                        <ClearableTextField
+                            label="Book"
+                            value={bookSlug ?? ""}
+                            onChange={(v) => {
+                                onBookSlugChange(v || undefined);
+                            }}
+                            onClear={() => {
+                                onBookSlugChange(undefined);
+                            }}
+                            sx={{ minWidth: { md: 120 }, flex: { xs: "1 1 0", md: "0 1 auto" } }}
+                        />
 
-                    {isAuthorized && (
-                        <FormControl size="small" sx={{ minWidth: 160 }}>
-                            <InputLabel size={"small"} id="status-filter-label">
-                                Status
+                        <ClearableTextField
+                            label="Problem code"
+                            value={prefix}
+                            onChange={onPrefixChange}
+                            onClear={() => {
+                                onPrefixChange("");
+                            }}
+                            sx={{ minWidth: { md: 140 }, flex: { xs: "1 1 0", md: "0 1 auto" } }}
+                        />
+                    </Stack>
+
+                    <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+                        {isAuthorized && (
+                            <FormControl size="small" sx={{ minWidth: { md: 160 }, flex: { xs: "1 1 0", md: "0 1 auto" } }}>
+                                <InputLabel size={"small"} id="status-filter-label">
+                                    Status
+                                </InputLabel>
+                                <Select
+                                    labelId="status-filter-label"
+                                    size={"small"}
+                                    label="Status"
+                                    value={status ?? "ALL"}
+                                    onChange={(e) => {
+                                        onStatusChange((e.target.value || "ALL") as StatusFilter);
+                                    }}
+                                >
+                                    <MenuItem value="ALL">All</MenuItem>
+                                    <MenuItem value="SOLVED">
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            <DoneIcon color="success" fontSize="small" />
+                                            Solved
+                                        </Box>
+                                    </MenuItem>
+                                    <MenuItem value="SOLVING">
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            <PendingIcon color="warning" fontSize="small" />
+                                            Solving
+                                        </Box>
+                                    </MenuItem>
+                                    <MenuItem value="FAILED">
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                            <CloseIcon color="error" fontSize="small" />
+                                            Failed
+                                        </Box>
+                                    </MenuItem>
+                                    <MenuItem value="NOT_SOLVED">Not solved</MenuItem>
+                                </Select>
+                            </FormControl>
+                        )}
+
+                        <FormControl size="small" sx={{ minWidth: { md: 130 }, flex: { xs: "1 1 0", md: "0 1 auto" } }}>
+                            <InputLabel size={"small"} id="difficulty-filter-label">
+                                Difficulty
                             </InputLabel>
                             <Select
-                                labelId="status-filter-label"
+                                labelId="difficulty-filter-label"
                                 size={"small"}
-                                label="Status"
-                                value={status ?? "ALL"}
+                                label="Difficulty"
+                                value={difficultyToSelectValue(isHard)}
                                 onChange={(e) => {
-                                    onStatusChange((e.target.value || "ALL") as StatusFilter);
+                                    onIsHardChange(selectValueToDifficulty(e.target.value));
                                 }}
                             >
-                                <MenuItem value="ALL">All</MenuItem>
-                                <MenuItem value="SOLVED">
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <DoneIcon color="success" fontSize="small" />
-                                        Solved
-                                    </Box>
-                                </MenuItem>
-                                <MenuItem value="SOLVING">
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <PendingIcon color="warning" fontSize="small" />
-                                        Solving
-                                    </Box>
-                                </MenuItem>
-                                <MenuItem value="FAILED">
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <CloseIcon color="error" fontSize="small" />
-                                        Failed
-                                    </Box>
-                                </MenuItem>
-                                <MenuItem value="NOT_SOLVED">Not solved</MenuItem>
+                                <MenuItem value="ANY">Any</MenuItem>
+                                <MenuItem value="HARD">Hard</MenuItem>
+                                <MenuItem value="MEDIUM">Medium</MenuItem>
                             </Select>
                         </FormControl>
-                    )}
+                    </Stack>
+                </Stack>
 
-                    <FormControl size="small" sx={{ minWidth: 130 }}>
-                        <InputLabel size={"small"} id="difficulty-filter-label">
-                            Difficulty
-                        </InputLabel>
-                        <Select
-                            labelId="difficulty-filter-label"
-                            size={"small"}
-                            label="Difficulty"
-                            value={difficultyToSelectValue(isHard)}
-                            onChange={(e) => {
-                                onIsHardChange(selectValueToDifficulty(e.target.value));
-                            }}
-                        >
-                            <MenuItem value="ANY">Any</MenuItem>
-                            <MenuItem value="HARD">Hard</MenuItem>
-                            <MenuItem value="MEDIUM">Medium</MenuItem>
-                        </Select>
-                    </FormControl>
-
+                {/* Checkboxes — always on their own row */}
+                <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                     <FormControlLabel
                         control={
                             <Checkbox
@@ -141,9 +160,11 @@ export const ProblemTableToolbar: FC<Props> = ({
                                 onChange={(e) => {
                                     onHasPicturesChange(e.target.checked);
                                 }}
+                                size="small"
                             />
                         }
                         label="With pictures"
+                        sx={{ mr: 0 }}
                     />
 
                     <FormControlLabel
@@ -153,28 +174,14 @@ export const ProblemTableToolbar: FC<Props> = ({
                                 onChange={(e) => {
                                     onHasResultChange(e.target.checked);
                                 }}
+                                size="small"
                             />
                         }
                         label="With answer"
+                        sx={{ mr: 0 }}
                     />
-                </Box>
-
-                <Box sx={{ marginLeft: "auto" }}>{rightSlot}</Box>
-            </Toolbar>
-
-            {bookSlug && (
-                <Box sx={{ px: 3, pb: 1, display: "flex", justifyContent: "flex-start" }}>
-                    <Chip
-                        label={`Book: ${bookSlug}`}
-                        onDelete={() => {
-                            onBookSlugChange(undefined);
-                        }}
-                        color="primary"
-                        variant="outlined"
-                        size="small"
-                    />
-                </Box>
-            )}
+                </Stack>
+            </Stack>
         </Box>
     );
 };

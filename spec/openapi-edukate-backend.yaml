@@ -1704,9 +1704,13 @@ components:
           - SOLVING
           - FAILED
           - NOT_SOLVED
+        createdAt:
+          type: string
+          format: date-time
       required:
       - bookSlug
       - code
+      - createdAt
       - isHard
       - key
       - status

@@ -30,7 +30,7 @@ export const ProblemTablePagination: FC<Props> = ({
                 <TableCell colSpan={colSpan} sx={{ py: 1 }}>
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" sx={{ display: { xs: "none", md: "block" } }}>
                                 Rows per page:
                             </Typography>
                             <Select
@@ -59,7 +59,11 @@ export const ProblemTablePagination: FC<Props> = ({
 
                         <Box sx={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
                             <Typography variant="body2" color="text.secondary">
-                                {from}–{to} of {count} problems
+                                {from}–{to} of {count}
+                                <Box component="span" sx={{ display: { xs: "none", md: "inline" } }}>
+                                    {" "}
+                                    problems
+                                </Box>
                             </Typography>
                         </Box>
                     </Box>

@@ -54,6 +54,7 @@ const darkTheme = createTheme({
             default: "#36393e",
             paper: "#424549",
         },
+        divider: "rgba(255, 255, 255, 0.3)",
     },
     typography,
     components,

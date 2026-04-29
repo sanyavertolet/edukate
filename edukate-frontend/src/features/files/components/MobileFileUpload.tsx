@@ -1,4 +1,4 @@
-import { Box, Fab, Paper, SwipeableDrawer, Button } from "@mui/material";
+import { Box, Fab, SwipeableDrawer, Button } from "@mui/material";
 import { useState, useRef } from "react";
 import { MobileFileInput } from "./MobileFileInput";
 import AddIcon from "@mui/icons-material/Add";
@@ -60,23 +60,19 @@ export function MobileFileUpload({
                 ModalProps={{ keepMounted: true }}
                 sx={{ "& .MuiDrawer-paper": { height: "auto", overflow: "visible" } }}
             >
-                <Box sx={{ px: 2, height: "100%", overflow: "auto" }}>
-                    <Paper elevation={0} sx={{ p: 1, borderRadius: 2, width: "100%" }}>
-                        <Box gap={2} pt={1}>
-                            <MobileFileInput
-                                onTempFileUploaded={addFileKey}
-                                onTempFileDeleted={deleteFileKey}
-                                accept={accept}
-                                maxFiles={maxFiles}
-                                maxSize={maxSize}
-                            />
-                            {onSubmit && uploadedFileNames.length > 0 && (
-                                <Button color="secondary" onClick={handleSubmit} sx={{ my: 1, width: "100%" }}>
-                                    Submit
-                                </Button>
-                            )}
-                        </Box>
-                    </Paper>
+                <Box sx={{ px: 1, pt: 1, height: "100%", overflowX: "hidden", overflowY: "auto" }}>
+                    <MobileFileInput
+                        onTempFileUploaded={addFileKey}
+                        onTempFileDeleted={deleteFileKey}
+                        accept={accept}
+                        maxFiles={maxFiles}
+                        maxSize={maxSize}
+                    />
+                    {onSubmit && uploadedFileNames.length > 0 && (
+                        <Button color="secondary" onClick={handleSubmit} sx={{ my: 1, width: "100%" }}>
+                            Submit
+                        </Button>
+                    )}
                 </Box>
             </SwipeableDrawer>
         </Box>

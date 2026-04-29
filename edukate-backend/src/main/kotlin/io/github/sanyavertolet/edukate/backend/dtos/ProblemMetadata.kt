@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.dtos
 
 import io.github.sanyavertolet.edukate.backend.entities.Problem
+import java.time.Instant
 
 data class ProblemMetadata(
     val key: String,
@@ -9,4 +10,5 @@ data class ProblemMetadata(
     val isHard: Boolean,
     val tags: List<String>,
     val status: Problem.Status,
+    val createdAt: Instant,
 )
