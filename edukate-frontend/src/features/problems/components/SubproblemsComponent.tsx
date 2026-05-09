@@ -1,15 +1,15 @@
 import { Box, Tab, Tabs } from "@mui/material";
 import React, { useState } from "react";
 import { LazyLatexComponent } from "@/shared/components/LazyLatexComponent";
-import { Subtask } from "@/features/problems/types";
+import { Subproblem } from "@/features/problems/types";
 
-interface SubtasksComponentProps {
-    subtasks?: Subtask[];
+interface SubproblemsComponentProps {
+    subproblems?: Subproblem[];
 }
 
-export function SubtasksComponent({ subtasks }: SubtasksComponentProps) {
-    const subtaskIds = subtasks?.map((subtask) => subtask.id);
-    const subtaskMap = subtasks && Object.fromEntries(subtasks.map(({ id, text }) => [id, text]));
+export function SubproblemsComponent({ subproblems }: SubproblemsComponentProps) {
+    const subproblemIds = subproblems?.map((subproblem) => subproblem.code);
+    const subproblemMap = subproblems && Object.fromEntries(subproblems.map(({ code, text }) => [code, text]));
 
     const [currentTabIndex, setCurrentTabIndex] = useState(0);
 
@@ -17,7 +17,7 @@ export function SubtasksComponent({ subtasks }: SubtasksComponentProps) {
         setCurrentTabIndex(newValue);
     };
 
-    if (subtaskIds == null || subtaskIds.length === 0) {
+    if (subproblemIds == null || subproblemIds.length === 0) {
         return null;
     }
 
@@ -27,20 +27,20 @@ export function SubtasksComponent({ subtasks }: SubtasksComponentProps) {
                 <Tabs
                     value={currentTabIndex}
                     onChange={handleTabChange}
-                    aria-label="subtask tabs"
+                    aria-label="subproblem tabs"
                     textColor="secondary"
                     indicatorColor="secondary"
                     centered
                 >
-                    {subtaskIds.map((subtaskId, index) => (
-                        <Tab key={subtaskId} value={index} label={subtaskId} />
+                    {subproblemIds.map((subproblemId, index) => (
+                        <Tab key={subproblemId} value={index} label={subproblemId} />
                     ))}
                 </Tabs>
             </Box>
 
-            {subtaskMap && (
+            {subproblemMap && (
                 <Box sx={{ padding: "2rem" }}>
-                    <LazyLatexComponent text={subtaskMap[subtaskIds[currentTabIndex]]} />
+                    <LazyLatexComponent text={subproblemMap[subproblemIds[currentTabIndex]]} />
                 </Box>
             )}
         </Box>

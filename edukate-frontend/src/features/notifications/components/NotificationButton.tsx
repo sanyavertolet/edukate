@@ -1,7 +1,6 @@
 import React, { FC, useState } from "react";
 import { Badge, IconButton } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/features/auth/context";
 import { InvitationDialog } from "./InvitationDialog";
 import { NotificationPanel } from "./NotificationPanel";
@@ -9,6 +8,9 @@ import { BaseNotification, CheckedNotification, InviteNotification } from "@/fea
 import { toast } from "react-toastify";
 import { useGetNotificationsRequest, useMarkNotificationsAsReadMutation } from "@/features/notifications/api";
 import { useProblemSetInvitationReplyMutation } from "@/features/problem-sets/api";
+import { useSubmissionQuery } from "@/features/submissions/api";
+import { SubmissionDrawer } from "@/features/submissions/components/SubmissionDrawer";
+import { useTranslation } from "react-i18next";
 
 type ProblemSetInviteInfo = {
     problemSetName: string;
@@ -18,10 +20,10 @@ type ProblemSetInviteInfo = {
 };
 
 export const NotificationButton: FC = () => {
+    const { t } = useTranslation();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
     const { isAuthorized } = useAuthContext();
     const { data: page } = useGetNotificationsRequest();
-    const navigate = useNavigate();
 
     const handleClose = () => {
         setAnchorEl(undefined);
@@ -33,6 +35,8 @@ export const NotificationButton: FC = () => {
     const markAsReadMutation = useMarkNotificationsAsReadMutation();
     const invitationReplyMutation = useProblemSetInvitationReplyMutation();
     const [problemSetInviteInfo, setProblemSetInviteInfo] = useState<ProblemSetInviteInfo>();
+    const [drawerSubmissionId, setDrawerSubmissionId] = useState<string | undefined>(undefined);
+    const { data: drawerSubmission } = useSubmissionQuery(drawerSubmissionId);
 
     const onInvitationDialogClose = (response: boolean | undefined) => {
         if (response != undefined && problemSetInviteInfo != undefined) {
@@ -42,10 +46,10 @@ export const NotificationButton: FC = () => {
                 {
                     onSuccess: () => {
                         markAsReadMutation.mutate([notificationUuid]);
-                        toast.success(`You have joined ${problemSetName} problem set!`);
+                        toast.success(t("joined_problem_set_success", { name: problemSetName }));
                     },
                     onError: () => {
-                        toast.error(`You could not join ${problemSetName} problem set due to some error...`);
+                        toast.error(t("joined_problem_set_error", { name: problemSetName }));
                     },
                 },
             );
@@ -60,7 +64,7 @@ export const NotificationButton: FC = () => {
         } else if (_type === "checked") {
             markAsReadMutation.mutate([uuid]);
             handleClose();
-            void navigate(`/submissions/${String((notification as CheckedNotification).submissionId)}`);
+            setDrawerSubmissionId(String((notification as CheckedNotification).submissionId));
         } else if (_type === "invite") {
             const { problemSetName, problemSetShareCode, inviterName } = notification as InviteNotification;
             setProblemSetInviteInfo({ problemSetName, inviterName, problemSetShareCode, notificationUuid: uuid });
@@ -72,6 +76,12 @@ export const NotificationButton: FC = () => {
     return (
         <>
             <InvitationDialog problemSetInfo={problemSetInviteInfo} onClose={onInvitationDialogClose} />
+            <SubmissionDrawer
+                submission={drawerSubmission ?? null}
+                onClose={() => {
+                    setDrawerSubmissionId(undefined);
+                }}
+            />
             <NotificationPanel
                 onNotificationClick={onNotificationClick}
                 onMarkAsRead={(n) => {

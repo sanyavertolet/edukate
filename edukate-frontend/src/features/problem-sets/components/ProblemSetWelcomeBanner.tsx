@@ -1,9 +1,11 @@
 import { Alert, Collapse } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const DISMISSED_KEY = "edukate:problem-sets-banner-dismissed";
 
 export function ProblemSetWelcomeBanner() {
+    const { t } = useTranslation("problem-sets");
     const [open, setOpen] = useState(() => localStorage.getItem(DISMISSED_KEY) !== "true");
 
     const handleClose = () => {
@@ -14,8 +16,7 @@ export function ProblemSetWelcomeBanner() {
     return (
         <Collapse in={open} unmountOnExit>
             <Alert severity="info" variant="outlined" onClose={handleClose} sx={{ mb: 1 }}>
-                Problem sets let you organize, share, and collaborate on curated problem collections. Browse public sets or
-                create your own!
+                {t("welcome_banner")}
             </Alert>
         </Collapse>
     );

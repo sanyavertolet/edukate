@@ -50,14 +50,14 @@ describe("NotificationListItem — simple", () => {
 });
 
 describe("NotificationListItem — checked", () => {
-    it("renders 'Submission Passed' for SUCCESS", () => {
+    it("renders 'Submission passed' for SUCCESS", () => {
         render(<NotificationListItem notification={makeChecked({ status: "SUCCESS" })} onClick={vi.fn()} />);
-        expect(screen.getByText("Submission Passed")).toBeInTheDocument();
+        expect(screen.getByText("Submission passed")).toBeInTheDocument();
     });
 
-    it("renders 'Submission Incorrect' for MISTAKE", () => {
+    it("renders 'Submission incorrect' for MISTAKE", () => {
         render(<NotificationListItem notification={makeChecked({ status: "MISTAKE" })} onClick={vi.fn()} />);
-        expect(screen.getByText("Submission Incorrect")).toBeInTheDocument();
+        expect(screen.getByText("Submission incorrect")).toBeInTheDocument();
     });
 
     it("renders the problem key", () => {

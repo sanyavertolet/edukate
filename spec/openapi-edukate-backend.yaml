@@ -1108,14 +1108,21 @@ paths:
     get:
       tags:
       - Problems
-      summary: Get problem codes by prefix
-      description: Retrieves a list of problem codes that match the given prefix
-      operationId: getProblemCodesByPrefix
+      summary: Get problem keys by prefix
+      description: Retrieves a list of problem keys matching the given book slug and/or
+        code prefix
+      operationId: getProblemKeysByPrefix
       parameters:
+      - name: bookSlugPrefix
+        in: query
+        description: Optional prefix to filter by book slug
+        required: false
+        schema:
+          type: string
       - name: prefix
         in: query
-        description: The prefix to match problem codes against
-        required: true
+        description: Optional prefix to match problem codes against
+        required: false
         schema:
           type: string
       - name: limit
@@ -1129,7 +1136,7 @@ paths:
           exclusiveMinimum: 0
       responses:
         "200":
-          description: Successfully retrieved problem codes
+          description: Successfully retrieved problem keys
           content:
             application/json:
               schema:
@@ -1707,12 +1714,18 @@ components:
         createdAt:
           type: string
           format: date-time
+        language:
+          type: string
+          enum:
+          - RU
+          - EN
       required:
       - bookSlug
       - code
       - createdAt
       - isHard
       - key
+      - language
       - status
       - tags
     ProblemSetDto:
@@ -1807,10 +1820,10 @@ components:
             type: string
         text:
           type: string
-        subtasks:
+        subproblems:
           type: array
           items:
-            $ref: "#/components/schemas/Subtask"
+            $ref: "#/components/schemas/Subproblem"
         images:
           type: array
           items:
@@ -1824,6 +1837,11 @@ components:
           - NOT_SOLVED
         hasResult:
           type: boolean
+        language:
+          type: string
+          enum:
+          - RU
+          - EN
       required:
       - bookSlug
       - code
@@ -1831,19 +1849,20 @@ components:
       - images
       - isHard
       - key
+      - language
       - status
-      - subtasks
+      - subproblems
       - tags
       - text
-    Subtask:
+    Subproblem:
       type: object
       properties:
-        id:
+        code:
           type: string
         text:
           type: string
       required:
-      - id
+      - code
       - text
     UserNameWithRole:
       type: object
@@ -2016,8 +2035,14 @@ components:
           type: array
           items:
             type: string
+        language:
+          type: string
+          enum:
+          - RU
+          - EN
       required:
       - images
+      - language
       - text
   securitySchemes:
     cookieAuth:

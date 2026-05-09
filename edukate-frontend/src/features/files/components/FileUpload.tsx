@@ -1,15 +1,24 @@
-import { Box, Button, Paper } from "@mui/material";
+import { Box, Button, CircularProgress, Paper } from "@mui/material";
 import { useState } from "react";
 import { FileInput } from "./FileInput";
+import { useTranslation } from "react-i18next";
 
 interface FileUploadProps {
     accept?: string;
     maxSize?: number;
     maxFiles?: number;
     onSubmit?: (fileNames: string[]) => void;
+    isSubmitting?: boolean;
 }
 
-export function FileUpload({ accept = "*", maxSize = 50 * 1024 * 1024, maxFiles = 5, onSubmit }: FileUploadProps) {
+export function FileUpload({
+    accept = "*",
+    maxSize = 50 * 1024 * 1024,
+    maxFiles = 5,
+    onSubmit,
+    isSubmitting,
+}: FileUploadProps) {
+    const { t } = useTranslation();
     const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
     const addFileKey = (fileKey: string) => {
         setUploadedFileNames((prevState) => [...prevState, fileKey]);
@@ -32,11 +41,13 @@ export function FileUpload({ accept = "*", maxSize = 50 * 1024 * 1024, maxFiles 
                         variant={"text"}
                         color={"secondary"}
                         sx={{ mb: 1 }}
+                        disabled={isSubmitting}
+                        startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
                         onClick={() => {
                             onSubmit(uploadedFileNames);
                         }}
                     >
-                        Submit
+                        {t("submit_button")}
                     </Button>
                 )}
             </Box>

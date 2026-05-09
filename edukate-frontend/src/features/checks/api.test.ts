@@ -28,7 +28,7 @@ describe("useRequestCheckMutation", () => {
         server.use(http.post("*/api/v1/checker/supervisor", () => HttpResponse.json({})));
         const { result } = renderHook(() => useRequestCheckMutation(), { wrapper: createWrapper() });
         act(() => {
-            result.current.mutate({ submissionId: "sub-1", checkType: "supervisor" });
+            result.current.mutate({ submissionId: "sub-1", checkType: "supervisor", problemKey: "savchenko/1.1.1" });
         });
         await waitFor(() => {
             expect(result.current.isIdle || result.current.isSuccess).toBe(true);
@@ -39,7 +39,7 @@ describe("useRequestCheckMutation", () => {
         server.use(http.post("*/api/v1/checker/self", () => HttpResponse.json({})));
         const { result } = renderHook(() => useRequestCheckMutation(), { wrapper: createWrapper() });
         act(() => {
-            result.current.mutate({ submissionId: "sub-1", checkType: "self" });
+            result.current.mutate({ submissionId: "sub-1", checkType: "self", problemKey: "savchenko/1.1.1" });
         });
         await waitFor(() => {
             expect(result.current.isIdle || result.current.isSuccess).toBe(true);

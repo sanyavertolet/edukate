@@ -1,6 +1,7 @@
 import { useProblemSetRequest } from "@/features/problem-sets/api";
 import { useCallback, useMemo, useState } from "react";
-import { Box, Card, Paper, Typography } from "@mui/material";
+import { Alert, Box, Card, CircularProgress, Paper, Typography } from "@mui/material";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { ProblemSetProblemSelector, ProblemSetSelection } from "./ProblemSetProblemSelector";
 import { ProblemComponent } from "@/features/problems/components/ProblemComponent";
 import { ProblemSetDescriptionTab } from "./ProblemSetDescriptionTab";
@@ -16,7 +17,7 @@ interface ProblemSetComponentProps {
 export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps) {
     const { isMobile } = useDeviceContext();
     const { user } = useAuthContext();
-    const { data: problemSet } = useProblemSetRequest(problemSetCode);
+    const { data: problemSet, isLoading, error } = useProblemSetRequest(problemSetCode);
     const [selection, setSelection] = useState<ProblemSetSelection>({ type: "description" });
 
     const isAdmin = useMemo(
@@ -27,6 +28,18 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
     const onSelectionChange = useCallback((newSelection: ProblemSetSelection) => {
         setSelection(newSelection);
     }, []);
+
+    if (isLoading) {
+        return (
+            <Box display="flex" justifyContent="center" pt={4}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (error) {
+        return <Alert severity="error">{getApiErrorMessage(error)}</Alert>;
+    }
 
     return (
         <Box>

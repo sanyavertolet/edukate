@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.checker
 
 import io.github.sanyavertolet.edukate.checker.dtos.ModelResponse
+import io.github.sanyavertolet.edukate.common.ContentLanguage
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
@@ -16,7 +17,19 @@ object CheckerFixtures {
         problemText: String = "Solve x^2 = 4",
         problemImageRawKeys: List<String> = listOf("problems/prob-1/img.png"),
         submissionImageRawKeys: List<String> = listOf("users/u1/submissions/prob-1/sub-1/img.png"),
-    ) = SubmissionContext(submissionId, checkResultId, problemId, problemText, problemImageRawKeys, submissionImageRawKeys)
+        answer: String? = "x = ±2",
+        language: ContentLanguage = ContentLanguage.EN,
+    ) =
+        SubmissionContext(
+            submissionId,
+            checkResultId,
+            problemId,
+            problemText,
+            problemImageRawKeys,
+            submissionImageRawKeys,
+            answer,
+            language,
+        )
 
     fun modelResponse(
         status: CheckStatus = CheckStatus.SUCCESS,

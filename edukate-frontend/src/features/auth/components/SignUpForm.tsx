@@ -7,6 +7,7 @@ import { queryKeys } from "@/lib/query-keys";
 import { SignCard, SignContainer } from "@/shared/components/Styled";
 import { SiteMark } from "@/shared/components/layout/topbar/SiteMark";
 import { validate } from "@/shared/utils/validation";
+import { useTranslation } from "react-i18next";
 
 const titleSx = { width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)", textAlign: "left" } as const;
 const formSx = { display: "flex", flexDirection: "column", gap: 2 } as const;
@@ -18,6 +19,7 @@ type SignUpFormProps = {
 };
 
 export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps) => {
+    const { t } = useTranslation("auth");
     const navigate = useNavigate();
     const signUpMutation = useSignUpMutation();
 
@@ -66,7 +68,7 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
             <SignCard variant="outlined">
                 <SiteMark />
                 <Typography component="h1" variant="h4" sx={titleSx}>
-                    Sign up
+                    {t("sign_up_title")}
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={formSx}>
                     <TextField
@@ -76,12 +78,12 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                         }}
                         onBlur={handleBlurUsername}
                         error={!!usernameError}
-                        helperText={usernameError ?? " "}
+                        helperText={usernameError ? t(usernameError) : " "}
                         name="username"
                         type="text"
-                        placeholder="username"
+                        placeholder={t("username_placeholder")}
                         autoComplete="username"
-                        label="Username"
+                        label={t("username_label")}
                         autoFocus
                         required
                         fullWidth
@@ -94,12 +96,12 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                         }}
                         onBlur={handleBlurEmail}
                         error={!!emailError}
-                        helperText={emailError ?? " "}
+                        helperText={emailError ? t(emailError) : " "}
                         name="email"
                         type="email"
-                        placeholder="your@email.com"
+                        placeholder={t("email_placeholder")}
                         autoComplete="email"
-                        label="Email"
+                        label={t("email_label")}
                         required
                         fullWidth
                         variant="outlined"
@@ -111,25 +113,25 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                         }}
                         onBlur={handleBlurPassword}
                         error={!!passwordError}
-                        helperText={passwordError ?? " "}
+                        helperText={passwordError ? t(passwordError) : " "}
                         name="password"
                         type="password"
-                        placeholder="••••••"
+                        placeholder={t("password_placeholder")}
                         autoComplete="new-password"
-                        label="Password"
+                        label={t("password_label")}
                         required
                         fullWidth
                         variant="outlined"
                     />
                     <Button type="submit" fullWidth variant="contained" disabled={signUpMutation.isPending}>
-                        Sign up
+                        {t("sign_up_button")}
                     </Button>
                 </Box>
                 <Box sx={footerSx}>
                     <Typography sx={{ textAlign: "center" }}>
-                        Already have an account?{" "}
+                        {t("already_have_account")}{" "}
                         <Link onClick={onSignInRequest} variant="body2" sx={{ alignSelf: "center", cursor: "pointer" }}>
-                            Sign in
+                            {t("sign_in_link")}
                         </Link>
                     </Typography>
                 </Box>

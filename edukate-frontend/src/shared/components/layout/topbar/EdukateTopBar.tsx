@@ -14,6 +14,8 @@ import { NotificationButton } from "@/features/notifications/components/Notifica
 import ThemeToggleButton from "./ThemeToggleButton";
 import { UserMenu } from "./UserMenu";
 import { BlurryToolbar } from "@/shared/components/Styled";
+import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const appBarSx = {
     boxShadow: 0,
@@ -23,6 +25,7 @@ const appBarSx = {
 } as const;
 
 export function EdukateTopBar() {
+    const { t } = useTranslation("navigation");
     const [open, setOpen] = useState(false);
 
     const toggleDrawer = (newOpen: boolean) => () => {
@@ -41,7 +44,7 @@ export function EdukateTopBar() {
                 <BlurryToolbar variant="regular" disableGutters>
                     <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", px: 0 }}>
                         <Box sx={{ display: { xs: "flex", md: "none" }, gap: 1 }}>
-                            <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
+                            <IconButton aria-label={t("menu_button_aria")} onClick={toggleDrawer(true)}>
                                 <MenuIcon />
                             </IconButton>
                             <MobileDrawerComponent isOpen={open} setIsOpen={setOpen} />
@@ -55,7 +58,7 @@ export function EdukateTopBar() {
                             {desktopNavigationElements.map((el) => (
                                 <TopBarLink
                                     key={el.href}
-                                    text={el.text}
+                                    text={t(el.text)}
                                     isActive={isNavActive(el.href)}
                                     onClick={() => {
                                         void navigate(el.href);
@@ -66,6 +69,7 @@ export function EdukateTopBar() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <LanguageSwitcher />
                         <ThemeToggleButton />
 
                         {isAuthorized ? (
@@ -76,13 +80,13 @@ export function EdukateTopBar() {
                         ) : (
                             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
                                 <TopBarLink
-                                    text={"Sign In"}
+                                    text={t("sign_in")}
                                     onClick={() => {
                                         void navigate("/sign-in", { replace: isSignUpPage || isSignInPage });
                                     }}
                                 />
                                 <TopBarLink
-                                    text={"Sign Up"}
+                                    text={t("sign_up")}
                                     onClick={() => {
                                         void navigate("/sign-up", { replace: isSignUpPage || isSignInPage });
                                     }}

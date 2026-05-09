@@ -6,6 +6,7 @@ import { ProblemStatusIcon } from "@/features/problems/components/ProblemStatusI
 import { useDeviceContext, usePageSpecificNavigation } from "@/shared/context/DeviceContext";
 import { AdditionalNavigationElement } from "@/shared/context/DeviceContext";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 export type ProblemSetSelection =
     | { type: "description" }
@@ -25,12 +26,13 @@ export function ProblemSetProblemSelector({
     onSelectionChange,
     isAdmin,
 }: ProblemSetProblemSelectorProps) {
+    const { t } = useTranslation("problem-sets");
     const { isMobile } = useDeviceContext();
 
     const pageSpecificNavigation: AdditionalNavigationElement[] = useMemo(
         () => [
             {
-                text: "Description",
+                text: t("description_tab"),
                 onClick: () => {
                     onSelectionChange({ type: "description" });
                 },
@@ -39,7 +41,7 @@ export function ProblemSetProblemSelector({
             ...(isAdmin
                 ? [
                       {
-                          text: "Settings",
+                          text: t("settings_tab"),
                           onClick: () => {
                               onSelectionChange({ type: "settings" });
                           },
@@ -55,7 +57,7 @@ export function ProblemSetProblemSelector({
                 isSelected: selection.type === "problem" && problem.code === selection.problem.code,
             })),
         ],
-        [problems, selection, onSelectionChange, isAdmin],
+        [problems, selection, onSelectionChange, isAdmin, t],
     );
     usePageSpecificNavigation(pageSpecificNavigation);
 
@@ -72,7 +74,7 @@ export function ProblemSetProblemSelector({
                         <ListItemIcon sx={{ minWidth: { md: 36, lg: 56 } }}>
                             <InfoOutlinedIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Description" />
+                        <ListItemText primary={t("description_tab")} />
                     </ListItemButton>
                     {isAdmin && (
                         <ListItemButton
@@ -84,7 +86,7 @@ export function ProblemSetProblemSelector({
                             <ListItemIcon sx={{ minWidth: { md: 36, lg: 56 } }}>
                                 <SettingsOutlinedIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Settings" />
+                            <ListItemText primary={t("settings_tab")} />
                         </ListItemButton>
                     )}
                 </List>

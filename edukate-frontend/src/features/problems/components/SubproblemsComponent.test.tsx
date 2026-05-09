@@ -1,38 +1,38 @@
 import userEvent from "@testing-library/user-event";
 import { render, screen } from "@/test/render";
-import { SubtasksComponent } from "./SubtasksComponent";
-import type { Subtask } from "@/features/problems/types";
+import { SubproblemsComponent } from "./SubproblemsComponent";
+import type { Subproblem } from "@/features/problems/types";
 
-const subtasks: Subtask[] = [
-    { id: "a", text: "First subtask text" },
-    { id: "b", text: "Second subtask text" },
+const subproblems: Subproblem[] = [
+    { code: "a", text: "First subproblem text" },
+    { code: "b", text: "Second subproblem text" },
 ];
 
-describe("SubtasksComponent", () => {
-    it("renders nothing when subtasks is undefined", () => {
-        const { container } = render(<SubtasksComponent />);
+describe("SubproblemsComponent", () => {
+    it("renders nothing when subproblems is undefined", () => {
+        const { container } = render(<SubproblemsComponent />);
         expect(container).toBeEmptyDOMElement();
     });
 
-    it("renders nothing when subtasks is empty", () => {
-        const { container } = render(<SubtasksComponent subtasks={[]} />);
+    it("renders nothing when subproblems is empty", () => {
+        const { container } = render(<SubproblemsComponent subproblems={[]} />);
         expect(container).toBeEmptyDOMElement();
     });
 
-    it("renders a tab for each subtask id", () => {
-        render(<SubtasksComponent subtasks={subtasks} />);
+    it("renders a tab for each subproblem id", () => {
+        render(<SubproblemsComponent subproblems={subproblems} />);
         expect(screen.getByRole("tab", { name: "a" })).toBeInTheDocument();
         expect(screen.getByRole("tab", { name: "b" })).toBeInTheDocument();
     });
 
-    it("shows the first subtask content by default", () => {
-        render(<SubtasksComponent subtasks={subtasks} />);
+    it("shows the first subproblem content by default", () => {
+        render(<SubproblemsComponent subproblems={subproblems} />);
         // LazyLatexComponent renders the text eventually — check the tab panel area contains it
         expect(screen.getByRole("tab", { name: "a" })).toHaveAttribute("aria-selected", "true");
     });
 
     it("switches content when a different tab is clicked", async () => {
-        render(<SubtasksComponent subtasks={subtasks} />);
+        render(<SubproblemsComponent subproblems={subproblems} />);
         await userEvent.click(screen.getByRole("tab", { name: "b" }));
         expect(screen.getByRole("tab", { name: "b" })).toHaveAttribute("aria-selected", "true");
         expect(screen.getByRole("tab", { name: "a" })).toHaveAttribute("aria-selected", "false");

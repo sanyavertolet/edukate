@@ -8,6 +8,7 @@ export interface OptionPickerComponentProps {
     onOptionsChange: (options: string[]) => void;
     placeholderText?: string;
     label?: string;
+    extraParams?: Record<string, string>;
 }
 
 export function OptionPickerComponent({
@@ -17,6 +18,7 @@ export function OptionPickerComponent({
     onOptionsChange,
     placeholderText,
     label,
+    extraParams,
 }: OptionPickerComponentProps) {
     const onSelectedOptionsChange = (options: string[]) => {
         onOptionsChange(options);
@@ -31,6 +33,7 @@ export function OptionPickerComponent({
                 onSelectedOptionsChange={onSelectedOptionsChange}
                 debounceTime={debounceTime}
                 label={label}
+                extraParams={extraParams}
             />
         </Box>
     );

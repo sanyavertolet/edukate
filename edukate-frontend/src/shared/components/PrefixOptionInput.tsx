@@ -10,6 +10,7 @@ interface PrefixOptionInputFormProps {
     debounceTime?: number;
     placeholderText?: string;
     label?: string;
+    extraParams?: Record<string, string>;
 }
 
 export function PrefixOptionInputForm({
@@ -19,11 +20,12 @@ export function PrefixOptionInputForm({
     selectedOptions,
     placeholderText,
     label,
+    extraParams,
 }: PrefixOptionInputFormProps) {
     const [search, setSearch] = useState("");
     const [options, setOptions] = useState<string[]>([]);
     const debouncedSearch = useDebounce(search, debounceTime);
-    const { data, isLoading, error } = useOptionsRequest(optionsUrl, debouncedSearch);
+    const { data, isLoading, error } = useOptionsRequest(optionsUrl, debouncedSearch, 5, extraParams);
 
     useEffect(() => {
         if (!isLoading && !error) {

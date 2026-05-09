@@ -12,10 +12,11 @@ const problem: Problem = {
     isHard: false,
     tags: [],
     text: "Solve it",
-    subtasks: [],
+    subproblems: [],
     images: [],
     status: "NOT_SOLVED",
     hasResult: true,
+    language: "EN" as const,
 };
 
 function makeUnauthenticated() {

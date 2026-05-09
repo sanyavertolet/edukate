@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import type { AxiosRequestConfig, AxiosResponse } from "axios";
+import i18n from "@/shared/i18n";
 import { queryClient } from "./query-client";
 import { queryKeys } from "./query-keys";
 
@@ -7,6 +8,12 @@ export const axiosInstance = axios.create({
     baseURL: window.location.origin,
     withCredentials: true,
     timeout: 30_000,
+});
+
+// Set Accept-Language header from current i18n language on every request
+axiosInstance.interceptors.request.use((config) => {
+    config.headers["Accept-Language"] = i18n.language;
+    return config;
 });
 
 // On 401 invalidate whoami — auth context reacts and hides protected UI naturally,

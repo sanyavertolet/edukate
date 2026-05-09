@@ -4,6 +4,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { ClearableTextField } from "@/shared/components/ClearableTextField";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import { useTranslation } from "react-i18next";
 import { StatusFilter } from "@/features/submissions/hooks/useSubmissionTableParams";
 
 type Props = {
@@ -27,6 +28,7 @@ export const SubmissionTableToolbar: FC<Props> = ({
     problemCode,
     onProblemCodeChange,
 }) => {
+    const { t } = useTranslation("submissions");
     return (
         <Box>
             <Stack
@@ -36,7 +38,7 @@ export const SubmissionTableToolbar: FC<Props> = ({
             >
                 <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                     <ClearableTextField
-                        label="Username"
+                        label={t("username_label")}
                         value={userName}
                         onChange={onUserNameChange}
                         onClear={() => {
@@ -47,34 +49,34 @@ export const SubmissionTableToolbar: FC<Props> = ({
 
                     <FormControl size="small" sx={{ minWidth: { md: 160 }, flex: { xs: "1 1 0", md: "0 1 auto" } }}>
                         <InputLabel size="small" id="submission-status-filter-label">
-                            Status
+                            {t("status_label")}
                         </InputLabel>
                         <Select
                             labelId="submission-status-filter-label"
                             size="small"
-                            label="Status"
+                            label={t("status_label")}
                             value={status ?? "ALL"}
                             onChange={(e) => {
                                 onStatusChange((e.target.value || "ALL") as StatusFilter);
                             }}
                         >
-                            <MenuItem value="ALL">All</MenuItem>
+                            <MenuItem value="ALL">{t("status_all")}</MenuItem>
                             <MenuItem value="SUCCESS">
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <CheckCircleOutlineIcon color="success" fontSize="small" />
-                                    Success
+                                    {t("status_success")}
                                 </Box>
                             </MenuItem>
                             <MenuItem value="PENDING">
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <HourglassEmptyIcon color="warning" fontSize="small" />
-                                    Pending
+                                    {t("status_pending")}
                                 </Box>
                             </MenuItem>
                             <MenuItem value="FAILED">
                                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                     <CancelOutlinedIcon color="error" fontSize="small" />
-                                    Failed
+                                    {t("status_failed")}
                                 </Box>
                             </MenuItem>
                         </Select>
@@ -83,7 +85,7 @@ export const SubmissionTableToolbar: FC<Props> = ({
 
                 <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                     <ClearableTextField
-                        label="Book"
+                        label={t("book_label")}
                         value={bookSlug}
                         onChange={onBookSlugChange}
                         onClear={() => {
@@ -93,7 +95,7 @@ export const SubmissionTableToolbar: FC<Props> = ({
                     />
 
                     <ClearableTextField
-                        label="Problem code"
+                        label={t("problem_code_label")}
                         value={problemCode}
                         onChange={onProblemCodeChange}
                         onClear={() => {

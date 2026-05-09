@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.services
 
+import io.github.sanyavertolet.edukate.backend.configs.LanguageWebFilter
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest
 import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.backend.filters.SubmissionFilter
@@ -42,31 +43,36 @@ class SubmissionService(
 
     @Transactional
     fun saveSubmission(userId: Long, submissionRequest: CreateSubmissionRequest): Mono<Submission> =
-        problemRepository
-            .findByKey(submissionRequest.problemKey)
-            .orNotFound("Problem not found: ${submissionRequest.problemKey}")
-            .flatMap { problem ->
-                val problemId = requireNotNull(problem.id)
-                submissionRepository.save(Submission.of(problemId, userId)).flatMap { submission ->
-                    val submissionId = requireNotNull(submission.id)
-                    submissionFileService
-                        .moveSubmissionFiles(userId, submissionId, problemId, submissionRequest)
-                        .then(
-                            submissionRequest.fileNames
-                                .toFlux()
-                                .map { fileName -> SubmissionFileKey(userId, problemId, submissionId, fileName).toString() }
-                                .flatMap { fileObjectRepository.findByKeyPath(it) }
-                                .map { requireNotNull(it.id).toString() }
-                                .collectList()
-                        )
-                        .flatMap { ids -> submissionRepository.save(submission.withFileObjectIds(ids)) }
-                        .doOnNext {
-                            meterRegistry
-                                .counter("submissions.created", "problemKey", submissionRequest.problemKey)
-                                .increment()
-                        }
+        Mono.deferContextual { ctx ->
+            val language = LanguageWebFilter.fromContext(ctx)
+            problemRepository
+                .findByKey(submissionRequest.problemKey)
+                .orNotFound("Problem not found: ${submissionRequest.problemKey}")
+                .flatMap { problem ->
+                    val problemId = requireNotNull(problem.id)
+                    submissionRepository.save(Submission.of(problemId, userId, language)).flatMap { submission ->
+                        val submissionId = requireNotNull(submission.id)
+                        submissionFileService
+                            .moveSubmissionFiles(userId, submissionId, problemId, submissionRequest)
+                            .then(
+                                submissionRequest.fileNames
+                                    .toFlux()
+                                    .map { fileName ->
+                                        SubmissionFileKey(userId, problemId, submissionId, fileName).toString()
+                                    }
+                                    .flatMap { fileObjectRepository.findByKeyPath(it) }
+                                    .map { requireNotNull(it.id).toString() }
+                                    .collectList()
+                            )
+                            .flatMap { ids -> submissionRepository.save(submission.withFileObjectIds(ids)) }
+                            .doOnNext {
+                                meterRegistry
+                                    .counter("submissions.created", "problemKey", submissionRequest.problemKey)
+                                    .increment()
+                            }
+                    }
                 }
-            }
+        }
 
     fun findById(id: Long): Mono<Submission> = submissionRepository.findById(id)
 

@@ -3,6 +3,7 @@ import { usePostTempFileMutation, useDeleteTempFileMutation, useGetTempFiles } f
 import { FileMetadata } from "@/features/files/types";
 import { formatFileSize } from "@/shared/utils/utils";
 import { nowUtcIso } from "@/shared/utils/date";
+import { useTranslation } from "react-i18next";
 
 type UseFileUploadProps = {
     onTempFileUploaded: (fileKey: string) => void;
@@ -17,6 +18,7 @@ export const useFileUpload = ({
     maxFiles = 5,
     maxSize = 50 * 1024 * 1024,
 }: UseFileUploadProps) => {
+    const { t } = useTranslation();
     const [fileMetadataList, setFileMetadataList] = useState<FileMetadata[]>([]);
     const [selectedFileKey, setSelectedFileKey] = useState<string>();
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
@@ -83,16 +85,14 @@ export const useFileUpload = ({
 
         const currentFilesLength = fileMetadataList.length + event.target.files.length;
         if (currentFilesLength > maxFiles) {
-            setErrorText(`You can upload no more than ${String(maxFiles)} files. You got ${String(currentFilesLength)}.`);
+            setErrorText(t("max_files_error", { max: maxFiles, current: currentFilesLength }));
             return;
         }
 
         const oldSize = fileMetadataList.reduce((sum, metadata) => sum + metadata.size, 0);
         const newSize = newFiles.reduce((sum, metadata) => sum + metadata.size, 0);
         if (oldSize + newSize > maxSize) {
-            setErrorText(
-                `You can upload no more than ${formatFileSize(maxSize)}, you have ${formatFileSize(oldSize + newSize)}.`,
-            );
+            setErrorText(t("max_size_error", { max: formatFileSize(maxSize), current: formatFileSize(oldSize + newSize) }));
             return;
         }
 

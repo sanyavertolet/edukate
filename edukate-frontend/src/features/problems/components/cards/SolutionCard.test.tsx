@@ -17,10 +17,11 @@ const problem: Problem = {
     isHard: false,
     tags: [],
     text: "Solve this problem",
-    subtasks: [],
+    subproblems: [],
     images: [],
     status: "NOT_SOLVED",
     hasResult: false,
+    language: "EN" as const,
 };
 
 /** Simulate selecting files on the hidden <input type="file"> */

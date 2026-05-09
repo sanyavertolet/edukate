@@ -1,12 +1,14 @@
 import { Container, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { useTranslation } from "react-i18next";
 import SubmissionListComponent from "@/features/submissions/components/SubmissionListComponent";
 
 export default function SubmissionListPage() {
+    const { t } = useTranslation("navigation");
     return (
         <Container>
             <Typography component="h1" color="primary" variant="h5" align="center">
-                Submissions
+                {t("submissions")}
             </Typography>
 
             <Grid container spacing={2} paddingTop={"1rem"}>

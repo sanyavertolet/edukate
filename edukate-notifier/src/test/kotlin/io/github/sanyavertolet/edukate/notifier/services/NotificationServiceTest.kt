@@ -2,8 +2,10 @@
 
 package io.github.sanyavertolet.edukate.notifier.services
 
+import com.mongodb.client.result.UpdateResult
 import io.github.sanyavertolet.edukate.notifier.NotificationFixtures
 import io.github.sanyavertolet.edukate.notifier.dtos.NotificationStatistics
+import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification
 import io.github.sanyavertolet.edukate.notifier.repositories.NotificationRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -11,8 +13,10 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -20,11 +24,12 @@ import reactor.test.StepVerifier
 class NotificationServiceTest {
 
     private val repository: NotificationRepository = mockk()
+    private val mongoTemplate: ReactiveMongoTemplate = mockk()
     private lateinit var service: NotificationService
 
     @BeforeEach
     fun setUp() {
-        service = NotificationService(repository)
+        service = NotificationService(repository, mongoTemplate)
     }
 
     // region saveIfAbsent(createRequest)
@@ -139,22 +144,21 @@ class NotificationServiceTest {
     // region markAsRead
 
     @Test
-    fun `markAsRead marks specified notifications as read and returns count`() {
+    fun `markAsRead updates matching notifications atomically and returns count`() {
         val auth = NotificationFixtures.mockAuthentication(1L)
-        val n1 = NotificationFixtures.simpleNotification(userId = 1L, uuid = "u1", isRead = false)
-        val n2 = NotificationFixtures.inviteNotification(userId = 1L, uuid = "u2", isRead = false)
-        every { repository.findByTargetUserIdAndUuidIn(1L, listOf("u1", "u2")) } returns Flux.just(n1, n2)
-        every { repository.save(any()) } answers { Mono.just(firstArg()) }
+        every { mongoTemplate.updateMulti(any<Query>(), any<Update>(), eq(BaseNotification::class.java)) } returns
+            Mono.just(UpdateResult.acknowledged(2, 2, null))
 
         StepVerifier.create(service.markAsRead(listOf("u1", "u2"), auth)).expectNext(2L).verifyComplete()
 
-        verify(exactly = 2) { repository.save(match { it.isRead }) }
+        verify(exactly = 1) { mongoTemplate.updateMulti(any<Query>(), any<Update>(), eq(BaseNotification::class.java)) }
     }
 
     @Test
     fun `markAsRead returns zero when no matching notifications found`() {
         val auth = NotificationFixtures.mockAuthentication(1L)
-        every { repository.findByTargetUserIdAndUuidIn(1L, listOf("nonexistent")) } returns Flux.empty()
+        every { mongoTemplate.updateMulti(any<Query>(), any<Update>(), eq(BaseNotification::class.java)) } returns
+            Mono.just(UpdateResult.acknowledged(0, 0, null))
 
         StepVerifier.create(service.markAsRead(listOf("nonexistent"), auth)).expectNext(0L).verifyComplete()
     }
@@ -169,22 +173,21 @@ class NotificationServiceTest {
     // region markAllAsRead
 
     @Test
-    fun `markAllAsRead marks all unread notifications and returns count`() {
+    fun `markAllAsRead updates all unread notifications atomically and returns count`() {
         val auth = NotificationFixtures.mockAuthentication(1L)
-        val n1 = NotificationFixtures.simpleNotification(userId = 1L, isRead = false)
-        val n2 = NotificationFixtures.checkedNotification(userId = 1L, isRead = false)
-        every { repository.findAllByTargetUserIdAndIsRead(1L, false, Pageable.unpaged()) } returns Flux.just(n1, n2)
-        every { repository.save(any()) } answers { Mono.just(firstArg()) }
+        every { mongoTemplate.updateMulti(any<Query>(), any<Update>(), eq(BaseNotification::class.java)) } returns
+            Mono.just(UpdateResult.acknowledged(2, 2, null))
 
         StepVerifier.create(service.markAllAsRead(auth)).expectNext(2L).verifyComplete()
 
-        verify(exactly = 2) { repository.save(match { it.isRead }) }
+        verify(exactly = 1) { mongoTemplate.updateMulti(any<Query>(), any<Update>(), eq(BaseNotification::class.java)) }
     }
 
     @Test
     fun `markAllAsRead returns zero when there are no unread notifications`() {
         val auth = NotificationFixtures.mockAuthentication(1L)
-        every { repository.findAllByTargetUserIdAndIsRead(1L, false, Pageable.unpaged()) } returns Flux.empty()
+        every { mongoTemplate.updateMulti(any<Query>(), any<Update>(), eq(BaseNotification::class.java)) } returns
+            Mono.just(UpdateResult.acknowledged(0, 0, null))
 
         StepVerifier.create(service.markAllAsRead(auth)).expectNext(0L).verifyComplete()
     }

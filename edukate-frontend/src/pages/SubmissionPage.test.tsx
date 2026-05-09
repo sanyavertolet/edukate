@@ -10,7 +10,7 @@ import SubmissionPage from "./SubmissionPage";
 describe("SubmissionPage", () => {
     it("renders the heading with the id from the URL", () => {
         renderAtPath("/submissions/sub-456", "/submissions/:id", <SubmissionPage />);
-        expect(screen.getByRole("heading", { name: /submission sub-456/i })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: /submission #sub-456/i })).toBeInTheDocument();
     });
 
     it("shows submission data when MSW returns a submission", async () => {

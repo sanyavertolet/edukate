@@ -22,6 +22,8 @@ class CacheConfig {
                 "problemSets" to "maximumSize=200,expireAfterWrite=5m",
                 "presigned-urls" to "maximumSize=1000,expireAfterWrite=30m",
                 "books" to "maximumSize=50,expireAfterWrite=24h",
+                "problem-localizations" to "maximumSize=1000,expireAfterWrite=24h",
+                "answer-localizations" to "maximumSize=500,expireAfterWrite=24h",
             )
             .forEach { (name, spec) -> manager.registerCustomCache(name, Caffeine.from(spec).recordStats().buildAsync()) }
         return manager

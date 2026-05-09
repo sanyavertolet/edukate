@@ -30,15 +30,16 @@ import {
 import { useAuthContext } from "@/features/auth/context";
 import { UserSearchInput } from "./UserSearchInput";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 interface ProblemSetUserManagementProps {
     shareCode: string;
 }
 
-const roleLabel: Record<string, string> = {
-    ADMIN: "Admin",
-    MODERATOR: "Moderator",
-    USER: "User",
+const roleLabelKey: Record<string, string> = {
+    ADMIN: "role_admin",
+    MODERATOR: "role_moderator",
+    USER: "role_user",
 };
 
 const roleColor: Record<string, "primary" | "secondary" | "default"> = {
@@ -50,6 +51,7 @@ const roleColor: Record<string, "primary" | "secondary" | "default"> = {
 type RemoveConfirmation = { username: string; type: "member" | "invited" };
 
 export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ shareCode }) => {
+    const { t } = useTranslation("problem-sets");
     const { user } = useAuthContext();
     const { data: members } = useProblemSetUserListQuery(shareCode);
     const { data: invitedUsers, refetch: refetchInvitedUsers } = useProblemSetInvitedUserListQuery(shareCode);
@@ -83,11 +85,11 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                 { shareCode, username },
                 {
                     onSuccess: () => {
-                        toast.info(`Invitation to ${username} has been removed`);
+                        toast.info(t("invitation_removed_success", { username }));
                         void refetchInvitedUsers();
                     },
                     onError: () => {
-                        toast.error(`Failed to remove invitation to ${username}`);
+                        toast.error(t("invitation_removed_error", { username }));
                     },
                 },
             );
@@ -106,10 +108,10 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
 
             <List disablePadding>
                 {/* Members Section */}
-                <ListSubheader sx={{ bgcolor: "transparent", lineHeight: "36px" }}>Members</ListSubheader>
+                <ListSubheader sx={{ bgcolor: "transparent", lineHeight: "36px" }}>{t("members_header")}</ListSubheader>
                 {(!members || members.length === 0) && (
                     <ListItem>
-                        <ListItemText secondary="No members yet" />
+                        <ListItemText secondary={t("no_members_yet")} />
                     </ListItem>
                 )}
                 {members?.map(({ name: username, role }) => (
@@ -118,7 +120,7 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                         secondaryAction={
                             <Stack direction="row" alignItems="center" spacing={0.5}>
                                 <Chip
-                                    label={roleLabel[role] ?? role}
+                                    label={roleLabelKey[role] ? t(roleLabelKey[role]) : role}
                                     color={roleColor[role] ?? "default"}
                                     size="small"
                                     variant={role === "ADMIN" ? "filled" : "outlined"}
@@ -163,7 +165,7 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                     <>
                         <Divider />
                         <ListSubheader sx={{ bgcolor: "transparent", lineHeight: "36px" }}>
-                            Pending Invitations
+                            {t("pending_invitations_header")}
                         </ListSubheader>
                         {invitedUsers.map((username) => (
                             <ListItem
@@ -171,7 +173,7 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                                 secondaryAction={
                                     <Stack direction="row" alignItems="center" spacing={0.5}>
                                         <Chip
-                                            label="Pending"
+                                            label={t("role_pending")}
                                             color="warning"
                                             size="small"
                                             variant="outlined"
@@ -213,7 +215,7 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
             >
                 <MenuItem disabled>
                     <Typography variant="caption" color="text.secondary">
-                        Change role
+                        {t("change_role_header")}
                     </Typography>
                 </MenuItem>
                 <Divider />
@@ -223,22 +225,23 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                         handleRoleSelect("ADMIN");
                     }}
                 >
-                    Admin
+                    {t("role_admin")}
                 </MenuItem>
                 <MenuItem
-                    disabled={currentUserRole === "USER"}
+                    disabled={currentUserRole === "USER" || changeRoleMutation.isPending}
                     onClick={() => {
                         handleRoleSelect("MODERATOR");
                     }}
                 >
-                    Moderator
+                    {t("role_moderator")}
                 </MenuItem>
                 <MenuItem
+                    disabled={changeRoleMutation.isPending}
                     onClick={() => {
                         handleRoleSelect("USER");
                     }}
                 >
-                    User
+                    {t("role_user")}
                 </MenuItem>
             </Menu>
 
@@ -252,12 +255,16 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                     setRemoveConfirmation(null);
                 }}
             >
-                <DialogTitle>{removeConfirmation?.type === "member" ? "Remove member" : "Cancel invitation"}</DialogTitle>
+                <DialogTitle>
+                    {removeConfirmation?.type === "member" ? t("remove_member_title") : t("cancel_invitation_title")}
+                </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         {removeConfirmation?.type === "member"
-                            ? `Are you sure you want to remove ${removeConfirmation.username} from this problem set?`
-                            : `Are you sure you want to cancel the invitation for ${removeConfirmation?.username ?? "this user"}?`}
+                            ? t("remove_member_confirmation", { username: removeConfirmation.username })
+                            : t("cancel_invitation_confirmation", {
+                                  username: removeConfirmation?.username ?? t("this_user"),
+                              })}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -266,10 +273,15 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                             setRemoveDialogOpen(false);
                         }}
                     >
-                        Cancel
+                        {t("cancel_button")}
                     </Button>
-                    <Button onClick={handleConfirmRemove} color="error" variant="contained">
-                        Yes, remove user
+                    <Button
+                        onClick={handleConfirmRemove}
+                        color="error"
+                        variant="contained"
+                        disabled={changeRoleMutation.isPending || expireInviteMutation.isPending}
+                    >
+                        {t("confirm_remove_button")}
                     </Button>
                 </DialogActions>
             </Dialog>

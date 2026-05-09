@@ -77,7 +77,7 @@ resources:
 
 {{- define "spring-boot.config-volume-mount" -}}
 name: config-volume
-mountPath: /home/cnb/config
+mountPath: /workspace/config
 {{- end }}
 
 {{- define "spring-boot.config-volume" -}}

@@ -37,19 +37,22 @@ jobs:
           key: gradle-build-cache-${{ matrix.module }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
           restore-keys: gradle-build-cache-${{ matrix.module }}-
       - name: Cache Docker images
-        if: contains(fromJson('["edukate-backend","edukate-notifier"]'), matrix.module)
+        if: matrix.module == 'edukate-notifier'
         id: docker-cache
         uses: actions/cache@v4
         with:
           path: /tmp/docker-cache
           key: docker-mongo8
       - name: Load Docker image from cache
-        if: contains(fromJson('["edukate-backend","edukate-notifier"]'), matrix.module) && steps.docker-cache.outputs.cache-hit == 'true'
+        if: matrix.module == 'edukate-notifier' && steps.docker-cache.outputs.cache-hit == 'true'
         run: docker load -i /tmp/docker-cache/mongo8.tar
+      - name: Pull Docker image
+        if: matrix.module == 'edukate-notifier' && steps.docker-cache.outputs.cache-hit != 'true'
+        run: docker pull mongo:8
       - name: Run tests
         run: ./gradlew :${{ matrix.module }}:test --no-daemon --build-cache
       - name: Save Docker image to cache
-        if: contains(fromJson('["edukate-backend","edukate-notifier"]'), matrix.module) && steps.docker-cache.outputs.cache-hit != 'true'
+        if: matrix.module == 'edukate-notifier' && steps.docker-cache.outputs.cache-hit != 'true'
         run: mkdir -p /tmp/docker-cache && docker save mongo:8 -o /tmp/docker-cache/mongo8.tar
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

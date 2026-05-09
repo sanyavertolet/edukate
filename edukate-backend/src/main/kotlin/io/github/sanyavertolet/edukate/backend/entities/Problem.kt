@@ -11,14 +11,9 @@ data class Problem(
     val code: String,
     val key: String = "",
     val isHard: Boolean = false,
-    val tags: List<String> = emptyList(),
-    val text: String,
-    val subtasks: List<Subtask> = emptyList(),
     val images: List<String> = emptyList(),
     val createdAt: Instant = Instant.now(),
 ) {
-    data class Subtask(val id: String, val text: String)
-
     enum class Status {
         SOLVED,
         SOLVING,

@@ -1,6 +1,7 @@
 import { useAuthContext } from "@/features/auth/context";
 import { ReactNode, useState } from "react";
 import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { SignInForm } from "./SignInForm";
 import { SignUpForm } from "./SignUpForm";
 
@@ -11,6 +12,7 @@ type AuthRequiredProps = {
 
 export function AuthRequired({ children, bypass = false }: AuthRequiredProps) {
     const { isAuthorized } = useAuthContext();
+    const { t } = useTranslation("auth");
     const [isSignUp, setIsSignUp] = useState(false);
     if (isAuthorized || bypass) {
         return <>{children}</>;
@@ -18,10 +20,10 @@ export function AuthRequired({ children, bypass = false }: AuthRequiredProps) {
     return (
         <Box sx={{ mt: 4 }}>
             <Typography variant={"h5"} align={"center"} color={"primary"}>
-                Authentication Required
+                {t("auth_required_title")}
             </Typography>
             <Typography variant={"body1"} color={"secondary"} align={"center"}>
-                You need to sign in to fully access this page.
+                {t("auth_required_description")}
             </Typography>
             {isSignUp ? (
                 <SignUpForm

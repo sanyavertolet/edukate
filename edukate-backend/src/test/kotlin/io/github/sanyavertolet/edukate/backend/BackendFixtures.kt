@@ -2,13 +2,17 @@ package io.github.sanyavertolet.edukate.backend
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest
 import io.github.sanyavertolet.edukate.backend.entities.Answer
+import io.github.sanyavertolet.edukate.backend.entities.AnswerLocalization
 import io.github.sanyavertolet.edukate.backend.entities.Book
 import io.github.sanyavertolet.edukate.backend.entities.CheckResult
 import io.github.sanyavertolet.edukate.backend.entities.Problem
+import io.github.sanyavertolet.edukate.backend.entities.ProblemLocalization
 import io.github.sanyavertolet.edukate.backend.entities.ProblemProgress
 import io.github.sanyavertolet.edukate.backend.entities.ProblemSet
 import io.github.sanyavertolet.edukate.backend.entities.Submission
+import io.github.sanyavertolet.edukate.backend.entities.Subproblem
 import io.github.sanyavertolet.edukate.backend.entities.User
+import io.github.sanyavertolet.edukate.common.ContentLanguage
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
@@ -44,6 +48,7 @@ object BackendFixtures {
         problemId: Long = 1L,
         userId: Long = 1L,
         status: SubmissionStatus = SubmissionStatus.PENDING,
+        language: ContentLanguage = ContentLanguage.RU,
         fileObjectIds: List<String> = emptyList(),
         createdAt: Instant? = Instant.now(),
         updatedAt: Instant? = Instant.now(),
@@ -53,6 +58,7 @@ object BackendFixtures {
             problemId = problemId,
             userId = userId,
             status = status,
+            language = language,
             fileObjectIds = fileObjectIds,
             createdAt = createdAt,
             updatedAt = updatedAt,
@@ -121,24 +127,17 @@ object BackendFixtures {
         code: String = "1.1.1",
         key: String = "savchenko/$code",
         isHard: Boolean = false,
-        tags: List<String> = emptyList(),
-        text: String = "Test problem text",
-        subtasks: List<Problem.Subtask> = emptyList(),
         images: List<String> = emptyList(),
         createdAt: Instant = Instant.parse("2025-06-01T10:00:00Z"),
-    ) =
-        Problem(
-            id = id,
-            bookId = bookId,
-            code = code,
-            key = key,
-            isHard = isHard,
-            tags = tags,
-            text = text,
-            subtasks = subtasks,
-            images = images,
-            createdAt = createdAt,
-        )
+    ) = Problem(id = id, bookId = bookId, code = code, key = key, isHard = isHard, images = images, createdAt = createdAt)
+
+    fun problemLocalization(
+        problemId: Long = 1L,
+        language: ContentLanguage = ContentLanguage.RU,
+        text: String = "Test problem text",
+        tags: List<String> = emptyList(),
+        subproblems: List<Subproblem> = emptyList(),
+    ) = ProblemLocalization(problemId = problemId, language = language, text = text, tags = tags, subproblems = subproblems)
 
     fun problemProgress(
         id: Long? = null,
@@ -168,11 +167,13 @@ object BackendFixtures {
         description: String? = "A test book",
     ) = Book(id = id, slug = slug, subject = subject, title = title, citation = citation, description = description)
 
-    fun answer(
-        id: Long? = 1L,
-        problemId: Long = 1L,
+    fun answer(id: Long? = 1L, problemId: Long = 1L, images: List<String> = emptyList()) =
+        Answer(id = id, problemId = problemId, images = images)
+
+    fun answerLocalization(
+        answerId: Long = 1L,
+        language: ContentLanguage = ContentLanguage.RU,
         text: String = "Answer is 42",
         notes: String? = null,
-        images: List<String> = emptyList(),
-    ) = Answer(id = id, problemId = problemId, text = text, notes = notes, images = images)
+    ) = AnswerLocalization(answerId = answerId, language = language, text = text, notes = notes)
 }

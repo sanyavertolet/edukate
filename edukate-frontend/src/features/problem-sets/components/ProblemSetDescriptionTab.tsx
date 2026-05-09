@@ -11,6 +11,7 @@ import { defaultTooltipSlotProps } from "@/shared/utils/utils";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { ProblemMetadataStatus } from "@/features/problems/types";
+import { useTranslation } from "react-i18next";
 
 interface ProblemSetDescriptionTabProps {
     problemSet: ProblemSet;
@@ -19,6 +20,7 @@ interface ProblemSetDescriptionTabProps {
 type StatusCounts = Record<ProblemMetadataStatus, number>;
 
 export const ProblemSetDescriptionTab: FC<ProblemSetDescriptionTabProps> = ({ problemSet }) => {
+    const { t } = useTranslation("problem-sets");
     const statusCounts = useMemo<StatusCounts>(
         () =>
             problemSet.problems.reduce<StatusCounts>(
@@ -50,7 +52,7 @@ export const ProblemSetDescriptionTab: FC<ProblemSetDescriptionTabProps> = ({ pr
                 {/* Progress */}
                 <Box>
                     <Typography variant="overline" color="text.secondary">
-                        Progress
+                        {t("progress_label")}
                     </Typography>
                     <LinearProgress
                         variant="determinate"
@@ -59,41 +61,41 @@ export const ProblemSetDescriptionTab: FC<ProblemSetDescriptionTabProps> = ({ pr
                         sx={{ height: 8, borderRadius: 4, mt: 0.5 }}
                     />
                     <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 0.5 }}>
-                        {solved} of {total} problems solved ({Math.round(percentage)}%)
+                        {t("progress_text", { solved, total, percentage: Math.round(percentage) })}
                     </Typography>
                 </Box>
 
                 {/* Status Breakdown */}
                 <Box>
                     <Typography variant="overline" color="text.secondary">
-                        Status Breakdown
+                        {t("status_breakdown_label")}
                     </Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap justifyContent="center" sx={{ mt: 0.5 }}>
                         <Chip
                             size="small"
                             icon={<DoneOutlinedIcon />}
-                            label={`${String(statusCounts.SOLVED)} Solved`}
+                            label={t("status_solved", { count: statusCounts.SOLVED })}
                             color="success"
                             variant="outlined"
                         />
                         <Chip
                             size="small"
                             icon={<CloseOutlinedIcon />}
-                            label={`${String(statusCounts.FAILED)} Failed`}
+                            label={t("status_failed", { count: statusCounts.FAILED })}
                             color="error"
                             variant="outlined"
                         />
                         <Chip
                             size="small"
                             icon={<PendingOutlinedIcon />}
-                            label={`${String(statusCounts.SOLVING)} Pending`}
+                            label={t("status_pending", { count: statusCounts.SOLVING })}
                             color="warning"
                             variant="outlined"
                         />
                         <Chip
                             size="small"
                             icon={<RadioButtonUncheckedIcon />}
-                            label={`${String(statusCounts.NOT_SOLVED)} Todo`}
+                            label={t("status_todo", { count: statusCounts.NOT_SOLVED })}
                             variant="outlined"
                         />
                     </Stack>
@@ -104,14 +106,14 @@ export const ProblemSetDescriptionTab: FC<ProblemSetDescriptionTabProps> = ({ pr
                 {/* Details */}
                 <Box>
                     <Typography variant="overline" color="text.secondary">
-                        Details
+                        {t("details_label")}
                     </Typography>
                     <Stack spacing={1.5} sx={{ mt: 0.5 }}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                             <Typography variant="body2" color="text.secondary">
-                                Share code:
+                                {t("share_code_label")}
                             </Typography>
-                            <Tooltip slotProps={defaultTooltipSlotProps} title="Copy share code">
+                            <Tooltip slotProps={defaultTooltipSlotProps} title={t("copy_share_code_tooltip")}>
                                 <Chip
                                     size="small"
                                     icon={<ContentCopyIcon fontSize="small" />}
@@ -126,15 +128,17 @@ export const ProblemSetDescriptionTab: FC<ProblemSetDescriptionTabProps> = ({ pr
 
                         <Stack direction="row" alignItems="center" spacing={1}>
                             <Typography variant="body2" color="text.secondary">
-                                Visibility:
+                                {t("visibility_label")}
                             </Typography>
                             <PublicityIcon isPublic={problemSet.isPublic} />
-                            <Typography variant="body2">{problemSet.isPublic ? "Public" : "Private"}</Typography>
+                            <Typography variant="body2">
+                                {problemSet.isPublic ? t("visibility_public") : t("visibility_private")}
+                            </Typography>
                         </Stack>
 
                         <Stack direction="row" alignItems="center" spacing={1}>
                             <Typography variant="body2" color="text.secondary">
-                                Admins:
+                                {t("admins_label")}
                             </Typography>
                             <AvatarGroup max={4} sx={{ "& .MuiAvatar-root": { width: 28, height: 28, fontSize: 12 } }}>
                                 {problemSet.admins.map((admin) => (

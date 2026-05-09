@@ -1,12 +1,16 @@
 package io.github.sanyavertolet.edukate.backend.mappers
 
+import io.github.sanyavertolet.edukate.backend.configs.LanguageWebFilter
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemDto
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemMetadata
 import io.github.sanyavertolet.edukate.backend.entities.Problem
+import io.github.sanyavertolet.edukate.backend.entities.ProblemLocalization
+import io.github.sanyavertolet.edukate.backend.repositories.ProblemLocalizationRepository
 import io.github.sanyavertolet.edukate.backend.services.AnswerService
 import io.github.sanyavertolet.edukate.backend.services.BookService
 import io.github.sanyavertolet.edukate.backend.services.ProblemStatusDecisionManager
 import io.github.sanyavertolet.edukate.backend.services.files.FileManager
+import io.github.sanyavertolet.edukate.common.ContentLanguage
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import org.springframework.security.core.Authentication
@@ -21,49 +25,67 @@ class ProblemMapper(
     private val fileManager: FileManager,
     private val bookService: BookService,
     private val answerService: AnswerService,
+    private val problemLocalizationRepository: ProblemLocalizationRepository,
 ) {
     fun toDto(problem: Problem, authentication: Authentication?): Mono<ProblemDto> {
         val problemId = requireNotNull(problem.id)
-        return Mono.zip(
-                problemStatusDecisionManager.getStatus(problemId, authentication),
-                imageUrls(problem).collectList(),
-                answerService.hasAnswer(problemId),
-                bookService.findById(problem.bookId).orNotFound("Book not found for problem ${problem.id}"),
-            )
-            .map { tuple ->
-                ProblemDto(
-                    key = problem.key,
-                    code = problem.code,
-                    bookSlug = tuple.t4.slug,
-                    isHard = problem.isHard,
-                    tags = problem.tags,
-                    text = problem.text,
-                    subtasks = problem.subtasks,
-                    images = tuple.t2,
-                    status = tuple.t1,
-                    hasResult = tuple.t3,
+        return Mono.deferContextual { ctx ->
+            val language = LanguageWebFilter.fromContext(ctx)
+            Mono.zip(
+                    problemStatusDecisionManager.getStatus(problemId, authentication),
+                    imageUrls(problem).collectList(),
+                    answerService.hasAnswer(problemId),
+                    bookService.findById(problem.bookId).orNotFound("Book not found for problem ${problem.id}"),
+                    resolveLocalization(problemId, language),
                 )
-            }
+                .map { tuple ->
+                    val loc = tuple.t5
+                    ProblemDto(
+                        key = problem.key,
+                        code = problem.code,
+                        bookSlug = tuple.t4.slug,
+                        isHard = problem.isHard,
+                        tags = loc.tags,
+                        text = loc.text,
+                        subproblems = loc.subproblems,
+                        images = tuple.t2,
+                        status = tuple.t1,
+                        hasResult = tuple.t3,
+                        language = loc.language,
+                    )
+                }
+        }
     }
 
     fun toMetadata(problem: Problem, authentication: Authentication?): Mono<ProblemMetadata> {
         val problemId = requireNotNull(problem.id)
-        return Mono.zip(
-                problemStatusDecisionManager.getStatus(problemId, authentication),
-                bookService.findById(problem.bookId).map { it.slug }.defaultIfEmpty("unknown"),
-            )
-            .map { tuple ->
-                ProblemMetadata(
-                    key = problem.key,
-                    code = problem.code,
-                    bookSlug = tuple.t2,
-                    isHard = problem.isHard,
-                    tags = problem.tags,
-                    status = tuple.t1,
-                    createdAt = problem.createdAt,
+        return Mono.deferContextual { ctx ->
+            val language = LanguageWebFilter.fromContext(ctx)
+            Mono.zip(
+                    problemStatusDecisionManager.getStatus(problemId, authentication),
+                    bookService.findById(problem.bookId).map { it.slug }.defaultIfEmpty("unknown"),
+                    resolveLocalization(problemId, language),
                 )
-            }
+                .map { tuple ->
+                    val loc = tuple.t3
+                    ProblemMetadata(
+                        key = problem.key,
+                        code = problem.code,
+                        bookSlug = tuple.t2,
+                        isHard = problem.isHard,
+                        tags = loc.tags,
+                        status = tuple.t1,
+                        createdAt = problem.createdAt,
+                        language = loc.language,
+                    )
+                }
+        }
     }
+
+    private fun resolveLocalization(problemId: Long, language: ContentLanguage): Mono<ProblemLocalization> =
+        problemLocalizationRepository
+            .findByProblemIdAndLanguage(problemId, language)
+            .switchIfEmpty(Mono.defer { problemLocalizationRepository.findFirstByProblemId(problemId) })
 
     private fun imageUrls(problem: Problem): Flux<String> {
         val (bookSlug, problemCode) = problem.key.split("/", limit = 2)

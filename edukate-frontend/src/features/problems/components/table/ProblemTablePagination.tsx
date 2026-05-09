@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Box, Select, TableCell, TableFooter, TableRow, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { ProblemTablePaginationActions } from "./ProblemTablePaginationActions";
 
 type Props = {
@@ -18,9 +19,10 @@ export const ProblemTablePagination: FC<Props> = ({
     rowsPerPage,
     onPageChange,
     onRowsPerPageChange,
-    colSpan = 4,
+    colSpan = 5,
     rowsPerPageOptions = [10, 25, 50, 100],
 }) => {
+    const { t } = useTranslation(["common", "problems"]);
     const from = count === 0 ? 0 : page * rowsPerPage + 1;
     const to = Math.min(count, (page + 1) * rowsPerPage);
 
@@ -31,7 +33,7 @@ export const ProblemTablePagination: FC<Props> = ({
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 1 }}>
                             <Typography variant="body2" color="text.secondary" sx={{ display: { xs: "none", md: "block" } }}>
-                                Rows per page:
+                                {t("rows_per_page", { ns: "common" })}
                             </Typography>
                             <Select
                                 native
@@ -62,7 +64,7 @@ export const ProblemTablePagination: FC<Props> = ({
                                 {from}–{to} of {count}
                                 <Box component="span" sx={{ display: { xs: "none", md: "inline" } }}>
                                     {" "}
-                                    problems
+                                    {t("problems_label", { ns: "problems" })}
                                 </Box>
                             </Typography>
                         </Box>

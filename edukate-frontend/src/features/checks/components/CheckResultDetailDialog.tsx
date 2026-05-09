@@ -20,6 +20,7 @@ import { useCheckResultDetailQuery } from "@/features/checks/api";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
 import { CheckResultDto, CheckResultDtoErrorType } from "@/features/checks/types";
 import { formatDate } from "@/shared/utils/date";
+import { useTranslation } from "react-i18next";
 
 type CheckResultDetailDialogProps = {
     checkResultId: number | null;
@@ -29,6 +30,7 @@ type CheckResultDetailDialogProps = {
 export const CheckResultDetailDialog: FC<CheckResultDetailDialogProps> = ({ checkResultId, onClose }) => {
     const { data, isLoading } = useCheckResultDetailQuery(checkResultId);
     const { isMobile } = useDeviceContext();
+    const { t } = useTranslation("checks");
 
     return (
         <Dialog open={checkResultId !== null} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
@@ -36,9 +38,9 @@ export const CheckResultDetailDialog: FC<CheckResultDetailDialogProps> = ({ chec
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Stack direction="row" alignItems="center" spacing={1.5}>
                         {data && <StatusAvatar status={data.status} />}
-                        <Typography variant="h6">Check Result</Typography>
+                        <Typography variant="h6">{t("check_result_title")}</Typography>
                     </Stack>
-                    <IconButton onClick={onClose} size="small" aria-label="Close">
+                    <IconButton onClick={onClose} size="small" aria-label={t("close_label")}>
                         <CloseIcon />
                     </IconButton>
                 </Stack>
@@ -60,6 +62,7 @@ export const CheckResultDetailDialog: FC<CheckResultDetailDialogProps> = ({ chec
 };
 
 function CheckResultBody({ data }: { data: CheckResultDto }) {
+    const { t, i18n } = useTranslation("checks");
     return (
         <Stack spacing={2}>
             <Box
@@ -77,9 +80,11 @@ function CheckResultBody({ data }: { data: CheckResultDto }) {
             </Box>
 
             <Stack direction="row" spacing={3} flexWrap="wrap">
-                <MetaItem label="Trust level" value={`${String(Math.round(data.trustLevel * 100))}%`} />
-                {data.errorType !== "NONE" && <MetaItem label="Error type" value={formatErrorType(data.errorType)} />}
-                <MetaItem label="Checked at" value={formatDate(data.createdAt)} />
+                <MetaItem label={t("trust_level_label")} value={`${String(Math.round(data.trustLevel * 100))}%`} />
+                {data.errorType !== "NONE" && (
+                    <MetaItem label={t("error_type_label")} value={formatErrorType(data.errorType)} />
+                )}
+                <MetaItem label={t("checked_at_label")} value={formatDate(data.createdAt, { locale: i18n.language })} />
             </Stack>
         </Stack>
     );
@@ -97,24 +102,25 @@ function MetaItem({ label, value }: { label: string; value: string }) {
 }
 
 function StatusAvatar({ status }: { status: CheckResultDto["status"] }) {
-    const { icon, color, tooltip } = statusVisuals(status);
+    const { t } = useTranslation("checks");
+    const { icon, color, tooltipKey } = statusVisuals(status);
     return (
-        <Tooltip title={tooltip}>
+        <Tooltip title={t(tooltipKey)}>
             <Avatar sx={{ bgcolor: color, width: 32, height: 32 }}>{icon}</Avatar>
         </Tooltip>
     );
 }
 
-function statusVisuals(status: CheckResultDto["status"]): { icon: ReactNode; color: string; tooltip: string } {
+function statusVisuals(status: CheckResultDto["status"]): { icon: ReactNode; color: string; tooltipKey: string } {
     switch (status) {
         case "SUCCESS":
-            return { icon: <DoneIcon fontSize="small" />, color: "success.main", tooltip: "Correct" };
+            return { icon: <DoneIcon fontSize="small" />, color: "success.main", tooltipKey: "correct_tooltip" };
         case "MISTAKE":
-            return { icon: <ErrorIcon fontSize="small" />, color: "error.main", tooltip: "Contains a mistake" };
+            return { icon: <ErrorIcon fontSize="small" />, color: "error.main", tooltipKey: "mistake_tooltip" };
         case "INTERNAL_ERROR":
-            return { icon: <InternalIcon fontSize="small" />, color: "warning.main", tooltip: "Checker error" };
+            return { icon: <InternalIcon fontSize="small" />, color: "warning.main", tooltipKey: "checker_error_tooltip" };
         default:
-            return { icon: <ErrorIcon fontSize="small" />, color: "grey.500", tooltip: "Unknown" };
+            return { icon: <ErrorIcon fontSize="small" />, color: "grey.500", tooltipKey: "unknown_tooltip" };
     }
 }
 

@@ -1,7 +1,9 @@
 import { Box, Button, Card, CardContent, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function IndexPage() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const handleClick = () => {
         void navigate("/problems");
@@ -10,7 +12,7 @@ export default function IndexPage() {
     return (
         <Box>
             <Typography component="h1" color="primary" variant="h5" align="center">
-                Welcome to Edukate
+                {t("welcome_title")}
             </Typography>
 
             <Card
@@ -22,12 +24,10 @@ export default function IndexPage() {
             >
                 <CardContent>
                     <Typography variant="body1" marginBottom={4}>
-                        Edukate is a platform designed to bring engaging and interactive educational experiences straight to
-                        your fingertips. Explore a variety of problems and challenges, track your progress, and grow your
-                        knowledge!
+                        {t("welcome_description")}
                     </Typography>
                     <Button variant="contained" color="primary" onClick={handleClick}>
-                        Explore Problems
+                        {t("explore_problems_button")}
                     </Button>
                 </CardContent>
             </Card>

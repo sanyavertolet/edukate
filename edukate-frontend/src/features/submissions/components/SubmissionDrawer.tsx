@@ -3,6 +3,7 @@ import { Box, Divider, Drawer, IconButton, Stack, Typography } from "@mui/materi
 import CloseIcon from "@mui/icons-material/Close";
 import { Submission } from "@/features/submissions/types";
 import { SubmissionComponent } from "@/features/submissions/components/SubmissionComponent";
+import { useTranslation } from "react-i18next";
 
 type SubmissionDrawerProps = {
     submission: Submission | null;
@@ -11,6 +12,7 @@ type SubmissionDrawerProps = {
 };
 
 export const SubmissionDrawer: FC<SubmissionDrawerProps> = ({ submission, onClose, isOwner }) => {
+    const { t } = useTranslation("submissions");
     return (
         <Drawer
             anchor="right"
@@ -19,8 +21,8 @@ export const SubmissionDrawer: FC<SubmissionDrawerProps> = ({ submission, onClos
             slotProps={{ paper: { sx: { width: { xs: "100%", sm: 520 } } } }}
         >
             <Stack direction="row" alignItems="center" justifyContent="space-between" px={2} py={1.5}>
-                <Typography variant="h6">Submission #{submission?.id ?? ""}</Typography>
-                <IconButton onClick={onClose} size="small" aria-label="Close submission drawer">
+                <Typography variant="h6">{t("submission_heading", { id: submission?.id ?? "" })}</Typography>
+                <IconButton onClick={onClose} size="small" aria-label={t("close_drawer_label")}>
                     <CloseIcon />
                 </IconButton>
             </Stack>

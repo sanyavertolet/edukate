@@ -10,6 +10,7 @@ import {
     Typography,
 } from "@mui/material";
 import { DoneAll } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 import { formatDate, formatRelative } from "@/shared/utils/date";
 
 interface NotificationItemLayoutProps {
@@ -34,70 +35,73 @@ export const NotificationItemLayout: FC<NotificationItemLayoutProps> = ({
     createdAt,
     onClick,
     onMarkAsRead,
-}) => (
-    <ListItem
-        disablePadding
-        secondaryAction={
-            !isRead && onMarkAsRead ? (
-                <Tooltip title="Mark as read">
-                    <IconButton
-                        size="small"
-                        edge="end"
-                        aria-label="Mark as read"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onMarkAsRead();
-                        }}
-                        sx={{
-                            opacity: 0,
-                            transition: "opacity 0.15s",
-                            ".MuiListItem-root:hover &": { opacity: 1 },
-                        }}
-                    >
-                        <DoneAll fontSize="small" />
-                    </IconButton>
-                </Tooltip>
-            ) : undefined
-        }
-    >
-        <ListItemButton
-            onClick={onClick}
-            sx={{
-                borderLeft: isRead ? "3px solid transparent" : 3,
-                borderColor: isRead ? "transparent" : "primary.main",
-                bgcolor: isRead ? "background.default" : "background.paper",
-                py: 1.5,
-                px: 2,
-            }}
+}) => {
+    const { i18n } = useTranslation();
+    return (
+        <ListItem
+            disablePadding
+            secondaryAction={
+                !isRead && onMarkAsRead ? (
+                    <Tooltip title="Mark as read">
+                        <IconButton
+                            size="small"
+                            edge="end"
+                            aria-label="Mark as read"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onMarkAsRead();
+                            }}
+                            sx={{
+                                opacity: 0,
+                                transition: "opacity 0.15s",
+                                ".MuiListItem-root:hover &": { opacity: 1 },
+                            }}
+                        >
+                            <DoneAll fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                ) : undefined
+            }
         >
-            <ListItemAvatar>
-                <Avatar sx={{ bgcolor: iconBgColor, color: iconColor }}>{icon}</Avatar>
-            </ListItemAvatar>
-            <ListItemText
-                primary={primary}
-                slotProps={{
-                    primary: {
-                        fontWeight: isRead ? "normal" : "bold",
-                        variant: "body2",
-                        component: "div",
-                    },
+            <ListItemButton
+                onClick={onClick}
+                sx={{
+                    borderLeft: isRead ? "3px solid transparent" : 3,
+                    borderColor: isRead ? "transparent" : "primary.main",
+                    bgcolor: isRead ? "background.default" : "background.paper",
+                    py: 1.5,
+                    px: 2,
                 }}
-                secondary={
-                    <>
-                        {secondary}
-                        <Tooltip title={formatDate(createdAt)} placement="bottom-start">
-                            <Typography
-                                component="span"
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ display: "inline-block", mt: 0.5 }}
-                            >
-                                {formatRelative(createdAt)}
-                            </Typography>
-                        </Tooltip>
-                    </>
-                }
-            />
-        </ListItemButton>
-    </ListItem>
-);
+            >
+                <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: iconBgColor, color: iconColor }}>{icon}</Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                    primary={primary}
+                    slotProps={{
+                        primary: {
+                            fontWeight: isRead ? "normal" : "bold",
+                            variant: "body2",
+                            component: "div",
+                        },
+                    }}
+                    secondary={
+                        <>
+                            {secondary}
+                            <Tooltip title={formatDate(createdAt, { locale: i18n.language })} placement="bottom-start">
+                                <Typography
+                                    component="span"
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: "inline-block", mt: 0.5 }}
+                                >
+                                    {formatRelative(createdAt, i18n.language)}
+                                </Typography>
+                            </Tooltip>
+                        </>
+                    }
+                />
+            </ListItemButton>
+        </ListItem>
+    );
+};

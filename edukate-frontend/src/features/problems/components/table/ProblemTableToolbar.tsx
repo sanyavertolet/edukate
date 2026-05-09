@@ -6,6 +6,7 @@ import PendingIcon from "@mui/icons-material/PendingOutlined";
 import { useAuthContext } from "@/features/auth/context";
 import { ProblemStatus } from "@/features/problems/types";
 import { ClearableTextField } from "@/shared/components/ClearableTextField";
+import { useTranslation } from "react-i18next";
 
 export type StatusFilter = ProblemStatus | "ALL" | undefined;
 type DifficultyFilter = boolean | undefined;
@@ -54,6 +55,7 @@ export const ProblemTableToolbar: FC<Props> = ({
     rightSlot,
 }) => {
     const { isAuthorized } = useAuthContext();
+    const { t } = useTranslation("problems");
     return (
         <Box sx={{ position: "relative" }}>
             {rightSlot && <Box sx={{ position: "absolute", top: 8, right: 8 }}>{rightSlot}</Box>}
@@ -69,7 +71,7 @@ export const ProblemTableToolbar: FC<Props> = ({
                 <Stack direction={{ xs: "column", lg: "row" }} spacing={2} sx={{ alignItems: { lg: "center" } }}>
                     <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                         <ClearableTextField
-                            label="Book"
+                            label={t("filter_book")}
                             value={bookSlug ?? ""}
                             onChange={(v) => {
                                 onBookSlugChange(v || undefined);
@@ -81,7 +83,7 @@ export const ProblemTableToolbar: FC<Props> = ({
                         />
 
                         <ClearableTextField
-                            label="Problem code"
+                            label={t("filter_problem_code")}
                             value={prefix}
                             onChange={onPrefixChange}
                             onClear={() => {
@@ -95,57 +97,57 @@ export const ProblemTableToolbar: FC<Props> = ({
                         {isAuthorized && (
                             <FormControl size="small" sx={{ minWidth: { md: 160 }, flex: { xs: "1 1 0", md: "0 1 auto" } }}>
                                 <InputLabel size={"small"} id="status-filter-label">
-                                    Status
+                                    {t("filter_status")}
                                 </InputLabel>
                                 <Select
                                     labelId="status-filter-label"
                                     size={"small"}
-                                    label="Status"
+                                    label={t("filter_status")}
                                     value={status ?? "ALL"}
                                     onChange={(e) => {
                                         onStatusChange((e.target.value || "ALL") as StatusFilter);
                                     }}
                                 >
-                                    <MenuItem value="ALL">All</MenuItem>
+                                    <MenuItem value="ALL">{t("filter_status_all")}</MenuItem>
                                     <MenuItem value="SOLVED">
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                             <DoneIcon color="success" fontSize="small" />
-                                            Solved
+                                            {t("filter_status_solved")}
                                         </Box>
                                     </MenuItem>
                                     <MenuItem value="SOLVING">
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                             <PendingIcon color="warning" fontSize="small" />
-                                            Solving
+                                            {t("filter_status_solving")}
                                         </Box>
                                     </MenuItem>
                                     <MenuItem value="FAILED">
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                                             <CloseIcon color="error" fontSize="small" />
-                                            Failed
+                                            {t("filter_status_failed")}
                                         </Box>
                                     </MenuItem>
-                                    <MenuItem value="NOT_SOLVED">Not solved</MenuItem>
+                                    <MenuItem value="NOT_SOLVED">{t("filter_status_not_solved")}</MenuItem>
                                 </Select>
                             </FormControl>
                         )}
 
                         <FormControl size="small" sx={{ minWidth: { md: 130 }, flex: { xs: "1 1 0", md: "0 1 auto" } }}>
                             <InputLabel size={"small"} id="difficulty-filter-label">
-                                Difficulty
+                                {t("filter_difficulty")}
                             </InputLabel>
                             <Select
                                 labelId="difficulty-filter-label"
                                 size={"small"}
-                                label="Difficulty"
+                                label={t("filter_difficulty")}
                                 value={difficultyToSelectValue(isHard)}
                                 onChange={(e) => {
                                     onIsHardChange(selectValueToDifficulty(e.target.value));
                                 }}
                             >
-                                <MenuItem value="ANY">Any</MenuItem>
-                                <MenuItem value="HARD">Hard</MenuItem>
-                                <MenuItem value="MEDIUM">Medium</MenuItem>
+                                <MenuItem value="ANY">{t("filter_difficulty_any")}</MenuItem>
+                                <MenuItem value="HARD">{t("filter_difficulty_hard")}</MenuItem>
+                                <MenuItem value="MEDIUM">{t("filter_difficulty_medium")}</MenuItem>
                             </Select>
                         </FormControl>
                     </Stack>
@@ -163,7 +165,7 @@ export const ProblemTableToolbar: FC<Props> = ({
                                 size="small"
                             />
                         }
-                        label="With pictures"
+                        label={t("filter_with_pictures")}
                         sx={{ mr: 0 }}
                     />
 
@@ -177,7 +179,7 @@ export const ProblemTableToolbar: FC<Props> = ({
                                 size="small"
                             />
                         }
-                        label="With answer"
+                        label={t("filter_with_answer")}
                         sx={{ mr: 0 }}
                     />
                 </Stack>

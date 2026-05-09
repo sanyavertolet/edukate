@@ -6,6 +6,7 @@ import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
 import { SiteMark } from "@/shared/components/layout/topbar/SiteMark";
 import { SignCard, SignContainer } from "@/shared/components/Styled";
+import { useTranslation } from "react-i18next";
 
 const titleSx = { width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)", textAlign: "left" } as const;
 const formSx = { display: "flex", flexDirection: "column", width: "100%", gap: 2 } as const;
@@ -17,6 +18,7 @@ interface SignInFormProps {
 }
 
 export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps) => {
+    const { t } = useTranslation("auth");
     const navigate = useNavigate();
     const signInMutation = useSignInMutation();
 
@@ -25,8 +27,8 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
     const [usernameError, setUsernameError] = useState<string | null>(null);
     const [passwordError, setPasswordError] = useState<string | null>(null);
 
-    const validateUsername = (value: string) => (value.trim() ? null : "Please enter your username.");
-    const validatePassword = (value: string) => (value.trim() ? null : "Please enter your password.");
+    const validateUsername = (value: string) => (value.trim() ? null : t("username_required_error"));
+    const validatePassword = (value: string) => (value.trim() ? null : t("password_required_error"));
 
     const handleBlurUsername = (e: FocusEvent<HTMLInputElement>) => {
         setUsernameError(validateUsername(e.target.value));
@@ -61,7 +63,7 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
             <SignCard variant="outlined">
                 <SiteMark />
                 <Typography component="h1" variant="h4" sx={titleSx}>
-                    Sign in
+                    {t("sign_in_title")}
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={formSx}>
                     <TextField
@@ -74,9 +76,9 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
                         helperText={usernameError ?? " "}
                         name="username"
                         type="text"
-                        placeholder="username"
+                        placeholder={t("username_placeholder")}
                         autoComplete="username"
-                        label="Username"
+                        label={t("username_label")}
                         autoFocus
                         required
                         fullWidth
@@ -92,22 +94,22 @@ export const SignInForm = ({ onSignInSuccess, onSignUpRequest }: SignInFormProps
                         helperText={passwordError ?? " "}
                         name="password"
                         type="password"
-                        placeholder="••••••"
+                        placeholder={t("password_placeholder")}
                         autoComplete="current-password"
-                        label="Password"
+                        label={t("password_label")}
                         required
                         fullWidth
                         variant="outlined"
                     />
                     <Button type="submit" fullWidth variant="contained" disabled={signInMutation.isPending}>
-                        Sign in
+                        {t("sign_in_button")}
                     </Button>
                 </Box>
                 <Box sx={footerSx}>
                     <Typography sx={{ textAlign: "center" }}>
-                        Don&apos;t have an account?{" "}
+                        {t("dont_have_account")}{" "}
                         <Link onClick={onSignUpRequest} variant="body2" sx={{ alignSelf: "center", cursor: "pointer" }}>
-                            Sign up
+                            {t("sign_up_link")}
                         </Link>
                     </Typography>
                 </Box>

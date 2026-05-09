@@ -14,8 +14,11 @@ const checkFn = {
 export function useRequestCheckMutation() {
     return useMutation({
         mutationFn: ({ submissionId, checkType }: CheckRequest) => checkFn[checkType]({ id: submissionId }),
-        onSuccess: (_data, { submissionId }) =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.checks.bySubmission(submissionId) }).finally(),
+        onSuccess: (_data, { submissionId, problemKey }) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.checks.bySubmission(submissionId) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(problemKey) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problemKey) });
+        },
     });
 }
 

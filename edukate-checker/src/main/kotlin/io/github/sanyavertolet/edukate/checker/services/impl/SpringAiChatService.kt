@@ -33,7 +33,12 @@ class SpringAiChatService(
         return requireNotNull(
             chatClient
                 .prompt()
-                .system { s -> s.text(systemPromptTemplate).param("problemText", ctx.problemText) }
+                .system { s ->
+                    s.text(systemPromptTemplate)
+                        .param("problemText", ctx.problemText)
+                        .param("expectedAnswer", ctx.answer ?: "not provided")
+                        .param("language", ctx.language)
+                }
                 .user { u -> u.text("Here are the images for you to check as well as the problem image.").media(*allMedia) }
                 .call()
                 .entity(ModelResponse::class.java)

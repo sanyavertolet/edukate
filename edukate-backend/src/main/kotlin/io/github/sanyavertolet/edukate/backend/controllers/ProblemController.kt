@@ -116,13 +116,13 @@ class ProblemController(private val problemService: ProblemService, private val 
 
     @GetMapping("/by-prefix")
     @Operation(
-        summary = "Get problem codes by prefix",
-        description = "Retrieves a list of problem codes that match the given prefix",
+        summary = "Get problem keys by prefix",
+        description = "Retrieves a list of problem keys matching the given book slug and/or code prefix",
     )
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Successfully retrieved problem codes"),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved problem keys"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
             ]
     )
@@ -130,18 +130,23 @@ class ProblemController(private val problemService: ProblemService, private val 
         value =
             [
                 Parameter(
-                    name = "prefix",
-                    description = "The prefix to match problem codes against",
+                    name = "bookSlugPrefix",
+                    description = "Optional prefix to filter by book slug",
                     `in` = ParameterIn.QUERY,
-                    required = true,
+                ),
+                Parameter(
+                    name = "prefix",
+                    description = "Optional prefix to match problem codes against",
+                    `in` = ParameterIn.QUERY,
                 ),
                 Parameter(name = "limit", description = "Maximum number of results to return", `in` = ParameterIn.QUERY),
             ]
     )
-    fun getProblemCodesByPrefix(
-        @RequestParam prefix: String,
+    fun getProblemKeysByPrefix(
+        @RequestParam(required = false) bookSlugPrefix: String?,
+        @RequestParam(required = false) prefix: String?,
         @RequestParam(required = false, defaultValue = "5") @Positive limit: Int,
-    ): Mono<List<String>> = problemService.getProblemCodesByPrefix(prefix, limit).collectList()
+    ): Mono<List<String>> = problemService.getProblemKeysByPrefix(bookSlugPrefix, prefix, limit).collectList()
 
     @GetMapping("/{bookSlug}/{code}")
     @Operation(summary = "Get problem by key", description = "Retrieves a specific problem by its book slug and code")

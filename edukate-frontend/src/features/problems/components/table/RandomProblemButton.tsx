@@ -4,29 +4,32 @@ import { useNavigate } from "react-router-dom";
 import { Fab, IconButton, Tooltip } from "@mui/material";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 function useRandomProblemNavigation() {
     const randomProblemQuery = useRandomProblemKeyQuery();
     const navigate = useNavigate();
-    const onClick = () => {
+    const { t } = useTranslation("problems");
+
+    return () => {
         void randomProblemQuery.refetch().then(
             (result) => {
                 const problemKey = result.data;
                 void navigate(`/problems/${problemKey ?? ""}`);
             },
             () => {
-                toast.error("Could not randomize the problem");
+                toast.error(t("randomize_error"));
             },
         );
     };
-    return onClick;
 }
 
 export const RandomProblemButton: FC = () => {
     const onClick = useRandomProblemNavigation();
+    const { t } = useTranslation("problems");
 
     return (
-        <Tooltip title={"Randomize problem"}>
+        <Tooltip title={t("randomize_problem")}>
             <IconButton aria-label="random-problem" color="primary" onClick={onClick}>
                 <ShuffleIcon sx={{ fontSize: 30 }} />
             </IconButton>

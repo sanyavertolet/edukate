@@ -7,6 +7,7 @@ import { FileStatusIcon } from "./FileStatusIcon";
 import { useFileUpload } from "@/features/files/hooks/useFileUpload";
 import { FileLightbox } from "./FileLightbox";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 type FileInputProps = {
     onTempFileUploaded: (fileKey: string) => void;
@@ -31,6 +32,7 @@ export const FileInput: FC<FileInputProps> = ({
     maxSize = 50 * 1024 * 1024,
     accept = "*",
 }) => {
+    const { t } = useTranslation();
     const {
         fileMetadataList,
         previewDialogOpen,
@@ -90,7 +92,7 @@ export const FileInput: FC<FileInputProps> = ({
                             }}
                             disabled={file.status === "uploading"}
                         >
-                            <Tooltip title={"Remove file"} slotProps={defaultTooltipSlotProps}>
+                            <Tooltip title={t("file_delete_tooltip")} slotProps={defaultTooltipSlotProps}>
                                 <DeleteIcon />
                             </Tooltip>
                         </IconButton>

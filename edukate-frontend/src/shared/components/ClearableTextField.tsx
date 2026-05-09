@@ -8,14 +8,15 @@ type ClearableTextFieldProps = {
     value: string;
     onChange: (value: string) => void;
     onClear: () => void;
+    size?: "small" | "medium";
     sx?: SxProps<Theme>;
 };
 
-export const ClearableTextField: FC<ClearableTextFieldProps> = ({ label, value, onChange, onClear, sx }) => {
+export const ClearableTextField: FC<ClearableTextFieldProps> = ({ label, value, onChange, onClear, size = "small", sx }) => {
     return (
         <TextField
             label={label}
-            size="small"
+            size={size}
             value={value}
             onChange={(e) => {
                 onChange(e.target.value);

@@ -108,12 +108,16 @@ backend:
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
     management.tracing.sampling.probability=0.5
     management.otlp.metrics.export.enabled=false
+    spring.flyway.default-schema=edukate
+    spring.flyway.schemas=edukate
+    spring.flyway.create-schemas=false
 
 gateway:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
     management.tracing.sampling.probability=0.5
     management.otlp.metrics.export.enabled=false
+    spring.cloud.gateway.metrics.enabled=false
 
 notifier:
   applicationProperties: |

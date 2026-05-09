@@ -8,15 +8,15 @@ export type NavigationElement = {
 };
 
 const homeNavigationElement: NavigationElement = {
-    text: "Edukate",
+    text: "home",
     href: "/",
     icon: <Avatar alt="Home" src="logo.png" />,
 };
 
 export const desktopNavigationElements: NavigationElement[] = [
-    { text: "Problems", href: "/problems" },
-    { text: "Submissions", href: "/submissions" },
-    { text: "Problem Sets", href: "/problem-sets" },
+    { text: "problems", href: "/problems" },
+    { text: "submissions", href: "/submissions" },
+    { text: "problem_sets", href: "/problem-sets" },
 ];
 
 export const mobileNavigationElements: NavigationElement[] = [homeNavigationElement, ...desktopNavigationElements];

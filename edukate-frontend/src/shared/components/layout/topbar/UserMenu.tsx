@@ -5,8 +5,10 @@ import { useAuthContext } from "@/features/auth/context";
 import { useSignOutMutation } from "@/features/auth/api";
 import { AccountCircle } from "@mui/icons-material";
 import { queryClient } from "@/lib/query-client";
+import { useTranslation } from "react-i18next";
 
 export function UserMenu() {
+    const { t } = useTranslation("navigation");
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const signOutMutation = useSignOutMutation();
@@ -38,16 +40,16 @@ export function UserMenu() {
 
     const signedOutMenuItems = [
         <MenuItem key="sign-in" onClick={handleSignIn}>
-            Sign In
+            {t("sign_in")}
         </MenuItem>,
         <MenuItem key="sign-up" onClick={handleSignUp}>
-            Sign Up
+            {t("sign_up")}
         </MenuItem>,
     ];
 
     const signedInMenuItems = [
         <MenuItem key="sign-out" onClick={handleSignOut}>
-            Sign Out
+            {t("sign_out")}
         </MenuItem>,
     ];
 
@@ -68,7 +70,7 @@ export function UserMenu() {
             </Menu>
             <Button
                 id="user-menu-button"
-                aria-label="account of current user"
+                aria-label={t("user_menu_aria")}
                 aria-haspopup="true"
                 aria-expanded={isMenuOpen}
                 color="primary"

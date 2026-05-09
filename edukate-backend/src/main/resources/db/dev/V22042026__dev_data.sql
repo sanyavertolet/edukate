@@ -61,298 +61,765 @@ ON CONFLICT (slug) DO NOTHING;
 -- Insertion order determines problem IDs (see MinIO table above).
 
 -- Ch.1 Kinematics — 1.3.13 (hard, projectile motion envelope)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '1.3.13', 'savchenko/1.3.13', true,
-    '["Движение в поле тяжести. Криволинейное движение"]',
-    'Снаряд, вылетев из орудия, попал в точку с координатами $x$ по горизонтали и $y$ по вертикали. Начальная скорость снаряда $v$. Найдите: а) тангенс угла, образуемого стволом орудия с горизонтом; б) границу области возможного попадания снаряда; в) наименьшую начальную скорость снаряда, при которой он может попасть в точку с координатами $x$, $y$. *Указание.* При решении воспользуйтесь тождеством $1/\cos^{2}\varphi = \mathrm{tg}^{2}\varphi + 1$.',
-    '[]',
     '[]',
     '2025-06-01T10:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'),
+    'RU',
+    'Снаряд, вылетев из орудия, попал в точку с координатами $x$ по горизонтали и $y$ по вертикали. Начальная скорость снаряда $v$. Найдите: а) тангенс угла, образуемого стволом орудия с горизонтом; б) границу области возможного попадания снаряда; в) наименьшую начальную скорость снаряда, при которой он может попасть в точку с координатами $x$, $y$. *Указание.* При решении воспользуйтесь тождеством $1/\cos^{2}\varphi = \mathrm{tg}^{2}\varphi + 1$.',
+    '["Движение в поле тяжести. Криволинейное движение"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'),
+    'EN',
+    'A shell fired from a cannon lands at a point with horizontal coordinate $x$ and vertical coordinate $y$. The initial speed of the shell is $v$. Find: a) the tangent of the angle between the barrel and the horizontal; b) the boundary of the region of possible impact; c) the minimum initial speed of the shell required to reach the point $(x, y)$. *Hint.* Use the identity $1/\cos^{2}\varphi = \tan^{2}\varphi + 1$.',
+    '["Motion in gravitational field. Curvilinear motion"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.2 Dynamics — 2.4.34 (energy, inelastic collision; has image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '2.4.34', 'savchenko/2.4.34', false,
-    '["Энергия системы. Передача энергии. Мощность"]',
-    'Два груза массы $m_{1}$ и $m_{2}$ ($m_{1} > m_{2}$) связаны нитью, переброшенной через неподвижный блок. В начальный момент груз массы $m_{1}$ удерживают на высоте $h$ над полом. Затем его без толчка отпускают. Какое количество теплоты выделится при ударе груза о пол? Удар абсолютно неупругий.',
-    '[]',
     '["2.4.34.jpg"]',
     '2025-07-15T14:30:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'),
+    'RU',
+    'Два груза массы $m_{1}$ и $m_{2}$ ($m_{1} > m_{2}$) связаны нитью, переброшенной через неподвижный блок. В начальный момент груз массы $m_{1}$ удерживают на высоте $h$ над полом. Затем его без толчка отпускают. Какое количество теплоты выделится при ударе груза о пол? Удар абсолютно неупругий.',
+    '["Энергия системы. Передача энергии. Мощность"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'),
+    'EN',
+    'Two masses $m_{1}$ and $m_{2}$ ($m_{1} > m_{2}$) are connected by a string passed over a fixed pulley. Initially, mass $m_{1}$ is held at height $h$ above the floor and then released without a push. How much heat is released when the mass hits the floor? The collision is perfectly inelastic.',
+    '["System energy. Energy transfer. Power"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.2 Dynamics — 2.1.30 (hard, Newton laws; 2 subtasks + image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '2.1.30', 'savchenko/2.1.30', true,
-    '["Законы Ньютона"]',
-    '',
-    '[{"id": "а", "text": "Какую силу надо приложить к телу, чтобы тело соскользнуло с неё? За какое время тело соскользнёт, если к доске приложена сила $F_{0}$, а длина доски равна $l$?"},
-      {"id": "б", "text": "С каким ускорением движутся тело и доска, если сила $F_{0}$ действует на тело массы $m_{1}$? (Тело массы $m_{1}$ лежит на доске массы $m_{2}$, находящейся на гладкой горизонтальной плоскости. Коэффициент трения между телом и доской $\\mu$.)"}]',
     '["2.1.30.jpg"]',
     '2025-07-15T14:45:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/2.1.30'),
+    'RU',
+    '',
+    '["Законы Ньютона"]',
+    '[{"code": "а", "text": "Какую силу надо приложить к телу, чтобы тело соскользнуло с неё? За какое время тело соскользнёт, если к доске приложена сила $F_{0}$, а длина доски равна $l$?"},
+      {"code": "б", "text": "С каким ускорением движутся тело и доска, если сила $F_{0}$ действует на тело массы $m_{1}$? (Тело массы $m_{1}$ лежит на доске массы $m_{2}$, находящейся на гладкой горизонтальной плоскости. Коэффициент трения между телом и доской $\\mu$.)"}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/2.1.30'),
+    'EN',
+    '',
+    '["Newton''s Laws"]',
+    '[{"code": "a", "text": "What force must be applied to make the body slide off the board? How long will it take for the body to slide off if a force $F_{0}$ is applied to the board and the length of the board is $l$?"},
+      {"code": "b", "text": "What are the accelerations of the body and the board if force $F_{0}$ acts on the body of mass $m_{1}$? (A body of mass $m_{1}$ lies on a board of mass $m_{2}$ resting on a smooth horizontal surface. The coefficient of friction between the body and the board is $\\mu$.)"}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.3 Oscillations and Waves — 3.2.7 (pendulum with magnet; 2 subtasks + problem & answer image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '3.2.7', 'savchenko/3.2.7', false,
-    '["Период и частота свободных колебаний"]',
-    '',
-    '[{"id": "а", "text": "Математический маятник — железный шарик массы $m$, висящий на длинной нити, — имеет период $T_{0}$. В присутствии магнита, расположенного чуть ниже шарика, период колебаний стал равным $T$. Определите действующую на шарик магнитную силу."},
-      {"id": "б", "text": "Железный шарик маятника поместили между полюсами магнита так, что на него действует горизонтальная магнитная сила. Найдите эту силу и новое положение равновесия шарика, если период его колебаний после включения магнитного поля стал равным $T$."}]',
     '["3.2.7.jpg"]',
     '2025-08-20T09:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/3.2.7'),
+    'RU',
+    '',
+    '["Период и частота свободных колебаний"]',
+    '[{"code": "а", "text": "Математический маятник — железный шарик массы $m$, висящий на длинной нити, — имеет период $T_{0}$. В присутствии магнита, расположенного чуть ниже шарика, период колебаний стал равным $T$. Определите действующую на шарик магнитную силу."},
+      {"code": "б", "text": "Железный шарик маятника поместили между полюсами магнита так, что на него действует горизонтальная магнитная сила. Найдите эту силу и новое положение равновесия шарика, если период его колебаний после включения магнитного поля стал равным $T$."}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/3.2.7'),
+    'EN',
+    '',
+    '["Period and frequency of free oscillations"]',
+    '[{"code": "a", "text": "A simple pendulum — an iron ball of mass $m$ hanging on a long string — has period $T_{0}$. In the presence of a magnet placed just below the ball, the oscillation period became $T$. Determine the magnetic force acting on the ball."},
+      {"code": "b", "text": "The iron ball of the pendulum was placed between the poles of a magnet so that a horizontal magnetic force acts on it. Find this force and the new equilibrium position of the ball if the oscillation period after switching on the magnetic field became $T$."}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.4 Fluid Mechanics — 4.3.12 (hard, triangular notch outflow; has image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '4.3.12', 'savchenko/4.3.12', true,
-    '["Движение идеальной жидкости"]',
-    'Вода вытекает из широкого сосуда через треугольный вырез в его стенке. Во сколько раз уменьшится скорость понижения уровня воды при изменении высоты её уровня от $H$ до $h$?',
-    '[]',
     '["4.3.12.jpg"]',
     '2025-09-10T11:15:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/4.3.12'),
+    'RU',
+    'Вода вытекает из широкого сосуда через треугольный вырез в его стенке. Во сколько раз уменьшится скорость понижения уровня воды при изменении высоты её уровня от $H$ до $h$?',
+    '["Движение идеальной жидкости"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/4.3.12'),
+    'EN',
+    'Water flows from a wide vessel through a triangular notch in its wall. How many times does the rate of decrease of the water level decrease as the water level drops from $H$ to $h$?',
+    '["Motion of an ideal fluid"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.5 Molecular Physics — 5.6.19 (adiabatic piston compression; has image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '5.6.19', 'savchenko/5.6.19', false,
-    '["Первое начало термодинамики. Теплоёмкость"]',
-    'Поршень массы $M$, закрывающий объём $V_{0}$ одноатомного газа при давлении $P_{0}$ и температуре $T_{0}$, движется со скоростью $u$. Определите температуру и объём газа при максимальном сжатии. Система теплоизолирована, теплоёмкостями поршня и сосуда пренебречь.',
-    '[]',
     '["5.6.19.jpg"]',
     '2025-10-05T16:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/5.6.19'),
+    'RU',
+    'Поршень массы $M$, закрывающий объём $V_{0}$ одноатомного газа при давлении $P_{0}$ и температуре $T_{0}$, движется со скоростью $u$. Определите температуру и объём газа при максимальном сжатии. Система теплоизолирована, теплоёмкостями поршня и сосуда пренебречь.',
+    '["Первое начало термодинамики. Теплоёмкость"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/5.6.19'),
+    'EN',
+    'A piston of mass $M$ enclosing a volume $V_{0}$ of a monatomic gas at pressure $P_{0}$ and temperature $T_{0}$ moves with speed $u$. Determine the temperature and volume of the gas at maximum compression. The system is thermally insulated; neglect the heat capacities of the piston and vessel.',
+    '["First law of thermodynamics. Heat capacity"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.6 Electrostatics — 6.4.2 (parallel-plate capacitor; 2 subtasks)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '6.4.2', 'savchenko/6.4.2', false,
-    '["Конденсаторы"]',
-    '',
-    '[{"id": "а", "text": "Размеры пластин плоского конденсатора увеличили в два раза. Как изменилась ёмкость конденсатора?"},
-      {"id": "б", "text": "Как изменится ёмкость плоского конденсатора, если расстояние между пластинами удвоить? Увеличить в $n$ раз?"}]',
     '[]',
     '2025-11-12T08:30:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/6.4.2'),
+    'RU',
+    '',
+    '["Конденсаторы"]',
+    '[{"code": "а", "text": "Размеры пластин плоского конденсатора увеличили в два раза. Как изменилась ёмкость конденсатора?"},
+      {"code": "б", "text": "Как изменится ёмкость плоского конденсатора, если расстояние между пластинами удвоить? Увеличить в $n$ раз?"}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/6.4.2'),
+    'EN',
+    '',
+    '["Capacitors"]',
+    '[{"code": "a", "text": "The dimensions of the plates of a parallel-plate capacitor were doubled. How did the capacitance change?"},
+      {"code": "b", "text": "How does the capacitance of a parallel-plate capacitor change if the distance between the plates is doubled? Increased $n$ times?"}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.7 Charged Particle Motion — 7.4.10 (hard, charged particles near metallic dihedral; problem & answer image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '7.4.10', 'savchenko/7.4.10', true,
-    '["Взаимодействие заряженных частиц"]',
-    'Скорости трёх заряженных частиц массы $m$ изображены на рисунке. Расстояние от каждой частицы до ребра металлического двугранного угла $d$. Заряды первых двух частиц, летящих в противоположных направлениях, равны $\pm q$. Найдите скорость третьей нейтральной частицы на бесконечности, если начальная скорость этой частицы равна $v$.',
-    '[]',
     '["7.4.10.jpg"]',
     '2025-12-01T13:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/7.4.10'),
+    'RU',
+    'Скорости трёх заряженных частиц массы $m$ изображены на рисунке. Расстояние от каждой частицы до ребра металлического двугранного угла $d$. Заряды первых двух частиц, летящих в противоположных направлениях, равны $\pm q$. Найдите скорость третьей нейтральной частицы на бесконечности, если начальная скорость этой частицы равна $v$.',
+    '["Взаимодействие заряженных частиц"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/7.4.10'),
+    'EN',
+    'The velocities of three charged particles of mass $m$ are shown in the figure. The distance from each particle to the edge of a metallic dihedral angle is $d$. The charges of the first two particles, moving in opposite directions, are $\pm q$. Find the speed of the third neutral particle at infinity if its initial speed is $v$.',
+    '["Interaction of charged particles"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.8 Electric Current — 8.3.8 (voltmeter range switching paradox)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '8.3.8', 'savchenko/8.3.8', false,
-    '["Электрические цепи"]',
-    'Переключая вольтметр на измерение вдвое большего диапазона напряжения (со $100$ на $200$ В), ожидали отклонения стрелки на вдвое меньшее число делений. Однако этого не произошло, хотя в остальной части цепи ничего не изменяли. Большее или меньшее напряжение покажет вольтметр после переключения?',
-    '[]',
     '[]',
     '2026-01-08T10:45:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/8.3.8'),
+    'RU',
+    'Переключая вольтметр на измерение вдвое большего диапазона напряжения (со $100$ на $200$ В), ожидали отклонения стрелки на вдвое меньшее число делений. Однако этого не произошло, хотя в остальной части цепи ничего не изменяли. Большее или меньшее напряжение покажет вольтметр после переключения?',
+    '["Электрические цепи"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/8.3.8'),
+    'EN',
+    'When switching a voltmeter to measure twice the voltage range (from $100$ to $200$ V), it was expected that the pointer would deflect to half as many divisions. However, this did not happen, although nothing else in the circuit was changed. Will the voltmeter show a higher or lower voltage after switching?',
+    '["Electric circuits"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.9 Magnetic Field — 9.2.23 (magnetised plates, magnetic moment estimate)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '9.2.23', 'savchenko/9.2.23', false,
-    '["Магнитное поле движущегося заряда. Индукция магнитного поля линейного тока"]',
-    'Сила взаимодействия двух тонких намагниченных квадратных пластин, расположенных на расстоянии $H$ друг над другом, равна $F$. Размеры пластин $a \times a \times h$. Оцените магнитный момент единицы объёма пластины, если толщина пластины $h \ll H$, а $H \ll a$.',
-    '[]',
     '[]',
     '2026-02-14T15:20:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/9.2.23'),
+    'RU',
+    'Сила взаимодействия двух тонких намагниченных квадратных пластин, расположенных на расстоянии $H$ друг над другом, равна $F$. Размеры пластин $a \times a \times h$. Оцените магнитный момент единицы объёма пластины, если толщина пластины $h \ll H$, а $H \ll a$.',
+    '["Магнитное поле движущегося заряда. Индукция магнитного поля линейного тока"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/9.2.23'),
+    'EN',
+    'The interaction force between two thin magnetised square plates placed at a distance $H$ above each other is $F$. The dimensions of the plates are $a \times a \times h$. Estimate the magnetic moment per unit volume of a plate, given that the plate thickness $h \ll H$ and $H \ll a$.',
+    '["Magnetic field of a moving charge. Magnetic flux density of a linear current"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.10 Charged Particles — 10.1.21 (charged ring in axial magnetic field; has image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '10.1.21', 'savchenko/10.1.21', false,
-    '["Движение в однородном магнитном поле"]',
-    'Равномерно заряженное кольцо радиуса $R$, линейная плотность заряда которого $\rho$, движется соосно аксиально-симметричному магнитному полю со скоростью $v$. Радиальная составляющая индукции магнитного поля на расстоянии $R$ от оси равна $B_{R}$. Определите момент сил, действующих на кольцо.',
-    '[]',
     '["10.1.21.jpg"]',
     '2026-03-01T12:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/10.1.21'),
+    'RU',
+    'Равномерно заряженное кольцо радиуса $R$, линейная плотность заряда которого $\rho$, движется соосно аксиально-симметричному магнитному полю со скоростью $v$. Радиальная составляющая индукции магнитного поля на расстоянии $R$ от оси равна $B_{R}$. Определите момент сил, действующих на кольцо.',
+    '["Движение в однородном магнитном поле"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/10.1.21'),
+    'EN',
+    'A uniformly charged ring of radius $R$ with linear charge density $\rho$ moves coaxially in an axially symmetric magnetic field at speed $v$. The radial component of the magnetic flux density at distance $R$ from the axis is $B_{R}$. Determine the torque acting on the ring.',
+    '["Motion in a uniform magnetic field"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.11 Electromagnetic Induction — 11.3.19 (hard, transformer short-circuit; 2 subtasks)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '11.3.19', 'savchenko/11.3.19', true,
-    '["Взаимная индуктивность. Индуктивность проводников. Трансформаторы"]',
-    '',
-    '[{"id": "а", "text": "Почему опасно замыкание хотя бы одного витка вторичной обмотки трансформатора?"},
-      {"id": "б", "text": "Замыкание витка вторичной обмотки трансформатора приводит иногда к выходу из строя первичной обмотки трансформатора. Почему это происходит?"}]',
     '[]',
     '2026-03-18T09:30:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/11.3.19'),
+    'RU',
+    '',
+    '["Взаимная индуктивность. Индуктивность проводников. Трансформаторы"]',
+    '[{"code": "а", "text": "Почему опасно замыкание хотя бы одного витка вторичной обмотки трансформатора?"},
+      {"code": "б", "text": "Замыкание витка вторичной обмотки трансформатора приводит иногда к выходу из строя первичной обмотки трансформатора. Почему это происходит?"}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/11.3.19'),
+    'EN',
+    '',
+    '["Mutual inductance. Inductance of conductors. Transformers"]',
+    '[{"code": "a", "text": "Why is the short-circuiting of even a single turn of the secondary winding of a transformer dangerous?"},
+      {"code": "b", "text": "The short-circuiting of a turn of the secondary winding of a transformer sometimes causes failure of the primary winding. Why does this happen?"}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.12 Electromagnetic Waves — 12.1.25 (reflection law proof; 2 subtasks + image)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '12.1.25', 'savchenko/12.1.25', false,
-    '["Свойства, излучение и отражение электромагнитных волн"]',
-    'Пользуясь методом, изложенным в задаче 12.1.19, докажите, что угол падения электромагнитной волны равен углу отражения. Рассмотрите случаи:',
-    '[{"id": "а", "text": "вектор $E$ электромагнитной волны, падающей на металл, параллелен металлической поверхности;"},
-      {"id": "б", "text": "вектор $B$ электромагнитной волны параллелен металлической поверхности."}]',
     '["12.1.25.jpg"]',
     '2026-04-02T17:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/12.1.25'),
+    'RU',
+    'Пользуясь методом, изложенным в задаче 12.1.19, докажите, что угол падения электромагнитной волны равен углу отражения. Рассмотрите случаи:',
+    '["Свойства, излучение и отражение электромагнитных волн"]',
+    '[{"code": "а", "text": "вектор $E$ электромагнитной волны, падающей на металл, параллелен металлической поверхности;"},
+      {"code": "б", "text": "вектор $B$ электромагнитной волны параллелен металлической поверхности."}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/12.1.25'),
+    'EN',
+    'Using the method described in problem 12.1.19, prove that the angle of incidence of an electromagnetic wave equals the angle of reflection. Consider the cases:',
+    '["Properties, emission and reflection of electromagnetic waves"]',
+    '[{"code": "a", "text": "the electric field vector $E$ of the wave incident on the metal is parallel to the metallic surface;"},
+      {"code": "b", "text": "the magnetic field vector $B$ of the wave is parallel to the metallic surface."}]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.13 Optics — 13.3.10 (Moon photography defocus correction)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '13.3.10', 'savchenko/13.3.10', false,
-    '["Оптические системы"]',
-    'При фотографировании Луны получено размытое изображение в виде диска радиуса $r_{1}$. Резкое изображение Луны имело бы радиус $r_{2}$. Определите, на какое расстояние нужно сместить фотопластинку, чтобы изображение на ней получилось резким. Фокусное расстояние линзы $f$, диаметр $D$, при этом $r_{2} > D/2 > r_{1}$.',
-    '[]',
     '[]',
     '2026-04-10T11:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/13.3.10'),
+    'RU',
+    'При фотографировании Луны получено размытое изображение в виде диска радиуса $r_{1}$. Резкое изображение Луны имело бы радиус $r_{2}$. Определите, на какое расстояние нужно сместить фотопластинку, чтобы изображение на ней получилось резким. Фокусное расстояние линзы $f$, диаметр $D$, при этом $r_{2} > D/2 > r_{1}$.',
+    '["Оптические системы"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/13.3.10'),
+    'EN',
+    'When photographing the Moon, a blurred image in the form of a disk of radius $r_{1}$ was obtained. A sharp image of the Moon would have radius $r_{2}$. Determine by how much the photographic plate must be shifted to obtain a sharp image. The focal length of the lens is $f$, its diameter is $D$, with $r_{2} > D/2 > r_{1}$.',
+    '["Optical systems"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- Ch.14 Special Relativity — 14.3.19 (relativistic electron beam density)
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '14.3.19', 'savchenko/14.3.19', false,
-    '["Преобразование электрического и магнитного полей"]',
-    'Скорость электронов в параллельном пучке $\beta c$. Как изменится плотность электронов при движении относительно пучка со скоростью $\beta_{1}c$ в продольном направлении?',
-    '[]',
     '[]',
     '2026-04-20T14:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/14.3.19'),
+    'RU',
+    'Скорость электронов в параллельном пучке $\beta c$. Как изменится плотность электронов при движении относительно пучка со скоростью $\beta_{1}c$ в продольном направлении?',
+    '["Преобразование электрического и магнитного полей"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/14.3.19'),
+    'EN',
+    'The speed of electrons in a parallel beam is $\beta c$. How does the electron density change when moving relative to the beam at speed $\beta_{1}c$ in the longitudinal direction?',
+    '["Transformation of electric and magnetic fields"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- ── Answers ───────────────────────────────────────────────────────────────────
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/1.3.13'),
-     'а) $\operatorname{tg}\varphi = \dfrac{v^{2} \pm \sqrt{v^{4} - 2gv^{2}y - g^{2}x^{2}}}{gx}$. б) $y = \dfrac{v^{2}}{2g} - \dfrac{gx^{2}}{2v^{2}}$. в) $v_{\text{мин}} = \sqrt{g\bigl(y + \sqrt{x^{2} + y^{2}}\bigr)}$.',
-     '', '[]')
+     '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/1.3.13')),
+    'RU',
+    'а) $\operatorname{tg}\varphi = \dfrac{v^{2} \pm \sqrt{v^{4} - 2gv^{2}y - g^{2}x^{2}}}{gx}$. б) $y = \dfrac{v^{2}}{2g} - \dfrac{gx^{2}}{2v^{2}}$. в) $v_{\text{мин}} = \sqrt{g\bigl(y + \sqrt{x^{2} + y^{2}}\bigr)}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/1.3.13')),
+    'EN',
+    'a) $\tan\varphi = \dfrac{v^{2} \pm \sqrt{v^{4} - 2gv^{2}y - g^{2}x^{2}}}{gx}$. b) $y = \dfrac{v^{2}}{2g} - \dfrac{gx^{2}}{2v^{2}}$. c) $v_{\min} = \sqrt{g\bigl(y + \sqrt{x^{2} + y^{2}}\bigr)}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/2.4.34'),
-     '$Q = \dfrac{m_{1}gh(m_{1} - m_{2})}{m_{1} + m_{2}}$.',
-     '', '[]')
+     '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/2.4.34')),
+    'RU',
+    '$Q = \dfrac{m_{1}gh(m_{1} - m_{2})}{m_{1} + m_{2}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/2.4.34')),
+    'EN',
+    '$Q = \dfrac{m_{1}gh(m_{1} - m_{2})}{m_{1} + m_{2}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/2.1.30'),
-     'а) $F > \mu(m_{2} + m_{1})g$; $t = \sqrt{\dfrac{2lm_{2}}{F_{0} - \mu(m_{2} + m_{1})g}}$. б) $a_{1} = \dfrac{F_{0} - \mu m_{1}g}{m_{1}}$, $a_{2} = \mu g\dfrac{m_{1}}{m_{2}}$.',
-     '', '[]')
+     '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/2.1.30')),
+    'RU',
+    'а) $F > \mu(m_{2} + m_{1})g$; $t = \sqrt{\dfrac{2lm_{2}}{F_{0} - \mu(m_{2} + m_{1})g}}$. б) $a_{1} = \dfrac{F_{0} - \mu m_{1}g}{m_{1}}$, $a_{2} = \mu g\dfrac{m_{1}}{m_{2}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/2.1.30')),
+    'EN',
+    'a) $F > \mu(m_{2} + m_{1})g$; $t = \sqrt{\dfrac{2lm_{2}}{F_{0} - \mu(m_{2} + m_{1})g}}$. b) $a_{1} = \dfrac{F_{0} - \mu m_{1}g}{m_{1}}$, $a_{2} = \mu g\dfrac{m_{1}}{m_{2}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/3.2.7'),
-     'а) $F = mg\left[(T_{0}/T)^{2} - 1\right]$. б) $F = mg\sqrt{(T_{0}/T)^{4} - 1}$; $\cos\varphi = (T/T_{0})^{2}$.',
-     '$\varphi$ — угол отклонения нового положения равновесия от вертикали.',
      '["3.2.7.jpg"]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/3.2.7')),
+    'RU',
+    'а) $F = mg\left[(T_{0}/T)^{2} - 1\right]$. б) $F = mg\sqrt{(T_{0}/T)^{4} - 1}$; $\cos\varphi = (T/T_{0})^{2}$.',
+    '$\varphi$ — угол отклонения нового положения равновесия от вертикали.'
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/3.2.7')),
+    'EN',
+    'a) $F = mg\left[(T_{0}/T)^{2} - 1\right]$. b) $F = mg\sqrt{(T_{0}/T)^{4} - 1}$; $\cos\varphi = (T/T_{0})^{2}$.',
+    '$\varphi$ is the angle of deflection of the new equilibrium position from the vertical.'
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/4.3.12'),
-     'Скорость понижения уровня уменьшится в $\left(\dfrac{H}{h}\right)^{5/2}$ раз.',
-     'При понижении уровня ширина выреза уменьшается в $H/h$ раз, скорость истечения — в $\sqrt{H/h}$ раз; скорость понижения уровня пропорциональна их произведению: $(H/h)^{2}\cdot\sqrt{H/h}$.',
      '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/4.3.12')),
+    'RU',
+    'Скорость понижения уровня уменьшится в $\left(\dfrac{H}{h}\right)^{5/2}$ раз.',
+    'При понижении уровня ширина выреза уменьшается в $H/h$ раз, скорость истечения — в $\sqrt{H/h}$ раз; скорость понижения уровня пропорциональна их произведению: $(H/h)^{2}\cdot\sqrt{H/h}$.'
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/4.3.12')),
+    'EN',
+    'The rate of decrease of the level decreases by $\left(\dfrac{H}{h}\right)^{5/2}$ times.',
+    'As the level drops, the notch width decreases by $H/h$, the outflow speed by $\sqrt{H/h}$; the rate of level decrease is proportional to their product: $(H/h)^{2}\cdot\sqrt{H/h}$.'
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/5.6.19'),
-     '$T = T_{0}\!\left(1 + \dfrac{Mu^{2}}{3P_{0}V_{0}}\right)$, $V = V_{0}\!\left(\dfrac{3P_{0}V_{0}}{3P_{0}V_{0}+Mu^{2}}\right)^{\!3/2}$.',
-     '', '[]')
-ON CONFLICT (problem_id) DO NOTHING;
-
-INSERT INTO answers (problem_id, text, notes, images) VALUES
-    ((SELECT id FROM problems WHERE key = 'savchenko/6.4.2'),
-     'а) Увеличилась в четыре раза. б) Уменьшится в два раза; уменьшится в $n$ раз.',
-     '', '[]')
-ON CONFLICT (problem_id) DO NOTHING;
-
-INSERT INTO answers (problem_id, text, notes, images) VALUES
-    ((SELECT id FROM problems WHERE key = 'savchenko/7.4.10'),
-     '$v_{\infty} = \sqrt{v^{2} + \dfrac{q^{2}(\sqrt{2}-1)}{4\pi\varepsilon_{0}md}}$.',
-     '', '["7.4.10.jpg"]')
-ON CONFLICT (problem_id) DO NOTHING;
-
-INSERT INTO answers (problem_id, text, notes, images) VALUES
-    ((SELECT id FROM problems WHERE key = 'savchenko/8.3.8'),
-     'Большее.',
-     'При увеличении диапазона внутреннее сопротивление вольтметра возрастает; ток через цепь уменьшается меньше, чем в два раза, поэтому показание оказывается больше ожидаемого.',
      '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
-    ((SELECT id FROM problems WHERE key = 'savchenko/9.2.23'),
-     '$M = \sqrt{\dfrac{\pi H F}{2\mu_{0} a h^{2}}}$.',
-     '', '[]')
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/5.6.19')),
+    'RU',
+    '$T = T_{0}\!\left(1 + \dfrac{Mu^{2}}{3P_{0}V_{0}}\right)$, $V = V_{0}\!\left(\dfrac{3P_{0}V_{0}}{3P_{0}V_{0}+Mu^{2}}\right)^{\!3/2}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/5.6.19')),
+    'EN',
+    '$T = T_{0}\!\left(1 + \dfrac{Mu^{2}}{3P_{0}V_{0}}\right)$, $V = V_{0}\!\left(\dfrac{3P_{0}V_{0}}{3P_{0}V_{0}+Mu^{2}}\right)^{\!3/2}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
+    ((SELECT id FROM problems WHERE key = 'savchenko/6.4.2'),
+     '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
-    ((SELECT id FROM problems WHERE key = 'savchenko/10.1.21'),
-     '$N = 2\pi R^{2}\rho v B_{R}$.',
-     '', '[]')
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/6.4.2')),
+    'RU',
+    'а) Увеличилась в четыре раза. б) Уменьшится в два раза; уменьшится в $n$ раз.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/6.4.2')),
+    'EN',
+    'a) Increased four times. b) Decreases two times; decreases $n$ times.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
+    ((SELECT id FROM problems WHERE key = 'savchenko/7.4.10'),
+     '["7.4.10.jpg"]')
 ON CONFLICT (problem_id) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/7.4.10')),
+    'RU',
+    '$v_{\infty} = \sqrt{v^{2} + \dfrac{q^{2}(\sqrt{2}-1)}{4\pi\varepsilon_{0}md}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/7.4.10')),
+    'EN',
+    '$v_{\infty} = \sqrt{v^{2} + \dfrac{q^{2}(\sqrt{2}-1)}{4\pi\varepsilon_{0}md}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
+    ((SELECT id FROM problems WHERE key = 'savchenko/8.3.8'),
+     '[]')
+ON CONFLICT (problem_id) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/8.3.8')),
+    'RU',
+    'Большее.',
+    'При увеличении диапазона внутреннее сопротивление вольтметра возрастает; ток через цепь уменьшается меньше, чем в два раза, поэтому показание оказывается больше ожидаемого.'
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/8.3.8')),
+    'EN',
+    'Higher.',
+    'When the range is increased, the internal resistance of the voltmeter increases; the current through the circuit decreases by less than a factor of two, so the reading is higher than expected.'
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
+    ((SELECT id FROM problems WHERE key = 'savchenko/9.2.23'),
+     '[]')
+ON CONFLICT (problem_id) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/9.2.23')),
+    'RU',
+    '$M = \sqrt{\dfrac{\pi H F}{2\mu_{0} a h^{2}}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/9.2.23')),
+    'EN',
+    '$M = \sqrt{\dfrac{\pi H F}{2\mu_{0} a h^{2}}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
+    ((SELECT id FROM problems WHERE key = 'savchenko/10.1.21'),
+     '[]')
+ON CONFLICT (problem_id) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/10.1.21')),
+    'RU',
+    '$N = 2\pi R^{2}\rho v B_{R}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/10.1.21')),
+    'EN',
+    '$N = 2\pi R^{2}\rho v B_{R}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
 
 -- Ch.1 Kinematics — 1.1.4 (pion decay, speed of light; has image) — added for submission testing
-INSERT INTO problems (book_id, code, key, is_hard, tags, text, subtasks, images, created_at)
+INSERT INTO problems (book_id, code, key, is_hard, images, created_at)
 VALUES (
     (SELECT id FROM books WHERE slug = 'savchenko'),
     '1.1.4', 'savchenko/1.1.4', false,
-    '["Движение с постоянной скоростью"]',
-    'Счетчики $A$ и $B$, регистрирующие момент прихода $\gamma$-кванта, расположены на расстоянии $2$ м друг от друга. В некоторой точке между ними произошел распад $\pi^{0}$-мезона на два $\gamma$-кванта. Найдите положение этой точки, если счетчик $A$ зарегистрировал $\gamma$-квант на $10^{-9}$ с позднее, чем счетчик $B$. Скорость света $3 \cdot 10^{8}$ м/с.',
-    '[]',
     '["1.1.4.jpg"]',
     '2026-04-25T08:00:00Z'
 ) ON CONFLICT (key) DO NOTHING;
 
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
+    'RU',
+    'Счетчики $A$ и $B$, регистрирующие момент прихода $\gamma$-кванта, расположены на расстоянии $2$ м друг от друга. В некоторой точке между ними произошел распад $\pi^{0}$-мезона на два $\gamma$-кванта. Найдите положение этой точки, если счетчик $A$ зарегистрировал $\gamma$-квант на $10^{-9}$ с позднее, чем счетчик $B$. Скорость света $3 \cdot 10^{8}$ м/с.',
+    '["Движение с постоянной скоростью"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
+INSERT INTO problem_localizations (problem_id, language, text, tags, subproblems)
+VALUES (
+    (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
+    'EN',
+    'Counters $A$ and $B$, which record the arrival time of $\gamma$-quanta, are placed $2$ m apart. At some point between them a $\pi^{0}$-meson decayed into two $\gamma$-quanta. Find the position of this point if counter $A$ registered a $\gamma$-quantum $10^{-9}$ s later than counter $B$. The speed of light is $3 \cdot 10^{8}$ m/s.',
+    '["Motion at constant velocity"]',
+    '[]'
+) ON CONFLICT (problem_id, language) DO NOTHING;
+
 -- 11.3.19 — no answer in source data, intentionally omitted.
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/12.1.25'),
-     'а) $E'' = -E$, $B'' = B$. б) $E'' = E$.',
-     '', '["12.1.25.jpg"]')
+     '["12.1.25.jpg"]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/12.1.25')),
+    'RU',
+    'а) $E'' = -E$, $B'' = B$. б) $E'' = E$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/12.1.25')),
+    'EN',
+    'a) $E'' = -E$, $B'' = B$. b) $E'' = E$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/13.3.10'),
-     'К линзе на расстояние $\Delta l = \dfrac{r_{1} - r_{2}}{D/2 + r_{2}}\,f$.',
-     '', '[]')
+     '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/13.3.10')),
+    'RU',
+    'К линзе на расстояние $\Delta l = \dfrac{r_{1} - r_{2}}{D/2 + r_{2}}\,f$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/13.3.10')),
+    'EN',
+    'Move the photographic plate towards the lens by $\Delta l = \dfrac{r_{1} - r_{2}}{D/2 + r_{2}}\,f$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/14.3.19'),
-     'Увеличится в $\dfrac{1 + \beta\beta_{1}}{\sqrt{1 - \beta_{1}^{2}}}$ раз.',
-     '', '[]')
+     '[]')
 ON CONFLICT (problem_id) DO NOTHING;
 
-INSERT INTO answers (problem_id, text, notes, images) VALUES
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/14.3.19')),
+    'RU',
+    'Увеличится в $\dfrac{1 + \beta\beta_{1}}{\sqrt{1 - \beta_{1}^{2}}}$ раз.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/14.3.19')),
+    'EN',
+    'Increases by a factor of $\dfrac{1 + \beta\beta_{1}}{\sqrt{1 - \beta_{1}^{2}}}$.',
+    ''
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answers (problem_id, images) VALUES
     ((SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
-     'На расстоянии $1{,}15$ м от счётчика $A$.',
-     null, '[]')
+     '[]')
 ON CONFLICT (problem_id) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/1.1.4')),
+    'RU',
+    'На расстоянии $1{,}15$ м от счётчика $A$.',
+    null
+) ON CONFLICT (answer_id, language) DO NOTHING;
+
+INSERT INTO answer_localizations (answer_id, language, text, notes)
+VALUES (
+    (SELECT id FROM answers WHERE problem_id = (SELECT id FROM problems WHERE key = 'savchenko/1.1.4')),
+    'EN',
+    'At a distance of $1.15$ m from counter $A$.',
+    null
+) ON CONFLICT (answer_id, language) DO NOTHING;
 
 -- ── Submissions (problem 1.1.4, user admin) ───────────────────────────────────
 -- Four submissions covering every observable state for UI testing:
@@ -380,22 +847,23 @@ INSERT INTO file_objects (id, key_path, key, type, owner_user_id, metadata, crea
     '2026-04-23 09:00:00+00'
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
+INSERT INTO submissions (id, problem_id, user_id, status, language, file_object_ids, created_at, updated_at)
 VALUES (
     1,
     (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),
     (SELECT id FROM users WHERE name = 'admin'),
     'PENDING',
+    'RU',
     '[1]',
     '2026-04-23 09:00:00+00',
     '2026-04-23 09:00:00+00'
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
+INSERT INTO submissions (id, problem_id, user_id, status, language, file_object_ids, created_at, updated_at)
 VALUES
-    (2, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 10:00:00+00', '2026-04-23 10:00:00+00'),
-    (3, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 11:00:00+00', '2026-04-23 11:00:00+00'),
-    (4, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', '[]', '2026-04-23 12:00:00+00', '2026-04-23 12:00:00+00')
+    (2, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', 'RU', '[]', '2026-04-23 10:00:00+00', '2026-04-23 10:00:00+00'),
+    (3, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', 'RU', '[]', '2026-04-23 11:00:00+00', '2026-04-23 11:00:00+00'),
+    (4, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'), (SELECT id FROM users WHERE name = 'admin'), 'PENDING', 'RU', '[]', '2026-04-23 12:00:00+00', '2026-04-23 12:00:00+00')
 ON CONFLICT (id) DO NOTHING;
 
 -- Check results — triggers will update submission status and problem_progress automatically.
@@ -499,13 +967,13 @@ ON CONFLICT (id) DO NOTHING;
 --   Sub  8: moderator → 5.6.19  (no files)     → SUCCESS
 --   Sub  9: moderator → 7.4.10  (diagram.jpg)  → FAILED
 
-INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
+INSERT INTO submissions (id, problem_id, user_id, status, language, file_object_ids, created_at, updated_at)
 VALUES
-    (5,  (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '["2"]',  '2026-04-24 14:00:00+00', '2026-04-24 14:00:00+00'),
-    (6,  (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '[]',     '2026-04-24 15:00:00+00', '2026-04-24 15:00:00+00'),
-    (7,  (SELECT id FROM problems WHERE key = 'savchenko/4.3.12'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '["3"]',  '2026-04-24 16:00:00+00', '2026-04-24 16:00:00+00'),
-    (8,  (SELECT id FROM problems WHERE key = 'savchenko/5.6.19'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '[]',     '2026-04-24 17:00:00+00', '2026-04-24 17:00:00+00'),
-    (9,  (SELECT id FROM problems WHERE key = 'savchenko/7.4.10'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', '["4"]',  '2026-04-24 18:00:00+00', '2026-04-24 18:00:00+00')
+    (5,  (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', 'RU', '["2"]',  '2026-04-24 14:00:00+00', '2026-04-24 14:00:00+00'),
+    (6,  (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', 'RU', '[]',     '2026-04-24 15:00:00+00', '2026-04-24 15:00:00+00'),
+    (7,  (SELECT id FROM problems WHERE key = 'savchenko/4.3.12'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', 'RU', '["3"]',  '2026-04-24 16:00:00+00', '2026-04-24 16:00:00+00'),
+    (8,  (SELECT id FROM problems WHERE key = 'savchenko/5.6.19'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', 'RU', '[]',     '2026-04-24 17:00:00+00', '2026-04-24 17:00:00+00'),
+    (9,  (SELECT id FROM problems WHERE key = 'savchenko/7.4.10'), (SELECT id FROM users WHERE name = 'moderator'), 'PENDING', 'RU', '["4"]',  '2026-04-24 18:00:00+00', '2026-04-24 18:00:00+00')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── User submissions (6 subs: ids 10–15) ────────────────────────────────────
@@ -516,14 +984,14 @@ ON CONFLICT (id) DO NOTHING;
 --   Sub 14: user → 2.4.34  (no files)              → SUCCESS
 --   Sub 15: user → 10.1.21 (solution.jpg)          → PENDING
 
-INSERT INTO submissions (id, problem_id, user_id, status, file_object_ids, created_at, updated_at)
+INSERT INTO submissions (id, problem_id, user_id, status, language, file_object_ids, created_at, updated_at)
 VALUES
-    (10, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', '["5"]',     '2026-04-25 09:00:00+00', '2026-04-25 09:00:00+00'),
-    (11, (SELECT id FROM problems WHERE key = 'savchenko/3.2.7'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', '["6","7"]', '2026-04-25 10:00:00+00', '2026-04-25 10:00:00+00'),
-    (12, (SELECT id FROM problems WHERE key = 'savchenko/6.4.2'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', '[]',        '2026-04-25 12:00:00+00', '2026-04-25 12:00:00+00'),
-    (13, (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'), (SELECT id FROM users WHERE name = 'user'), 'PENDING', '["8"]',     '2026-04-25 14:00:00+00', '2026-04-25 14:00:00+00'),
-    (14, (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'), (SELECT id FROM users WHERE name = 'user'), 'PENDING', '[]',        '2026-04-25 16:00:00+00', '2026-04-25 16:00:00+00'),
-    (15, (SELECT id FROM problems WHERE key = 'savchenko/10.1.21'),(SELECT id FROM users WHERE name = 'user'), 'PENDING', '["9"]',     '2026-04-26 09:00:00+00', '2026-04-26 09:00:00+00')
+    (10, (SELECT id FROM problems WHERE key = 'savchenko/1.1.4'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', 'RU', '["5"]',     '2026-04-25 09:00:00+00', '2026-04-25 09:00:00+00'),
+    (11, (SELECT id FROM problems WHERE key = 'savchenko/3.2.7'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', 'RU', '["6","7"]', '2026-04-25 10:00:00+00', '2026-04-25 10:00:00+00'),
+    (12, (SELECT id FROM problems WHERE key = 'savchenko/6.4.2'),  (SELECT id FROM users WHERE name = 'user'), 'PENDING', 'RU', '[]',        '2026-04-25 12:00:00+00', '2026-04-25 12:00:00+00'),
+    (13, (SELECT id FROM problems WHERE key = 'savchenko/1.3.13'), (SELECT id FROM users WHERE name = 'user'), 'PENDING', 'RU', '["8"]',     '2026-04-25 14:00:00+00', '2026-04-25 14:00:00+00'),
+    (14, (SELECT id FROM problems WHERE key = 'savchenko/2.4.34'), (SELECT id FROM users WHERE name = 'user'), 'PENDING', 'RU', '[]',        '2026-04-25 16:00:00+00', '2026-04-25 16:00:00+00'),
+    (15, (SELECT id FROM problems WHERE key = 'savchenko/10.1.21'),(SELECT id FROM users WHERE name = 'user'), 'PENDING', 'RU', '["9"]',     '2026-04-26 09:00:00+00', '2026-04-26 09:00:00+00')
 ON CONFLICT (id) DO NOTHING;
 
 -- ── Check results for submissions 5–15 ──────────────────────────────────────

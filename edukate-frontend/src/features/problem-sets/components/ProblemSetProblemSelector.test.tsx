@@ -12,6 +12,7 @@ const problems: ProblemMetadata[] = [
         tags: [],
         status: "SOLVED",
         createdAt: "2026-01-01T00:00:00Z",
+        language: "EN" as const,
     },
     {
         key: "savchenko/1.2",
@@ -21,6 +22,7 @@ const problems: ProblemMetadata[] = [
         tags: [],
         status: "NOT_SOLVED",
         createdAt: "2026-01-01T00:00:00Z",
+        language: "EN" as const,
     },
 ];
 
