@@ -12,6 +12,7 @@ function makeProblem(status: ProblemMetadata["status"], code: string = "1.1"): P
         tags: [],
         status,
         createdAt: "2026-01-01T00:00:00Z",
+        language: "EN" as const,
     };
 }
 

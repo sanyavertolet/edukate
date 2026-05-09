@@ -3,6 +3,7 @@ import { TableRow, TableCell, Skeleton, Box, Tooltip, SxProps, Theme } from "@mu
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import { useTranslation } from "react-i18next";
 import { Submission, SubmissionStatus } from "@/features/submissions/types";
 import { formatRelative } from "@/shared/utils/date";
 import { BookChip } from "@/shared/components/BookChip";
@@ -18,22 +19,23 @@ type SubmissionTableRowsProps = {
 };
 
 function SubmissionStatusIcon({ status }: { status: SubmissionStatus }) {
+    const { t } = useTranslation("submissions");
     switch (status) {
         case "SUCCESS":
             return (
-                <Tooltip title="Success" slotProps={defaultTooltipSlotProps}>
+                <Tooltip title={t("status_success")} slotProps={defaultTooltipSlotProps}>
                     <CheckCircleOutlineIcon color="success" />
                 </Tooltip>
             );
         case "PENDING":
             return (
-                <Tooltip title="Pending" slotProps={defaultTooltipSlotProps}>
+                <Tooltip title={t("status_pending")} slotProps={defaultTooltipSlotProps}>
                     <HourglassEmptyIcon color="warning" />
                 </Tooltip>
             );
         case "FAILED":
             return (
-                <Tooltip title="Failed" slotProps={defaultTooltipSlotProps}>
+                <Tooltip title={t("status_failed")} slotProps={defaultTooltipSlotProps}>
                     <CancelOutlinedIcon color="error" />
                 </Tooltip>
             );
@@ -54,6 +56,7 @@ export const SubmissionTableRows: FC<SubmissionTableRowsProps> = ({
     onBookSlugClick,
     onUserNameClick,
 }) => {
+    const { i18n } = useTranslation();
     if (loading || error) {
         return (
             <>
@@ -110,7 +113,7 @@ export const SubmissionTableRows: FC<SubmissionTableRowsProps> = ({
                             {item.userName}
                         </Box>
                     </TableCell>
-                    <TableCell sx={columnVisibility[4]}>{formatRelative(item.updatedAt)}</TableCell>
+                    <TableCell sx={columnVisibility[4]}>{formatRelative(item.updatedAt, i18n.language)}</TableCell>
                 </TableRow>
             ))}
         </>

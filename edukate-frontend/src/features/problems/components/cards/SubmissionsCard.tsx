@@ -3,12 +3,14 @@ import { Card, CardContent, Paper, Typography } from "@mui/material";
 import { SubmissionList } from "@/features/submissions/components/SubmissionList";
 import { SubmissionDrawer } from "@/features/submissions/components/SubmissionDrawer";
 import { Submission } from "@/features/submissions/types";
+import { useTranslation } from "react-i18next";
 
 interface SubmissionsCardProps {
     problemKey: string;
 }
 
 export default function SubmissionsCard({ problemKey }: SubmissionsCardProps) {
+    const { t } = useTranslation("problems");
     const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
 
     return (
@@ -16,7 +18,7 @@ export default function SubmissionsCard({ problemKey }: SubmissionsCardProps) {
             <Card>
                 <CardContent>
                     <Typography color="secondary" variant="h6" paddingBottom={1}>
-                        Submissions
+                        {t("submissions_heading")}
                     </Typography>
                     <Paper
                         elevation={0}

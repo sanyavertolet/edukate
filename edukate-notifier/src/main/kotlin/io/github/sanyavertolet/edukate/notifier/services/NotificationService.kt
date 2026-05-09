@@ -7,8 +7,11 @@ import io.github.sanyavertolet.edukate.notifier.entities.BaseNotification
 import io.github.sanyavertolet.edukate.notifier.repositories.NotificationRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,7 +19,10 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
-class NotificationService(private val notificationRepository: NotificationRepository) {
+class NotificationService(
+    private val notificationRepository: NotificationRepository,
+    private val mongoTemplate: ReactiveMongoTemplate,
+) {
     @Transactional
     fun saveIfAbsent(createRequest: BaseNotificationCreateRequest): Mono<BaseNotification> =
         Mono.just(createRequest).map { BaseNotification.fromCreationRequest(it) }.flatMap { saveIfAbsent(it) }
@@ -55,24 +61,18 @@ class NotificationService(private val notificationRepository: NotificationReposi
             .flatMap { notificationRepository.gatherStatistics(it) }
             .defaultIfEmpty(NotificationStatistics())
 
-    @Transactional
     fun markAsRead(uuids: List<String>, authentication: Authentication?): Mono<Long> =
         authentication.monoId().flatMap { userId ->
-            notificationRepository
-                .findByTargetUserIdAndUuidIn(userId, uuids)
-                .map { it.markAsRead() }
-                .flatMap { notificationRepository.save(it) }
-                .count()
+            val query = Query(Criteria.where("targetUserId").`is`(userId).and("uuid").`in`(uuids).and("isRead").`is`(false))
+            val update = Update.update("isRead", true)
+            mongoTemplate.updateMulti(query, update, BaseNotification::class.java).map { it.modifiedCount }
         }
 
-    @Transactional
     fun markAllAsRead(authentication: Authentication?): Mono<Long> =
         authentication.monoId().flatMap { userId ->
-            notificationRepository
-                .findAllByTargetUserIdAndIsRead(userId, false, Pageable.unpaged())
-                .map { it.markAsRead() }
-                .flatMap { notificationRepository.save(it) }
-                .count()
+            val query = Query(Criteria.where("targetUserId").`is`(userId).and("isRead").`is`(false))
+            val update = Update.update("isRead", true)
+            mongoTemplate.updateMulti(query, update, BaseNotification::class.java).map { it.modifiedCount }
         }
 
     companion object {

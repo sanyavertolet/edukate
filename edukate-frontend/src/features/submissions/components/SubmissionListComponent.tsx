@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Box } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { useSubmissionSearchQuery } from "@/features/submissions/api";
 import { Submission } from "@/features/submissions/types";
 import { SubmissionDrawer } from "@/features/submissions/components/SubmissionDrawer";
@@ -13,6 +14,7 @@ import { useSubmissionTableParams, DEFAULT_PAGE_SIZE } from "@/features/submissi
 export default function SubmissionListComponent() {
     const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
     const { user } = useAuthContext();
+    const { t } = useTranslation("submissions");
 
     const { page, rowsPerPage, status, userName, bookSlug, problemCode, handlers } = useSubmissionTableParams();
 
@@ -33,7 +35,7 @@ export default function SubmissionListComponent() {
     return (
         <Box>
             <SubmissionTable
-                headerCells={["", "Book", "Problem", "User", "Updated"]}
+                headerCells={["", t("book_label"), t("problem_column"), t("user_column"), t("updated_column")]}
                 toolbar={
                     <SubmissionTableToolbar
                         status={status}

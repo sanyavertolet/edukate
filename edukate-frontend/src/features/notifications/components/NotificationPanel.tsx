@@ -22,6 +22,7 @@ import { parseDate } from "@/shared/utils/date";
 import { NotificationListItem } from "./NotificationListItem";
 import { NotificationEmptyState } from "./NotificationEmptyState";
 import { NotificationSkeleton } from "./NotificationSkeleton";
+import { useTranslation } from "react-i18next";
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_INCREMENT = 10;
@@ -42,11 +43,11 @@ function groupByDate(notifications: BaseNotification[]): DateGroup[] {
         const ts = parseDate(n.createdAt).getTime();
         let label: string;
         if (ts >= todayStart) {
-            label = "Today";
+            label = "today";
         } else if (ts >= yesterdayStart) {
-            label = "Yesterday";
+            label = "yesterday";
         } else {
-            label = "Earlier";
+            label = "earlier";
         }
 
         if (!(label in groups)) {
@@ -67,6 +68,7 @@ interface NotificationPanelProps {
 }
 
 export const NotificationPanel: FC<NotificationPanelProps> = ({ anchorEl, onClose, onNotificationClick, onMarkAsRead }) => {
+    const { t } = useTranslation();
     const [filter, setFilter] = useState<FilterTab>("all");
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
@@ -118,16 +120,17 @@ export const NotificationPanel: FC<NotificationPanelProps> = ({ anchorEl, onClos
                 sx={{ display: "flex", flexDirection: "column", overflow: "hidden", height: "100%", bgcolor: "transparent" }}
             >
                 <CardHeader
-                    title="Notifications"
+                    title={t("notifications_title")}
                     slotProps={{ title: { variant: "subtitle1", fontWeight: "bold" } }}
                     action={
-                        <Tooltip title="Mark all as read">
+                        <Tooltip title={t("mark_all_read")}>
                             <IconButton
                                 size="small"
+                                disabled={markAllAsReadMutation.isPending}
                                 onClick={() => {
                                     markAllAsReadMutation.mutate();
                                 }}
-                                aria-label="Mark all as read"
+                                aria-label={t("mark_all_read")}
                             >
                                 <MarkEmailRead fontSize="small" />
                             </IconButton>
@@ -142,11 +145,11 @@ export const NotificationPanel: FC<NotificationPanelProps> = ({ anchorEl, onClos
                     variant="fullWidth"
                     sx={{ minHeight: 36, "& .MuiTab-root": { minHeight: 36, py: 0.5 } }}
                 >
-                    <Tab label="All" value="all" />
+                    <Tab label={t("notifications_tab_all")} value="all" />
                     <Tab
                         label={
                             <Badge badgeContent={stats?.unread} color="primary" max={99}>
-                                Unread
+                                {t("notifications_tab_unread")}
                             </Badge>
                         }
                         value="unread"
@@ -180,7 +183,7 @@ export const NotificationPanel: FC<NotificationPanelProps> = ({ anchorEl, onClos
                                         color: "text.secondary",
                                     }}
                                 >
-                                    {group.label}
+                                    {t(`date_group_${group.label}`)}
                                 </ListSubheader>,
                                 ...group.notifications.map((notification) => (
                                     <NotificationListItem
@@ -199,7 +202,7 @@ export const NotificationPanel: FC<NotificationPanelProps> = ({ anchorEl, onClos
                         <Divider />
                         <Box sx={{ p: 1, display: "flex", justifyContent: "center" }}>
                             <Button size="small" startIcon={<ExpandMore />} onClick={handleLoadMore}>
-                                Load more
+                                {t("load_more")}
                             </Button>
                         </Box>
                     </>

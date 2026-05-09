@@ -94,8 +94,10 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
     fun findCodeToIdMap(bookId: Long): Mono<Map<String, Long>> =
         problemRepository.findAllByBookId(bookId).collectMap({ it.code }, { requireNotNull(it.id) })
 
-    fun getProblemCodesByPrefix(prefix: String, limit: Int): Flux<String> =
-        problemRepository.findByCodeStartingWith(prefix, limit).map { it.code }
+    fun getProblemKeysByPrefix(bookSlugPrefix: String?, prefix: String?, limit: Int): Flux<String> =
+        problemRepository
+            .findByPrefixes(bookSlugPrefix?.takeIf { it.isNotBlank() }, prefix?.takeIf { it.isNotBlank() }, limit)
+            .map { it.key }
 
     fun getRandomUnsolvedProblemKey(authentication: Authentication?): Mono<String> =
         authentication

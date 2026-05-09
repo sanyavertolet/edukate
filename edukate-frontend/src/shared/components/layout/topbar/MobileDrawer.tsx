@@ -6,6 +6,7 @@ import PersonAddOutlined from "@mui/icons-material/PersonAddOutlined";
 import { mobileNavigationElements } from "./NavigationElement";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
 import { useAuthContext } from "@/features/auth/context";
+import { useTranslation } from "react-i18next";
 
 interface MobileDrawerComponentProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface MobileDrawerComponentProps {
 }
 
 export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, setIsOpen }) => {
+    const { t } = useTranslation("navigation");
     const navigate = useNavigate();
     const { pathname } = useLocation();
     const { pageSpecificNavigation } = useDeviceContext();
@@ -44,7 +46,7 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
                                 selected={isNavActive(element.href)}
                             >
                                 {element.icon && <ListItemIcon>{element.icon}</ListItemIcon>}
-                                <ListItemText primary={element.text} />
+                                <ListItemText primary={t(element.text)} />
                             </ListItemButton>
                         </ListItem>
                     ))}
@@ -84,7 +86,7 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
                                     <ListItemIcon>
                                         <LoginOutlined />
                                     </ListItemIcon>
-                                    <ListItemText primary="Sign In" />
+                                    <ListItemText primary={t("sign_in")} />
                                 </ListItemButton>
                             </ListItem>
                             <ListItem disablePadding>
@@ -97,7 +99,7 @@ export const MobileDrawerComponent: FC<MobileDrawerComponentProps> = ({ isOpen, 
                                     <ListItemIcon>
                                         <PersonAddOutlined />
                                     </ListItemIcon>
-                                    <ListItemText primary="Sign Up" />
+                                    <ListItemText primary={t("sign_up")} />
                                 </ListItemButton>
                             </ListItem>
                         </List>

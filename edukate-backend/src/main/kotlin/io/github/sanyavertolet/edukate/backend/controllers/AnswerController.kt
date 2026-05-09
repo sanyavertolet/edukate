@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.controllers
 
 import io.github.sanyavertolet.edukate.backend.dtos.AnswerDto
+import io.github.sanyavertolet.edukate.backend.mappers.AnswerMapper
 import io.github.sanyavertolet.edukate.backend.services.AnswerService
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.swagger.v3.oas.annotations.Operation
@@ -23,7 +24,7 @@ import reactor.core.publisher.Mono
 @SecurityRequirements
 @RequestMapping("/api/v1/answers")
 @Tag(name = "Answers", description = "API for retrieving problem answers")
-class AnswerController(private val answerService: AnswerService) {
+class AnswerController(private val answerService: AnswerService, private val answerMapper: AnswerMapper) {
     @GetMapping("/{bookSlug}/{code}")
     @Operation(summary = "Get answer by problem key", description = "Retrieves an answer for a specific problem")
     @ApiResponses(
@@ -40,6 +41,10 @@ class AnswerController(private val answerService: AnswerService) {
                 Parameter(name = "code", description = "Problem code", `in` = ParameterIn.PATH, required = true),
             ]
     )
-    fun getAnswerByProblemKey(@PathVariable bookSlug: String, @PathVariable code: String): Mono<AnswerDto> =
-        "$bookSlug/$code".let { key -> answerService.findByProblemKey(key).orNotFound("Answer for problem $key not found") }
+    fun getAnswerByProblemKey(@PathVariable bookSlug: String, @PathVariable code: String): Mono<AnswerDto> {
+        val key = "$bookSlug/$code"
+        return answerService.findByProblemKey(key).orNotFound("Answer for problem $key not found").flatMap { answer ->
+            answerMapper.toDto(answer, key)
+        }
+    }
 }

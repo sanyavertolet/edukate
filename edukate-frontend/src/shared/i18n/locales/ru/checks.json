@@ -1,0 +1,12 @@
+{
+    "check_result_title": "Результат проверки",
+    "close_label": "Закрыть",
+    "trust_level_label": "Уровень доверия",
+    "error_type_label": "Тип ошибки",
+    "checked_at_label": "Проверено",
+    "correct_tooltip": "Решение верное",
+    "mistake_tooltip": "Решение содержит ошибку",
+    "checker_error_tooltip": "Ошибка сервера проверки",
+    "requested_tooltip": "Запрошено",
+    "unknown_tooltip": "Неизвестно"
+}

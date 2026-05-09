@@ -15,24 +15,24 @@ export const validate = (field: ValidationTarget, value: string) => {
 
 const validateEmail: Validation<string> = (email: string) => {
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        return "Invalid email address";
+        return "email_invalid_error";
     }
     return null;
 };
 
 const validatePassword: Validation<string> = (password: string) => {
     if (6 > password.trim().length || password.trim().length > 20) {
-        return "Password must be between 6 and 20 characters long";
+        return "password_length_error";
     }
     return null;
 };
 
 const validateUsername: Validation<string> = (username: string) => {
     if (3 > username.trim().length || username.trim().length > 15) {
-        return "Username must be between 3 and 15 characters long";
+        return "username_length_error";
     }
     if (!username.match(/^[a-zA-Z][a-zA-Z0-9_-]+[a-zA-Z0-9]$/)) {
-        return "Username can only contain letters, numbers, underscores, and hyphens AND must start with a letter and end with a letter or number";
+        return "username_format_error";
     }
     return null;
 };

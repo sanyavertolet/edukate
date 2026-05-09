@@ -1,0 +1,12 @@
+{
+    "check_result_title": "Check Result",
+    "close_label": "Close",
+    "trust_level_label": "Trust level",
+    "error_type_label": "Error type",
+    "checked_at_label": "Checked at",
+    "correct_tooltip": "Solution works good",
+    "mistake_tooltip": "Solution contains a mistake",
+    "checker_error_tooltip": "Server checking error",
+    "requested_tooltip": "Requested",
+    "unknown_tooltip": "Unknown"
+}

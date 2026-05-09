@@ -11,18 +11,19 @@ import type {
     InviteNotification,
 } from "@/features/notifications/types";
 import type { CheckedNotificationDtoStatus } from "@/generated/notifier";
+import { useTranslation } from "react-i18next";
 
 interface StatusConfig {
     icon: ReactElement;
     paletteKey: "success" | "error" | "warning" | "action";
-    label: string;
+    notificationKey: string;
 }
 
 const checkedStatusConfig: Record<CheckedNotificationDtoStatus, StatusConfig> = {
-    SUCCESS: { icon: <CheckCircle />, paletteKey: "success", label: "Passed" },
-    MISTAKE: { icon: <Cancel />, paletteKey: "error", label: "Incorrect" },
-    PENDING: { icon: <HourglassEmpty />, paletteKey: "warning", label: "Pending" },
-    INTERNAL_ERROR: { icon: <ErrorOutline />, paletteKey: "action", label: "Error" },
+    SUCCESS: { icon: <CheckCircle />, paletteKey: "success", notificationKey: "notification_checked_success" },
+    MISTAKE: { icon: <Cancel />, paletteKey: "error", notificationKey: "notification_checked_mistake" },
+    PENDING: { icon: <HourglassEmpty />, paletteKey: "warning", notificationKey: "notification_checked_pending" },
+    INTERNAL_ERROR: { icon: <ErrorOutline />, paletteKey: "action", notificationKey: "notification_checked_error" },
 };
 
 const AVATAR_BG_ALPHA = 0.12;
@@ -35,6 +36,7 @@ interface NotificationListItemProps {
 
 export const NotificationListItem: FC<NotificationListItemProps> = ({ notification, onClick, onMarkAsRead }) => {
     const theme = useTheme();
+    const { t } = useTranslation("common");
 
     const resolveColors = (paletteKey: string) => {
         const color = paletteKey === "action" ? theme.palette.text.secondary : theme.palette[paletteKey as "success"].main;
@@ -54,7 +56,7 @@ export const NotificationListItem: FC<NotificationListItemProps> = ({ notificati
                     secondary: (
                         <Typography component="span" variant="body2" color="text.secondary">
                             {n.message}
-                            {" from "}
+                            {` ${t("notification_from")} `}
                             <Typography component="span" variant="body2" color="text.primary" fontWeight="medium">
                                 {n.source}
                             </Typography>
@@ -70,10 +72,10 @@ export const NotificationListItem: FC<NotificationListItemProps> = ({ notificati
                     icon: config.icon,
                     iconColor,
                     iconBgColor,
-                    primary: `Submission ${config.label}`,
+                    primary: t(config.notificationKey),
                     secondary: (
                         <Typography component="span" variant="body2" color="text.secondary">
-                            Problem {n.problemKey}
+                            {t("notification_problem", { problemKey: n.problemKey })}
                         </Typography>
                     ),
                 };
@@ -85,10 +87,10 @@ export const NotificationListItem: FC<NotificationListItemProps> = ({ notificati
                     icon: <GroupAdd />,
                     iconColor,
                     iconBgColor,
-                    primary: `${n.inviterName} invites you!`,
+                    primary: t("notification_invite_primary", { inviterName: n.inviterName }),
                     secondary: (
                         <Typography component="span" variant="body2" color="text.secondary">
-                            Join problem set{" "}
+                            {t("notification_join_problem_set")}{" "}
                             <Typography component="span" variant="body2" color="text.primary" fontWeight="medium">
                                 {n.problemSetName}
                             </Typography>
@@ -102,7 +104,7 @@ export const NotificationListItem: FC<NotificationListItemProps> = ({ notificati
                     icon: <InfoOutlined />,
                     iconColor,
                     iconBgColor,
-                    primary: "Notification",
+                    primary: t("notification_default"),
                     secondary: null,
                 };
             }

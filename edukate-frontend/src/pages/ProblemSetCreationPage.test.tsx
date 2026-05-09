@@ -14,10 +14,11 @@ describe("ProblemSetCreationPage — static rendering", () => {
         expect(screen.getByRole("heading", { name: /create problem set/i })).toBeInTheDocument();
     });
 
-    it("renders Title, Description, and Problems fields", () => {
+    it("renders Title, Description, Book, and Problems fields", () => {
         render(<ProblemSetCreationPage />);
         expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/description/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/book/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/problems/i)).toBeInTheDocument();
     });
 
@@ -53,13 +54,13 @@ describe("ProblemSetCreationPage — Create Problem Set button", () => {
 });
 
 describe("ProblemSetCreationPage — full creation pipeline", () => {
-    // These tests wait out the 1000ms debounce in PrefixOptionInputForm — allow extra time
-    const DEBOUNCE_TIMEOUT = 3000;
+    // These tests wait out the 500ms debounce in PrefixOptionInputForm — allow extra time
+    const DEBOUNCE_TIMEOUT = 2000;
 
     it("fills all fields, selects a problem, creates problem set and navigates to it", async () => {
         const problemSetResponse = getCreateProblemSetResponseMock({ shareCode: "ps-xyz" });
         server.use(
-            http.get("*/api/v1/problems/by-prefix", () => HttpResponse.json(["prob-001", "prob-002"])),
+            http.get("*/api/v1/problems/by-prefix", () => HttpResponse.json(["savchenko/1.1.1", "savchenko/1.1.2"])),
             http.post("*/api/v1/problem-sets", () => HttpResponse.json(problemSetResponse)),
         );
 
@@ -74,13 +75,13 @@ describe("ProblemSetCreationPage — full creation pipeline", () => {
         await userEvent.type(screen.getByLabelText(/description/i), "Test description");
 
         // Type in the autocomplete — triggers debounced search after 1000ms
-        await userEvent.type(screen.getByRole("combobox"), "prob");
+        await userEvent.type(screen.getByRole("combobox"), "1.1");
 
         // findByRole waits up to DEBOUNCE_TIMEOUT for the option to appear post-debounce
-        const option = await screen.findByRole("option", { name: "prob-001" }, { timeout: DEBOUNCE_TIMEOUT });
+        const option = await screen.findByRole("option", { name: "savchenko/1.1.1" }, { timeout: DEBOUNCE_TIMEOUT });
         await userEvent.click(option);
 
-        expect(screen.getByText("prob-001")).toBeInTheDocument();
+        expect(screen.getByText("savchenko/1.1.1")).toBeInTheDocument();
 
         await userEvent.click(screen.getByRole("button", { name: /create problem set/i }));
 
@@ -93,15 +94,15 @@ describe("ProblemSetCreationPage — full creation pipeline", () => {
     }, 10000);
 
     it("shows the selected problem as a chip in the autocomplete", async () => {
-        server.use(http.get("*/api/v1/problems/by-prefix", () => HttpResponse.json(["algebra-01"])));
+        server.use(http.get("*/api/v1/problems/by-prefix", () => HttpResponse.json(["savchenko/2.1.1"])));
 
         render(<ProblemSetCreationPage />);
 
-        await userEvent.type(screen.getByRole("combobox"), "alg");
+        await userEvent.type(screen.getByRole("combobox"), "2.1");
 
-        const option = await screen.findByRole("option", { name: "algebra-01" }, { timeout: DEBOUNCE_TIMEOUT });
+        const option = await screen.findByRole("option", { name: "savchenko/2.1.1" }, { timeout: DEBOUNCE_TIMEOUT });
         await userEvent.click(option);
 
-        expect(screen.getByText("algebra-01")).toBeInTheDocument();
+        expect(screen.getByText("savchenko/2.1.1")).toBeInTheDocument();
     }, 10000);
 });

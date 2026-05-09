@@ -5,12 +5,14 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useNavigate } from "react-router-dom";
 import { PublicityIcon } from "./PublicityIcon";
 import { useAuthContext } from "@/features/auth/context";
+import { useTranslation } from "react-i18next";
 
 interface ProblemSetListItemProps {
     problemSetMetadata: ProblemSetMetadata;
 }
 
 export const ProblemSetListItem: FC<ProblemSetListItemProps> = ({ problemSetMetadata }) => {
+    const { t } = useTranslation("problem-sets");
     const navigate = useNavigate();
     const { isAuthorized } = useAuthContext();
 
@@ -23,9 +25,9 @@ export const ProblemSetListItem: FC<ProblemSetListItemProps> = ({ problemSetMeta
 
     const adminLabel =
         problemSetMetadata.admins.length > 1
-            ? `by ${problemSetMetadata.admins[0]} (+${String(problemSetMetadata.admins.length - 1)})`
+            ? t("by_admin_plus", { admin: problemSetMetadata.admins[0], count: problemSetMetadata.admins.length - 1 })
             : problemSetMetadata.admins.length === 1
-              ? `by ${problemSetMetadata.admins[0]}`
+              ? t("by_admin", { admin: problemSetMetadata.admins[0] })
               : undefined;
 
     return (
@@ -50,12 +52,15 @@ export const ProblemSetListItem: FC<ProblemSetListItemProps> = ({ problemSetMeta
                                 sx={{ width: { xs: 60, sm: 100, md: 120 } }}
                             />
                             <Typography variant="caption" color="text.secondary" noWrap>
-                                {problemSetMetadata.solvedCount}/{problemSetMetadata.size} solved
+                                {t("solved_count", {
+                                    solved: problemSetMetadata.solvedCount,
+                                    total: problemSetMetadata.size,
+                                })}
                             </Typography>
                         </Stack>
                     ) : (
                         <Typography variant="caption" color="text.secondary" noWrap sx={{ flexShrink: 0 }}>
-                            {problemSetMetadata.size} problems
+                            {t("problems_count", { count: problemSetMetadata.size })}
                         </Typography>
                     )}
 
@@ -65,7 +70,7 @@ export const ProblemSetListItem: FC<ProblemSetListItemProps> = ({ problemSetMeta
                 {/* Row 2: Description + Admin label */}
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ pl: 4.5 }}>
                     <Typography variant="body2" color="text.secondary" noWrap sx={{ flexGrow: 1, minWidth: 0 }}>
-                        {problemSetMetadata.description || "No description"}
+                        {problemSetMetadata.description || t("no_description")}
                     </Typography>
 
                     {adminLabel && (

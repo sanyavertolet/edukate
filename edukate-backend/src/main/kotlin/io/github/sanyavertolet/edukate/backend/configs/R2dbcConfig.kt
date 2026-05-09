@@ -1,7 +1,8 @@
 package io.github.sanyavertolet.edukate.backend.configs
 
-import io.github.sanyavertolet.edukate.backend.entities.Problem
+import io.github.sanyavertolet.edukate.backend.entities.Subproblem
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObjectMetadata
+import io.github.sanyavertolet.edukate.common.ContentLanguage
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.github.sanyavertolet.edukate.storage.keys.FileKey
 import io.r2dbc.postgresql.codec.Json
@@ -29,8 +30,10 @@ class R2dbcConfig {
             listOf(
                 JsonToStringListConverter(objectMapper),
                 StringListToJsonConverter(objectMapper),
-                JsonToSubtaskListConverter(objectMapper),
-                SubtaskListToJsonConverter(objectMapper),
+                JsonToSubproblemListConverter(objectMapper),
+                SubproblemListToJsonConverter(objectMapper),
+                StringToContentLanguageConverter(),
+                ContentLanguageToStringConverter(),
                 JsonToUserRoleSetConverter(objectMapper),
                 UserRoleSetToJsonConverter(objectMapper),
                 JsonToUserRoleMapConverter(objectMapper),
@@ -55,13 +58,23 @@ class R2dbcConfig {
     }
 
     @ReadingConverter
-    class JsonToSubtaskListConverter(private val objectMapper: ObjectMapper) : Converter<Json, List<Problem.Subtask>> {
-        override fun convert(source: Json): List<Problem.Subtask> = objectMapper.readValue(source.asString())
+    class JsonToSubproblemListConverter(private val objectMapper: ObjectMapper) : Converter<Json, List<Subproblem>> {
+        override fun convert(source: Json): List<Subproblem> = objectMapper.readValue(source.asString())
     }
 
     @WritingConverter
-    class SubtaskListToJsonConverter(private val objectMapper: ObjectMapper) : Converter<List<Problem.Subtask>, Json> {
-        override fun convert(source: List<Problem.Subtask>): Json = Json.of(objectMapper.writeValueAsString(source))
+    class SubproblemListToJsonConverter(private val objectMapper: ObjectMapper) : Converter<List<Subproblem>, Json> {
+        override fun convert(source: List<Subproblem>): Json = Json.of(objectMapper.writeValueAsString(source))
+    }
+
+    @ReadingConverter
+    class StringToContentLanguageConverter : Converter<String, ContentLanguage> {
+        override fun convert(source: String): ContentLanguage = ContentLanguage.valueOf(source)
+    }
+
+    @WritingConverter
+    class ContentLanguageToStringConverter : Converter<ContentLanguage, String> {
+        override fun convert(source: ContentLanguage): String = source.name
     }
 
     @ReadingConverter

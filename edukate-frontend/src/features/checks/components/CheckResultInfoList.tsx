@@ -6,6 +6,7 @@ import ErrorIcon from "@mui/icons-material/Error";
 import InternalIcon from "@mui/icons-material/Storage";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { formatDate } from "@/shared/utils/date";
+import { useTranslation } from "react-i18next";
 
 type CheckResultInfoListProps = {
     data: CheckResultInfo[];
@@ -28,7 +29,9 @@ type CheckResultInfoItemProps = {
 };
 
 function CheckResultInfoItem({ resultInfo, onItemClick }: CheckResultInfoItemProps) {
-    const { icon, color, tooltip } = getStatusVisuals(resultInfo.status);
+    const { t, i18n } = useTranslation("checks");
+    const { icon, color, tooltipKey } = getStatusVisuals(resultInfo.status);
+    const tooltip = t(tooltipKey);
 
     const content = (
         <>
@@ -38,11 +41,11 @@ function CheckResultInfoItem({ resultInfo, onItemClick }: CheckResultInfoItemPro
                 </Tooltip>
             </ListItemAvatar>
             <ListItemText
-                primary={`Trust level: ${String(Math.round(resultInfo.trustLevel * 100))}%`}
+                primary={`${t("trust_level_label")}: ${String(Math.round(resultInfo.trustLevel * 100))}%`}
                 secondary={
                     resultInfo.errorType !== "NONE"
-                        ? `${formatErrorType(resultInfo.errorType)} — ${formatDate(resultInfo.createdAt)}`
-                        : formatDate(resultInfo.createdAt)
+                        ? `${formatErrorType(resultInfo.errorType)} — ${formatDate(resultInfo.createdAt, { locale: i18n.language })}`
+                        : formatDate(resultInfo.createdAt, { locale: i18n.language })
                 }
             />
         </>
@@ -69,17 +72,17 @@ function formatErrorType(errorType: CheckResultInfoErrorType): string {
     return errorType.charAt(0) + errorType.slice(1).toLowerCase();
 }
 
-function getStatusVisuals(status: CheckResultInfo["status"]): { icon: ReactNode; color: string; tooltip?: string } {
+function getStatusVisuals(status: CheckResultInfo["status"]): { icon: ReactNode; color: string; tooltipKey: string } {
     switch (status) {
         case "SUCCESS":
-            return { icon: <DoneIcon />, color: "success.main", tooltip: "Solution works good" };
+            return { icon: <DoneIcon />, color: "success.main", tooltipKey: "correct_tooltip" };
         case "MISTAKE":
-            return { icon: <ErrorIcon />, color: "error.main", tooltip: "Solution contains a mistake" };
+            return { icon: <ErrorIcon />, color: "error.main", tooltipKey: "mistake_tooltip" };
         case "INTERNAL_ERROR":
-            return { icon: <InternalIcon />, color: "error.main", tooltip: "Server checking error" };
+            return { icon: <InternalIcon />, color: "error.main", tooltipKey: "checker_error_tooltip" };
         case "PENDING":
-            return { icon: <HourglassEmptyIcon />, color: "grey.500", tooltip: "Requested" };
+            return { icon: <HourglassEmptyIcon />, color: "grey.500", tooltipKey: "requested_tooltip" };
         default:
-            return { icon: <ErrorIcon />, color: "error.main", tooltip: "Unknown" };
+            return { icon: <ErrorIcon />, color: "error.main", tooltipKey: "unknown_tooltip" };
     }
 }

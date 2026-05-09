@@ -1,12 +1,14 @@
 import { Container, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import { useTranslation } from "react-i18next";
 import ProblemListComponent from "@/features/problems/components/ProblemListComponent";
 
 export default function ProblemListPage() {
+    const { t } = useTranslation("navigation");
     return (
         <Container>
             <Typography component="h1" color="primary" variant="h5" align="center">
-                Problems
+                {t("problems")}
             </Typography>
 
             <Grid container spacing={2} paddingTop={"1rem"}>

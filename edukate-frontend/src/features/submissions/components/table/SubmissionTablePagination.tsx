@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { Box, Select, TableCell, TableFooter, TableRow, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { ProblemTablePaginationActions } from "@/features/problems/components/table/ProblemTablePaginationActions";
 
 type Props = {
@@ -19,6 +20,7 @@ export const SubmissionTablePagination: FC<Props> = ({
     onRowsPerPageChange,
     rowsPerPageOptions = [10, 25, 50, 100],
 }) => {
+    const { t } = useTranslation(["common", "submissions"]);
     const from = count === 0 ? 0 : page * rowsPerPage + 1;
     const to = Math.min(count, (page + 1) * rowsPerPage);
 
@@ -29,7 +31,7 @@ export const SubmissionTablePagination: FC<Props> = ({
                     <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 1 }}>
                             <Typography variant="body2" color="text.secondary" sx={{ display: { xs: "none", md: "block" } }}>
-                                Rows per page:
+                                {t("rows_per_page", { ns: "common" })}
                             </Typography>
                             <Select
                                 native
@@ -60,7 +62,7 @@ export const SubmissionTablePagination: FC<Props> = ({
                                 {from}–{to} of {count}
                                 <Box component="span" sx={{ display: { xs: "none", md: "inline" } }}>
                                     {" "}
-                                    submissions
+                                    {t("submissions_label", { ns: "submissions" })}
                                 </Box>
                             </Typography>
                         </Box>

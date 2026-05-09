@@ -6,9 +6,12 @@ import { SyntheticEvent, useState } from "react";
 import { ProblemSetCategory } from "@/features/problem-sets/types";
 import { useAuthContext } from "@/features/auth/context";
 import { AuthRequired } from "@/features/auth/components/AuthRequired";
+import { useTranslation } from "react-i18next";
 
 export default function ProblemSetListPage() {
     const { isAuthorized } = useAuthContext();
+    const { t: tNav } = useTranslation("navigation");
+    const { t: tPs } = useTranslation("problem-sets");
     const [tab, setTab] = useState<ProblemSetCategory>("public");
 
     const onTabChange = (_: SyntheticEvent, newValue: ProblemSetCategory) => {
@@ -19,7 +22,7 @@ export default function ProblemSetListPage() {
         <Box>
             <Container>
                 <Typography component="h1" color="primary" variant="h5" align="center">
-                    Problem Sets
+                    {tNav("problem_sets")}
                 </Typography>
 
                 <Box pt={2}>
@@ -28,9 +31,9 @@ export default function ProblemSetListPage() {
                     <ProblemSetToolbar disabled={!isAuthorized} />
 
                     <Tabs value={tab} onChange={onTabChange} centered sx={{ mt: 2 }}>
-                        <Tab value={"public"} label="Public" />
-                        <Tab value={"joined"} label="Joined" />
-                        <Tab value={"owned"} label="Owned" />
+                        <Tab value={"public"} label={tPs("tab_public")} />
+                        <Tab value={"joined"} label={tPs("tab_joined")} />
+                        <Tab value={"owned"} label={tPs("tab_owned")} />
                     </Tabs>
                 </Box>
             </Container>

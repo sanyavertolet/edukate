@@ -6,12 +6,14 @@ import { ProblemSetUserManagement } from "./ProblemSetUserManagement";
 import { useProblemSetChangeVisibilityMutation } from "@/features/problem-sets/api";
 import { defaultTooltipSlotProps } from "@/shared/utils/utils";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
+import { useTranslation } from "react-i18next";
 
 interface ProblemSetSettingsTabProps {
     problemSet: ProblemSet;
 }
 
 export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemSet }) => {
+    const { t } = useTranslation("problem-sets");
     const visibilityMutation = useProblemSetChangeVisibilityMutation();
 
     const total = problemSet.problems.length;
@@ -34,7 +36,7 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                             {problemSet.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            {total} problems
+                            {t("problems_count", { count: total })}
                         </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mt: 1 }}>
@@ -45,7 +47,7 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                             sx={{ flexGrow: 1 }}
                         />
                         <Typography variant="caption" color="text.secondary" noWrap>
-                            {solved}/{total} solved
+                            {t("solved_count", { solved, total })}
                         </Typography>
                     </Stack>
                 </Box>
@@ -56,9 +58,9 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                 <Stack spacing={1.5}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                         <Typography variant="body2" color="text.secondary">
-                            Share code:
+                            {t("share_code_label")}
                         </Typography>
-                        <Tooltip slotProps={defaultTooltipSlotProps} title="Copy share code">
+                        <Tooltip slotProps={defaultTooltipSlotProps} title={t("copy_share_code_tooltip")}>
                             <Chip
                                 size="small"
                                 icon={<ContentCopyIcon fontSize="small" />}
@@ -73,7 +75,7 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
 
                     <Stack direction="row" alignItems="center" spacing={1}>
                         <Typography variant="body2" color="text.secondary">
-                            Visibility:
+                            {t("visibility_label")}
                         </Typography>
                         <FormControlLabel
                             control={
@@ -84,14 +86,16 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                                     disabled={visibilityMutation.isPending}
                                 />
                             }
-                            label={<Typography variant="body2">{problemSet.isPublic ? "Public" : "Private"}</Typography>}
+                            label={
+                                <Typography variant="body2">
+                                    {problemSet.isPublic ? t("visibility_public") : t("visibility_private")}
+                                </Typography>
+                            }
                             sx={{ ml: 0 }}
                         />
                     </Stack>
                     <Typography variant="caption" color="text.secondary" sx={{ pl: 0.5 }}>
-                        {problemSet.isPublic
-                            ? "Anyone can find and join this problem set."
-                            : "Only invited users can access this problem set."}
+                        {problemSet.isPublic ? t("visibility_public_description") : t("visibility_private_description")}
                     </Typography>
                 </Stack>
 
@@ -100,7 +104,7 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                 {/* Users */}
                 <Box>
                     <Typography variant="overline" color="text.secondary">
-                        Users
+                        {t("users_label")}
                     </Typography>
                     <ProblemSetUserManagement shareCode={problemSet.shareCode} />
                 </Box>

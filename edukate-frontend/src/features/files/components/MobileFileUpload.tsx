@@ -1,13 +1,15 @@
-import { Box, Fab, SwipeableDrawer, Button } from "@mui/material";
+import { Box, Button, CircularProgress, Fab, SwipeableDrawer } from "@mui/material";
 import { useState, useRef } from "react";
 import { MobileFileInput } from "./MobileFileInput";
 import AddIcon from "@mui/icons-material/Add";
+import { useTranslation } from "react-i18next";
 
 interface MobileFileUploadProps {
     accept?: string;
     maxSize?: number;
     maxFiles?: number;
     onSubmit?: (fileNames: string[]) => void;
+    isSubmitting?: boolean;
 }
 
 export function MobileFileUpload({
@@ -15,7 +17,9 @@ export function MobileFileUpload({
     maxSize = 50 * 1024 * 1024,
     maxFiles = 5,
     onSubmit,
+    isSubmitting,
 }: MobileFileUploadProps) {
+    const { t } = useTranslation();
     const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -69,8 +73,14 @@ export function MobileFileUpload({
                         maxSize={maxSize}
                     />
                     {onSubmit && uploadedFileNames.length > 0 && (
-                        <Button color="secondary" onClick={handleSubmit} sx={{ my: 1, width: "100%" }}>
-                            Submit
+                        <Button
+                            color="secondary"
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                            startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
+                            sx={{ my: 1, width: "100%" }}
+                        >
+                            {t("submit_button")}
                         </Button>
                     )}
                 </Box>

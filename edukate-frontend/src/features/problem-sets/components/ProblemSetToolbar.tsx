@@ -5,12 +5,14 @@ import { FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { defaultTooltipSlotProps } from "@/shared/utils/utils";
 import { ConditionalTooltip } from "@/shared/components/ConditionalTooltip";
+import { useTranslation } from "react-i18next";
 
 interface ProblemSetToolbarProps {
     disabled?: boolean;
 }
 
 export const ProblemSetToolbar: FC<ProblemSetToolbarProps> = ({ disabled = false }) => {
+    const { t } = useTranslation("problem-sets");
     const navigate = useNavigate();
 
     const onCreateClick = () => {
@@ -24,11 +26,11 @@ export const ProblemSetToolbar: FC<ProblemSetToolbarProps> = ({ disabled = false
             alignItems={{ xs: "stretch", sm: "center" }}
             spacing={1}
         >
-            <Tooltip title="Join by invite link — coming soon" slotProps={defaultTooltipSlotProps}>
+            <Tooltip title={t("join_by_code_tooltip")} slotProps={defaultTooltipSlotProps}>
                 <Paper sx={{ p: "2px 4px", display: "flex", alignItems: "center", flex: { sm: 1 }, maxWidth: { sm: 360 } }}>
                     <InputBase
                         sx={{ ml: 1, flex: 1 }}
-                        placeholder="Join by code"
+                        placeholder={t("join_by_code_placeholder")}
                         inputProps={{ "aria-label": "join by code" }}
                         disabled
                     />
@@ -39,7 +41,7 @@ export const ProblemSetToolbar: FC<ProblemSetToolbarProps> = ({ disabled = false
                 </Paper>
             </Tooltip>
 
-            <ConditionalTooltip title="Sign in to create problem sets" shown={disabled} placement="bottom-end">
+            <ConditionalTooltip title={t("sign_in_to_create_tooltip")} shown={disabled} placement="bottom-end">
                 <Box>
                     <Button
                         variant="contained"
@@ -48,7 +50,7 @@ export const ProblemSetToolbar: FC<ProblemSetToolbarProps> = ({ disabled = false
                         disabled={disabled}
                         fullWidth
                     >
-                        Create
+                        {t("create_button")}
                     </Button>
                 </Box>
             </ConditionalTooltip>

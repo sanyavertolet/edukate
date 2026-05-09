@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom";
+import "@/shared/i18n";
 import { server } from "./server";
 
 // jsdom v29 changed localStorage to be file-backed, requiring --localstorage-file.

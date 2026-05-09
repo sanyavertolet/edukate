@@ -19,8 +19,17 @@ interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSor
 
     fun findAllByBookId(bookId: Long): Flux<Problem>
 
-    @Query("SELECT * FROM problems WHERE code LIKE :prefix || '%' ORDER BY string_to_array(code, '.')::int[] LIMIT :limit")
-    fun findByCodeStartingWith(prefix: String, limit: Int): Flux<Problem>
+    @Query(
+        """
+        SELECT p.* FROM problems p
+        JOIN books b ON p.book_id = b.id
+        WHERE (:bookSlugPrefix IS NULL OR b.slug LIKE :bookSlugPrefix || '%')
+          AND (:prefix IS NULL OR p.code LIKE :prefix || '%')
+        ORDER BY b.slug, string_to_array(p.code, '.')::int[]
+        LIMIT :limit
+        """
+    )
+    fun findByPrefixes(bookSlugPrefix: String?, prefix: String?, limit: Int): Flux<Problem>
 
     @Query("SELECT * FROM problems ORDER BY RANDOM() LIMIT 1") fun findRandomProblem(): Mono<Problem>
 

@@ -8,6 +8,7 @@ import { useFileStatsDisplayValues } from "@/features/files/hooks/useFileStatsDi
 import UploadIcon from "@mui/icons-material/Upload";
 import { FileLightbox } from "./FileLightbox";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 type MobileFileInputProps = {
     onTempFileUploaded: (fileKey: string) => void;
@@ -32,6 +33,7 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
     maxSize = 50 * 1024 * 1024,
     accept = "*",
 }) => {
+    const { t } = useTranslation();
     const {
         fileMetadataList,
         previewDialogOpen,
@@ -74,7 +76,7 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
                         {secondaryText}
                     </Typography>
                 </Box>
-                <Tooltip title={"Upload files"} slotProps={defaultTooltipSlotProps}>
+                <Tooltip title={t("upload_files_label")} slotProps={defaultTooltipSlotProps}>
                     <IconButton
                         color={"primary"}
                         edge="end"

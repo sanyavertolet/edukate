@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { TableRow, TableCell, Skeleton, Stack, SxProps, Theme } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import { ProblemMetadata } from "@/features/problems/types";
 import { ProblemStatusIcon } from "@/features/problems/components/ProblemStatusIcon";
 import { TagChip } from "@/shared/components/TagChip";
@@ -21,6 +22,7 @@ const columnVisibility: Record<number, SxProps<Theme>> = {
 };
 
 export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, error, onRowClick, onBookSlugClick }) => {
+    const { i18n } = useTranslation();
     if (loading || error) {
         return (
             <>
@@ -79,7 +81,7 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
                             ))}
                         </Stack>
                     </TableCell>
-                    <TableCell sx={columnVisibility[4]}>{formatRelative(item.createdAt)}</TableCell>
+                    <TableCell sx={columnVisibility[4]}>{formatRelative(item.createdAt, i18n.language)}</TableCell>
                 </TableRow>
             ))}
         </>

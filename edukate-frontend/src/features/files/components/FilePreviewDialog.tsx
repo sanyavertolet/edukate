@@ -2,6 +2,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from "
 import { useDeviceContext } from "@/shared/context/DeviceContext";
 import { useGetTempFile } from "@/features/files/api";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface FilePreviewDialogProps {
     open: boolean;
@@ -11,6 +12,7 @@ interface FilePreviewDialogProps {
 
 export function FilePreviewDialog({ open, fileKey, onClose }: FilePreviewDialogProps) {
     const { isMobile } = useDeviceContext();
+    const { t } = useTranslation("common");
     const { data: fileBlob } = useGetTempFile(fileKey);
     const [objectUrl, setObjectUrl] = useState<string>();
 
@@ -27,17 +29,17 @@ export function FilePreviewDialog({ open, fileKey, onClose }: FilePreviewDialogP
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth fullScreen={isMobile}>
-            <DialogTitle>File Preview</DialogTitle>
+            <DialogTitle>{t("file_preview_title")}</DialogTitle>
             <DialogContent>
                 {objectUrl && (
                     <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                        <img src={objectUrl} alt="File Preview" style={{ maxWidth: "100%", maxHeight: "70vh" }} />
+                        <img src={objectUrl} alt={t("file_preview_title")} style={{ maxWidth: "100%", maxHeight: "70vh" }} />
                     </Box>
                 )}
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} fullWidth>
-                    Close
+                    {t("close_button")}
                 </Button>
             </DialogActions>
         </Dialog>

@@ -1,0 +1,11 @@
+{
+    "home": "Edukate",
+    "problems": "Задачи",
+    "submissions": "Посылки",
+    "problem_sets": "Списки задач",
+    "sign_in": "Войти",
+    "sign_up": "Регистрация",
+    "sign_out": "Выйти",
+    "menu_button_aria": "Кнопка меню",
+    "user_menu_aria": "аккаунт текущего пользователя"
+}

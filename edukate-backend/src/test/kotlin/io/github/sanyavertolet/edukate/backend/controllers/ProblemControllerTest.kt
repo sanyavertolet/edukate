@@ -10,6 +10,7 @@ import io.github.sanyavertolet.edukate.backend.entities.Problem
 import io.github.sanyavertolet.edukate.backend.filters.ProblemFilter
 import io.github.sanyavertolet.edukate.backend.mappers.ProblemMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemService
+import io.github.sanyavertolet.edukate.common.ContentLanguage
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
 import io.mockk.every
 import java.time.Instant
@@ -34,7 +35,16 @@ class ProblemControllerTest {
     @MockkBean private lateinit var problemMapper: ProblemMapper
 
     private fun metadata(code: String = "1.1.1") =
-        ProblemMetadata("savchenko/$code", code, "savchenko", false, emptyList(), Problem.Status.NOT_SOLVED, Instant.now())
+        ProblemMetadata(
+            "savchenko/$code",
+            code,
+            "savchenko",
+            false,
+            emptyList(),
+            Problem.Status.NOT_SOLVED,
+            Instant.now(),
+            ContentLanguage.RU,
+        )
 
     private fun dto(code: String = "1.1.1") =
         ProblemDto(
@@ -48,6 +58,7 @@ class ProblemControllerTest {
             emptyList(),
             Problem.Status.NOT_SOLVED,
             false,
+            ContentLanguage.RU,
         )
 
     // region GET /api/v1/problems
@@ -150,8 +161,9 @@ class ProblemControllerTest {
     // region GET /api/v1/problems/by-prefix
 
     @Test
-    fun `getProblemCodesByPrefix returns matching codes`() {
-        every { problemService.getProblemCodesByPrefix("1.", 5) } returns Flux.just("1.1.1", "1.1.2")
+    fun `getProblemKeysByPrefix returns matching keys with code prefix`() {
+        every { problemService.getProblemKeysByPrefix(null, "1.", 5) } returns
+            Flux.just("savchenko/1.1.1", "savchenko/1.1.2")
 
         webTestClient
             .get()
@@ -161,9 +173,24 @@ class ProblemControllerTest {
             .isOk
             .expectBody()
             .jsonPath("$[0]")
-            .isEqualTo("1.1.1")
+            .isEqualTo("savchenko/1.1.1")
             .jsonPath("$[1]")
-            .isEqualTo("1.1.2")
+            .isEqualTo("savchenko/1.1.2")
+    }
+
+    @Test
+    fun `getProblemKeysByPrefix filters by book slug prefix`() {
+        every { problemService.getProblemKeysByPrefix("sav", "1.", 5) } returns Flux.just("savchenko/1.1.1")
+
+        webTestClient
+            .get()
+            .uri("/api/v1/problems/by-prefix?bookSlugPrefix=sav&prefix=1.")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .jsonPath("$[0]")
+            .isEqualTo("savchenko/1.1.1")
     }
 
     // endregion

@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useProblemCountRequest, useProblemListRequest } from "@/features/problems/api";
 import { ProblemTable } from "./table/ProblemTable";
 import { ProblemTableToolbar } from "./table/ProblemTableToolbar";
@@ -11,6 +12,7 @@ import { useDeviceContext } from "@/shared/context/DeviceContext";
 
 export default function ProblemListComponent() {
     const navigate = useNavigate();
+    const { t } = useTranslation("problems");
     const { isMobile } = useDeviceContext();
     const navigateToProblem = (problemKey: string) => {
         void navigate(`/problems/${problemKey}`);
@@ -36,7 +38,7 @@ export default function ProblemListComponent() {
     return (
         <Box>
             <ProblemTable
-                headerCells={["", "Book", "Name", "Tags", "Created"]}
+                headerCells={["", t("book_column"), t("name_column"), t("tags_column"), t("created_column")]}
                 toolbar={
                     <ProblemTableToolbar
                         status={status}

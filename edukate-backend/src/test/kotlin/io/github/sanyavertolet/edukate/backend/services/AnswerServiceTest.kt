@@ -6,8 +6,6 @@ import io.github.sanyavertolet.edukate.backend.BackendFixtures
 import io.github.sanyavertolet.edukate.backend.entities.Answer
 import io.github.sanyavertolet.edukate.backend.repositories.AnswerRepository
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
-import io.github.sanyavertolet.edukate.backend.services.files.FileManager
-import io.github.sanyavertolet.edukate.storage.keys.AnswerFileKey
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -22,15 +20,12 @@ import reactor.test.StepVerifier
 class AnswerServiceTest {
     private val answerRepository: AnswerRepository = mockk()
     private val problemRepository: ProblemRepository = mockk()
-    private val fileManager: FileManager = mockk()
     private lateinit var service: AnswerService
 
     @BeforeEach
     fun setUp() {
-        service = AnswerService(answerRepository, problemRepository, fileManager)
+        service = AnswerService(answerRepository, problemRepository)
     }
-
-    // region saveAnswer
 
     @Test
     fun `saveAnswer saves to repository`() {
@@ -54,23 +49,16 @@ class AnswerServiceTest {
         StepVerifier.create(service.saveAnswerBatch(Flux.just(a1, a2))).expectNext(2L).verifyComplete()
     }
 
-    // endregion
-
-    // region findByProblemKey
-
     @Test
-    fun `findByProblemKey returns AnswerDto with image urls`() {
+    fun `findByProblemKey returns answer`() {
         val problem = BackendFixtures.problem(id = 1L, code = "P1")
-        val answer =
-            BackendFixtures.answer(id = 1L, problemId = 1L, text = "Answer", notes = "Notes", images = listOf("img.png"))
+        val answer = BackendFixtures.answer(id = 1L, problemId = 1L, images = listOf("img.png"))
 
         every { problemRepository.findByKey("savchenko/P1") } returns Mono.just(problem)
         every { answerRepository.findByProblemId(1L) } returns Mono.just(answer)
-        every { fileManager.getPresignedUrl(AnswerFileKey("savchenko", "P1", "img.png")) } returns
-            Mono.just("https://s3/result-img.png")
 
         StepVerifier.create(service.findByProblemKey("savchenko/P1"))
-            .assertNext { r -> assertThat(r.images).containsExactly("https://s3/result-img.png") }
+            .assertNext { ans -> assertThat(ans.id).isEqualTo(1L) }
             .verifyComplete()
     }
 
@@ -81,5 +69,17 @@ class AnswerServiceTest {
         StepVerifier.create(service.findByProblemKey("UNKNOWN")).verifyComplete()
     }
 
-    // endregion
+    @Test
+    fun `hasAnswer returns true when answer exists`() {
+        every { answerRepository.findByProblemId(1L) } returns Mono.just(BackendFixtures.answer())
+
+        StepVerifier.create(service.hasAnswer(1L)).expectNext(true).verifyComplete()
+    }
+
+    @Test
+    fun `hasAnswer returns false when answer is missing`() {
+        every { answerRepository.findByProblemId(2L) } returns Mono.empty()
+
+        StepVerifier.create(service.hasAnswer(2L)).expectNext(false).verifyComplete()
+    }
 }

@@ -1,6 +1,7 @@
 import { Submission, SubmissionStatus } from "@/features/submissions/types";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { ReactNode, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Avatar,
     Box,
@@ -28,6 +29,7 @@ export function SubmissionListItem({
     openImages: (images: string[], index: number) => void;
     onSelect?: (submission: Submission) => void;
 }) {
+    const { t, i18n } = useTranslation("submissions");
     const { icon, color } = getStatusVisuals(submission.status);
 
     const attachments = useMemo(() => submission.fileUrls, [submission.fileUrls]);
@@ -46,7 +48,10 @@ export function SubmissionListItem({
                 <ListItemAvatar>
                     <Avatar sx={{ bgcolor: color, color: "common.white" }}>{icon}</Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={primaryText(submission.status)} secondary={formatDate(submission.createdAt)} />
+                <ListItemText
+                    primary={t(primaryTextKey(submission.status))}
+                    secondary={formatDate(submission.createdAt, { locale: i18n.language })}
+                />
             </ListItemButton>
         </ListItem>
     );
@@ -74,6 +79,7 @@ export function AttachmentButtonList(attachments: string[] = [], openImages: (im
 }
 
 export function ErrorListItem({ error }: { error: unknown }) {
+    const { t } = useTranslation("submissions");
     return (
         <ListItem key={"error"}>
             <ListItemAvatar>
@@ -82,7 +88,7 @@ export function ErrorListItem({ error }: { error: unknown }) {
                 </Avatar>
             </ListItemAvatar>
             <ListItemText
-                primary="Failed to load submissions"
+                primary={t("submissions_load_error")}
                 secondary={
                     <Typography variant="body2" color="text.secondary">
                         {getApiErrorMessage(error)}
@@ -94,6 +100,7 @@ export function ErrorListItem({ error }: { error: unknown }) {
 }
 
 export function EmptySubmissionListStub() {
+    const { t } = useTranslation("submissions");
     return (
         <ListItem>
             <ListItemAvatar>
@@ -101,10 +108,7 @@ export function EmptySubmissionListStub() {
                     <InboxOutlinedIcon />
                 </Avatar>
             </ListItemAvatar>
-            <ListItemText
-                primary="No submissions yet"
-                secondary="Your submissions will appear here after you upload a solution."
-            />
+            <ListItemText primary={t("no_submissions_yet")} secondary={t("no_submissions_yet_description")} />
         </ListItem>
     );
 }
@@ -130,14 +134,14 @@ export function StubListItem() {
     );
 }
 
-function primaryText(status: SubmissionStatus) {
+function primaryTextKey(status: SubmissionStatus) {
     switch (status) {
         case "SUCCESS":
-            return "Success";
+            return "status_success";
         case "PENDING":
-            return "Pending review";
+            return "status_pending";
         case "FAILED":
-            return "Failed";
+            return "status_failed";
         default:
             return exhaustiveGuard(status);
     }

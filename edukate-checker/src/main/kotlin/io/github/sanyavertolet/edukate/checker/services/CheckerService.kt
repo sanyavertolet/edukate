@@ -35,7 +35,13 @@ class CheckerService(private val chatService: ChatService, private val mediaCont
             mediaContentResolver.resolveMedia(submissionContext.problemImageRawKeys).collectList(),
             mediaContentResolver.resolveMedia(submissionContext.submissionImageRawKeys).collectList(),
         ) { problemMedia, submissionMedia ->
-            RequestContext(submissionContext.problemText, problemMedia, submissionMedia)
+            RequestContext(
+                submissionContext.problemText,
+                problemMedia,
+                submissionMedia,
+                submissionContext.answer,
+                submissionContext.language.displayName,
+            )
         }
 
     companion object {

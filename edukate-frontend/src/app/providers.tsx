@@ -7,6 +7,7 @@ import { queryClient } from "@/lib/query-client";
 import { CssBaseline } from "@mui/material";
 import { DeviceProvider } from "@/shared/context/DeviceContext";
 import { PwaProvider } from "@/shared/context/PwaContext";
+import "@/shared/i18n";
 
 interface ProvidersProps {
     children: ReactNode;
