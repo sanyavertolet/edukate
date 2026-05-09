@@ -97,7 +97,7 @@ describe("NotificationPanel — notification types", () => {
         );
         renderPanel();
         await waitFor(() => {
-            expect(screen.getByText("Submission Passed")).toBeInTheDocument();
+            expect(screen.getByText("Submission passed")).toBeInTheDocument();
         });
         expect(screen.getByText(/savchenko\/1\.1\.7/)).toBeInTheDocument();
     });
@@ -114,7 +114,7 @@ describe("NotificationPanel — notification types", () => {
             expect(screen.getByText("System Update")).toBeInTheDocument();
         });
         expect(screen.getByText(/Alice invites you!/)).toBeInTheDocument();
-        expect(screen.getByText("Submission Passed")).toBeInTheDocument();
+        expect(screen.getByText("Submission passed")).toBeInTheDocument();
     });
 });
 
