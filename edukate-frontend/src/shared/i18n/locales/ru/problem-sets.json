@@ -69,5 +69,16 @@
     "create_problem_set_button": "Создать список задач",
     "tab_public": "Публичные",
     "tab_joined": "Участник",
-    "tab_owned": "Владелец"
+    "tab_owned": "Владелец",
+    "stepper_step_details": "Подробности",
+    "stepper_step_problems": "Задачи",
+    "stepper_step_invite_users": "Пригласить участников",
+    "stepper_next_button": "Далее",
+    "stepper_back_button": "Назад",
+    "picker_search_placeholder": "Поиск по префиксу…",
+    "picker_selected_count": "{{count}} выбрано",
+    "picker_no_problems": "Задачи не найдены",
+    "visibility_toggle_label": "Публичный",
+    "invite_failed_message": "Не удалось пригласить: {{users}}",
+    "go_to_problem_set_button": "Перейти к списку задач"
 }
