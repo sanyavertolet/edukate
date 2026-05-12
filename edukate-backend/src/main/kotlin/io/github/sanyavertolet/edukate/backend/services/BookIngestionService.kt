@@ -1,13 +1,12 @@
 package io.github.sanyavertolet.edukate.backend.services
 
+import io.github.sanyavertolet.edukate.backend.dtos.ingestion.AnswerIngestionEntry
 import io.github.sanyavertolet.edukate.backend.dtos.ingestion.BookIngestionRequest
 import io.github.sanyavertolet.edukate.backend.dtos.ingestion.BookIngestionResponse
 import io.github.sanyavertolet.edukate.backend.dtos.ingestion.ProblemIngestionEntry
 import io.github.sanyavertolet.edukate.backend.entities.Answer
-import io.github.sanyavertolet.edukate.backend.entities.AnswerLocalization
 import io.github.sanyavertolet.edukate.backend.entities.Book
 import io.github.sanyavertolet.edukate.backend.entities.Problem
-import io.github.sanyavertolet.edukate.backend.entities.ProblemLocalization
 import io.github.sanyavertolet.edukate.backend.repositories.AnswerLocalizationRepository
 import io.github.sanyavertolet.edukate.backend.repositories.AnswerRepository
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemLocalizationRepository
@@ -47,7 +46,7 @@ class BookIngestionService(
                             .then(Mono.just(Unit))
                     )
                 }
-                .thenReturn(
+                .map {
                     BookIngestionResponse(
                         bookSlug = slug,
                         problemCount = problemCount,
@@ -55,7 +54,7 @@ class BookIngestionService(
                         problemLocalizationCount = problemLocCount,
                         answerLocalizationCount = answerLocCount,
                     )
-                )
+                }
         }
 
     private fun upsertBook(request: BookIngestionRequest): Mono<Book> {
@@ -114,59 +113,22 @@ class BookIngestionService(
     private fun upsertProblemLocalizations(problemId: Long, entry: ProblemIngestionEntry): Mono<Int> =
         entry.localizations.entries.fold(Mono.just(0)) { chain, (language, data) ->
             chain.flatMap { count ->
-                problemLocalizationRepository
-                    .findByProblemIdAndLanguage(problemId, language)
-                    .flatMap { existing ->
-                        problemLocalizationRepository.save(
-                            existing.copy(text = data.text, tags = data.tags, subproblems = data.subproblems)
-                        )
-                    }
-                    .switchIfEmpty(
-                        problemLocalizationRepository.save(
-                            ProblemLocalization(
-                                problemId = problemId,
-                                language = language,
-                                text = data.text,
-                                tags = data.tags,
-                                subproblems = data.subproblems,
-                            )
-                        )
-                    )
-                    .map { count + 1 }
+                problemLocalizationRepository.upsert(problemId, language, data.text, data.tags, data.subproblems).map {
+                    count + 1
+                }
             }
         }
 
-    private fun upsertAnswer(
-        problemId: Long,
-        answerEntry: io.github.sanyavertolet.edukate.backend.dtos.ingestion.AnswerIngestionEntry,
-    ): Mono<Answer> =
+    private fun upsertAnswer(problemId: Long, answerEntry: AnswerIngestionEntry): Mono<Answer> =
         answerRepository
             .findByProblemId(problemId)
             .flatMap { existing -> answerRepository.save(existing.copy(images = answerEntry.images)) }
             .switchIfEmpty(answerRepository.save(Answer(problemId = problemId, images = answerEntry.images)))
 
-    private fun upsertAnswerLocalizations(
-        answerId: Long,
-        answerEntry: io.github.sanyavertolet.edukate.backend.dtos.ingestion.AnswerIngestionEntry,
-    ): Mono<Int> =
+    private fun upsertAnswerLocalizations(answerId: Long, answerEntry: AnswerIngestionEntry): Mono<Int> =
         answerEntry.localizations.entries.fold(Mono.just(0)) { chain, (language, data) ->
             chain.flatMap { count ->
-                answerLocalizationRepository
-                    .findByAnswerIdAndLanguage(answerId, language)
-                    .flatMap { existing ->
-                        answerLocalizationRepository.save(existing.copy(text = data.text, notes = data.notes))
-                    }
-                    .switchIfEmpty(
-                        answerLocalizationRepository.save(
-                            AnswerLocalization(
-                                answerId = answerId,
-                                language = language,
-                                text = data.text,
-                                notes = data.notes,
-                            )
-                        )
-                    )
-                    .map { count + 1 }
+                answerLocalizationRepository.upsert(answerId, language, data.text, data.notes).map { count + 1 }
             }
         }
 }

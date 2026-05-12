@@ -69,5 +69,16 @@
     "create_problem_set_button": "Create Problem Set",
     "tab_public": "Public",
     "tab_joined": "Joined",
-    "tab_owned": "Owned"
+    "tab_owned": "Owned",
+    "stepper_step_details": "Details",
+    "stepper_step_problems": "Problems",
+    "stepper_step_invite_users": "Invite Users",
+    "stepper_next_button": "Next",
+    "stepper_back_button": "Back",
+    "picker_search_placeholder": "Search by prefix…",
+    "picker_selected_count": "{{count}} selected",
+    "picker_no_problems": "No problems found",
+    "visibility_toggle_label": "Public",
+    "invite_failed_message": "Could not invite: {{users}}",
+    "go_to_problem_set_button": "Go to problem set"
 }
