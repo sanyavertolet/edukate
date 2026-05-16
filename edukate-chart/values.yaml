@@ -97,6 +97,9 @@ jwt:
   secretName: jwt
   secretKey: key
 
+smtp:
+  secretName: smtp-secrets
+
 # LGTM observability stack (Loki + Grafana + Tempo + Prometheus).
 # Toggle with lgtm.enabled. Sub-chart configs live at the top level (kube-prometheus-stack:,
 # loki:, tempo:, promtail:) — Helm requires dependency values at the root, not nested.

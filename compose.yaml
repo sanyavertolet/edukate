@@ -44,3 +44,10 @@ services:
       - '15672:15672'
     volumes:
       - './rabbitmq-data:/var/lib/rabbitmq'
+
+  mailpit:
+    image: 'axllent/mailpit:latest'
+    container_name: 'edukate-mailpit'
+    ports:
+      - '1025:1025'
+      - '8025:8025'

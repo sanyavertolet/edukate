@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
-import { render, screen } from "@/test/render";
+import { ToastContainer } from "react-toastify";
+import { render, renderAtPath, screen } from "@/test/render";
 import SignInPage from "./SignInPage";
 
 const LocationSpy = () => <span data-testid="pathname">{useLocation().pathname}</span>;
@@ -21,5 +22,17 @@ describe("SignInPage", () => {
         expect(screen.getByTestId("pathname")).toHaveTextContent("/");
         await userEvent.click(screen.getByText("Sign up"));
         expect(screen.getByTestId("pathname")).toHaveTextContent("/sign-up");
+    });
+
+    it("shows the email verified toast when ?verified=true is in the URL", async () => {
+        renderAtPath(
+            "/sign-in?verified=true",
+            "/sign-in",
+            <>
+                <SignInPage />
+                <ToastContainer />
+            </>,
+        );
+        expect(await screen.findByText(/email verified/i)).toBeInTheDocument();
     });
 });

@@ -29,13 +29,16 @@ object GatewayFixtures {
         status: UserStatus = UserStatus.ACTIVE,
     ) = UserCredentials(id, username, encodedPassword, email, roles, status)
 
+    const val USER_EMAIL = EMAIL
+
     fun edukateUserDetails(
         id: Long = USER_ID,
         username: String = USER_NAME,
         roles: Set<UserRole> = setOf(UserRole.USER),
         status: UserStatus = UserStatus.ACTIVE,
         token: String = "test-token",
-    ) = EdukateUserDetails(id, username, roles, status, token)
+        email: String = EMAIL,
+    ) = EdukateUserDetails(id, username, roles, status, token, email)
 
     fun gatewayUser(
         id: Long? = USER_ID,
@@ -45,7 +48,4 @@ object GatewayFixtures {
         roles: Set<UserRole> = setOf(UserRole.USER),
         status: UserStatus = UserStatus.ACTIVE,
     ) = GatewayUser(id, name, email, token, roles, status)
-
-    fun mockAuthentication(id: Long = USER_ID, username: String = USER_NAME) =
-        edukateUserDetails(id = id, username = username).toPreAuthenticatedAuthenticationToken()
 }

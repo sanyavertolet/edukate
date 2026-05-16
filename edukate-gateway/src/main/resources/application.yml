@@ -5,6 +5,9 @@ gateway:
     url: http://notifier
   url: https://edukatemeplease.online
 
+app:
+  url: https://edukatemeplease.online
+
 
 auth:
   jwt:

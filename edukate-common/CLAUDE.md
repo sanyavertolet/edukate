@@ -54,6 +54,20 @@ All `targetUserId` fields are `Long` (PostgreSQL user IDs). `CheckedNotification
 - `RabbitNotifier` — publishes to RabbitMQ; activated via `notifier` profile
 - `NoopNotifier` — silently discards; used in tests and when notifier is disabled
 
+### Email Publisher Abstraction
+
+- `EmailPublisher` fun interface: `Mono<Void> publish(BaseEmailMessage)`
+- `RabbitEmailPublisher` — publishes to `edukate.email.v1` routing key; activated via `notifier` profile
+- `NoopEmailPublisher` — logs and discards; active when `notifier` profile is absent
+
+### Email Message Types (sealed hierarchy)
+
+| Class | Purpose |
+|---|---|
+| `BaseEmailMessage` | Sealed interface; `@JsonTypeInfo` polymorphism; fields: `toEmail`, `token: UUID`, `username` |
+| `EmailVerificationMessage` | Sent after sign-up — carries verification link token |
+| `PasswordResetMessage` | Sent on forgot-password request — carries reset link token |
+
 ### OpenAPI
 
 - `OpenApiConfiguration` — shared Swagger/OpenAPI bean; sets server URL (from `gateway.url`), `cookieAuth` security scheme, and AGPL v3 license info

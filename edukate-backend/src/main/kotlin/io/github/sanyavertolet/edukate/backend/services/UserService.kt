@@ -32,6 +32,8 @@ class UserService(private val userRepository: UserRepository, private val notifi
     @Cacheable(cacheNames = ["users-by-name"], key = "#name")
     fun findUserByName(name: String): Mono<User> = userRepository.findByName(name)
 
+    fun findUserByEmail(email: String): Mono<User> = userRepository.findByEmail(email)
+
     @Caching(
         evict =
             [

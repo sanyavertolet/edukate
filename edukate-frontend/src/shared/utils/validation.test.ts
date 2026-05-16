@@ -29,32 +29,36 @@ describe("validate('username', ...)", () => {
         expect(validate("username", "abcdefghijklmno1")).not.toBeNull();
     });
 
-    it("rejects a username that starts with a digit", () => {
-        expect(validate("username", "1alice")).not.toBeNull();
+    it("returns username_start_error when username starts with a digit", () => {
+        expect(validate("username", "1alice1")).toBe("username_start_error");
     });
 
-    it("rejects a username that starts with an underscore", () => {
-        expect(validate("username", "_alice1")).not.toBeNull();
+    it("returns username_start_error when username starts with an underscore", () => {
+        expect(validate("username", "_alice1")).toBe("username_start_error");
     });
 
-    it("rejects a username that ends with an underscore", () => {
-        expect(validate("username", "alice_")).not.toBeNull();
+    it("returns username_start_error when username starts with @", () => {
+        expect(validate("username", "@alice1")).toBe("username_start_error");
     });
 
-    it("rejects a username that ends with a hyphen", () => {
-        expect(validate("username", "alice-")).not.toBeNull();
+    it("returns username_end_error when username ends with an underscore", () => {
+        expect(validate("username", "alice_")).toBe("username_end_error");
     });
 
-    it("rejects a username containing a space", () => {
-        expect(validate("username", "alice bob")).not.toBeNull();
+    it("returns username_end_error when username ends with a hyphen", () => {
+        expect(validate("username", "alice-")).toBe("username_end_error");
     });
 
-    it("rejects a username containing a special character", () => {
-        expect(validate("username", "alice!")).not.toBeNull();
+    it("returns username_chars_error when username contains @", () => {
+        expect(validate("username", "ali@ce")).toBe("username_chars_error");
     });
 
-    it("rejects a username that is all whitespace (trim makes it too short)", () => {
-        expect(validate("username", "      ")).not.toBeNull();
+    it("returns username_chars_error when username contains a space", () => {
+        expect(validate("username", "alice bob")).toBe("username_chars_error");
+    });
+
+    it("returns username_chars_error when username contains ! in the middle", () => {
+        expect(validate("username", "ali!ce1")).toBe("username_chars_error");
     });
 });
 
@@ -97,16 +101,16 @@ describe("validate('password', ...)", () => {
         expect(validate("password", "abc123")).toBeNull();
     });
 
-    it("accepts a password of exactly 20 characters", () => {
-        expect(validate("password", "a".repeat(20))).toBeNull();
+    it("accepts a password of exactly 128 characters", () => {
+        expect(validate("password", "a".repeat(128))).toBeNull();
     });
 
     it("rejects a password shorter than 6 characters", () => {
         expect(validate("password", "abc")).not.toBeNull();
     });
 
-    it("rejects a password longer than 20 characters", () => {
-        expect(validate("password", "a".repeat(21))).not.toBeNull();
+    it("returns password_length_error for a password longer than 128 characters", () => {
+        expect(validate("password", "a".repeat(129))).toBe("password_length_error");
     });
 
     it("rejects a password that is entirely whitespace (trim makes it too short)", () => {

@@ -21,18 +21,17 @@ const validateEmail: Validation<string> = (email: string) => {
 };
 
 const validatePassword: Validation<string> = (password: string) => {
-    if (6 > password.trim().length || password.trim().length > 20) {
+    if (6 > password.trim().length || password.trim().length > 128) {
         return "password_length_error";
     }
     return null;
 };
 
 const validateUsername: Validation<string> = (username: string) => {
-    if (3 > username.trim().length || username.trim().length > 15) {
-        return "username_length_error";
-    }
-    if (!username.match(/^[a-zA-Z][a-zA-Z0-9_-]+[a-zA-Z0-9]$/)) {
-        return "username_format_error";
-    }
+    const trimmed = username.trim();
+    if (trimmed.length < 3 || trimmed.length > 15) return "username_length_error";
+    if (!/^[a-zA-Z]/.test(trimmed)) return "username_start_error";
+    if (!/[a-zA-Z0-9]$/.test(trimmed)) return "username_end_error";
+    if (/[^a-zA-Z0-9_-]/.test(trimmed)) return "username_chars_error";
     return null;
 };

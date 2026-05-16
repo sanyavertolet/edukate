@@ -1,3 +1,5 @@
+@file:Suppress("ReactiveStreamsUnusedPublisher")
+
 package io.github.sanyavertolet.edukate.gateway.services
 
 import io.github.sanyavertolet.edukate.gateway.GatewayFixtures
@@ -63,6 +65,30 @@ class UserDetailsServiceTest {
         StepVerifier.create(userDetailsService.isNotUserPresent(GatewayFixtures.USER_NAME))
             .expectNext(false)
             .verifyComplete()
+    }
+
+    @Test
+    fun `findEdukateUserDetailsByUsername routes to getUserByName when input has no at sign`() {
+        every { backendService.getUserByName(GatewayFixtures.USER_NAME) } returns Mono.just(credentials)
+
+        StepVerifier.create(userDetailsService.findEdukateUserDetailsByUsername(GatewayFixtures.USER_NAME))
+            .expectNextCount(1)
+            .verifyComplete()
+
+        verify(exactly = 1) { backendService.getUserByName(GatewayFixtures.USER_NAME) }
+        verify(exactly = 0) { backendService.getUserByEmail(any()) }
+    }
+
+    @Test
+    fun `findEdukateUserDetailsByUsername routes to getUserByEmail when input contains at sign`() {
+        every { backendService.getUserByEmail(GatewayFixtures.EMAIL) } returns Mono.just(credentials)
+
+        StepVerifier.create(userDetailsService.findEdukateUserDetailsByUsername(GatewayFixtures.EMAIL))
+            .expectNextMatches { it.id == GatewayFixtures.USER_ID && it.username == GatewayFixtures.USER_NAME }
+            .verifyComplete()
+
+        verify(exactly = 1) { backendService.getUserByEmail(GatewayFixtures.EMAIL) }
+        verify(exactly = 0) { backendService.getUserByName(any()) }
     }
 
     @Test

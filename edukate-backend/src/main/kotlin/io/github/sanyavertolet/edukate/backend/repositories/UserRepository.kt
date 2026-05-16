@@ -14,6 +14,8 @@ interface UserRepository : ReactiveCrudRepository<User, Long> {
 
     fun findAllByStatus(status: UserStatus): Flux<User>
 
+    fun findByEmail(email: String): Mono<User>
+
     @Query("SELECT * FROM users WHERE name LIKE :prefix || '%' ORDER BY name LIMIT :limit")
     fun findByNamePrefix(prefix: String, limit: Int): Flux<User>
 }

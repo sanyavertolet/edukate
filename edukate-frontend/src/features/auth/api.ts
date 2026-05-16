@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { whoami } from "@/generated/backend";
-import { signIn, signOut, signUp } from "@/generated/gateway";
+import { forgotPassword, resetPassword, signIn, signOut, signUp } from "@/generated/gateway";
 import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
 
@@ -20,6 +20,7 @@ export function useSignInMutation() {
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
         },
+        meta: { silent: true },
     });
 }
 
@@ -39,5 +40,18 @@ export function useSignOutMutation() {
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: queryKeys.auth.whoami });
         },
+    });
+}
+
+export function useForgotPasswordMutation() {
+    return useMutation({
+        mutationFn: ({ email }: { email: string }) => forgotPassword({ email }),
+    });
+}
+
+export function useResetPasswordMutation() {
+    return useMutation({
+        mutationFn: ({ token, newPassword }: { token: string; newPassword: string }) =>
+            resetPassword({ token, newPassword }),
     });
 }

@@ -11,6 +11,7 @@ class EdukateUserDetails(
     val roles: Set<UserRole> = emptySet(),
     val status: UserStatus,
     token: String,
+    val email: String,
 ) : UserDetails, CredentialsContainer {
     private var token: String = token
 
@@ -22,6 +23,7 @@ class EdukateUserDetails(
         userCredentials.roles,
         userCredentials.status,
         userCredentials.encodedPassword,
+        requireNotNull(userCredentials.email) { "User email must not be null" },
     )
 
     fun toPreAuthenticatedAuthenticationToken() = PreAuthenticatedAuthenticationToken(this, null, authorities)

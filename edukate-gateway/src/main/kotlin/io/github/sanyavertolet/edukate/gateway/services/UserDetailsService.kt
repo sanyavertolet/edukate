@@ -12,11 +12,11 @@ import reactor.core.publisher.Mono
 class UserDetailsService(private val backendService: BackendService) :
     ReactiveUserDetailsService, ReactiveUserDetailsPasswordService {
 
-    override fun findByUsername(username: String): Mono<UserDetails> =
-        backendService.getUserByName(username).map(::EdukateUserDetails)
+    override fun findByUsername(username: String): Mono<UserDetails> = findEdukateUserDetailsByUsername(username).map { it }
 
-    fun findEdukateUserDetailsByUsername(username: String): Mono<EdukateUserDetails> =
-        backendService.getUserByName(username).map(::EdukateUserDetails)
+    fun findEdukateUserDetailsByUsername(login: String): Mono<EdukateUserDetails> =
+        if (login.contains('@')) backendService.getUserByEmail(login).map(::EdukateUserDetails)
+        else backendService.getUserByName(login).map(::EdukateUserDetails)
 
     fun findById(id: Long): Mono<EdukateUserDetails> = backendService.getUserById(id).map(::EdukateUserDetails)
 

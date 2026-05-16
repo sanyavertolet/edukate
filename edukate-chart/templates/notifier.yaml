@@ -32,6 +32,33 @@ spec:
                   key: {{ .Values.mongodb.secretKey.notifier }}
             {{ end }}
             {{ include "rabbitmq.addresses.env" . | nindent 12 | trim }}
+            {{ if .Values.smtp.secretName }}
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.smtp.secretName }}
+                  key: host
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.smtp.secretName }}
+                  key: port
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.smtp.secretName }}
+                  key: username
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.smtp.secretName }}
+                  key: password
+            - name: EMAIL_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.smtp.secretName }}
+                  key: from
+            {{ end }}
           volumeMounts:
             - {{ include "spring-boot.config-volume-mount" . | indent 14 | trim }}
           {{ include "spring-boot.management" .Values.notifier | nindent 10 }}

@@ -8,6 +8,8 @@ const ProblemListPage = lazy(() => import("@/pages/ProblemListPage"));
 const ProblemPage = lazy(() => import("@/pages/ProblemPage"));
 const SignInPage = lazy(() => import("@/pages/SignInPage"));
 const SignUpPage = lazy(() => import("@/pages/SignUpPage"));
+const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
 const ProblemSetListPage = lazy(() => import("@/pages/ProblemSetListPage"));
 const ProblemSetPage = lazy(() => import("@/pages/ProblemSetPage"));
 const ProblemSetCreationPage = lazy(() => import("@/pages/ProblemSetCreationPage"));
@@ -38,6 +40,14 @@ export const router = createBrowserRouter([
             {
                 path: "/sign-up",
                 element: <SignUpPage />,
+            },
+            {
+                path: "/forgot-password",
+                element: <ForgotPasswordPage />,
+            },
+            {
+                path: "/reset-password",
+                element: <ResetPasswordPage />,
             },
             {
                 path: "/problem-sets",

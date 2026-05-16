@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.logstash.logback.encoder)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.mongodb.reactive)
+    implementation(libs.spring.boot.starter.mail)
     implementation(libs.springdoc.openapi.starter.webflux.ui)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.kotlin.reflect)

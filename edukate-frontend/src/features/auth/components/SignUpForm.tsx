@@ -1,9 +1,7 @@
 import { FocusEvent, SyntheticEvent, useState } from "react";
-import { Box, Button, Link, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Link, TextField, Typography } from "@mui/material";
+import { isAxiosError } from "axios";
 import { useSignUpMutation } from "@/features/auth/api";
-import { useNavigate } from "react-router-dom";
-import { queryClient } from "@/lib/query-client";
-import { queryKeys } from "@/lib/query-keys";
 import { SignCard, SignContainer } from "@/shared/components/Styled";
 import { SiteMark } from "@/shared/components/layout/topbar/SiteMark";
 import { validate } from "@/shared/utils/validation";
@@ -15,20 +13,25 @@ const footerSx = { display: "flex", flexDirection: "column", gap: 2 } as const;
 
 type SignUpFormProps = {
     onSignInRequest?: () => void;
-    onSignUpSuccess?: () => void;
 };
 
-export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps) => {
+export const SignUpForm = ({ onSignInRequest }: SignUpFormProps) => {
     const { t } = useTranslation("auth");
-    const navigate = useNavigate();
     const signUpMutation = useSignUpMutation();
 
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [usernameError, setUsernameError] = useState<string | null>(null);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+    const [apiError, setApiError] = useState<string | null>(null);
+    const [submitted, setSubmitted] = useState(false);
+
+    const validateConfirmPassword = (confirm: string, against: string) =>
+        confirm === against ? null : "password_mismatch_error";
 
     const handleBlurUsername = (e: FocusEvent<HTMLInputElement>) => {
         setUsernameError(validate("username", e.target.value));
@@ -38,6 +41,10 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
     };
     const handleBlurPassword = (e: FocusEvent<HTMLInputElement>) => {
         setPasswordError(validate("password", e.target.value));
+        if (confirmPassword) setConfirmPasswordError(validateConfirmPassword(confirmPassword, e.target.value));
+    };
+    const handleBlurConfirmPassword = (e: FocusEvent<HTMLInputElement>) => {
+        setConfirmPasswordError(validateConfirmPassword(e.target.value, password));
     };
 
     const handleSubmit = (event: SyntheticEvent) => {
@@ -45,23 +52,49 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
         const uErr = validate("username", username);
         const eErr = validate("email", email);
         const pErr = validate("password", password);
+        const cErr = validateConfirmPassword(confirmPassword, password);
         setUsernameError(uErr);
         setEmailError(eErr);
         setPasswordError(pErr);
-        if (uErr || eErr || pErr) return;
+        setConfirmPasswordError(cErr);
+        if (uErr || eErr || pErr || cErr) return;
 
+        setApiError(null);
         signUpMutation.mutate(
             { username, email, password },
             {
                 onSuccess: () => {
-                    void queryClient.refetchQueries({ queryKey: queryKeys.auth.whoami }).finally(() => {
-                        if (onSignUpSuccess) onSignUpSuccess();
-                        else void navigate("/");
-                    });
+                    setSubmitted(true);
+                },
+                onError: (error) => {
+                    if (isAxiosError(error) && error.response?.status === 409) {
+                        setUsernameError("sign_up_conflict_error");
+                    } else {
+                        setApiError("sign_up_error");
+                    }
                 },
             },
         );
     };
+
+    if (submitted) {
+        return (
+            <SignContainer direction="column" justifyContent="space-between">
+                <SignCard variant="outlined">
+                    <SiteMark />
+                    <Typography component="h1" variant="h4" sx={titleSx}>
+                        {t("verify_email_prompt")}
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        {t("verify_email_subtitle")}
+                    </Typography>
+                    <Button variant="text" onClick={onSignInRequest}>
+                        {t("sign_in_link")}
+                    </Button>
+                </SignCard>
+            </SignContainer>
+        );
+    }
 
     return (
         <SignContainer direction="column" justifyContent="space-between">
@@ -70,6 +103,7 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                 <Typography component="h1" variant="h4" sx={titleSx}>
                     {t("sign_up_title")}
                 </Typography>
+                {apiError && <Alert severity="error">{t(apiError)}</Alert>}
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={formSx}>
                     <TextField
                         value={username}
@@ -123,7 +157,31 @@ export const SignUpForm = ({ onSignInRequest, onSignUpSuccess }: SignUpFormProps
                         fullWidth
                         variant="outlined"
                     />
-                    <Button type="submit" fullWidth variant="contained" disabled={signUpMutation.isPending}>
+                    <TextField
+                        value={confirmPassword}
+                        onChange={(e) => {
+                            setConfirmPassword(e.target.value);
+                        }}
+                        onBlur={handleBlurConfirmPassword}
+                        error={!!confirmPasswordError}
+                        helperText={confirmPasswordError ? t(confirmPasswordError) : " "}
+                        name="confirm-password"
+                        type="password"
+                        placeholder={t("password_placeholder")}
+                        autoComplete="new-password"
+                        label={t("confirm_password_label")}
+                        required
+                        fullWidth
+                        variant="outlined"
+                    />
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        loading={signUpMutation.isPending}
+                        loadingPosition="center"
+                        loadingIndicator={<CircularProgress size={20} color="inherit" />}
+                    >
                         {t("sign_up_button")}
                     </Button>
                 </Box>
