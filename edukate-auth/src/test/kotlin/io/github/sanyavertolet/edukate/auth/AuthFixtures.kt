@@ -15,5 +15,6 @@ object AuthFixtures {
         roles: Set<UserRole> = setOf(UserRole.USER),
         status: UserStatus = UserStatus.ACTIVE,
         token: String = "",
-    ) = EdukateUserDetails(id, name, roles, status, token)
+        email: String = "test@example.com",
+    ) = EdukateUserDetails(id, name, roles, status, token, email)
 }

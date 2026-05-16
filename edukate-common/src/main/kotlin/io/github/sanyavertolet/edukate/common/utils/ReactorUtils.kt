@@ -19,8 +19,6 @@ fun <T : Any> Mono<T>.orNotFound(message: String): Mono<T> = orThrow(HttpStatus.
 
 fun <T : Any> Mono<T>.orForbidden(message: String): Mono<T> = orThrow(HttpStatus.FORBIDDEN, message)
 
-fun <T : Any> Mono<T>.orBadRequest(message: String): Mono<T> = orThrow(HttpStatus.BAD_REQUEST, message)
-
 fun <T : Any> Mono<T>.notFoundIf(message: String, condition: (T) -> Boolean): Mono<T> =
     throwIf(HttpStatus.NOT_FOUND, message, condition)
 

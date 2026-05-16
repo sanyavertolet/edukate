@@ -32,6 +32,7 @@ class JwtTokenService(
             .claim("name", userDetails.username)
             .claim("roles", UserRole.listToString(userDetails.roles))
             .claim("status", userDetails.status.toString())
+            .claim("email", userDetails.email)
             .expiration(getExpirationDate(now))
             .signWith(key)
             .compact()
@@ -47,12 +48,14 @@ class JwtTokenService(
 
         log.debug("Token recognized, subject: {} ({})", claims.subject, claims["name", String::class.java])
         val userId = claims.subject.toLongOrNull() ?: return null
+        val email = claims["email", String::class.java] ?: return null
         return EdukateUserDetails(
             userId,
             claims["name", String::class.java],
             UserRole.fromString(claims["roles", String::class.java]),
             UserStatus.valueOf(claims["status", String::class.java]),
             token,
+            email,
         )
     }
 }

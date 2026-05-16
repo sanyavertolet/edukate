@@ -34,8 +34,43 @@ class BackendService(
     fun saveUser(userCredentials: UserCredentials): Mono<UserCredentials> =
         webClient.post().uri("/internal/users").bodyValue(userCredentials).retrieve().bodyToMono<UserCredentials>()
 
+    fun requestVerificationEmail(userId: Long, email: String): Mono<Void> =
+        webClient
+            .post()
+            .uri("/internal/tokens/verification")
+            .bodyValue(mapOf("userId" to userId.toString(), "email" to email))
+            .retrieve()
+            .bodyToMono<Void>()
+
+    fun requestPasswordReset(email: String): Mono<Void> =
+        webClient
+            .post()
+            .uri("/internal/tokens/password-reset")
+            .bodyValue(mapOf("email" to email))
+            .retrieve()
+            .bodyToMono<Void>()
+
+    fun consumeVerificationToken(token: String): Mono<Void> =
+        webClient
+            .post()
+            .uri("/internal/tokens/consume/verification")
+            .bodyValue(mapOf("token" to token))
+            .retrieve()
+            .bodyToMono<Void>()
+
+    fun consumeResetToken(token: String, encodedPassword: String): Mono<Void> =
+        webClient
+            .post()
+            .uri("/internal/tokens/consume/reset")
+            .bodyValue(mapOf("token" to token, "encodedPassword" to encodedPassword))
+            .retrieve()
+            .bodyToMono<Void>()
+
     fun getUserByName(name: String): Mono<UserCredentials> =
         gatewayUserRepository.findByName(name).map { it.toCredentials() }
+
+    fun getUserByEmail(email: String): Mono<UserCredentials> =
+        gatewayUserRepository.findByEmail(email).map { it.toCredentials() }
 
     @Cacheable(cacheNames = ["user-credentials-by-id"], key = "#id")
     fun getUserById(id: Long): Mono<UserCredentials> =

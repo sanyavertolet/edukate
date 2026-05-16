@@ -35,8 +35,9 @@ Polymorphic serialization via Jackson `@JsonTypeInfo`.
 ### Key Services
 
 - `NotificationService` — business logic: persist, retrieve, mark as read, statistics
-- `NotificationListener` — RabbitMQ consumer on `notifier.notify.v1.q`; receives `BaseNotificationCreateRequest`, calls
-  `saveIfAbsent()`
+- `NotificationListener` — RabbitMQ consumer on `notifier.notify.v1.q`; receives `BaseNotificationCreateRequest`, calls `saveIfAbsent()`
+- `EmailService` — wraps `JavaMailSender`; sends HTML/text emails via SMTP; uses `Schedulers.boundedElastic()` to prevent blocking Netty event loop
+- `EmailMessageListener` — RabbitMQ consumer on `notifier.email.v1.q`; dispatches `EmailVerificationMessage` and `PasswordResetMessage` to `EmailService`
 
 ### Idempotency
 

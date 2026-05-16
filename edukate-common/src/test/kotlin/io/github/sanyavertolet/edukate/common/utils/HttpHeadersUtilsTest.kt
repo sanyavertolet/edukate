@@ -10,7 +10,7 @@ import org.springframework.http.HttpHeaders
 class HttpHeadersUtilsTest {
 
     @Test
-    fun `populateHeaders sets all four X-Authorization headers`() {
+    fun `populateHeaders sets all five X-Authorization headers including email`() {
         val headers = HttpHeaders()
         val details = CommonFixtures.userDetails(id = 1L, name = "alice", status = UserStatus.ACTIVE)
 
@@ -20,16 +20,18 @@ class HttpHeadersUtilsTest {
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_NAME.headerName)).isEqualTo("alice")
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_STATUS.headerName)).isEqualTo("ACTIVE")
         assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_ROLES.headerName)).isEqualTo("USER")
+        assertThat(headers.getFirst(AuthHeaders.AUTHORIZATION_EMAIL.headerName)).isEqualTo(CommonFixtures.EMAIL)
     }
 
     @Test
-    fun `toEdukateUserDetails round-trip preserves all fields`() {
+    fun `toEdukateUserDetails round-trip preserves all fields including email`() {
         val details =
             CommonFixtures.userDetails(
                 id = 2L,
                 name = "bob",
                 roles = setOf(UserRole.ADMIN, UserRole.MODERATOR),
                 status = UserStatus.PENDING,
+                email = "bob@example.com",
             )
         val headers = HttpHeaders()
         populateHeaders(headers, details)
@@ -41,6 +43,7 @@ class HttpHeadersUtilsTest {
         assertThat(parsed.username).isEqualTo("bob")
         assertThat(parsed.roles).containsExactlyInAnyOrder(UserRole.ADMIN, UserRole.MODERATOR)
         assertThat(parsed.status).isEqualTo(UserStatus.PENDING)
+        assertThat(parsed.email).isEqualTo("bob@example.com")
     }
 
     @Test
@@ -56,6 +59,7 @@ class HttpHeadersUtilsTest {
         assertThat(headersWithout(AuthHeaders.AUTHORIZATION_NAME).toEdukateUserDetails()).isNull()
         assertThat(headersWithout(AuthHeaders.AUTHORIZATION_ROLES).toEdukateUserDetails()).isNull()
         assertThat(headersWithout(AuthHeaders.AUTHORIZATION_STATUS).toEdukateUserDetails()).isNull()
+        assertThat(headersWithout(AuthHeaders.AUTHORIZATION_EMAIL).toEdukateUserDetails()).isNull()
     }
 
     @Test

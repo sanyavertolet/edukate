@@ -16,13 +16,15 @@ routes traffic to downstream services.
 |----------------------------------|---------------|---------------------------------------------------------------------------------------------|
 | `EdukateGatewayApplication`      | root          | Spring Boot entry point                                                                     |
 | `GatewayProperties`              | `configs`     | `@ConfigurationProperties(prefix="gateway")` — backend/notifier URLs                        |
-| `AuthController`                 | `controllers` | Sign-in, sign-up, sign-out endpoints (all return 204)                                       |
+| `AuthController`                 | `controllers` | sign-in (204), sign-up (202), sign-out (204), verify-email (302), forgot-password (202), reset-password (204) |
 | `JwtAuthenticationFilter`        | `filters`     | `WebFilter` — extracts JWT from `X-Auth` cookie, validates, sets forwarded headers          |
 | `WebSecurityConfig`              | `security`    | Reactive security chains (`@Profile("secure")`); registers filter at `AUTHENTICATION` order |
-| `AuthService`                    | `services`    | signIn/signUp business logic                                                                |
-| `BackendService`                 | `services`    | WebClient wrapper for `/internal/users/**` on `edukate-backend`                             |
+| `AuthService`                    | `services`    | signIn / signUp / verifyEmail / forgotPassword / resetPassword business logic               |
+| `BackendService`                 | `services`    | WebClient wrapper for `/internal/**` on `edukate-backend` — users + auth tokens            |
 | `UserDetailsService`             | `services`    | Implements `ReactiveUserDetailsService`; bridges backend user data to Spring Security       |
-| `SignInRequest`, `SignUpRequest` | `dtos`        | Validated request DTOs (already in Kotlin)                                                  |
+| `SignInRequest`, `SignUpRequest` | `dtos`        | Validated request DTOs                                                                      |
+| `ForgotPasswordRequest`          | `dtos`        | `email: String` (`@Email @NotBlank`)                                                        |
+| `ResetPasswordRequest`           | `dtos`        | `token: String`, `newPassword: String` (`@Size(min=6, max=20)`)                             |
 
 ## Shared Dependencies
 

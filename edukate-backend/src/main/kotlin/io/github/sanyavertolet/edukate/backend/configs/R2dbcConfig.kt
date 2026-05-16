@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.configs
 
+import io.github.sanyavertolet.edukate.backend.entities.AuthTokenType
 import io.github.sanyavertolet.edukate.backend.entities.Subproblem
 import io.github.sanyavertolet.edukate.backend.entities.files.FileObjectMetadata
 import io.github.sanyavertolet.edukate.common.ContentLanguage
@@ -44,6 +45,8 @@ class R2dbcConfig {
                 FileKeyToJsonConverter(objectMapper),
                 JsonToFileObjectMetadataConverter(objectMapper),
                 FileObjectMetadataToJsonConverter(objectMapper),
+                StringToAuthTokenTypeConverter(),
+                AuthTokenTypeToStringConverter(),
             ),
         )
 
@@ -131,5 +134,15 @@ class R2dbcConfig {
     @WritingConverter
     class FileObjectMetadataToJsonConverter(private val objectMapper: ObjectMapper) : Converter<FileObjectMetadata, Json> {
         override fun convert(source: FileObjectMetadata): Json = Json.of(objectMapper.writeValueAsString(source))
+    }
+
+    @ReadingConverter
+    class StringToAuthTokenTypeConverter : Converter<String, AuthTokenType> {
+        override fun convert(source: String): AuthTokenType = AuthTokenType.valueOf(source)
+    }
+
+    @WritingConverter
+    class AuthTokenTypeToStringConverter : Converter<AuthTokenType, String> {
+        override fun convert(source: AuthTokenType): String = source.name
     }
 }

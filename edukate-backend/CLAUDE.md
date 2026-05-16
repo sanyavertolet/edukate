@@ -20,6 +20,7 @@ Core business logic service. Manages problems, problem sets, submissions, users,
 | `ProblemProgress`  | Per-user progress per problem (latest + best submission)   |
 | `Answer`           | Reference answer for a problem                             |
 | `FileObject`       | S3 file metadata with polymorphic FileKey                  |
+| `AuthToken`        | One-time UUID token for email verification or password reset; stored in `auth_tokens` table |
 
 ## Problem Key
 
@@ -71,12 +72,16 @@ Controllers inject both the relevant service and its mapper; services contain on
 - `ProblemInternalController` — POST `/internal/problems` and `/internal/problems/batch` for seeding problems
 - `BookInternalController` — POST `/internal/books` for seeding books
 - `UserInternalController` — user management endpoints
+- `AuthTokenInternalController` — POST `/internal/tokens/verification`, `/internal/tokens/password-reset`, `/internal/tokens/consume/verification`, `/internal/tokens/consume/reset`
 
 ## Async Messaging (RabbitMQ)
 
 - Publishes to `edukate.check.schedule.v1` → checker consumes
 - Consumes from `backend.check.result.v1.q` ← checker publishes results
-- Publishes to `edukate.notify.v1` → notifier sends notifications
+- Publishes to `edukate.notify.v1` → notifier sends in-app notifications
+- Publishes to `edukate.email.v1` → notifier sends transactional email (verification, password reset)
+
+Email publishing uses `EmailPublisher` interface (from `edukate-common`) — `RabbitEmailPublisher` under `notifier` profile, `NoopEmailPublisher` otherwise.
 
 ## Dependencies
 

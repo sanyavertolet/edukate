@@ -8,4 +8,6 @@ import reactor.core.publisher.Mono
 @Repository
 interface GatewayUserRepository : ReactiveCrudRepository<GatewayUser, Long> {
     fun findByName(name: String): Mono<GatewayUser>
+
+    fun findByEmail(email: String): Mono<GatewayUser>
 }

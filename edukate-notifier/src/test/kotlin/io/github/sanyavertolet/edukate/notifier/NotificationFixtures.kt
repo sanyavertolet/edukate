@@ -95,7 +95,7 @@ object NotificationFixtures {
         )
 
     fun mockAuthentication(userId: Long = 1L): Authentication {
-        val userDetails = EdukateUserDetails(userId, "testuser", emptySet(), UserStatus.ACTIVE, "token")
+        val userDetails = EdukateUserDetails(userId, "testuser", emptySet(), UserStatus.ACTIVE, "token", "test@example.com")
         return userDetails.toPreAuthenticatedAuthenticationToken()
     }
 }

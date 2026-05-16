@@ -110,35 +110,17 @@ class AuthControllerTest {
     // ── POST /api/v1/auth/sign-up ──────────────────────────────────────────────
 
     @Test
-    fun `signUp returns 204 and Set-Cookie header on successful registration`() {
-        every { authService.signUp(any()) } returns Mono.just("jwt-token")
-        every { authCookieService.respondWithToken("jwt-token") } returns
-            Mono.just(ResponseEntity.noContent().header("Set-Cookie", "X-Auth=jwt-token; Path=/").build())
-
-        webTestClient
-            .post()
-            .uri("/api/v1/auth/sign-up")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue("""{"username":"alice","password":"secret","email":"alice@example.com"}""")
-            .exchange()
-            .expectStatus()
-            .isNoContent
-            .expectHeader()
-            .exists("Set-Cookie")
-    }
-
-    @Test
-    fun `signUp returns 403 when authService returns empty Mono`() {
+    fun `signUp returns 202 on successful registration`() {
         every { authService.signUp(any()) } returns Mono.empty()
 
         webTestClient
             .post()
             .uri("/api/v1/auth/sign-up")
             .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue("""{"username":"alice","password":"secret","email":"alice@example.com"}""")
+            .bodyValue("""{"username":"alice","password":"secret123","email":"alice@example.com"}""")
             .exchange()
             .expectStatus()
-            .isForbidden
+            .isAccepted
     }
 
     @Test
@@ -182,6 +164,50 @@ class AuthControllerTest {
     @Test
     fun `signUp returns 400 when body is missing`() {
         webTestClient.post().uri("/api/v1/auth/sign-up").exchange().expectStatus().isBadRequest
+    }
+
+    @Test
+    fun `signIn returns 423 when user is PENDING`() {
+        every { authService.signIn(any()) } returns
+            Mono.error(ResponseStatusException(HttpStatus.LOCKED, "Email not verified"))
+
+        webTestClient
+            .post()
+            .uri("/api/v1/auth/sign-in")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue("""{"username":"testuser","password":"raw-password"}""")
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.LOCKED)
+    }
+
+    // ── GET /api/v1/auth/verify-email ─────────────────────────────────────────
+
+    @Test
+    fun `verifyEmail redirects to frontend sign-in with verified=true on success`() {
+        every { authService.verifyEmail("valid-token") } returns Mono.empty()
+
+        webTestClient
+            .get()
+            .uri("/api/v1/auth/verify-email?token=valid-token")
+            .exchange()
+            .expectStatus()
+            .isFound
+            .expectHeader()
+            .valueEquals("Location", "http://localhost/sign-in?verified=true")
+    }
+
+    @Test
+    fun `verifyEmail propagates 410 when token is expired`() {
+        every { authService.verifyEmail("expired-token") } returns
+            Mono.error(ResponseStatusException(HttpStatus.GONE, "Token expired"))
+
+        webTestClient
+            .get()
+            .uri("/api/v1/auth/verify-email?token=expired-token")
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.GONE)
     }
 
     // ── POST /api/v1/auth/sign-out ─────────────────────────────────────────────

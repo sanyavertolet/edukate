@@ -68,6 +68,7 @@ These Kubernetes Secrets must exist in the target namespace before `helm install
 | `s3-secrets`                     | `region`, `access-key`, `secret-key`, `bucket`, `endpoint` | backend, checker |
 | `mongodb-secrets`                | `connectionString`, `notifierConnectionString`     | backend, notifier     |
 | `jwt`                            | `key`                                              | gateway               |
+| `smtp-secrets`                   | `host`, `port`, `username`, `password`, `from`     | notifier              |
 | `edukate-rabbit-default-user`    | `connection_string`                                | backend, notifier, checker |
 
 ---

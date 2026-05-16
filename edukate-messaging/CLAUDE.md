@@ -9,10 +9,12 @@ Shared library that defines the RabbitMQ topology (exchange, routing keys, queue
 | Exchange                      | `edukate.exchange` | All messages       |
 | `edukate.check.schedule.v1`   | routing key        | Backend → Checker  |
 | `edukate.check.result.v1`     | routing key        | Checker → Backend  |
-| `edukate.notify.v1`           | routing key        | Backend → Notifier |
+| `edukate.notify.v1`           | routing key        | Backend → Notifier (in-app notifications) |
+| `edukate.email.v1`            | routing key        | Backend → Notifier (transactional email)  |
 | `checker.check.schedule.v1.q` | queue              | Checker consumer   |
 | `backend.check.result.v1.q`   | queue              | Backend consumer   |
-| `notifier.notify.v1.q`        | queue              | Notifier consumer  |
+| `notifier.notify.v1.q`        | queue              | Notifier consumer (in-app) |
+| `notifier.email.v1.q`         | queue              | Notifier consumer (email)  |
 
 ## Auto-Configuration
 

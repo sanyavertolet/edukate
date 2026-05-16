@@ -114,7 +114,7 @@ object BackendFixtures {
         username: String = "testuser",
         roles: Set<UserRole> = setOf(UserRole.USER),
     ): Authentication {
-        val userDetails = EdukateUserDetails(userId, username, roles, UserStatus.ACTIVE, "token")
+        val userDetails = EdukateUserDetails(userId, username, roles, UserStatus.ACTIVE, "token", "test@example.com")
         return userDetails.toPreAuthenticatedAuthenticationToken()
     }
 

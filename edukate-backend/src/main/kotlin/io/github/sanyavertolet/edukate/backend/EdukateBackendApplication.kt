@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.backend
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity
 
 @SpringBootApplication(
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
         ]
 )
 @EnableReactiveMethodSecurity
+@EnableScheduling
 @ConfigurationPropertiesScan(basePackages = ["io.github.sanyavertolet.edukate.storage.configs"])
 class EdukateBackendApplication
 
