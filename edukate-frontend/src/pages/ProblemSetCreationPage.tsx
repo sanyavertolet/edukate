@@ -124,7 +124,7 @@ export default function ProblemSetCreationPage() {
     };
 
     return (
-        <Container maxWidth="md">
+        <Container maxWidth="md" sx={{ px: { xs: 0, md: 2 } }}>
             <Card>
                 <CardContent>
                     <Stack spacing={3}>

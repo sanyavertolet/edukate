@@ -42,7 +42,7 @@ export default function PageSkeleton() {
         <Box>
             <OfflineBanner />
             <EdukateTopBar />
-            <Container maxWidth={"lg"} sx={{ pt: "120px", pb: "2rem" }}>
+            <Container maxWidth="lg" sx={{ pt: { xs: "96px", md: "120px" }, pb: "2rem", px: { xs: 0, sm: 2, md: 3 } }}>
                 <ErrorBoundary FallbackComponent={RouteFallback}>
                     <Suspense
                         fallback={

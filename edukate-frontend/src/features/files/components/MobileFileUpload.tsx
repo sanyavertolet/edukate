@@ -64,7 +64,16 @@ export function MobileFileUpload({
                 ModalProps={{ keepMounted: true }}
                 sx={{ "& .MuiDrawer-paper": { height: "auto", overflow: "visible" } }}
             >
-                <Box sx={{ px: 1, pt: 1, height: "100%", overflowX: "hidden", overflowY: "auto" }}>
+                <Box
+                    sx={{
+                        px: 1,
+                        pt: 1,
+                        pb: "max(24px, env(safe-area-inset-bottom))",
+                        height: "100%",
+                        overflowX: "hidden",
+                        overflowY: "auto",
+                    }}
+                >
                     <MobileFileInput
                         onTempFileUploaded={addFileKey}
                         onTempFileDeleted={deleteFileKey}
