@@ -6,7 +6,8 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { useTranslation } from "react-i18next";
 import { Submission, SubmissionStatus } from "@/features/submissions/types";
 import { formatRelative } from "@/shared/utils/date";
-import { BookChip } from "@/shared/components/BookChip";
+import { BookLabel } from "@/shared/components/BookLabel";
+import { ProblemLabel } from "@/shared/components/ProblemLabel";
 import { defaultTooltipSlotProps } from "@/shared/utils/utils";
 
 type SubmissionTableRowsProps = {
@@ -16,6 +17,7 @@ type SubmissionTableRowsProps = {
     onRowClick: (submission: Submission) => void;
     onBookSlugClick: (bookSlug: string) => void;
     onUserNameClick: (userName: string) => void;
+    onProblemKeyClick: (problemKey: string) => void;
 };
 
 function SubmissionStatusIcon({ status }: { status: SubmissionStatus }) {
@@ -55,6 +57,7 @@ export const SubmissionTableRows: FC<SubmissionTableRowsProps> = ({
     onRowClick,
     onBookSlugClick,
     onUserNameClick,
+    onProblemKeyClick,
 }) => {
     const { i18n } = useTranslation();
     if (loading || error) {
@@ -94,9 +97,11 @@ export const SubmissionTableRows: FC<SubmissionTableRowsProps> = ({
                         </Box>
                     </TableCell>
                     <TableCell>
-                        <BookChip bookSlug={item.problemKey.split("/")[0]} onClick={onBookSlugClick} />
+                        <BookLabel bookSlug={item.problemKey.split("/")[0]} onClick={onBookSlugClick} />
                     </TableCell>
-                    <TableCell>{item.problemKey.split("/").slice(1).join("/")}</TableCell>
+                    <TableCell>
+                        <ProblemLabel problemKey={item.problemKey} onClick={onProblemKeyClick} />
+                    </TableCell>
                     <TableCell>
                         <Box
                             component="span"

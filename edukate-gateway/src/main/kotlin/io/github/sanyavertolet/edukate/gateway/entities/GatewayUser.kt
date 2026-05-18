@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table
 data class GatewayUser(
     @Id val id: Long? = null,
     val name: String,
-    val email: String? = null,
+    val email: String,
     val token: String,
     val roles: Set<UserRole>,
     val status: UserStatus,

@@ -1,9 +1,10 @@
-import React, { FC, useState } from "react";
+import { FC, useState, MouseEvent } from "react";
 import { Badge, IconButton } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useAuthContext } from "@/features/auth/context";
 import { InvitationDialog } from "./InvitationDialog";
 import { NotificationPanel } from "./NotificationPanel";
+import { NotificationDrawer } from "./NotificationDrawer";
 import { BaseNotification, CheckedNotification, InviteNotification } from "@/features/notifications/types";
 import { toast } from "react-toastify";
 import { useGetNotificationsRequest, useMarkNotificationsAsReadMutation } from "@/features/notifications/api";
@@ -11,6 +12,7 @@ import { useProblemSetInvitationReplyMutation } from "@/features/problem-sets/ap
 import { useSubmissionQuery } from "@/features/submissions/api";
 import { SubmissionDrawer } from "@/features/submissions/components/SubmissionDrawer";
 import { useTranslation } from "react-i18next";
+import { useDeviceContext } from "@/shared/context/DeviceContext";
 
 type ProblemSetInviteInfo = {
     problemSetName: string;
@@ -21,6 +23,7 @@ type ProblemSetInviteInfo = {
 
 export const NotificationButton: FC = () => {
     const { t } = useTranslation();
+    const { isMobile } = useDeviceContext();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | undefined>(undefined);
     const { isAuthorized } = useAuthContext();
     const { data: page } = useGetNotificationsRequest();
@@ -28,7 +31,7 @@ export const NotificationButton: FC = () => {
     const handleClose = () => {
         setAnchorEl(undefined);
     };
-    const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    const handleOpen = (event: MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -82,14 +85,25 @@ export const NotificationButton: FC = () => {
                     setDrawerSubmissionId(undefined);
                 }}
             />
-            <NotificationPanel
-                onNotificationClick={onNotificationClick}
-                onMarkAsRead={(n) => {
-                    markAsReadMutation.mutate([n.uuid]);
-                }}
-                anchorEl={anchorEl}
-                onClose={handleClose}
-            />
+            {isMobile ? (
+                <NotificationDrawer
+                    open={Boolean(anchorEl)}
+                    onClose={handleClose}
+                    onNotificationClick={onNotificationClick}
+                    onMarkAsRead={(n) => {
+                        markAsReadMutation.mutate([n.uuid]);
+                    }}
+                />
+            ) : (
+                <NotificationPanel
+                    anchorEl={anchorEl}
+                    onClose={handleClose}
+                    onNotificationClick={onNotificationClick}
+                    onMarkAsRead={(n) => {
+                        markAsReadMutation.mutate([n.uuid]);
+                    }}
+                />
+            )}
             <IconButton
                 aria-label="show notifications"
                 aria-haspopup="true"

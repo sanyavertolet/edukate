@@ -14,7 +14,7 @@ checker:
       cpu: "1000m"
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
-    management.tracing.sampling.probability=0.5
+    management.tracing.sampling.probability=1.0
     management.otlp.metrics.export.enabled=false
 
 autoscaling:
@@ -94,11 +94,11 @@ tempo:
   tempo:
     resources:
       requests:
-        cpu: 50m
-        memory: 128Mi
+        cpu: 100m
+        memory: 256Mi
       limits:
         cpu: 500m
-        memory: 512Mi
+        memory: 1Gi
 
 # OTLP tracing endpoint for all Spring Boot services.
 # Requires spring-boot-starter-opentelemetry on the classpath (Spring Boot 4).
@@ -106,7 +106,7 @@ tempo:
 backend:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
-    management.tracing.sampling.probability=0.5
+    management.tracing.sampling.probability=1.0
     management.otlp.metrics.export.enabled=false
     spring.flyway.default-schema=edukate
     spring.flyway.schemas=edukate
@@ -115,13 +115,13 @@ backend:
 gateway:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
-    management.tracing.sampling.probability=0.5
+    management.tracing.sampling.probability=1.0
     management.otlp.metrics.export.enabled=false
     spring.cloud.gateway.metrics.enabled=false
 
 notifier:
   applicationProperties: |
     management.opentelemetry.tracing.export.otlp.endpoint=http://tempo:4318/v1/traces
-    management.tracing.sampling.probability=0.5
+    management.tracing.sampling.probability=1.0
     management.otlp.metrics.export.enabled=false
 

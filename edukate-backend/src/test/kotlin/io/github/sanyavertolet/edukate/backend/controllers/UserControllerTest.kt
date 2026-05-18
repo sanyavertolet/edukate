@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers
 import org.springframework.test.web.reactive.server.WebTestClient
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @WebFluxTest(UserController::class)
@@ -34,8 +35,8 @@ class UserControllerTest {
     // region GET /api/v1/users/whoami
 
     @Test
-    fun `whoami returns 200 with user data when user found`() {
-        val user = BackendFixtures.user(id = 1L, name = "testuser")
+    fun `whoami returns 200 with user data including email when user found`() {
+        val user = BackendFixtures.user(id = 1L, name = "testuser", email = "testuser@example.com")
         every { userService.findUserByName("testuser") } returns Mono.just(user)
 
         authenticatedClient()
@@ -49,6 +50,8 @@ class UserControllerTest {
             .expectBody()
             .jsonPath("$.name")
             .isEqualTo("testuser")
+            .jsonPath("$.email")
+            .isEqualTo("testuser@example.com")
             .jsonPath("$.status")
             .isEqualTo("ACTIVE")
     }
@@ -58,6 +61,44 @@ class UserControllerTest {
         every { userService.findUserByName("testuser") } returns Mono.empty()
 
         authenticatedClient().get().uri("/api/v1/users/whoami").exchange().expectStatus().isOk.expectBody().isEmpty
+    }
+
+    // endregion
+
+    // region GET /api/v1/users/by-prefix
+
+    @Test
+    fun `getUserNamesByPrefix excludes the authenticated user from results`() {
+        val self = BackendFixtures.user(id = 1L, name = "testuser")
+        every { userService.findUserByName("testuser") } returns Mono.just(self)
+        every { userService.getUserNamesByPrefix("al", 5, setOf(1L)) } returns Flux.just("alice", "albert")
+
+        authenticatedClient()
+            .get()
+            .uri { it.path("/api/v1/users/by-prefix").queryParam("prefix", "al").build() }
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .jsonPath("$[0]")
+            .isEqualTo("alice")
+            .jsonPath("$[1]")
+            .isEqualTo("albert")
+    }
+
+    @Test
+    fun `getUserNamesByPrefix returns results without exclusion when not authenticated`() {
+        every { userService.getUserNamesByPrefix("al", 5, emptySet()) } returns Flux.just("alice", "albert")
+
+        webTestClient
+            .get()
+            .uri { it.path("/api/v1/users/by-prefix").queryParam("prefix", "al").build() }
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBody()
+            .jsonPath("$.length()")
+            .isEqualTo(2)
     }
 
     // endregion

@@ -27,7 +27,7 @@ interface SubmissionRepository : ReactiveCrudRepository<Submission, Long> {
           AND (:bookSlugPrefix IS NULL OR b.slug LIKE :bookSlugPrefix || '%')
           AND (:problemCodePrefix IS NULL OR p.code LIKE :problemCodePrefix || '%')
           AND (:status IS NULL OR s.status = :status)
-        ORDER BY s.updated_at DESC
+        ORDER BY s.updated_at DESC, s.id DESC
         LIMIT :limit OFFSET :offset
     """
     )

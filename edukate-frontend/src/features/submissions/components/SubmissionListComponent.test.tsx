@@ -11,6 +11,7 @@ import SubmissionListComponent from "./SubmissionListComponent";
 
 const mockWhoami: UserDto = {
     name: "testuser",
+    email: "test@example.com",
     roles: ["USER"],
     status: "ACTIVE",
 };
@@ -94,11 +95,15 @@ it("opens submission drawer when a row is clicked", async () => {
 
     render(<SubmissionListComponent />);
 
+    // Wait for data to load
     await waitFor(() => {
         expect(screen.getByText("1.1.1")).toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByText("1.1.1"));
+    // Click the table row itself — ProblemLabel/BookLabel cells stop propagation so
+    // clicking the text no longer triggers the row's onRowClick handler
+    const rows = screen.getAllByRole("row");
+    await userEvent.click(rows[1]); // rows[0] is the header row
 
     await waitFor(() => {
         expect(screen.getByText("Submission #1")).toBeInTheDocument();

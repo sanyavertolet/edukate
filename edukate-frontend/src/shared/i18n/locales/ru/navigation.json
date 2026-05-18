@@ -7,5 +7,8 @@
     "sign_up": "Регистрация",
     "sign_out": "Выйти",
     "menu_button_aria": "Кнопка меню",
-    "user_menu_aria": "аккаунт текущего пользователя"
+    "user_menu_aria": "аккаунт текущего пользователя",
+    "switch_to_dark": "Тёмная тема",
+    "switch_to_light": "Светлая тема",
+    "switch_language": "Сменить язык"
 }

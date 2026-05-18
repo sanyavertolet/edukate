@@ -2,6 +2,18 @@ import "@testing-library/jest-dom";
 import "@/shared/i18n";
 import { server } from "./server";
 
+// IntersectionObserver is not implemented in jsdom — provide a no-op stub
+class IntersectionObserverStub {
+    observe() {}
+    disconnect() {}
+    unobserve() {}
+}
+Object.defineProperty(window, "IntersectionObserver", {
+    writable: true,
+    configurable: true,
+    value: IntersectionObserverStub,
+});
+
 // jsdom v29 changed localStorage to be file-backed, requiring --localstorage-file.
 // Provide a simple in-memory implementation so ThemeContext.tsx can use it without errors.
 const localStorageMock = (() => {

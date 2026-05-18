@@ -151,25 +151,11 @@ describe("NotificationPanel — empty state", () => {
 });
 
 describe("NotificationPanel — load more", () => {
-    it("shows 'Load more' button when more items exist", async () => {
+    it("does not show a 'Load more' button (uses infinite scroll instead)", async () => {
         server.use(
             getGetNotificationsMockHandler({
                 notifications: [simpleNotification],
                 statistics: { total: 25, unread: 3 },
-            }),
-        );
-        renderPanel();
-        await waitFor(() => {
-            expect(screen.getByText("System Update")).toBeInTheDocument();
-        });
-        expect(screen.getByRole("button", { name: /load more/i })).toBeInTheDocument();
-    });
-
-    it("does not show 'Load more' when all items are loaded", async () => {
-        server.use(
-            getGetNotificationsMockHandler({
-                notifications: [simpleNotification],
-                statistics: { total: 1, unread: 1 },
             }),
         );
         renderPanel();

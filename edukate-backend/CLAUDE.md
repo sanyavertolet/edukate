@@ -94,7 +94,7 @@ Email publishing uses `EmailPublisher` interface (from `edukate-common`) — `Ra
 - Flyway migrations in `src/main/resources/db/migration/`
 - Max in-memory size: 100MB
 - Presigned URL signature duration: 1h
-- Profiles: `dev`, `secure`, `local` (MinIO local endpoint), `notifier`
+- Profiles: `dev`, `secure`, `notifier`
 
 ## Testing Notes
 

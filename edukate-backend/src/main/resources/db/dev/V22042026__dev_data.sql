@@ -1021,7 +1021,7 @@ VALUES
     (10, 11, 'SUCCESS', 0.88, 'NONE',
         'Both subtasks solved correctly. Magnetic force and equilibrium angle match expected values.',
         '2026-04-25 10:25:00+00'),
-    (11, 13, 'MISTAKE', 0.40, 'PHYSICAL',
+    (11, 13, 'MISTAKE', 0.40, 'ALGEBRAIC',
         'The envelope equation is correct, but the minimum velocity formula has a sign error under the radical.',
         '2026-04-25 14:18:00+00'),
     (12, 14, 'SUCCESS', 0.94, 'NONE',

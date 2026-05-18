@@ -1,4 +1,4 @@
-import React, { FC, SyntheticEvent, useState } from "react";
+import { FC, SyntheticEvent, HTMLAttributes, useState } from "react";
 import { useProblemSetInviteUserMutation } from "@/features/problem-sets/api";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useOptionsRequest } from "@/shared/hooks/useOptionsRequest";
@@ -51,7 +51,7 @@ export const UserSearchInput: FC<UserSearchInputProps> = ({ problemSetShareCode,
             loading={isLoading}
             filterOptions={(x) => x}
             noOptionsText={inputValue.length > 0 ? t("no_users_found") : t("type_to_search")}
-            renderOption={({ key, ...rest }: React.HTMLAttributes<HTMLLIElement> & { key: string }, option) => (
+            renderOption={({ key, ...rest }: HTMLAttributes<HTMLLIElement> & { key: string }, option) => (
                 <ListItem key={key} {...rest} dense>
                     <ListItemAvatar sx={{ minWidth: 40 }}>
                         <UserAvatar name={option} size="small" />

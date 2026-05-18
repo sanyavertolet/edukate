@@ -69,8 +69,10 @@ export function EdukateTopBar() {
                     </Box>
 
                     <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <LanguageSwitcher />
-                        <ThemeToggleButton />
+                        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
+                            <LanguageSwitcher />
+                            <ThemeToggleButton />
+                        </Box>
 
                         {isAuthorized ? (
                             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -78,20 +80,25 @@ export function EdukateTopBar() {
                                 <UserMenu />
                             </Box>
                         ) : (
-                            <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
-                                <TopBarLink
-                                    text={t("sign_in")}
-                                    onClick={() => {
-                                        void navigate("/sign-in", { replace: isSignUpPage || isSignInPage });
-                                    }}
-                                />
-                                <TopBarLink
-                                    text={t("sign_up")}
-                                    onClick={() => {
-                                        void navigate("/sign-up", { replace: isSignUpPage || isSignInPage });
-                                    }}
-                                />
-                            </Box>
+                            <>
+                                <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1, alignItems: "center" }}>
+                                    <TopBarLink
+                                        text={t("sign_in")}
+                                        onClick={() => {
+                                            void navigate("/sign-in", { replace: isSignUpPage || isSignInPage });
+                                        }}
+                                    />
+                                    <TopBarLink
+                                        text={t("sign_up")}
+                                        onClick={() => {
+                                            void navigate("/sign-up", { replace: isSignUpPage || isSignInPage });
+                                        }}
+                                    />
+                                </Box>
+                                <Box sx={{ display: { xs: "flex", md: "none" } }}>
+                                    <UserMenu />
+                                </Box>
+                            </>
                         )}
                     </Box>
                 </BlurryToolbar>

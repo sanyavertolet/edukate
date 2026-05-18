@@ -20,7 +20,7 @@ export default function ProblemSetListPage() {
 
     return (
         <Box>
-            <Container>
+            <Container sx={{ px: { xs: 0, md: 2 } }}>
                 <Typography component="h1" color="primary" variant="h5" align="center">
                     {tNav("problem_sets")}
                 </Typography>
@@ -38,7 +38,7 @@ export default function ProblemSetListPage() {
                 </Box>
             </Container>
 
-            <Container sx={{ pt: 2 }}>
+            <Container sx={{ pt: 2, px: { xs: 0, md: 2 } }}>
                 {tab === "public" ? (
                     <ProblemSetCategoryList tab={tab} onTabSwitch={setTab} />
                 ) : (

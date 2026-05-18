@@ -4,7 +4,7 @@ data class UserCredentials(
     val id: Long?,
     val username: String,
     val encodedPassword: String,
-    val email: String? = null,
+    val email: String,
     val roles: Set<UserRole>,
     val status: UserStatus,
 ) {

@@ -1,5 +1,5 @@
 import { Box, Tab, Tabs } from "@mui/material";
-import React, { useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import { LazyLatexComponent } from "@/shared/components/LazyLatexComponent";
 import { Subproblem } from "@/features/problems/types";
 
@@ -13,7 +13,7 @@ export function SubproblemsComponent({ subproblems }: SubproblemsComponentProps)
 
     const [currentTabIndex, setCurrentTabIndex] = useState(0);
 
-    const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    const handleTabChange = (_: SyntheticEvent, newValue: number) => {
         setCurrentTabIndex(newValue);
     };
 

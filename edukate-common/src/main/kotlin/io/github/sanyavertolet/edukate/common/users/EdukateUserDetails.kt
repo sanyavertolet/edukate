@@ -23,7 +23,7 @@ class EdukateUserDetails(
         userCredentials.roles,
         userCredentials.status,
         userCredentials.encodedPassword,
-        requireNotNull(userCredentials.email) { "User email must not be null" },
+        userCredentials.email,
     )
 
     fun toPreAuthenticatedAuthenticationToken() = PreAuthenticatedAuthenticationToken(this, null, authorities)
