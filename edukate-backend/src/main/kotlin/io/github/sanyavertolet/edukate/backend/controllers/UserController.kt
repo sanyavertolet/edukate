@@ -78,11 +78,23 @@ class UserController(private val userService: UserService, private val problemSe
         @RequestParam prefix: String,
         @RequestParam(required = false, defaultValue = "5") @Positive limit: Int,
         @RequestParam(required = false) problemSetShareCode: String?,
+        authentication: Authentication?,
+    ): Mono<List<String>> =
+        (authentication?.let { auth -> userService.findUserByName(auth.name).map { setOfNotNull(it.id) } }
+                ?: Mono.just(emptySet<Long>()))
+            .flatMap { selfIds -> findUserNamesByPrefix(prefix, limit, problemSetShareCode, selfIds) }
+
+    private fun findUserNamesByPrefix(
+        prefix: String,
+        limit: Int,
+        problemSetShareCode: String?,
+        selfIds: Set<Long>,
     ): Mono<List<String>> =
         problemSetShareCode?.let { code ->
             problemSetService.findByShareCode(code).flatMap { ps ->
-                val excludeIds = ps.userIdRoleMap.keys + ps.invitedUserIds
-                userService.getUserNamesByPrefix(prefix, limit, excludeIds).collectList()
+                userService
+                    .getUserNamesByPrefix(prefix, limit, ps.userIdRoleMap.keys + ps.invitedUserIds + selfIds)
+                    .collectList()
             }
-        } ?: userService.getUserNamesByPrefix(prefix, limit).collectList()
+        } ?: userService.getUserNamesByPrefix(prefix, limit, selfIds).collectList()
 }

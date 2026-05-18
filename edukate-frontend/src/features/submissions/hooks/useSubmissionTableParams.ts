@@ -84,10 +84,14 @@ export function useSubmissionTableParams() {
                 updateSearchParams({ page: 0, userName: newUserName });
             },
             onChangeBookSlug: (newBookSlug: string) => {
-                updateSearchParams({ page: 0, bookSlug: newBookSlug });
+                updateSearchParams({ page: 0, bookSlug: newBookSlug, problemCode: "" });
             },
             onChangeProblemCode: (newProblemCode: string) => {
                 updateSearchParams({ page: 0, problemCode: newProblemCode });
+            },
+            onChangeProblemKey: (problemKey: string) => {
+                const [newBookSlug, ...codeParts] = problemKey.split("/");
+                updateSearchParams({ page: 0, bookSlug: newBookSlug, problemCode: codeParts.join("/") });
             },
             onChangeRowsPerPage: (value: number) => {
                 updateSearchParams({ page: 0, pageSize: value });

@@ -66,6 +66,7 @@ export default function SubmissionListComponent() {
                     onRowClick={setSelectedSubmission}
                     onBookSlugClick={handlers.onChangeBookSlug}
                     onUserNameClick={handlers.onChangeUserName}
+                    onProblemKeyClick={handlers.onChangeProblemKey}
                 />
             </SubmissionTable>
             <SubmissionDrawer

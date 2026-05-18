@@ -7,5 +7,8 @@
     "sign_up": "Sign Up",
     "sign_out": "Sign Out",
     "menu_button_aria": "Menu button",
-    "user_menu_aria": "account of current user"
+    "user_menu_aria": "account of current user",
+    "switch_to_dark": "Dark theme",
+    "switch_to_light": "Light theme",
+    "switch_language": "Switch language"
 }

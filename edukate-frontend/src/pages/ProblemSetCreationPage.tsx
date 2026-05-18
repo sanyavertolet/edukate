@@ -5,7 +5,6 @@ import {
     Card,
     CardActions,
     CardContent,
-    CircularProgress,
     Container,
     FormControlLabel,
     Stack,
@@ -14,10 +13,11 @@ import {
     Stepper,
     Switch,
     TextField,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { OptionPickerComponent } from "@/shared/components/OptionPicker";
 import { CreateProblemSetRequest } from "@/features/problem-sets/types";
 import { useCreateProblemSetMutation } from "@/features/problem-sets/api";
@@ -71,8 +71,14 @@ export default function ProblemSetCreationPage() {
         createProblemSetRequest.problemKeys.length > 0;
 
     const steps = [t("stepper_step_details"), t("stepper_step_problems"), t("stepper_step_invite_users")];
+    const stepErrors = [
+        activeStep > 0 && !isStep0Valid,
+        activeStep > 1 && createProblemSetRequest.problemKeys.length === 0,
+        false,
+    ];
+    const stepErrorMessages = [t("stepper_step_details_error"), t("stepper_step_problems_error"), ""];
 
-    const stepContent: Record<number, React.ReactNode> = {
+    const stepContent: Record<number, ReactNode> = {
         0: (
             <Stack spacing={2}>
                 <TextField
@@ -131,10 +137,12 @@ export default function ProblemSetCreationPage() {
                         <Typography component="h1" color="secondary" variant="h5">
                             {t("create_problem_set_title")}
                         </Typography>
-                        <Stepper activeStep={activeStep}>
-                            {steps.map((label) => (
+                        <Stepper activeStep={activeStep} alternativeLabel>
+                            {steps.map((label, index) => (
                                 <Step key={label}>
-                                    <StepLabel>{label}</StepLabel>
+                                    <Tooltip title={stepErrors[index] ? stepErrorMessages[index] : ""} arrow>
+                                        <StepLabel error={stepErrors[index]}>{label}</StepLabel>
+                                    </Tooltip>
                                 </Step>
                             ))}
                         </Stepper>
@@ -156,7 +164,6 @@ export default function ProblemSetCreationPage() {
                         {activeStep < steps.length - 1 && (
                             <Button
                                 variant="outlined"
-                                disabled={activeStep === 0 && !isStep0Valid}
                                 onClick={() => {
                                     setActiveStep((s) => s + 1);
                                 }}
@@ -164,11 +171,11 @@ export default function ProblemSetCreationPage() {
                                 {t("stepper_next_button")}
                             </Button>
                         )}
-                        {activeStep >= 1 && (
+                        {activeStep === steps.length - 1 && (
                             <Button
                                 variant="contained"
                                 disabled={!isCreateEnabled}
-                                startIcon={problemSetMutation.isPending ? <CircularProgress size={20} /> : undefined}
+                                loading={problemSetMutation.isPending}
                                 onClick={() => {
                                     problemSetMutation.mutate();
                                 }}

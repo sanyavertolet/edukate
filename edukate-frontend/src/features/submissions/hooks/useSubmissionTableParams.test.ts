@@ -73,8 +73,15 @@ describe("useSubmissionTableParams", () => {
         });
     });
 
-    it("onChangeBookSlug updates bookSlug and resets page", async () => {
+    it("onChangeBookSlug updates bookSlug, resets page, and clears problemCode", async () => {
         const { result } = renderHook(() => useSubmissionTableParams(), { wrapper: createWrapper() });
+
+        act(() => {
+            result.current.handlers.onChangeProblemCode("1.3");
+        });
+        await waitFor(() => {
+            expect(result.current.problemCode).toBe("1.3");
+        });
 
         act(() => {
             result.current.handlers.onChangeBookSlug("savchenko");
@@ -82,7 +89,35 @@ describe("useSubmissionTableParams", () => {
 
         await waitFor(() => {
             expect(result.current.bookSlug).toBe("savchenko");
+            expect(result.current.problemCode).toBe("");
             expect(result.current.page).toBe(0);
+        });
+    });
+
+    it("onChangeProblemKey splits the key into bookSlug and problemCode", async () => {
+        const { result } = renderHook(() => useSubmissionTableParams(), { wrapper: createWrapper() });
+
+        act(() => {
+            result.current.handlers.onChangeProblemKey("savchenko/1.3.5");
+        });
+
+        await waitFor(() => {
+            expect(result.current.bookSlug).toBe("savchenko");
+            expect(result.current.problemCode).toBe("1.3.5");
+            expect(result.current.page).toBe(0);
+        });
+    });
+
+    it("onChangeProblemKey handles nested codes (bookSlug/chapter/code)", async () => {
+        const { result } = renderHook(() => useSubmissionTableParams(), { wrapper: createWrapper() });
+
+        act(() => {
+            result.current.handlers.onChangeProblemKey("irodov/1/1.1");
+        });
+
+        await waitFor(() => {
+            expect(result.current.bookSlug).toBe("irodov");
+            expect(result.current.problemCode).toBe("1/1.1");
         });
     });
 

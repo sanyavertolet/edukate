@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ProblemMetadata } from "@/features/problems/types";
 import { ProblemStatusIcon } from "@/features/problems/components/ProblemStatusIcon";
 import { TagChip } from "@/shared/components/TagChip";
-import { BookChip } from "@/shared/components/BookChip";
+import { BookLabel } from "@/shared/components/BookLabel";
 import { formatRelative } from "@/shared/utils/date";
 
 type ProblemTableRowsProps = {
@@ -68,11 +68,11 @@ export const ProblemTableRows: FC<ProblemTableRowsProps> = ({ items, loading, er
                         <ProblemStatusIcon status={item.status} />
                     </TableCell>
                     <TableCell>
-                        <BookChip bookSlug={item.bookSlug} onClick={onBookSlugClick} />
+                        <BookLabel bookSlug={item.bookSlug} onClick={onBookSlugClick} />
                     </TableCell>
                     <TableCell>
                         {item.code}
-                        {item.isHard ? "*" : ""}
+                        {item.isHard && " ★"}
                     </TableCell>
                     <TableCell sx={columnVisibility[3]}>
                         <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 0.5, md: 1 }}>

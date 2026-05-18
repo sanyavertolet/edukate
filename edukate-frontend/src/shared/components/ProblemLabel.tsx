@@ -1,12 +1,13 @@
 import { FC } from "react";
 import { Box } from "@mui/material";
 
-type BookChipProps = {
-    bookSlug: string;
-    onClick?: (bookSlug: string) => void;
+type ProblemLabelProps = {
+    problemKey: string;
+    onClick?: (problemKey: string) => void;
 };
 
-export const BookChip: FC<BookChipProps> = ({ bookSlug, onClick }) => {
+export const ProblemLabel: FC<ProblemLabelProps> = ({ problemKey, onClick }) => {
+    const code = problemKey.split("/").slice(1).join("/");
     return (
         <Box
             component="span"
@@ -19,12 +20,12 @@ export const BookChip: FC<BookChipProps> = ({ bookSlug, onClick }) => {
                 onClick
                     ? (e) => {
                           e.stopPropagation();
-                          onClick(bookSlug);
+                          onClick(problemKey);
                       }
                     : undefined
             }
         >
-            {bookSlug}
+            {code}
         </Box>
     );
 };

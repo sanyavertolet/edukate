@@ -1,19 +1,31 @@
-import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
-import React, { useState } from "react";
+import { Box, Button, Divider, Menu, MenuItem, Typography } from "@mui/material";
+import { MouseEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "@/features/auth/context";
 import { useSignOutMutation } from "@/features/auth/api";
 import { AccountCircle } from "@mui/icons-material";
 import { queryClient } from "@/lib/query-client";
 import { useTranslation } from "react-i18next";
+import { useDeviceContext } from "@/shared/context/DeviceContext";
+import { useTheme } from "@/shared/context/ThemeContext";
+import { UserAvatar } from "@/shared/components/UserAvatar";
 
 export function UserMenu() {
-    const { t } = useTranslation("navigation");
+    const { t, i18n } = useTranslation("navigation");
     const { user } = useAuthContext();
     const navigate = useNavigate();
     const signOutMutation = useSignOutMutation();
+    const { isMobile } = useDeviceContext();
+    const { theme, toggleTheme } = useTheme();
+    const isRussian = i18n.language.startsWith("ru");
 
-    const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    const toggleLanguage = () => {
+        void i18n.changeLanguage(isRussian ? "en" : "ru").then(() => {
+            void queryClient.invalidateQueries();
+        });
+    };
+
+    const handleOpen = (event: MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
@@ -53,6 +65,30 @@ export function UserMenu() {
         </MenuItem>,
     ];
 
+    const mobileSettingsItems = isMobile
+        ? [
+              <Divider key="mobile-divider" sx={{ "&&": { my: 0 } }} />,
+              <MenuItem
+                  key="toggle-language"
+                  onClick={() => {
+                      toggleLanguage();
+                      handleClose();
+                  }}
+              >
+                  {isRussian ? "English" : "Русский"}
+              </MenuItem>,
+              <MenuItem
+                  key="toggle-theme"
+                  onClick={() => {
+                      toggleTheme();
+                      handleClose();
+                  }}
+              >
+                  {t(theme === "dark" ? "switch_to_light" : "switch_to_dark")}
+              </MenuItem>,
+          ]
+        : [];
+
     const [anchorEl, setAnchorEl] = useState<HTMLElement>();
     const isMenuOpen = Boolean(anchorEl);
     return (
@@ -66,7 +102,25 @@ export function UserMenu() {
                 slotProps={{ list: { "aria-labelledby": "user-menu-button" } }}
                 keepMounted
             >
-                {user ? signedInMenuItems : signedOutMenuItems}
+                {user && (
+                    <Box sx={{ display: { xs: "block", md: "none" } }}>
+                        <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
+                            <UserAvatar name={user.name} />
+                            <Box>
+                                <Typography variant="body2" fontWeight="bold">
+                                    {user.name}
+                                </Typography>
+                                {user.email && (
+                                    <Typography variant="caption" color="text.secondary" display="block">
+                                        {user.email}
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Box>
+                        <Divider />
+                    </Box>
+                )}
+                {user ? [...signedInMenuItems, ...mobileSettingsItems] : [...signedOutMenuItems, ...mobileSettingsItems]}
             </Menu>
             <Button
                 id="user-menu-button"

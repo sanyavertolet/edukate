@@ -40,7 +40,7 @@ class S3Config {
     ): S3Presigner =
         S3Presigner.builder()
             .region(Region.of(s3Properties.region))
-            .endpointOverride(URI.create(s3Properties.endpoint))
+            .endpointOverride(URI.create(s3Properties.publicEndpoint ?: s3Properties.endpoint))
             .credentialsProvider(credentialsProvider)
             .serviceConfiguration(s3Configuration)
             .build()

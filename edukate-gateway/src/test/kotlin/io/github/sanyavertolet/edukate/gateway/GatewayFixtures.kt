@@ -44,7 +44,7 @@ object GatewayFixtures {
         id: Long? = USER_ID,
         name: String = USER_NAME,
         token: String = ENCODED_PASSWORD,
-        email: String? = EMAIL,
+        email: String = EMAIL,
         roles: Set<UserRole> = setOf(UserRole.USER),
         status: UserStatus = UserStatus.ACTIVE,
     ) = GatewayUser(id, name, email, token, roles, status)

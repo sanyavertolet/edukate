@@ -11,4 +11,7 @@ data class S3Properties(
     val secretKey: String,
     val bucket: String,
     val signatureDuration: Duration,
+    // When set, presigned URLs use this host instead of `endpoint`.
+    // Useful when the backend reaches MinIO on localhost but clients need a reachable address.
+    val publicEndpoint: String? = null,
 )

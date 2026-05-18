@@ -35,7 +35,7 @@ and the frontend is React 19 + TypeScript + Vite.
 
 # Run services locally
 ./gradlew :edukate-gateway:bootRun --args='--spring.profiles.active=dev,secure'
-./gradlew :edukate-backend:bootRun --args='--spring.profiles.active=dev,secure,local,notifier'
+./gradlew :edukate-backend:bootRun --args='--spring.profiles.active=dev,secure,notifier'
 ./gradlew :edukate-notifier:bootRun --args='--spring.profiles.active=dev,secure'
 ```
 
@@ -79,7 +79,7 @@ docker compose up -d
 
 - All backend services use **Spring WebFlux** (reactive, non-blocking). Use `Mono`/`Flux` throughout, never block.
 - The gateway handles authentication; downstream services trust the forwarded user context.
-- Spring profiles control feature flags: `dev` (local env), `secure` (enable security), `local` (MinIO local endpoint),
+- Spring profiles control feature flags: `dev` (local env), `secure` (enable security),
   `notifier` (enable HTTP notifier bean).
 - PostgreSQL is the data store for the backend (via R2DBC + Flyway migrations). MongoDB is used by the notifier.
 - DTOs never expose raw numeric IDs — use human-readable identifiers (problem `key` = `bookSlug/code`, book `slug`, user `name`, problem set `shareCode`).

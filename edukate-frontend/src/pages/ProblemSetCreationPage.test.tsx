@@ -44,13 +44,13 @@ describe("ProblemSetCreationPage — static rendering (step 0)", () => {
 
     it("shows Next button but not Create on step 0", () => {
         render(<ProblemSetCreationPage />);
-        expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Next" })).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: /create problem set/i })).not.toBeInTheDocument();
     });
 
-    it("Next button is disabled when required fields are empty", () => {
+    it("Next button is always enabled on step 0 (validation shown via step label error)", () => {
         render(<ProblemSetCreationPage />);
-        expect(screen.getByRole("button", { name: /next/i })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
     });
 });
 
@@ -73,28 +73,43 @@ describe("ProblemSetCreationPage — step 0 interactions", () => {
         render(<ProblemSetCreationPage />);
         await userEvent.type(screen.getByLabelText(/title/i), "My Set");
         await userEvent.type(screen.getByLabelText(/description/i), "Desc");
-        expect(screen.getByRole("button", { name: /next/i })).not.toBeDisabled();
+        expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
     });
 });
 
 describe("ProblemSetCreationPage — step navigation", () => {
-    it("advances to Problems step and shows Create and Back buttons", async () => {
+    it("advances to Problems step and shows Next and Back buttons (no Create yet)", async () => {
         server.use(emptyProblemsHandler);
         render(<ProblemSetCreationPage />);
         await userEvent.type(screen.getByLabelText(/title/i), "My Set");
         await userEvent.type(screen.getByLabelText(/description/i), "Desc");
-        await userEvent.click(screen.getByRole("button", { name: /next/i }));
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
-        expect(screen.getByRole("button", { name: /create problem set/i })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: /create problem set/i })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Next" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /back/i })).toBeInTheDocument();
     });
 
-    it("Create button is disabled on Problems step when no problems selected", async () => {
+    it("Create button only appears on the final (invite users) step", async () => {
+        server.use(emptyProblemsHandler);
+        render(<ProblemSetCreationPage />);
+
+        expect(screen.queryByRole("button", { name: /create problem set/i })).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
+        expect(screen.queryByRole("button", { name: /create problem set/i })).not.toBeInTheDocument();
+
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
+        expect(screen.getByRole("button", { name: /create problem set/i })).toBeInTheDocument();
+    });
+
+    it("Create button is disabled on final step when no problems were selected", async () => {
         server.use(emptyProblemsHandler);
         render(<ProblemSetCreationPage />);
         await userEvent.type(screen.getByLabelText(/title/i), "My Set");
         await userEvent.type(screen.getByLabelText(/description/i), "Desc");
-        await userEvent.click(screen.getByRole("button", { name: /next/i }));
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
         expect(screen.getByRole("button", { name: /create problem set/i })).toBeDisabled();
     });
@@ -104,7 +119,7 @@ describe("ProblemSetCreationPage — step navigation", () => {
         render(<ProblemSetCreationPage />);
         await userEvent.type(screen.getByLabelText(/title/i), "My Set");
         await userEvent.type(screen.getByLabelText(/description/i), "Desc");
-        await userEvent.click(screen.getByRole("button", { name: /next/i }));
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
         await userEvent.click(screen.getByRole("button", { name: /back/i }));
 
         expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
@@ -130,12 +145,15 @@ describe("ProblemSetCreationPage — full creation pipeline", () => {
         // Step 0: fill details
         await userEvent.type(screen.getByLabelText(/title/i), "My Problem Set");
         await userEvent.type(screen.getByLabelText(/description/i), "Test description");
-        await userEvent.click(screen.getByRole("button", { name: /next/i }));
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
 
         // Step 1: select problem from list
         await userEvent.click(await screen.findByText("savchenko/1.1.1"));
-        expect(screen.getByRole("button", { name: /create problem set/i })).not.toBeDisabled();
 
+        // Advance to final step (invite users)
+        await userEvent.click(screen.getByRole("button", { name: "Next" }));
+
+        expect(screen.getByRole("button", { name: /create problem set/i })).not.toBeDisabled();
         await userEvent.click(screen.getByRole("button", { name: /create problem set/i }));
 
         await waitFor(
