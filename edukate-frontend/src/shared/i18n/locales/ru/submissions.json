@@ -3,6 +3,7 @@
     "problem_label": "Задача",
     "submitted_by_label": "Отправлено",
     "attached_files_label": "Прикреплённые файлы",
+    "attached_file_label": "Файл {{index}}",
     "no_submissions_yet": "Посылок пока нет",
     "no_submissions_yet_description": "Ваши посылки появятся здесь после загрузки решения.",
     "submissions_load_error": "Не удалось загрузить посылки",

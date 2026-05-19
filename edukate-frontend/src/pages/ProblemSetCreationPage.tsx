@@ -2,7 +2,6 @@ import {
     Alert,
     Box,
     Button,
-    Card,
     CardActions,
     CardContent,
     Container,
@@ -25,6 +24,7 @@ import { inviteToProblemSet } from "@/generated/backend";
 import { ProblemSetProblemPicker } from "@/features/problem-sets/components/ProblemSetProblemPicker";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Card } from "@/shared/components/Styled";
 
 export default function ProblemSetCreationPage() {
     const { t } = useTranslation("problem-sets");

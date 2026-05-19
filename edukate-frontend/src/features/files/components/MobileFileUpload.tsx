@@ -1,5 +1,7 @@
-import { Box, Button, CircularProgress, Fab, SwipeableDrawer } from "@mui/material";
-import { useState, useRef } from "react";
+import { Box, Button, CircularProgress, Fab } from "@mui/material";
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import { SwipeableDrawer } from "@/shared/components/Styled";
 import { MobileFileInput } from "./MobileFileInput";
 import AddIcon from "@mui/icons-material/Add";
 import { useTranslation } from "react-i18next";
@@ -41,20 +43,21 @@ export function MobileFileUpload({
         }
     };
 
-    const containerRef = useRef<HTMLDivElement>(null);
     return (
-        <Box ref={containerRef} sx={{ position: "relative", height: "100%" }}>
-            <Fab
-                color="primary"
-                aria-label="add"
-                onClick={toggleDrawer(true)}
-                sx={{ position: "fixed", bottom: 16, right: 16, zIndex: 10000, display: isDrawerOpen ? "none" : "flex" }}
-            >
-                <AddIcon />
-            </Fab>
+        <Box>
+            {createPortal(
+                <Fab
+                    color="primary"
+                    aria-label="add"
+                    onClick={toggleDrawer(true)}
+                    sx={{ position: "fixed", bottom: 16, right: 16, display: isDrawerOpen ? "none" : "flex" }}
+                >
+                    <AddIcon />
+                </Fab>,
+                document.body,
+            )}
 
             <SwipeableDrawer
-                container={containerRef.current}
                 anchor="bottom"
                 open={isDrawerOpen}
                 onClose={toggleDrawer(false)}

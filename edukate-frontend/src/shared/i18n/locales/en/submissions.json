@@ -3,6 +3,7 @@
     "problem_label": "Problem",
     "submitted_by_label": "Submitted by",
     "attached_files_label": "Attached files",
+    "attached_file_label": "File {{index}}",
     "no_submissions_yet": "No submissions yet",
     "no_submissions_yet_description": "Your submissions will appear here after you upload a solution.",
     "submissions_load_error": "Failed to load submissions",

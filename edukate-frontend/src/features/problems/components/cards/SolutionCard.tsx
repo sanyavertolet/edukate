@@ -1,5 +1,6 @@
 import { Problem } from "@/features/problems/types";
-import { Card, CardContent, Stack, Typography } from "@mui/material";
+import { CardContent, Stack, Typography } from "@mui/material";
+import { Card } from "@/shared/components/Styled";
 import { FileUpload } from "@/features/files/components/FileUpload";
 import { AnswerAccordionComponent } from "@/features/problems/components/AnswerAccordion";
 import { useSubmitProblemMutation } from "@/features/submissions/api";

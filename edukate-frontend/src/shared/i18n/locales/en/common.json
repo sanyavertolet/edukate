@@ -19,7 +19,7 @@
     "max_size_error": "You can upload no more than {{max}}, you have {{current}}.",
     "files_heading": "Files",
     "files_uploaded_count": "Files uploaded",
-    "files_selected": "{{count}} files selected",
+    "files_selected": "files selected",
     "no_files_selected": "No files selected",
     "no_files_yet": "No files yet",
     "image_alt": "Image {{index}}",
@@ -46,7 +46,7 @@
     "notification_problem": "Problem {{problemKey}}",
     "notification_invite_primary": "{{inviterName}} invites you!",
     "notification_join_problem_set": "Join problem set",
-    "notification_from": "from",
+    "notification_from": "Best regards,",
     "notification_default": "Notification",
     "notification_show_more": "Show more",
     "notification_show_less": "Show less"

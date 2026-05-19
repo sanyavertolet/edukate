@@ -61,11 +61,11 @@ export const NotificationButton: FC = () => {
     };
 
     const onNotificationClick = (notification: BaseNotification) => {
-        const { _type, uuid } = notification;
+        const { _type, uuid, isRead } = notification;
         if (_type === "simple") {
-            markAsReadMutation.mutate([uuid]);
+            if (!isRead) markAsReadMutation.mutate([uuid]);
         } else if (_type === "checked") {
-            markAsReadMutation.mutate([uuid]);
+            if (!isRead) markAsReadMutation.mutate([uuid]);
             handleClose();
             setDrawerSubmissionId(String((notification as CheckedNotification).submissionId));
         } else if (_type === "invite") {

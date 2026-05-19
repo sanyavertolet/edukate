@@ -17,8 +17,8 @@ export function Providers({ children }: ProvidersProps) {
     return (
         <PwaProvider>
             <QueryClientProvider client={queryClient}>
-                <CssBaseline />
                 <ThemeProvider>
+                    <CssBaseline />
                     <AuthProvider>
                         <CookiesProvider defaultSetOptions={{ path: "/" }}>
                             <DeviceProvider>{children}</DeviceProvider>

@@ -165,9 +165,10 @@ function FilesSection({ fileUrls, onPreview }: { fileUrls: string[]; onPreview: 
                     <Chip
                         key={i}
                         icon={<AttachFileIcon />}
-                        label={`File ${String(i + 1)}`}
+                        label={t("attached_file_label", { index: i + 1 })}
                         size="small"
                         variant="outlined"
+                        color="primary"
                         onClick={() => {
                             onPreview(i);
                         }}

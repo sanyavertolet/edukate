@@ -56,7 +56,9 @@ export const NotificationListItem: FC<NotificationListItemProps> = ({ notificati
                     secondary: (
                         <Typography component="span" variant="body2" color="text.secondary">
                             {n.message}
-                            {` ${t("notification_from")} `}
+                            <br />
+                            {t("notification_from")}
+                            <br />
                             <Typography component="span" variant="body2" color="text.primary" fontWeight="medium">
                                 {n.source}
                             </Typography>

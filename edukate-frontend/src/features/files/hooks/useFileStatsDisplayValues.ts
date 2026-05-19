@@ -18,10 +18,7 @@ export const useFileStatsDisplayValues = ({ files, maxFiles, maxSize }: UseFileS
     const currentSize = useMemo(() => files.reduce((total, file) => total + file.size, 0), [files]);
 
     const primaryText = useMemo(
-        () =>
-            files.length > 0
-                ? displayValue(files.length, maxFiles, t("files_selected", { count: files.length }))
-                : t("no_files_selected"),
+        () => (files.length > 0 ? displayValue(files.length, maxFiles, t("files_selected")) : t("no_files_selected")),
         [files.length, maxFiles, t],
     );
 

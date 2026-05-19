@@ -1,4 +1,5 @@
-import { Divider, List, Paper } from "@mui/material";
+import { Divider } from "@mui/material";
+import { List } from "@/shared/components/Styled";
 import { ProblemSetListItem } from "./ProblemSetListItem";
 import { ProblemSetListItemSkeleton } from "./ProblemSetListItemSkeleton";
 import { ProblemSetEmptyState } from "./ProblemSetEmptyState";
@@ -18,16 +19,14 @@ export function ProblemSetCategoryList({ tab, onTabSwitch }: ProblemSetCategoryL
 
     if (isPending) {
         return (
-            <Paper variant="outlined">
-                <List disablePadding>
-                    {Array.from({ length: SKELETON_COUNT }, (_, i) => (
-                        <Fragment key={`skeleton-${String(i)}`}>
-                            {i > 0 && <Divider />}
-                            <ProblemSetListItemSkeleton />
-                        </Fragment>
-                    ))}
-                </List>
-            </Paper>
+            <List disablePadding>
+                {Array.from({ length: SKELETON_COUNT }, (_, i) => (
+                    <Fragment key={`skeleton-${String(i)}`}>
+                        {i > 0 && <Divider />}
+                        <ProblemSetListItemSkeleton />
+                    </Fragment>
+                ))}
+            </List>
         );
     }
 
@@ -36,15 +35,13 @@ export function ProblemSetCategoryList({ tab, onTabSwitch }: ProblemSetCategoryL
     }
 
     return (
-        <Paper variant="outlined">
-            <List disablePadding>
-                {problemSets.map((problemSet, index) => (
-                    <Fragment key={problemSet.shareCode}>
-                        {index > 0 && <Divider />}
-                        <ProblemSetListItem problemSetMetadata={problemSet} />
-                    </Fragment>
-                ))}
-            </List>
-        </Paper>
+        <List disablePadding>
+            {problemSets.map((problemSet, index) => (
+                <Fragment key={problemSet.shareCode}>
+                    {index > 0 && <Divider />}
+                    <ProblemSetListItem problemSetMetadata={problemSet} />
+                </Fragment>
+            ))}
+        </List>
     );
 }

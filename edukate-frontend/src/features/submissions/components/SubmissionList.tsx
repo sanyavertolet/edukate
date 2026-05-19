@@ -1,6 +1,7 @@
 import { useMySubmissionsQuery } from "@/features/submissions/api";
 import { FC, useState } from "react";
-import { Box, List } from "@mui/material";
+import { Box } from "@mui/material";
+import { List } from "@/shared/components/Styled";
 import { ImageLightbox } from "@/shared/components/images/ImageLightbox";
 import { EmptySubmissionListStub, ErrorListItem, StubListItem, SubmissionListItem } from "./SubmissionListItems";
 import { Submission } from "@/features/submissions/types";
