@@ -47,5 +47,7 @@
     "notification_invite_primary": "{{inviterName}} invites you!",
     "notification_join_problem_set": "Join problem set",
     "notification_from": "from",
-    "notification_default": "Notification"
+    "notification_default": "Notification",
+    "notification_show_more": "Show more",
+    "notification_show_less": "Show less"
 }

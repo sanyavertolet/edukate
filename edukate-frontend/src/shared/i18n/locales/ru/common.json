@@ -47,5 +47,7 @@
     "notification_invite_primary": "{{inviterName}} приглашает вас!",
     "notification_join_problem_set": "Присоединиться к набору задач",
     "notification_from": "от",
-    "notification_default": "Уведомление"
+    "notification_default": "Уведомление",
+    "notification_show_more": "Развернуть",
+    "notification_show_less": "Свернуть"
 }

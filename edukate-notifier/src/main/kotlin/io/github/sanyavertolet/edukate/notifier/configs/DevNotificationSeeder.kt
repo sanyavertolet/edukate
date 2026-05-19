@@ -54,6 +54,7 @@ class DevNotificationSeeder(private val notificationService: NotificationService
         private const val CHECKED_INDEX_OFFSET = 3
         private const val INVITE_INDEX_OFFSET_1 = 7
         private const val INVITE_INDEX_OFFSET_2 = 8
+        private const val LONG_TEXT_INDEX = 9
 
         private fun devUuid(userId: Long, index: Int): String = "dev-seed-$userId-$index"
 
@@ -74,6 +75,18 @@ class DevNotificationSeeder(private val notificationService: NotificationService
                     targetUserId = userId,
                     title = "New problems available",
                     message = "14 chapters of Savchenko problems are now ready to solve.",
+                    source = "edukate",
+                ),
+                SimpleNotificationCreateRequest(
+                    uuid = devUuid(userId, LONG_TEXT_INDEX),
+                    targetUserId = userId,
+                    title = "Platform maintenance completed",
+                    message =
+                        "We have deployed a major update to the Edukate platform. " +
+                            "This includes improved problem rendering with KaTeX support for complex equations, " +
+                            "a fully redesigned submission pipeline, and real-time feedback from our AI-powered checker. " +
+                            "Your saved progress has been preserved. " +
+                            "Please review your open submissions and resubmit if needed.",
                     source = "edukate",
                 ),
             )
