@@ -1,11 +1,23 @@
-import { Card, Stack, styled, Theme } from "@mui/material";
+import {
+    Card as MuiCard,
+    Drawer as MuiDrawer,
+    List as MuiList,
+    Paper as MuiPaper,
+    Stack,
+    styled,
+    SwipeableDrawer as MuiSwipeableDrawer,
+    Theme,
+} from "@mui/material";
 import Toolbar from "@mui/material/Toolbar";
 import { alpha, CSSObject } from "@mui/material/styles";
 
 export function frostedGlass(theme: Theme, opacity = 0.5): CSSObject {
     return {
-        backdropFilter: "blur(10px)",
-        backgroundColor: alpha(theme.palette.background.default, opacity),
+        backdropFilter: "blur(6px)",
+        backgroundColor: alpha(theme.palette.background.default, 0.65),
+        ...theme.applyStyles("dark", {
+            backgroundColor: alpha(theme.palette.background.default, opacity),
+        }),
     };
 }
 
@@ -22,7 +34,47 @@ export const BlurryToolbar = styled(Toolbar)(({ theme }) => ({
     padding: theme.spacing(1, 1.5),
 }));
 
-export const SignCard = styled(Card)(({ theme }) => ({
+export const Card = styled(MuiCard)(({ theme }) => ({
+    ...frostedGlass(theme),
+    backgroundColor: alpha(theme.palette.background.paper, 0.65),
+    border: "1px solid",
+    borderColor: theme.palette.divider,
+    borderRadius: theme.shape.borderRadius * 3,
+    boxShadow: "none",
+}));
+
+export const Paper = styled(MuiPaper)(({ theme }) => ({
+    ...frostedGlass(theme),
+    backgroundColor: alpha(theme.palette.background.paper, 0.65),
+    border: "1px solid",
+    borderColor: theme.palette.divider,
+    borderRadius: theme.shape.borderRadius * 3,
+    boxShadow: "none",
+}));
+
+export const List = styled(MuiList)(({ theme }) => ({
+    ...frostedGlass(theme),
+    backgroundColor: alpha(theme.palette.background.paper, 0.65),
+    borderRadius: theme.shape.borderRadius * 3,
+    border: "1px solid",
+    borderColor: theme.palette.divider,
+}));
+
+export const Drawer = styled(MuiDrawer)(({ theme }) => ({
+    "& .MuiPaper-root": {
+        ...frostedGlass(theme),
+        backgroundColor: alpha(theme.palette.background.paper, 0.65),
+    },
+}));
+
+export const SwipeableDrawer = styled(MuiSwipeableDrawer)(({ theme }) => ({
+    "& .MuiPaper-root": {
+        ...frostedGlass(theme),
+        backgroundColor: alpha(theme.palette.background.paper, 0.65),
+    },
+}));
+
+export const SignCard = styled(MuiCard)(({ theme }) => ({
     display: "flex",
     flexDirection: "column",
     alignSelf: "center",

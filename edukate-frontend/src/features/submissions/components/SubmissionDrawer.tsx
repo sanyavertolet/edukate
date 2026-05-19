@@ -1,5 +1,6 @@
 import { FC } from "react";
-import { Box, Divider, Drawer, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Divider, IconButton, Stack, Typography } from "@mui/material";
+import { Drawer } from "@/shared/components/Styled";
 import CloseIcon from "@mui/icons-material/Close";
 import { Submission } from "@/features/submissions/types";
 import { SubmissionComponent } from "@/features/submissions/components/SubmissionComponent";

@@ -98,7 +98,7 @@ export function ProblemSetProblemPicker({ selectedKeys, onSelectionChange }: Pro
                     {t("picker_no_problems")}
                 </Typography>
             ) : (
-                <List dense disablePadding sx={{ border: 1, borderColor: "divider", borderRadius: 1 }}>
+                <List dense disablePadding>
                     {data.map((problem) => (
                         <ListItemButton
                             key={problem.key}

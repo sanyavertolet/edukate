@@ -1,4 +1,5 @@
-import { Box, Button, Card, CardContent, Typography } from "@mui/material";
+import { Box, Button, CardContent, Typography } from "@mui/material";
+import { Card } from "@/shared/components/Styled";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -15,13 +16,7 @@ export default function IndexPage() {
                 {t("welcome_title")}
             </Typography>
 
-            <Card
-                sx={{
-                    textAlign: "center",
-                    marginTop: "2rem",
-                    padding: "1rem",
-                }}
-            >
+            <Card sx={{ textAlign: "center", marginTop: "2rem", padding: "1rem" }}>
                 <CardContent>
                     <Typography variant="body1" marginBottom={4}>
                         {t("welcome_description")}

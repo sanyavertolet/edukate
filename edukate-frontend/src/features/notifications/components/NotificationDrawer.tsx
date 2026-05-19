@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Box, SwipeableDrawer } from "@mui/material";
-import { frostedGlass } from "@/shared/components/Styled";
+import { Box } from "@mui/material";
+import { SwipeableDrawer } from "@/shared/components/Styled";
 import { BaseNotification } from "@/features/notifications/types";
 import { NotificationContent } from "./NotificationContent";
 
@@ -20,19 +20,18 @@ export const NotificationDrawer: FC<NotificationDrawerProps> = ({ open, onClose,
         disableSwipeToOpen
         slotProps={{
             paper: {
-                sx: (theme) => ({
+                sx: {
                     borderRadius: "16px 16px 0 0",
                     height: "90vh",
                     display: "flex",
                     flexDirection: "column",
                     overflow: "hidden",
                     pb: "env(safe-area-inset-bottom)",
-                    ...frostedGlass(theme),
-                }),
+                },
             },
         }}
     >
-        <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", py: 1, bgcolor: "background.paper" }}>
             <Box sx={{ width: 32, height: 4, borderRadius: 2, bgcolor: "divider" }} />
         </Box>
         <Box sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>

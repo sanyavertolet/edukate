@@ -1,5 +1,6 @@
 import { FC, ReactNode } from "react";
-import { Paper, Table, TableBody, TableContainer, TableHead, TableRow, TableCell } from "@mui/material";
+import { Table, TableBody, TableContainer, TableHead, TableRow, TableCell } from "@mui/material";
+import { Paper } from "@/shared/components/Styled";
 
 type SubmissionTableProps = {
     headerCells: ReactNode[];

@@ -19,7 +19,7 @@
     "max_size_error": "Можно загрузить не более {{max}}, у вас {{current}}.",
     "files_heading": "Файлы",
     "files_uploaded_count": "Файлов загружено",
-    "files_selected": "{{count}} файлов выбрано",
+    "files_selected": "файлов выбрано",
     "no_files_selected": "Файлы не выбраны",
     "no_files_yet": "Файлов пока нет",
     "image_alt": "Изображение {{index}}",
@@ -46,6 +46,8 @@
     "notification_problem": "Задача {{problemKey}}",
     "notification_invite_primary": "{{inviterName}} приглашает вас!",
     "notification_join_problem_set": "Присоединиться к набору задач",
-    "notification_from": "от",
-    "notification_default": "Уведомление"
+    "notification_from": "С уважением,",
+    "notification_default": "Уведомление",
+    "notification_show_more": "Развернуть",
+    "notification_show_less": "Свернуть"
 }

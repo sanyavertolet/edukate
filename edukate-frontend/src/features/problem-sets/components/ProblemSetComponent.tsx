@@ -1,6 +1,7 @@
 import { useProblemSetRequest } from "@/features/problem-sets/api";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Box, Card, CircularProgress, Paper, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, Typography } from "@mui/material";
+import { Card, Paper } from "@/shared/components/Styled";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { ProblemSetProblemSelector, ProblemSetSelection } from "./ProblemSetProblemSelector";
 import { ProblemComponent } from "@/features/problems/components/ProblemComponent";
@@ -63,11 +64,11 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
                     {selection.type === "problem" ? (
                         <ProblemComponent bookSlug={selection.problem.bookSlug} code={selection.problem.code} />
                     ) : selection.type === "settings" && problemSet ? (
-                        <Paper variant="outlined">
+                        <Paper>
                             <ProblemSetSettingsTab problemSet={problemSet} />
                         </Paper>
                     ) : problemSet ? (
-                        <Paper variant="outlined">
+                        <Paper>
                             <ProblemSetDescriptionTab problemSet={problemSet} />
                         </Paper>
                     ) : null}

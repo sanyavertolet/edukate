@@ -1,4 +1,5 @@
-import { Card, CardContent, Typography } from "@mui/material";
+import { CardContent, Typography } from "@mui/material";
+import { Card } from "@/shared/components/Styled";
 import { Problem } from "@/features/problems/types";
 import { SubproblemsComponent } from "@/features/problems/components/SubproblemsComponent";
 import { LazyLatexComponent } from "@/shared/components/LazyLatexComponent";

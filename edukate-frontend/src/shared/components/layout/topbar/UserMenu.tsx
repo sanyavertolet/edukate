@@ -103,7 +103,7 @@ export function UserMenu() {
                 keepMounted
             >
                 {user && (
-                    <Box sx={{ display: { xs: "block", md: "none" } }}>
+                    <Box>
                         <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
                             <UserAvatar name={user.name} />
                             <Box>
@@ -129,11 +129,9 @@ export function UserMenu() {
                 aria-expanded={isMenuOpen}
                 color="primary"
                 onClick={handleOpen}
+                sx={{ minWidth: 0, p: 0.5 }}
             >
-                <Typography variant={"body2"} sx={{ display: { xs: "none", md: "flex" }, pr: "0.5rem" }}>
-                    {user ? user.name : "Sign"}
-                </Typography>
-                <AccountCircle />
+                {user ? <UserAvatar name={user.name} /> : <AccountCircle />}
             </Button>
         </Box>
     );

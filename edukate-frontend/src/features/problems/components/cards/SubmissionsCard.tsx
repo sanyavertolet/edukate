@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Card, CardContent, Paper, Typography } from "@mui/material";
+import { CardContent, Typography } from "@mui/material";
+import { Card, Paper } from "@/shared/components/Styled";
 import { SubmissionList } from "@/features/submissions/components/SubmissionList";
 import { SubmissionDrawer } from "@/features/submissions/components/SubmissionDrawer";
 import { Submission } from "@/features/submissions/types";
@@ -20,11 +21,7 @@ export default function SubmissionsCard({ problemKey }: SubmissionsCardProps) {
                     <Typography color="secondary" variant="h6" paddingBottom={1}>
                         {t("submissions_heading")}
                     </Typography>
-                    <Paper
-                        elevation={0}
-                        variant={"outlined"}
-                        sx={{ width: { xs: "100%", sm: "80%" }, justifyContent: "center", margin: "auto" }}
-                    >
+                    <Paper sx={{ width: { xs: "100%", sm: "80%" }, justifyContent: "center", margin: "auto" }}>
                         <SubmissionList problemKey={problemKey} onSubmissionClick={setSelectedSubmission} />
                     </Paper>
                 </CardContent>
