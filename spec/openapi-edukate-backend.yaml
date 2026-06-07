@@ -41,6 +41,14 @@ paths:
               $ref: "#/components/schemas/CreateSubmissionRequest"
         required: true
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully created submission
           content:
@@ -81,14 +89,16 @@ paths:
               $ref: "#/components/schemas/CreateProblemSetRequest"
         required: true
       responses:
-        "200":
-          description: Problem set created
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
-        "400":
-          description: Validation failed
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Problem set created
           content:
             application/json:
               schema:
@@ -122,6 +132,14 @@ paths:
         schema:
           type: boolean
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Visibility updated
           content:
@@ -174,6 +192,14 @@ paths:
           - MODERATOR
           - ADMIN
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Role updated or user removed
           content:
@@ -236,6 +262,14 @@ paths:
         schema:
           type: boolean
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Invitation reply recorded
           content:
@@ -278,14 +312,16 @@ paths:
               $ref: "#/components/schemas/ChangeProblemSetProblemsRequest"
         required: true
       responses:
-        "200":
-          description: Problems updated
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
-        "400":
-          description: Validation failed
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Problems updated
           content:
             application/json:
               schema:
@@ -319,6 +355,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully left problem set
           content:
@@ -360,6 +404,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Invitation sent
           content:
@@ -407,6 +459,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Invitation expired
           content:
@@ -441,6 +501,14 @@ paths:
       description: Retrieves a list of temporary files for the authenticated user
       operationId: getTempFiles
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved temporary files
           content:
@@ -467,6 +535,14 @@ paths:
               format: binary
         required: true
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully uploaded temporary file
           content:
@@ -494,6 +570,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully deleted temporary file
           content:
@@ -513,25 +597,83 @@ paths:
       tags:
       - Checker
       summary: Request supervisor check
-      description: Requests a supervisor check for the provided submission (not implemented
-        yet)
+      description: "\n            Creates a supervisor review ticket for the given\
+        \ submission and notifies the assigned supervisor.\n            The caller\
+        \ must be the owner of the submission.\n            The specified supervisor\
+        \ must have at least the MODERATOR role in the given problem set.\n      \
+        \      A PENDING check result stub is created and linked to the ticket; it\
+        \ will be resolved when\n            the supervisor submits a verdict via\
+        \ POST /supervisor/{ticketId}/verdict.\n        "
       operationId: supervisorCheck
-      parameters:
-      - name: id
-        in: query
-        description: Submission identifier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupervisorTicketRequest"
         required: true
-        schema:
-          type: string
       responses:
-        "200":
-          description: Reserved for future implementation
-        "501":
-          description: Not implemented
+        "400":
+          description: Malformed request body
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "202":
+          description: Supervisor ticket created and supervisor notified
         "401":
           description: Unauthorized
         "403":
-          description: Access denied
+          description: Not submission owner or supervisor lacks moderator role
+        "404":
+          description: "Submission, problem set, or supervisor not found"
+      security:
+      - cookieAuth: []
+  /api/v1/checker/supervisor/{ticketId}/verdict:
+    post:
+      tags:
+      - Checker
+      summary: Submit supervisor verdict
+      description: "\n            Submits a verdict for a supervisor review ticket.\n\
+        \            The caller must be the supervisor assigned to the ticket (supervisorId\
+        \ matches authenticated user).\n            Allowed statuses in the verdict\
+        \ are SUCCESS and MISTAKE only.\n            On success the linked check result\
+        \ is promoted from PENDING to the verdict status (trustLevel = 1.0),\n   \
+        \         the ticket is marked RESOLVED, and the submission owner receives\
+        \ a notification.\n        "
+      operationId: supervisorVerdict
+      parameters:
+      - name: ticketId
+        in: path
+        description: Supervisor ticket identifier (from GET /supervisor/my-tickets)
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupervisorVerdict"
+        required: true
+      responses:
+        "400":
+          description: "Bad request: SUCCESS/MISTAKE only, explanation non-blank"
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "202":
+          description: "Verdict accepted; check result promoted, owner notified"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Caller is not the assigned supervisor for this ticket
+        "404":
+          description: Ticket or associated submission not found
       security:
       - cookieAuth: []
   /api/v1/checker/self:
@@ -549,6 +691,14 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "202":
           description: Self-check accepted
         "401":
@@ -574,6 +724,14 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "202":
           description: Check scheduled
         "401":
@@ -592,6 +750,14 @@ paths:
       description: Retrieves information about the currently authenticated user
       operationId: whoami
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved user information
           content:
@@ -645,16 +811,16 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: Successfully retrieved usernames
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                type: array
-                items:
+                type: object
+                additionalProperties:
                   type: string
-        "400":
-          description: Validation failed
+        "200":
+          description: Successfully retrieved usernames
           content:
             application/json:
               schema:
@@ -705,6 +871,14 @@ paths:
           maximum: 100
           minimum: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved submissions
           content:
@@ -782,6 +956,14 @@ paths:
           maximum: 100
           minimum: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved submissions page
           content:
@@ -829,6 +1011,14 @@ paths:
           maximum: 100
           minimum: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved submissions
           content:
@@ -864,14 +1054,16 @@ paths:
           type: integer
           format: int64
       responses:
-        "200":
-          description: Successfully retrieved submission
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SubmissionDto"
-        "400":
-          description: Validation failed
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Successfully retrieved submission
           content:
             application/json:
               schema:
@@ -955,16 +1147,16 @@ paths:
         schema:
           type: boolean
       responses:
-        "200":
-          description: Successfully retrieved problem list
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProblemMetadata"
-        "400":
-          description: Validation failed
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Successfully retrieved problem list
           content:
             application/json:
               schema:
@@ -1002,14 +1194,16 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: Successfully retrieved problem
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemDto"
-        "400":
-          description: Validation failed
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Successfully retrieved problem
           content:
             application/json:
               schema:
@@ -1031,6 +1225,14 @@ paths:
         \ problem."
       operationId: getRandomUnsolvedProblemKey
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved random problem key
           content:
@@ -1088,6 +1290,14 @@ paths:
         schema:
           type: boolean
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved problem count
           content:
@@ -1135,16 +1345,16 @@ paths:
           default: 5
           exclusiveMinimum: 0
       responses:
-        "200":
-          description: Successfully retrieved problem keys
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                type: array
-                items:
+                type: object
+                additionalProperties:
                   type: string
-        "400":
-          description: Validation failed
+        "200":
+          description: Successfully retrieved problem keys
           content:
             application/json:
               schema:
@@ -1168,6 +1378,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved problem set
           content:
@@ -1203,6 +1421,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved user roles
           content:
@@ -1245,6 +1471,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved invited users
           content:
@@ -1269,6 +1503,72 @@ paths:
                 type: array
                 items:
                   type: string
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/search/member:
+    get:
+      tags:
+      - Problem Sets
+      summary: Search member problem sets
+      description: "Returns problem sets the user is a member of (any role: USER,\
+        \ MODERATOR, ADMIN) whose name or share code contains the query string. Optionally\
+        \ filters to sets containing the given problem key."
+      operationId: searchMemberProblemSets
+      parameters:
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ""
+      - name: problemKey
+        in: query
+        description: "Optional. When provided, restricts results to problem sets containing\
+          \ this problem key (e.g. 'savchenko/1.1')."
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+          minimum: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+          exclusiveMinimum: 0
+      responses:
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProblemSetMetadata"
       security:
       - cookieAuth: []
   /api/v1/problem-sets/public:
@@ -1296,6 +1596,14 @@ paths:
           default: 10
           exclusiveMinimum: 0
       responses:
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved public problem sets
           content:
@@ -1304,24 +1612,31 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ProblemSetMetadata"
-        "400":
-          description: Validation failed
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProblemSetMetadata"
       security: []
-  /api/v1/problem-sets/owned:
+  /api/v1/problem-sets/member:
     get:
       tags:
       - Problem Sets
-      summary: Get owned problem sets
-      description: Returns a paginated list of problem sets owned by the authenticated
-        user
-      operationId: getOwnedProblemSets
+      summary: Get member problem sets
+      description: "Returns a paginated list of problem sets the authenticated user\
+        \ is a member of, optionally filtered to one or more roles. When no roles\
+        \ are passed, all roles are included."
+      operationId: getMemberProblemSets
       parameters:
+      - name: roles
+        in: query
+        description: "Optional. Restricts results to sets where the user holds one\
+          \ of the given roles. Multi-valued: ?roles=USER&roles=MODERATOR. Omit to\
+          \ include every role."
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - USER
+            - MODERATOR
+            - ADMIN
       - name: page
         in: query
         required: false
@@ -1339,68 +1654,16 @@ paths:
           default: 10
           exclusiveMinimum: 0
       responses:
-        "200":
-          description: Successfully retrieved owned problem sets
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProblemSetMetadata"
         "400":
           description: Validation failed
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProblemSetMetadata"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProblemSetMetadata"
-      security:
-      - cookieAuth: []
-  /api/v1/problem-sets/joined:
-    get:
-      tags:
-      - Problem Sets
-      summary: Get joined problem sets
-      description: Returns a paginated list of problem sets the authenticated user
-        has joined
-      operationId: getJoinedProblemSets
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 0
-          minimum: 0
-      - name: size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 10
-          exclusiveMinimum: 0
-      responses:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
-          description: Successfully retrieved joined problem sets
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ProblemSetMetadata"
-        "400":
-          description: Validation failed
+          description: Successfully retrieved member problem sets
           content:
             application/json:
               schema:
@@ -1433,6 +1696,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully downloaded temporary file
           content:
@@ -1444,6 +1715,67 @@ paths:
           description: Unauthorized
         "404":
           description: File not found
+      security:
+      - cookieAuth: []
+  /api/v1/checker/supervisor/my-tickets:
+    get:
+      tags:
+      - Checker
+      summary: List my supervisor tickets
+      description: "\n            Returns supervisor review tickets assigned to the\
+        \ authenticated user, newest first.\n            Optionally filtered to a\
+        \ single problem set via the problemSetCode query parameter.\n           \
+        \ Any authenticated user may call this endpoint; results are always scoped\
+        \ to the caller.\n            Supports standard Spring pagination parameters:\
+        \ page (0-based), size (default 20).\n        "
+      operationId: getMySupervisorTickets
+      parameters:
+      - name: problemSetCode
+        in: query
+        description: Optional problem set share code to filter results to a single
+          problem set
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: Zero-based page index (default 0)
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: size
+        in: query
+        description: Page size (default 20)
+        required: false
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Ticket list (may be empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupervisorTicketDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupervisorTicketDto"
       security:
       - cookieAuth: []
   /api/v1/checker/submissions/{submissionId}:
@@ -1461,6 +1793,14 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved check results
           content:
@@ -1502,6 +1842,14 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved check result
           content:
@@ -1536,16 +1884,16 @@ paths:
       description: Retrieves a list of all available books
       operationId: getBooks
       responses:
-        "200":
-          description: Successfully retrieved book list
+        "400":
+          description: Validation failed
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BookSummaryDto"
-        "400":
-          description: Validation failed
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Successfully retrieved book list
           content:
             application/json:
               schema:
@@ -1569,6 +1917,14 @@ paths:
           type: string
           minLength: 1
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved book
           content:
@@ -1603,6 +1959,14 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
         "200":
           description: Successfully retrieved answer
           content:
@@ -1739,6 +2103,10 @@ components:
           type: array
           items:
             type: string
+        moderators:
+          type: array
+          items:
+            type: string
         isPublic:
           type: boolean
         problems:
@@ -1750,6 +2118,7 @@ components:
       required:
       - admins
       - isPublic
+      - moderators
       - name
       - problems
       - shareCode
@@ -1763,6 +2132,47 @@ components:
           minItems: 1
       required:
       - problemKeys
+    CreateSupervisorTicketRequest:
+      type: object
+      properties:
+        submissionId:
+          type: integer
+          format: int64
+        problemSetCode:
+          type: string
+        supervisorName:
+          type: string
+      required:
+      - problemSetCode
+      - submissionId
+      - supervisorName
+    SupervisorVerdict:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - PENDING
+          - SUCCESS
+          - MISTAKE
+          - INTERNAL_ERROR
+        errorType:
+          type: string
+          enum:
+          - ALGEBRAIC
+          - CONCEPTUAL
+          - INCOMPLETE
+          - NONE
+          - NUMERICAL
+          - UNCLEAR
+          - UNIT
+        explanation:
+          type: string
+          minLength: 1
+      required:
+      - errorType
+      - explanation
+      - status
     UserDto:
       type: object
       properties:
@@ -1902,6 +2312,12 @@ components:
         solvedCount:
           type: integer
           format: int64
+        currentUserRole:
+          type: string
+          enum:
+          - USER
+          - MODERATOR
+          - ADMIN
       required:
       - admins
       - isPublic
@@ -1927,6 +2343,35 @@ components:
       - key
       - lastModified
       - size
+    SupervisorTicketDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        problemKey:
+          type: string
+        problemSetShareCode:
+          type: string
+        fileUrls:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - PENDING
+          - RESOLVED
+        createdAt:
+          type: string
+          format: date-time
+      required:
+      - createdAt
+      - fileUrls
+      - id
+      - problemKey
+      - problemSetShareCode
+      - status
     CheckResultInfo:
       type: object
       properties:

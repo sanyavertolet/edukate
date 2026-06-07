@@ -4,6 +4,7 @@ data class ProblemSetDto(
     val name: String,
     val description: String?,
     val admins: List<String>,
+    val moderators: List<String>,
     val isPublic: Boolean,
     val problems: List<ProblemMetadata>,
     val shareCode: String,

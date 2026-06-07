@@ -10,19 +10,23 @@ interface ProblemSetEmptyStateProps {
 }
 
 const emptyStateKeys: Record<ProblemSetCategory, { title: string; description: string; cta?: string }> = {
-    owned: {
-        title: "owned_empty_title",
-        description: "owned_empty_description",
-        cta: "owned_empty_cta",
-    },
-    joined: {
-        title: "joined_empty_title",
-        description: "joined_empty_description",
-        cta: "joined_empty_cta",
-    },
     public: {
         title: "public_empty_title",
         description: "public_empty_description",
+    },
+    user: {
+        title: "user_empty_title",
+        description: "user_empty_description",
+        cta: "user_empty_cta",
+    },
+    moderator: {
+        title: "moderator_empty_title",
+        description: "moderator_empty_description",
+    },
+    admin: {
+        title: "admin_empty_title",
+        description: "admin_empty_description",
+        cta: "admin_empty_cta",
     },
 };
 
@@ -32,9 +36,9 @@ export function ProblemSetEmptyState({ tab, onTabSwitch }: ProblemSetEmptyStateP
     const { title, description, cta } = emptyStateKeys[tab];
 
     const handleAction = () => {
-        if (tab === "owned") {
+        if (tab === "admin") {
             void navigate("/problem-sets/new");
-        } else if (tab === "joined" && onTabSwitch) {
+        } else if (tab === "user" && onTabSwitch) {
             onTabSwitch("public");
         }
     };

@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.services
 
+import io.github.sanyavertolet.edukate.backend.dtos.SupervisorVerdict
 import io.github.sanyavertolet.edukate.backend.entities.CheckResult
 import io.github.sanyavertolet.edukate.backend.repositories.CheckResultRepository
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
@@ -25,7 +26,7 @@ class CheckResultService(
      * Finds the stub by its ID and updates it in-place with the checker result. The DB trigger handles submission status +
      * problem_progress update automatically.
      */
-    fun updateFromMessage(message: CheckResultMessage): Mono<CheckResult> =
+    fun promoteWithMessage(message: CheckResultMessage): Mono<CheckResult> =
         checkResultRepository
             .findById(message.checkResultId)
             .orNotFound("CheckResult ${message.checkResultId} not found")
@@ -35,6 +36,21 @@ class CheckResultService(
                     trustLevel = message.trustLevel,
                     errorType = message.errorType,
                     explanation = message.explanation,
+                )
+            }
+            .flatMap { checkResultRepository.save(it) }
+            .doOnNext { meterRegistry.counter("check.outcomes", "status", it.status.name).increment() }
+
+    fun promoteWithVerdict(checkResultId: Long, verdict: SupervisorVerdict): Mono<CheckResult> =
+        checkResultRepository
+            .findById(checkResultId)
+            .orNotFound("CheckResult $checkResultId not found")
+            .map { stub ->
+                stub.copy(
+                    status = verdict.status,
+                    trustLevel = 1.0f,
+                    errorType = verdict.errorType,
+                    explanation = verdict.explanation,
                 )
             }
             .flatMap { checkResultRepository.save(it) }

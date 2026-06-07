@@ -38,13 +38,35 @@ class ProblemSetService(
 ) {
     @Cacheable(key = "#shareCode") fun findByShareCode(shareCode: String): Mono<ProblemSet> = loadProblemSet(shareCode)
 
-    fun getOwnedProblemSets(pageable: PageRequest, authentication: Authentication): Flux<ProblemSet> =
-        authentication.monoId().flatMapMany { userId -> problemSetRepository.findOwnedByUserId(userId, pageable) }
+    fun findById(id: Long): Mono<ProblemSet> = problemSetRepository.findById(id).orNotFound("ProblemSet [$id] not found")
 
-    fun getJoinedProblemSets(pageable: PageRequest, authentication: Authentication): Flux<ProblemSet> =
-        authentication.monoId().flatMapMany { userId -> problemSetRepository.findJoinedByUserId(userId, pageable) }
+    fun Mono<ProblemSet>.assertIsModeratorOf(userId: Long): Mono<ProblemSet> =
+        forbiddenIf("User is not a moderator of this problem set") {
+            !problemSetPermissionEvaluator.hasRole(it, userId, UserRole.MODERATOR)
+        }
+
+    fun getMemberProblemSets(
+        roles: List<UserRole>?,
+        pageable: PageRequest,
+        authentication: Authentication,
+    ): Flux<ProblemSet> {
+        val effectiveRoles = (roles ?: UserRole.entries).map { it.name }.toTypedArray()
+        return authentication.monoId().flatMapMany { userId ->
+            problemSetRepository.findByUserIdAndRoles(userId, effectiveRoles, pageable)
+        }
+    }
 
     fun getPublicProblemSets(pageable: PageRequest): Flux<ProblemSet> = problemSetRepository.findByIsPublic(true, pageable)
+
+    fun searchMemberProblemSets(
+        query: String,
+        problemKey: String?,
+        pageable: PageRequest,
+        authentication: Authentication,
+    ): Flux<ProblemSet> =
+        authentication.monoId().flatMapMany { userId ->
+            problemSetRepository.searchByUserIdAndQuery(userId, query, problemKey, pageable)
+        }
 
     fun createProblemSet(request: CreateProblemSetRequest, authentication: Authentication): Mono<ProblemSet> =
         authentication.monoId().flatMap { userId ->

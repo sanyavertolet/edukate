@@ -18,7 +18,7 @@ class CheckerSchedulerService(
 ) {
     fun scheduleCheck(submission: Submission): Mono<Void> {
         val submissionId = requireNotNull(submission.id) { "Submission ID must not be null" }
-        return checkResultRepository.save(CheckResult.stub(submissionId)).flatMap { stub ->
+        return checkResultRepository.save(CheckResult.aiPending(submissionId)).flatMap { stub ->
             val checkResultId = requireNotNull(stub.id) { "CheckResult ID must not be null after save" }
             submissionMapper.prepareContext(submission, checkResultId).publishOn(Schedulers.boundedElastic()).flatMap { ctx
                 ->

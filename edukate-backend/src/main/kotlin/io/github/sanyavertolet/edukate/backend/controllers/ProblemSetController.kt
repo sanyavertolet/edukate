@@ -17,6 +17,11 @@ import io.github.sanyavertolet.edukate.common.utils.monoId
 import io.github.sanyavertolet.edukate.common.utils.orForbidden
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.Parameters
+import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
@@ -71,51 +76,86 @@ class ProblemSetController(
     ): Mono<ProblemSetDto> =
         problemSetService.createProblemSet(request, authentication).flatMap { problemSetMapper.toDto(it, authentication) }
 
-    @GetMapping("/owned")
+    @GetMapping("/member")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
     @Operation(
-        summary = "Get owned problem sets",
-        description = "Returns a paginated list of problem sets owned by the authenticated user",
+        summary = "Get member problem sets",
+        description =
+            "Returns a paginated list of problem sets the authenticated user is a member of, " +
+                "optionally filtered to one or more roles. When no roles are passed, all roles are included.",
     )
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Successfully retrieved owned problem sets"),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved member problem sets"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
-    fun getOwnedProblemSets(
+    @Parameters(
+        value =
+            [
+                Parameter(
+                    name = "roles",
+                    description =
+                        "Optional. Restricts results to sets where the user holds one of the given roles. " +
+                            "Multi-valued: ?roles=USER&roles=MODERATOR. Omit to include every role.",
+                    `in` = ParameterIn.QUERY,
+                    required = false,
+                    array = ArraySchema(schema = Schema(implementation = UserRole::class)),
+                )
+            ]
+    )
+    fun getMemberProblemSets(
+        @RequestParam(required = false) roles: List<UserRole>?,
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
         authentication: Authentication,
     ): Flux<ProblemSetMetadata> =
-        problemSetService.getOwnedProblemSets(PageRequest.of(page, size), authentication).flatMap {
+        problemSetService.getMemberProblemSets(roles, PageRequest.of(page, size), authentication).flatMap {
             problemSetMapper.toMetadata(it, authentication)
         }
 
-    @GetMapping("/joined")
+    @GetMapping("/search/member")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
     @Operation(
-        summary = "Get joined problem sets",
-        description = "Returns a paginated list of problem sets the authenticated user has joined",
+        summary = "Search member problem sets",
+        description =
+            "Returns problem sets the user is a member of (any role: USER, MODERATOR, ADMIN) whose name or " +
+                "share code contains the query string. Optionally filters to sets containing the given problem key.",
     )
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Successfully retrieved joined problem sets"),
+                ApiResponse(responseCode = "200", description = "Search results"),
                 ApiResponse(responseCode = "400", description = "Validation failed"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
             ]
     )
-    fun getJoinedProblemSets(
+    @Parameters(
+        value =
+            [
+                Parameter(
+                    name = "problemKey",
+                    description =
+                        "Optional. When provided, restricts results to problem sets containing this problem key " +
+                            "(e.g. 'savchenko/1.1').",
+                    `in` = ParameterIn.QUERY,
+                    required = false,
+                    schema = Schema(type = "string"),
+                )
+            ]
+    )
+    fun searchMemberProblemSets(
+        @RequestParam(defaultValue = "") query: String,
+        @RequestParam(required = false) problemKey: String?,
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Positive size: Int,
         authentication: Authentication,
     ): Flux<ProblemSetMetadata> =
-        problemSetService.getJoinedProblemSets(PageRequest.of(page, size), authentication).flatMap {
+        problemSetService.searchMemberProblemSets(query, problemKey, PageRequest.of(page, size), authentication).flatMap {
             problemSetMapper.toMetadata(it, authentication)
         }
 

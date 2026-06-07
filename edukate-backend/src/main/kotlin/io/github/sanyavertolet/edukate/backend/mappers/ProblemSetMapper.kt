@@ -36,11 +36,12 @@ class ProblemSetMapper(
                     .collectList()
             }
             .flatMap { metadataList ->
-                adminNames(problemSet).map { admins ->
+                Mono.zip(adminNames(problemSet), moderatorNames(problemSet)).map { (admins, moderators) ->
                     ProblemSetDto(
                         name = problemSet.name,
                         description = problemSet.description,
                         admins = admins,
+                        moderators = moderators,
                         isPublic = problemSet.isPublic,
                         problems = metadataList,
                         shareCode = problemSet.shareCode,
@@ -68,6 +69,7 @@ class ProblemSetMapper(
                     isPublic = problemSet.isPublic,
                     size = size,
                     solvedCount = solvedCount,
+                    currentUserRole = problemSet.getUserRole(userId),
                 )
             }
         }
@@ -84,4 +86,10 @@ class ProblemSetMapper(
 
     private fun adminNames(problemSet: ProblemSet): Mono<List<String>> =
         Flux.fromIterable(problemSet.getAdminIds()).flatMap { userService.findUserById(it) }.map { it.name }.collectList()
+
+    private fun moderatorNames(problemSet: ProblemSet): Mono<List<String>> =
+        Flux.fromIterable(problemSet.getModeratorIds())
+            .flatMap { userService.findUserById(it) }
+            .map { it.name }
+            .collectList()
 }

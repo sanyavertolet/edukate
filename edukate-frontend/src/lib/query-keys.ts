@@ -27,6 +27,7 @@ export const queryKeys = {
         all: ["problemSets"] as const,
         detail: (code: string) => ["problemSets", "detail", code] as const,
         list: (category: string) => ["problemSets", "list", category] as const,
+        search: (problemKey?: string) => ["problemSets", "search", problemKey] as const,
         users: (code: string) => ["problemSets", "users", code] as const,
         invitedUsers: (code: string) => ["problemSets", "invited-users", code] as const,
     },
@@ -64,5 +65,10 @@ export const queryKeys = {
     },
     auth: {
         whoami: ["auth", "whoami"] as const,
+    },
+    supervisorTickets: {
+        all: ["supervisorTickets"] as const,
+        byProblemSet: (shareCode: string, page: number, size: number) =>
+            ["supervisorTickets", "byProblemSet", shareCode, page, size] as const,
     },
 };

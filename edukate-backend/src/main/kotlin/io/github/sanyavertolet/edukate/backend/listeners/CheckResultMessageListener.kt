@@ -31,7 +31,7 @@ class CheckResultMessageListener(
 
         checkResultMessage
             .toMono()
-            .flatMap { checkResultService.updateFromMessage(it) }
+            .flatMap { checkResultService.promoteWithMessage(it) }
             .flatMap { checkResult ->
                 val submissionId = checkResultMessage.submissionId
                 submissionService.findById(submissionId).orNotFound("Submission $submissionId not found").flatMap {

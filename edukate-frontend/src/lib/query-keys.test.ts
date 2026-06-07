@@ -71,7 +71,7 @@ describe("queryKeys", () => {
         });
 
         it("list includes category", () => {
-            expect(queryKeys.problemSets.list("joined")).toEqual(["problemSets", "list", "joined"]);
+            expect(queryKeys.problemSets.list("user")).toEqual(["problemSets", "list", "user"]);
         });
 
         it("users includes code", () => {

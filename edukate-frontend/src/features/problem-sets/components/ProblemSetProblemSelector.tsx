@@ -1,6 +1,7 @@
 import { Box, Divider, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import SupervisorAccountOutlinedIcon from "@mui/icons-material/SupervisorAccountOutlined";
 import { ProblemMetadata } from "@/features/problems/types";
 import { ProblemStatusIcon } from "@/features/problems/components/ProblemStatusIcon";
 import { useDeviceContext, usePageSpecificNavigation } from "@/shared/context/DeviceContext";
@@ -11,6 +12,7 @@ import { useTranslation } from "react-i18next";
 export type ProblemSetSelection =
     | { type: "description" }
     | { type: "settings" }
+    | { type: "supervisor" }
     | { type: "problem"; problem: ProblemMetadata };
 
 interface ProblemSetProblemSelectorProps {
@@ -18,6 +20,7 @@ interface ProblemSetProblemSelectorProps {
     selection: ProblemSetSelection;
     onSelectionChange: (selection: ProblemSetSelection) => void;
     isAdmin: boolean;
+    isModerator: boolean;
 }
 
 export function ProblemSetProblemSelector({
@@ -25,6 +28,7 @@ export function ProblemSetProblemSelector({
     selection,
     onSelectionChange,
     isAdmin,
+    isModerator,
 }: ProblemSetProblemSelectorProps) {
     const { t } = useTranslation("problem-sets");
     const { isMobile } = useDeviceContext();
@@ -49,6 +53,17 @@ export function ProblemSetProblemSelector({
                       },
                   ]
                 : []),
+            ...(isModerator
+                ? [
+                      {
+                          text: t("supervisor_tab"),
+                          onClick: () => {
+                              onSelectionChange({ type: "supervisor" });
+                          },
+                          isSelected: selection.type === "supervisor",
+                      },
+                  ]
+                : []),
             ...problems.map((problem) => ({
                 text: problem.code,
                 onClick: () => {
@@ -57,7 +72,7 @@ export function ProblemSetProblemSelector({
                 isSelected: selection.type === "problem" && problem.code === selection.problem.code,
             })),
         ],
-        [problems, selection, onSelectionChange, isAdmin, t],
+        [problems, selection, onSelectionChange, isAdmin, isModerator, t],
     );
     usePageSpecificNavigation(pageSpecificNavigation);
 
@@ -87,6 +102,19 @@ export function ProblemSetProblemSelector({
                                 <SettingsOutlinedIcon />
                             </ListItemIcon>
                             <ListItemText primary={t("settings_tab")} />
+                        </ListItemButton>
+                    )}
+                    {isModerator && (
+                        <ListItemButton
+                            selected={selection.type === "supervisor"}
+                            onClick={() => {
+                                onSelectionChange({ type: "supervisor" });
+                            }}
+                        >
+                            <ListItemIcon sx={{ minWidth: { md: 36, lg: 56 } }}>
+                                <SupervisorAccountOutlinedIcon />
+                            </ListItemIcon>
+                            <ListItemText primary={t("supervisor_tab")} />
                         </ListItemButton>
                     )}
                 </List>

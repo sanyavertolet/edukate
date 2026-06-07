@@ -8,9 +8,10 @@ import { useTranslation } from "react-i18next";
 
 interface SubmissionsCardProps {
     problemKey: string;
+    problemSetCode?: string;
 }
 
-export default function SubmissionsCard({ problemKey }: SubmissionsCardProps) {
+export default function SubmissionsCard({ problemKey, problemSetCode }: SubmissionsCardProps) {
     const { t } = useTranslation("problems");
     const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
 
@@ -22,7 +23,11 @@ export default function SubmissionsCard({ problemKey }: SubmissionsCardProps) {
                         {t("submissions_heading")}
                     </Typography>
                     <Paper sx={{ width: { xs: "100%", sm: "80%" }, justifyContent: "center", margin: "auto" }}>
-                        <SubmissionList problemKey={problemKey} onSubmissionClick={setSelectedSubmission} />
+                        <SubmissionList
+                            problemKey={problemKey}
+                            problemSetCode={problemSetCode}
+                            onSubmissionClick={setSelectedSubmission}
+                        />
                     </Paper>
                 </CardContent>
             </Card>

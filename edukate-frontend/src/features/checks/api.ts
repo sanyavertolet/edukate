@@ -5,19 +5,22 @@ import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
 import { CheckRequest } from "./types";
 
-const checkFn = {
-    supervisor: supervisorCheck,
-    self: selfCheck,
-    ai: aiCheck,
-};
-
 export function useRequestCheckMutation() {
     return useMutation({
-        mutationFn: ({ submissionId, checkType }: CheckRequest) => checkFn[checkType]({ id: submissionId }),
-        onSuccess: (_data, { submissionId, problemKey }) => {
-            void queryClient.invalidateQueries({ queryKey: queryKeys.checks.bySubmission(submissionId) });
-            void queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(problemKey) });
-            void queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problemKey) });
+        mutationFn: (req: CheckRequest) => {
+            if (req.checkType === "supervisor") {
+                return supervisorCheck({
+                    submissionId: Number(req.submissionId),
+                    problemSetCode: req.problemSetCode,
+                    supervisorName: req.supervisorName,
+                });
+            }
+            return req.checkType === "ai" ? aiCheck({ id: req.submissionId }) : selfCheck({ id: req.submissionId });
+        },
+        onSuccess: (_data, req) => {
+            void queryClient.invalidateQueries({ queryKey: queryKeys.checks.bySubmission(req.submissionId) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(req.problemKey) });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(req.problemKey) });
         },
     });
 }

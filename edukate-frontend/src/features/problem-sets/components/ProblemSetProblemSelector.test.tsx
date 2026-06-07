@@ -36,6 +36,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={defaultSelection}
                 onSelectionChange={vi.fn()}
                 isAdmin={false}
+                isModerator={false}
             />,
         );
         expect(screen.getByText("Description")).toBeInTheDocument();
@@ -48,6 +49,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={defaultSelection}
                 onSelectionChange={vi.fn()}
                 isAdmin={true}
+                isModerator={false}
             />,
         );
         expect(screen.getByText("Settings")).toBeInTheDocument();
@@ -60,6 +62,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={defaultSelection}
                 onSelectionChange={vi.fn()}
                 isAdmin={false}
+                isModerator={false}
             />,
         );
         expect(screen.queryByText("Settings")).not.toBeInTheDocument();
@@ -72,6 +75,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={defaultSelection}
                 onSelectionChange={vi.fn()}
                 isAdmin={false}
+                isModerator={false}
             />,
         );
         expect(screen.getByText("1.1")).toBeInTheDocument();
@@ -86,6 +90,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={{ type: "problem", problem: problems[0] }}
                 onSelectionChange={onSelectionChange}
                 isAdmin={false}
+                isModerator={false}
             />,
         );
         await userEvent.click(screen.getByText("Description"));
@@ -100,6 +105,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={defaultSelection}
                 onSelectionChange={onSelectionChange}
                 isAdmin={true}
+                isModerator={false}
             />,
         );
         await userEvent.click(screen.getByText("Settings"));
@@ -114,6 +120,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={defaultSelection}
                 onSelectionChange={onSelectionChange}
                 isAdmin={false}
+                isModerator={false}
             />,
         );
         await userEvent.click(screen.getByText("1.2"));
@@ -127,6 +134,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={{ type: "description" }}
                 onSelectionChange={vi.fn()}
                 isAdmin={false}
+                isModerator={false}
             />,
         );
         const descButton = screen.getByText("Description").closest("[role='button']");
@@ -140,6 +148,7 @@ describe("ProblemSetProblemSelector", () => {
                 selection={{ type: "problem", problem: problems[0] }}
                 onSelectionChange={vi.fn()}
                 isAdmin={false}
+                isModerator={false}
             />,
         );
         const problemButton = screen.getByText("1.1").closest("[role='button']");

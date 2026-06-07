@@ -9,6 +9,7 @@ import enProblems from "./locales/en/problems.json";
 import enChecks from "./locales/en/checks.json";
 import enSubmissions from "./locales/en/submissions.json";
 import enProblemSets from "./locales/en/problem-sets.json";
+import enSupervisorTickets from "./locales/en/supervisor-tickets.json";
 
 import ruCommon from "./locales/ru/common.json";
 import ruAuth from "./locales/ru/auth.json";
@@ -17,6 +18,7 @@ import ruProblems from "./locales/ru/problems.json";
 import ruChecks from "./locales/ru/checks.json";
 import ruSubmissions from "./locales/ru/submissions.json";
 import ruProblemSets from "./locales/ru/problem-sets.json";
+import ruSupervisorTickets from "./locales/ru/supervisor-tickets.json";
 
 void i18n
     .use(LanguageDetector)
@@ -31,6 +33,7 @@ void i18n
                 checks: enChecks,
                 submissions: enSubmissions,
                 "problem-sets": enProblemSets,
+                "supervisor-tickets": enSupervisorTickets,
             },
             ru: {
                 common: ruCommon,
@@ -40,11 +43,12 @@ void i18n
                 checks: ruChecks,
                 submissions: ruSubmissions,
                 "problem-sets": ruProblemSets,
+                "supervisor-tickets": ruSupervisorTickets,
             },
         },
         fallbackLng: "en",
         defaultNS: "common",
-        ns: ["common", "auth", "navigation", "problems", "checks", "submissions", "problem-sets"],
+        ns: ["common", "auth", "navigation", "problems", "checks", "submissions", "problem-sets", "supervisor-tickets"],
         interpolation: {
             escapeValue: false,
         },

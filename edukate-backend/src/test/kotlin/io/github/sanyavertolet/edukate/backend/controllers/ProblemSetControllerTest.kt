@@ -48,7 +48,7 @@ class ProblemSetControllerTest {
         )
 
     private fun psDto(shareCode: String = "SHARE123") =
-        ProblemSetDto("Test ProblemSet", "Description", listOf("admin-1"), false, emptyList(), shareCode)
+        ProblemSetDto("Test ProblemSet", "Description", listOf("admin-1"), emptyList(), false, emptyList(), shareCode)
 
     private fun psMetadata(shareCode: String = "SHARE123") =
         ProblemSetMetadata("Test ProblemSet", "Description", listOf("admin-1"), shareCode, false, 1L, 0L)
@@ -98,22 +98,72 @@ class ProblemSetControllerTest {
 
     // endregion
 
-    // region GET /api/v1/problem-sets/owned
+    // region GET /api/v1/problem-sets/member
 
     @Test
-    fun `getOwnedProblemSets returns 200 with owned metadata`() {
+    fun `getMemberProblemSets returns 200 with member metadata`() {
         val ps = BackendFixtures.problemSet()
-        every { problemSetService.getOwnedProblemSets(any(), any()) } returns Flux.just(ps)
+        every { problemSetService.getMemberProblemSets(any(), any(), any()) } returns Flux.just(ps)
         every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
 
         authenticatedClient()
             .get()
-            .uri("/api/v1/problem-sets/owned")
+            .uri("/api/v1/problem-sets/member")
             .exchange()
             .expectStatus()
             .isOk
             .expectBodyList<ProblemSetMetadata>()
             .hasSize(1)
+    }
+
+    @Test
+    fun `getMemberProblemSets passes role filter through to service`() {
+        val ps = BackendFixtures.problemSet()
+        every { problemSetService.getMemberProblemSets(any(), any(), any()) } returns Flux.just(ps)
+        every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
+
+        authenticatedClient()
+            .get()
+            .uri("/api/v1/problem-sets/member?roles=ADMIN")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemSetMetadata>()
+            .hasSize(1)
+    }
+
+    // endregion
+
+    // region GET /api/v1/problem-sets/search/member
+
+    @Test
+    fun `searchMemberProblemSets returns 200 with matching problem sets`() {
+        val ps = BackendFixtures.problemSet()
+        every { problemSetService.searchMemberProblemSets(any(), any(), any(), any()) } returns Flux.just(ps)
+        every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
+
+        authenticatedClient()
+            .get()
+            .uri("/api/v1/problem-sets/search/member?query=Test")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemSetMetadata>()
+            .hasSize(1)
+    }
+
+    @Test
+    fun `searchMemberProblemSets returns 200 with empty list when query has no matches`() {
+        every { problemSetService.searchMemberProblemSets(any(), any(), any(), any()) } returns Flux.empty()
+
+        authenticatedClient()
+            .get()
+            .uri("/api/v1/problem-sets/search/member?query=nonexistent")
+            .exchange()
+            .expectStatus()
+            .isOk
+            .expectBodyList<ProblemSetMetadata>()
+            .hasSize(0)
     }
 
     // endregion
@@ -145,26 +195,6 @@ class ProblemSetControllerTest {
         every { problemSetPermissionEvaluator.hasReadPermission(ps, 1L) } returns false
 
         authenticatedClient().get().uri("/api/v1/problem-sets/SHARE123").exchange().expectStatus().isForbidden
-    }
-
-    // endregion
-
-    // region GET /api/v1/problem-sets/joined
-
-    @Test
-    fun `getJoinedProblemSets returns 200 with joined metadata`() {
-        val ps = BackendFixtures.problemSet()
-        every { problemSetService.getJoinedProblemSets(any(), any()) } returns Flux.just(ps)
-        every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
-
-        authenticatedClient()
-            .get()
-            .uri("/api/v1/problem-sets/joined")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBodyList<ProblemSetMetadata>()
-            .hasSize(1)
     }
 
     // endregion

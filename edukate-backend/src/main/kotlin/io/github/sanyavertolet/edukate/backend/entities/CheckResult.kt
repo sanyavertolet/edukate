@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.entities
 
 import io.github.sanyavertolet.edukate.backend.dtos.CheckResultDto
+import io.github.sanyavertolet.edukate.backend.dtos.SupervisorVerdict
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckResultInfo
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
@@ -50,13 +51,33 @@ data class CheckResult(
             )
 
         @JvmStatic
-        fun stub(submissionId: Long) =
+        fun aiPending(submissionId: Long) =
             CheckResult(
                 submissionId = submissionId,
                 status = CheckStatus.PENDING,
                 trustLevel = 0f,
                 errorType = CheckErrorType.NONE,
                 explanation = "AI check scheduled, awaiting result.",
+            )
+
+        @JvmStatic
+        fun supervisorPending(submissionId: Long) =
+            CheckResult(
+                submissionId = submissionId,
+                status = CheckStatus.PENDING,
+                trustLevel = 0f,
+                errorType = CheckErrorType.NONE,
+                explanation = "Supervisor review requested, awaiting verdict.",
+            )
+
+        @JvmStatic
+        fun supervisor(submissionId: Long, verdict: SupervisorVerdict) =
+            CheckResult(
+                submissionId = submissionId,
+                status = verdict.status,
+                trustLevel = 1.0f,
+                errorType = verdict.errorType,
+                explanation = verdict.explanation,
             )
 
         @JvmStatic

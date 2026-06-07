@@ -32,8 +32,9 @@ export default function ProblemSetListPage() {
 
                     <Tabs value={tab} onChange={onTabChange} centered sx={{ mt: 2 }}>
                         <Tab value={"public"} label={tPs("tab_public")} />
-                        <Tab value={"joined"} label={tPs("tab_joined")} />
-                        <Tab value={"owned"} label={tPs("tab_owned")} />
+                        <Tab value={"user"} label={tPs("tab_user")} />
+                        <Tab value={"moderator"} label={tPs("tab_moderator")} />
+                        <Tab value={"admin"} label={tPs("tab_admin")} />
                     </Tabs>
                 </Box>
             </Container>

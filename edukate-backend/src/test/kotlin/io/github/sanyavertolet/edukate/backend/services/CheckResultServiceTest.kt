@@ -48,10 +48,10 @@ class CheckResultServiceTest {
 
     // endregion
 
-    // region updateFromMessage
+    // region promoteWithMessage
 
     @Test
-    fun `updateFromMessage looks up stub by checkResultId, updates it, and increments counter`() {
+    fun `promoteWithMessage looks up stub by checkResultId, updates it, and increments counter`() {
         val message = BackendFixtures.checkResultMessage(submissionId = 5L, checkResultId = 3L, status = CheckStatus.SUCCESS)
         val stub = BackendFixtures.checkResult(id = 3L, submissionId = 5L, status = CheckStatus.PENDING)
         val updated =
@@ -60,7 +60,7 @@ class CheckResultServiceTest {
         every { checkResultRepository.findById(3L) } returns Mono.just(stub)
         every { checkResultRepository.save(any()) } returns Mono.just(updated)
 
-        StepVerifier.create(service.updateFromMessage(message))
+        StepVerifier.create(service.promoteWithMessage(message))
             .assertNext { saved -> assertThat(saved.status).isEqualTo(CheckStatus.SUCCESS) }
             .verifyComplete()
 
@@ -69,12 +69,12 @@ class CheckResultServiceTest {
     }
 
     @Test
-    fun `updateFromMessage emits NOT_FOUND when checkResultId does not exist`() {
+    fun `promoteWithMessage emits NOT_FOUND when checkResultId does not exist`() {
         val message = BackendFixtures.checkResultMessage(checkResultId = 999L)
 
         every { checkResultRepository.findById(999L) } returns Mono.empty()
 
-        StepVerifier.create(service.updateFromMessage(message))
+        StepVerifier.create(service.promoteWithMessage(message))
             .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.NOT_FOUND }
             .verify()
 

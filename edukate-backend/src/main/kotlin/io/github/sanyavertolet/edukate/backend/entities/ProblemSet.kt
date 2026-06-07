@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
 @Table("problem_sets")
+@Suppress("TooManyFunctions")
 data class ProblemSet(
     @Id val id: Long? = null,
     val name: String,
@@ -23,6 +24,8 @@ data class ProblemSet(
     fun isAdmin(userId: Long): Boolean = UserRole.ADMIN == getUserRole(userId)
 
     fun getAdminIds(): List<Long> = userIdRoleMap.filterValues { it == UserRole.ADMIN }.keys.toList()
+
+    fun getModeratorIds(): List<Long> = userIdRoleMap.filterValues { it == UserRole.MODERATOR }.keys.toList()
 
     fun withJoinedUser(userId: Long, role: UserRole): ProblemSet =
         copy(userIdRoleMap = userIdRoleMap + (userId to role), invitedUserIds = invitedUserIds - userId)

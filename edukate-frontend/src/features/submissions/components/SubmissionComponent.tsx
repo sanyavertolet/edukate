@@ -2,25 +2,28 @@ import { FC, ReactNode, useState } from "react";
 import {
     Alert,
     Box,
-    Button,
     Chip,
     CircularProgress,
-    Divider,
+    IconButton,
     Paper,
     Skeleton,
     Stack,
+    Link,
     Tooltip,
     Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import { Link as RouterLink } from "react-router-dom";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import AssignmentLateOutlinedIcon from "@mui/icons-material/AssignmentLateOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import SupervisorAccountOutlinedIcon from "@mui/icons-material/SupervisorAccountOutlined";
+import { UserAvatar } from "@/shared/components/UserAvatar";
 import { Submission, SubmissionStatus } from "@/features/submissions/types";
 import { useCheckResultsRequest, useRequestCheckMutation } from "@/features/checks/api";
-import { CheckType } from "@/features/checks/types";
 import { CheckResultInfoList } from "@/features/checks/components/CheckResultInfoList";
 import { CheckResultDetailDialog } from "@/features/checks/components/CheckResultDetailDialog";
 import { useAuthContext } from "@/features/auth/context";
@@ -28,6 +31,7 @@ import { Role } from "@/features/auth/types";
 import { formatDate } from "@/shared/utils/date";
 import { ImageLightbox } from "@/shared/components/images/ImageLightbox";
 import { useTranslation } from "react-i18next";
+import { SupervisorCheckDialog } from "./SupervisorCheckDialog";
 
 type PaletteColor = "success" | "warning" | "error";
 
@@ -40,20 +44,14 @@ type StatusVisuals = {
 type SubmissionComponentProps = {
     submission: Submission;
     isOwner?: boolean;
+    defaultProblemSetCode?: string;
 };
 
-export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission, isOwner = true }) => {
-    const requestCheckMutation = useRequestCheckMutation();
-    const requestCheck = (checkType: CheckType) => {
-        requestCheckMutation.mutate({ checkType, submissionId: String(submission.id), problemKey: submission.problemKey });
-    };
+export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission, isOwner = true, defaultProblemSetCode }) => {
     const { data: resultInfos, isLoading, error } = useCheckResultsRequest(String(submission.id));
-    const { user } = useAuthContext();
     const [selectedCheckResultId, setSelectedCheckResultId] = useState<number | null>(null);
     const [lightboxIndex, setLightboxIndex] = useState(-1);
-
-    const isSelfCheckDisabled = submission.status == "SUCCESS";
-    const isAiCheckDisabled = !["MODERATOR" as Role, "ADMIN" as Role].some((role) => user?.roles.includes(role));
+    const [supervisorDialogOpen, setSupervisorDialogOpen] = useState(false);
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
@@ -77,7 +75,24 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission, 
                 />
             )}
 
+            <SupervisorCheckDialog
+                submission={supervisorDialogOpen ? submission : null}
+                defaultProblemSetCode={defaultProblemSetCode}
+                onClose={() => {
+                    setSupervisorDialogOpen(false);
+                }}
+            />
+
             <StatusHero submission={submission} />
+
+            {isOwner && (
+                <ActionsSection
+                    submission={submission}
+                    onOpenSupervisorDialog={() => {
+                        setSupervisorDialogOpen(true);
+                    }}
+                />
+            )}
 
             <DetailsSection submission={submission} />
 
@@ -90,12 +105,6 @@ export const SubmissionComponent: FC<SubmissionComponentProps> = ({ submission, 
                 error={error}
                 resultInfos={resultInfos}
                 onItemClick={isOwner ? setSelectedCheckResultId : undefined}
-                isSelfCheckDisabled={isSelfCheckDisabled}
-                isAiCheckDisabled={isAiCheckDisabled}
-                isCheckPending={requestCheckMutation.isPending}
-                pendingCheckType={requestCheckMutation.variables?.checkType}
-                onRequestCheck={requestCheck}
-                showActions={isOwner}
             />
         </Box>
     );
@@ -130,25 +139,123 @@ function StatusHero({ submission }: SubmissionComponentProps) {
     );
 }
 
-function DetailsSection({ submission }: SubmissionComponentProps) {
+function ActionsSection({
+    submission,
+    onOpenSupervisorDialog,
+}: {
+    submission: Submission;
+    onOpenSupervisorDialog: () => void;
+}) {
     const { t } = useTranslation("submissions");
+    const { user } = useAuthContext();
+    const isAiCheckDisabled = !(["MODERATOR", "ADMIN"] as Role[]).some((role) => user?.roles.includes(role));
+    const showSelf = submission.status !== "SUCCESS";
+    const showSmart = !isAiCheckDisabled;
+
+    const requestCheckMutation = useRequestCheckMutation();
+    const pendingVars = requestCheckMutation.isPending ? requestCheckMutation.variables : undefined;
+    const pendingCheckType = pendingVars && pendingVars.checkType !== "supervisor" ? pendingVars.checkType : undefined;
+    const disabled = requestCheckMutation.isPending;
+
+    const handleSelf = () => {
+        requestCheckMutation.mutate({
+            checkType: "self",
+            submissionId: String(submission.id),
+            problemKey: submission.problemKey,
+        });
+    };
+    const handleSmart = () => {
+        requestCheckMutation.mutate({
+            checkType: "ai",
+            submissionId: String(submission.id),
+            problemKey: submission.problemKey,
+        });
+    };
+
     return (
-        <Stack spacing={1}>
-            <DetailRow label={t("problem_label")} value={submission.problemKey} />
-            <DetailRow label={t("submitted_by_label")} value={submission.userName} />
+        <Stack direction="row" spacing={1} justifyContent="center" alignItems="center">
+            {showSelf && (
+                <Tooltip title={t("self_check_tooltip")}>
+                    <span>
+                        <IconButton
+                            color="success"
+                            disabled={disabled}
+                            aria-label={t("self_check_tooltip")}
+                            onClick={handleSelf}
+                        >
+                            {pendingCheckType === "self" ? (
+                                <CircularProgress size={18} color="inherit" />
+                            ) : (
+                                <CheckCircleOutlineIcon />
+                            )}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )}
+            {showSmart && (
+                <Tooltip title={t("smart_check_tooltip")}>
+                    <span>
+                        <IconButton
+                            color="primary"
+                            disabled={disabled}
+                            aria-label={t("smart_check_tooltip")}
+                            onClick={handleSmart}
+                        >
+                            {pendingCheckType === "ai" ? (
+                                <CircularProgress size={18} color="inherit" />
+                            ) : (
+                                <AutoAwesomeOutlinedIcon />
+                            )}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )}
+            <Tooltip title={t("supervisor_check_tooltip")}>
+                <span>
+                    <IconButton
+                        disabled={disabled}
+                        aria-label={t("supervisor_check_tooltip")}
+                        onClick={onOpenSupervisorDialog}
+                    >
+                        <SupervisorAccountOutlinedIcon />
+                    </IconButton>
+                </span>
+            </Tooltip>
         </Stack>
     );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailsSection({ submission }: SubmissionComponentProps) {
+    const { t } = useTranslation("submissions");
     return (
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 2 }}>
+        <Stack spacing={1}>
+            <DetailRow label={t("problem_label")} value={submission.problemKey} to={`/problems/${submission.problemKey}`} />
+            <DetailRow
+                label={t("submitted_by_label")}
+                value={
+                    <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
+                        <UserAvatar name={submission.userName} size="small" />
+                        <Typography variant="body2">{submission.userName}</Typography>
+                    </Stack>
+                }
+            />
+        </Stack>
+    );
+}
+
+function DetailRow({ label, value, to }: { label: string; value: ReactNode; to?: string }) {
+    return (
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 2 }}>
             <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
                 {label}
             </Typography>
-            <Typography variant="body2" sx={{ textAlign: "right", wordBreak: "break-all" }}>
-                {value}
-            </Typography>
+            {to ? (
+                <Link component={RouterLink} to={to} variant="body2" sx={{ textAlign: "right", wordBreak: "break-all" }}>
+                    {value}
+                </Link>
+            ) : (
+                <Box sx={{ typography: "body2", textAlign: "right", wordBreak: "break-all" }}>{value}</Box>
+            )}
         </Box>
     );
 }
@@ -185,26 +292,9 @@ type CheckResultsSectionProps = {
     error: unknown;
     resultInfos: ReturnType<typeof useCheckResultsRequest>["data"];
     onItemClick?: (id: number) => void;
-    isSelfCheckDisabled: boolean;
-    isAiCheckDisabled: boolean;
-    isCheckPending: boolean;
-    pendingCheckType?: CheckType;
-    onRequestCheck: (checkType: CheckType) => void;
-    showActions?: boolean;
 };
 
-function CheckResultsSection({
-    isLoading,
-    error,
-    resultInfos,
-    onItemClick,
-    isSelfCheckDisabled,
-    isAiCheckDisabled,
-    isCheckPending,
-    pendingCheckType,
-    onRequestCheck,
-    showActions = true,
-}: CheckResultsSectionProps) {
+function CheckResultsSection({ isLoading, error, resultInfos, onItemClick }: CheckResultsSectionProps) {
     const { t } = useTranslation("submissions");
     const count = resultInfos?.length ?? 0;
 
@@ -238,65 +328,6 @@ function CheckResultsSection({
 
             {!isLoading && resultInfos && resultInfos.length > 0 && (
                 <CheckResultInfoList data={resultInfos} onItemClick={onItemClick} />
-            )}
-
-            {showActions && (
-                <>
-                    <Divider sx={{ my: 2 }}>
-                        <Typography variant="caption" color="text.secondary">
-                            Actions
-                        </Typography>
-                    </Divider>
-
-                    <Stack direction="row" spacing={1}>
-                        <Tooltip
-                            title={
-                                isSelfCheckDisabled ? t("consider_solved_disabled_tooltip") : t("consider_solved_tooltip")
-                            }
-                        >
-                            <span>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    disabled={isSelfCheckDisabled || isCheckPending}
-                                    startIcon={
-                                        isCheckPending && pendingCheckType === "self" ? (
-                                            <CircularProgress size={16} />
-                                        ) : undefined
-                                    }
-                                    onClick={() => {
-                                        onRequestCheck("self");
-                                    }}
-                                >
-                                    {t("consider_solved_button")}
-                                </Button>
-                            </span>
-                        </Tooltip>
-                        <Tooltip
-                            title={
-                                isAiCheckDisabled ? t("request_ai_check_disabled_tooltip") : t("request_ai_check_tooltip")
-                            }
-                        >
-                            <span>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    disabled={isAiCheckDisabled || isCheckPending}
-                                    startIcon={
-                                        isCheckPending && pendingCheckType === "ai" ? (
-                                            <CircularProgress size={16} />
-                                        ) : undefined
-                                    }
-                                    onClick={() => {
-                                        onRequestCheck("ai");
-                                    }}
-                                >
-                                    {t("request_ai_check_button")}
-                                </Button>
-                            </span>
-                        </Tooltip>
-                    </Stack>
-                </>
             )}
         </Box>
     );

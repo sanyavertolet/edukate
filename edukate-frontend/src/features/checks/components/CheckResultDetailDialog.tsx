@@ -33,7 +33,14 @@ export const CheckResultDetailDialog: FC<CheckResultDetailDialogProps> = ({ chec
     const { t } = useTranslation("checks");
 
     return (
-        <Dialog open={checkResultId !== null} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
+        <Dialog
+            open={checkResultId !== null}
+            onClose={onClose}
+            maxWidth="sm"
+            fullWidth
+            fullScreen={isMobile}
+            sx={{ zIndex: (theme) => theme.zIndex.snackbar + 2 }}
+        >
             <DialogTitle component="div">
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Stack direction="row" alignItems="center" spacing={1.5}>
