@@ -7,7 +7,15 @@ import { AuthRequired } from "@/features/auth/components/AuthRequired";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { useTranslation } from "react-i18next";
 
-export function ProblemComponent({ bookSlug, code }: { bookSlug: string; code: string }) {
+export function ProblemComponent({
+    bookSlug,
+    code,
+    problemSetCode,
+}: {
+    bookSlug: string;
+    code: string;
+    problemSetCode?: string;
+}) {
     const { t } = useTranslation("problems");
     const { data: problem, isLoading, error } = useProblemRequest(bookSlug, code);
 
@@ -24,7 +32,7 @@ export function ProblemComponent({ bookSlug, code }: { bookSlug: string; code: s
                     <ProblemCard problem={problem} />
                     <AuthRequired>
                         <SolutionCard problem={problem} />
-                        <SubmissionsCard problemKey={problem.key} />
+                        <SubmissionsCard problemKey={problem.key} problemSetCode={problemSetCode} />
                     </AuthRequired>
                 </Stack>
             )}

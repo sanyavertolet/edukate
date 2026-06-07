@@ -17,7 +17,7 @@ export function useSubmitProblemMutation() {
         onSuccess: (_data, { problemKey }) => {
             void queryClient.invalidateQueries({ queryKey: queryKeys.submissions.byProblem(problemKey) });
             void queryClient.invalidateQueries({ queryKey: queryKeys.problems.detail(problemKey) });
-            void queryClient.invalidateQueries({ queryKey: queryKeys.files.temp });
+            queryClient.removeQueries({ queryKey: queryKeys.files.all });
         },
     });
 }

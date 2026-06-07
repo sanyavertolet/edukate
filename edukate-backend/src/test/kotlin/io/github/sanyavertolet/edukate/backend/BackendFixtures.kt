@@ -1,6 +1,9 @@
 package io.github.sanyavertolet.edukate.backend
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateSubmissionRequest
+import io.github.sanyavertolet.edukate.backend.dtos.CreateSupervisorTicketRequest
+import io.github.sanyavertolet.edukate.backend.dtos.SupervisorTicketDto
+import io.github.sanyavertolet.edukate.backend.dtos.SupervisorVerdict
 import io.github.sanyavertolet.edukate.backend.entities.Answer
 import io.github.sanyavertolet.edukate.backend.entities.AnswerLocalization
 import io.github.sanyavertolet.edukate.backend.entities.Book
@@ -11,12 +14,14 @@ import io.github.sanyavertolet.edukate.backend.entities.ProblemProgress
 import io.github.sanyavertolet.edukate.backend.entities.ProblemSet
 import io.github.sanyavertolet.edukate.backend.entities.Submission
 import io.github.sanyavertolet.edukate.backend.entities.Subproblem
+import io.github.sanyavertolet.edukate.backend.entities.SupervisorTicket
 import io.github.sanyavertolet.edukate.backend.entities.User
 import io.github.sanyavertolet.edukate.common.ContentLanguage
 import io.github.sanyavertolet.edukate.common.SubmissionStatus
 import io.github.sanyavertolet.edukate.common.checks.CheckErrorType
 import io.github.sanyavertolet.edukate.common.checks.CheckResultMessage
 import io.github.sanyavertolet.edukate.common.checks.CheckStatus
+import io.github.sanyavertolet.edukate.common.checks.SupervisorTicketStatus
 import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.github.sanyavertolet.edukate.common.users.UserStatus
@@ -176,4 +181,57 @@ object BackendFixtures {
         text: String = "Answer is 42",
         notes: String? = null,
     ) = AnswerLocalization(answerId = answerId, language = language, text = text, notes = notes)
+
+    fun supervisorTicket(
+        id: Long? = 1L,
+        submissionId: Long = 1L,
+        problemSetId: Long = 1L,
+        supervisorId: Long = 2L,
+        checkResultId: Long = 10L,
+        status: SupervisorTicketStatus = SupervisorTicketStatus.PENDING,
+        createdAt: Instant? = Instant.now(),
+    ) =
+        SupervisorTicket(
+            id = id,
+            submissionId = submissionId,
+            problemSetId = problemSetId,
+            supervisorId = supervisorId,
+            checkResultId = checkResultId,
+            status = status,
+            createdAt = createdAt,
+        )
+
+    fun createSupervisorTicketRequest(
+        submissionId: Long = 1L,
+        problemSetCode: String = "SHARE123",
+        supervisorName: String = "moderator",
+    ) =
+        CreateSupervisorTicketRequest(
+            submissionId = submissionId,
+            problemSetCode = problemSetCode,
+            supervisorName = supervisorName,
+        )
+
+    fun supervisorTicketDto(
+        id: Long = 1L,
+        problemKey: String = "savchenko/1.1.1",
+        problemSetShareCode: String = "SHARE123",
+        fileUrls: List<String> = emptyList(),
+        status: SupervisorTicketStatus = SupervisorTicketStatus.PENDING,
+        createdAt: Instant = Instant.now(),
+    ) =
+        SupervisorTicketDto(
+            id = id,
+            problemKey = problemKey,
+            problemSetShareCode = problemSetShareCode,
+            fileUrls = fileUrls,
+            status = status,
+            createdAt = createdAt,
+        )
+
+    fun supervisorVerdict(
+        status: CheckStatus = CheckStatus.MISTAKE,
+        errorType: CheckErrorType = CheckErrorType.CONCEPTUAL,
+        explanation: String = "The direction of initial velocity is incorrect.",
+    ) = SupervisorVerdict(status = status, errorType = errorType, explanation = explanation)
 }

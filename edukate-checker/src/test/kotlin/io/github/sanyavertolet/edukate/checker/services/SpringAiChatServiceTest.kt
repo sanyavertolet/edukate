@@ -15,12 +15,16 @@ import org.springframework.ai.chat.messages.AssistantMessage
 import org.springframework.ai.chat.model.ChatModel
 import org.springframework.ai.chat.model.ChatResponse
 import org.springframework.ai.chat.model.Generation
-import org.springframework.ai.chat.prompt.ChatOptions
 import org.springframework.ai.chat.prompt.Prompt
 import reactor.test.StepVerifier
 
 class SpringAiChatServiceTest {
-    private val chatModel = mockk<ChatModel>()
+    // Spring AI 2.0.0-SNAPSHOT churns its ChatModel surface between snapshots
+    // (e.g. getDefaultOptions deprecated, getOptions added). Use a relaxed mock so
+    // ChatClient.builder()'s internal calls are auto-stubbed regardless of which
+    // snapshot's signature is currently active. We still stub call() explicitly
+    // below — that's the one we actually exercise.
+    private val chatModel = mockk<ChatModel>(relaxed = true)
     private val systemPromptTemplate = "Check the solution for: {problemText}"
     private lateinit var service: SpringAiChatService
 
@@ -32,7 +36,6 @@ class SpringAiChatServiceTest {
     @BeforeEach
     fun setUp() {
         service = SpringAiChatService(chatModel, systemPromptTemplate)
-        every { chatModel.getDefaultOptions() } returns ChatOptions.builder().build()
         val responseJson = """{"status":"SUCCESS","trustLevel":0.9,"errorType":"NONE","explanation":"Correct."}"""
         every { chatModel.call(any<Prompt>()) } returns ChatResponse(listOf(Generation(AssistantMessage(responseJson))))
     }
@@ -68,7 +71,7 @@ class SpringAiChatServiceTest {
 
         val systemMessages = promptSlot.captured.instructions.filter { it.messageType.value == "system" }
         assertThat(systemMessages).isNotEmpty
-        assertThat(systemMessages.first().getText()).contains(ctx.problemText)
+        assertThat(systemMessages.first().text).contains(ctx.problemText)
     }
 
     @Test

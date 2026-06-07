@@ -19,6 +19,7 @@ export const SubmissionDrawer: FC<SubmissionDrawerProps> = ({ submission, onClos
             anchor="right"
             open={submission !== null}
             onClose={onClose}
+            sx={{ zIndex: (theme) => theme.zIndex.snackbar + 1 }}
             slotProps={{ paper: { sx: { width: { xs: "100%", sm: 520 } } } }}
         >
             <Stack direction="row" alignItems="center" justifyContent="space-between" px={2} py={1.5}>

@@ -7,6 +7,7 @@ import { ProblemSetProblemSelector, ProblemSetSelection } from "./ProblemSetProb
 import { ProblemComponent } from "@/features/problems/components/ProblemComponent";
 import { ProblemSetDescriptionTab } from "./ProblemSetDescriptionTab";
 import { ProblemSetSettingsTab } from "./ProblemSetSettingsTab";
+import { SupervisorTicketList } from "@/features/supervisor-tickets/components/SupervisorTicketList";
 import Grid from "@mui/material/Grid2";
 import { useDeviceContext } from "@/shared/context/DeviceContext";
 import { useAuthContext } from "@/features/auth/context";
@@ -23,6 +24,13 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
 
     const isAdmin = useMemo(
         () => (user && problemSet && problemSet.admins.some((value) => value === user.name)) || false,
+        [user, problemSet],
+    );
+
+    const isModerator = useMemo(
+        () =>
+            (user && problemSet && (problemSet.admins.includes(user.name) || problemSet.moderators.includes(user.name))) ||
+            false,
         [user, problemSet],
     );
 
@@ -57,16 +65,23 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
                             selection={selection}
                             onSelectionChange={onSelectionChange}
                             isAdmin={isAdmin}
+                            isModerator={isModerator}
                         />
                     </Card>
                 </Grid>
                 <Grid key={"central-grid"} size={isMobile ? 12 : 10}>
                     {selection.type === "problem" ? (
-                        <ProblemComponent bookSlug={selection.problem.bookSlug} code={selection.problem.code} />
+                        <ProblemComponent
+                            bookSlug={selection.problem.bookSlug}
+                            code={selection.problem.code}
+                            problemSetCode={problemSet?.shareCode}
+                        />
                     ) : selection.type === "settings" && problemSet ? (
                         <Paper>
                             <ProblemSetSettingsTab problemSet={problemSet} />
                         </Paper>
+                    ) : selection.type === "supervisor" && problemSet ? (
+                        <SupervisorTicketList problemSetShareCode={problemSet.shareCode} />
                     ) : problemSet ? (
                         <Paper>
                             <ProblemSetDescriptionTab problemSet={problemSet} />

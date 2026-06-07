@@ -17,28 +17,27 @@ interface ProblemSetRepository : ReactiveCrudRepository<ProblemSet, Long> {
     @Query(
         """
         SELECT ps.* FROM problem_sets ps
-        WHERE ps.user_id_role_map -> CAST(:userId AS TEXT) IS NOT NULL
+        WHERE ps.user_id_role_map ->> CAST(:userId AS TEXT) = ANY(:roles)
         ORDER BY ps.id
         """
     )
-    fun findByUserId(userId: Long, pageable: Pageable): Flux<ProblemSet>
-
-    @Query(
-        """
-        SELECT ps.* FROM problem_sets ps
-        WHERE ps.user_id_role_map ->> CAST(:userId AS TEXT) = 'ADMIN'
-        ORDER BY ps.id
-        """
-    )
-    fun findOwnedByUserId(userId: Long, pageable: Pageable): Flux<ProblemSet>
+    fun findByUserIdAndRoles(userId: Long, roles: Array<String>, pageable: Pageable): Flux<ProblemSet>
 
     @Query(
         """
         SELECT ps.* FROM problem_sets ps
         WHERE ps.user_id_role_map -> CAST(:userId AS TEXT) IS NOT NULL
-          AND ps.user_id_role_map ->> CAST(:userId AS TEXT) != 'ADMIN'
+          AND (ps.name ILIKE CONCAT('%', :query, '%')
+               OR ps.share_code ILIKE CONCAT('%', :query, '%'))
+          AND (CAST(:problemKey AS TEXT) IS NULL
+               OR EXISTS (
+                   SELECT 1 FROM problem_set_problems psp
+                   JOIN problems p ON psp.problem_id = p.id
+                   WHERE psp.problem_set_id = ps.id
+                     AND p.key = :problemKey
+               ))
         ORDER BY ps.id
         """
     )
-    fun findJoinedByUserId(userId: Long, pageable: Pageable): Flux<ProblemSet>
+    fun searchByUserIdAndQuery(userId: Long, query: String, problemKey: String?, pageable: Pageable): Flux<ProblemSet>
 }

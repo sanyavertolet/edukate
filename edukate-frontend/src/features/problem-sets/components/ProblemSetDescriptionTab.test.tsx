@@ -20,6 +20,7 @@ const baseProblemSet: ProblemSet = {
     name: "Mechanics",
     description: "Classical mechanics problems",
     admins: ["alice", "bob"],
+    moderators: [],
     isPublic: true,
     shareCode: "MECH01",
     problems: [

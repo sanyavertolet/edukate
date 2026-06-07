@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     changeUserRole,
@@ -7,17 +8,18 @@ import {
     expireInvite,
     getProblemSetByShareCode,
     getInvitedUsers,
-    getJoinedProblemSets,
-    getOwnedProblemSets,
+    getMemberProblemSets,
+    GetMemberProblemSetsRolesItem,
     getPublicProblemSets,
     getUserRoles,
     inviteToProblemSet,
     replyToInvite,
+    searchMemberProblemSets,
 } from "@/generated/backend";
 import { useAuthContext } from "@/features/auth/context";
 import { queryClient } from "@/lib/query-client";
 import { queryKeys } from "@/lib/query-keys";
-import { ProblemSetCategory, CreateProblemSetRequest } from "./types";
+import { ProblemSetCategory, CreateProblemSetRequest, ProblemSetMetadata } from "./types";
 
 export function useCreateProblemSetMutation(createProblemSetRequest: CreateProblemSetRequest) {
     return useMutation({
@@ -31,7 +33,7 @@ export function useCreateProblemSetMutation(createProblemSetRequest: CreateProbl
             }
             return createProblemSet(createProblemSetRequest);
         },
-        onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.list("owned") }),
+        onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.list("admin") }),
     });
 }
 
@@ -43,17 +45,39 @@ export function useProblemSetRequest(problemSetCode: string | undefined) {
     });
 }
 
-const problemSetListFn: Record<ProblemSetCategory, typeof getPublicProblemSets> = {
-    public: getPublicProblemSets,
-    owned: getOwnedProblemSets,
-    joined: getJoinedProblemSets,
+// String-literal map (typed against the generated union) — using the const-object
+// like GetMemberProblemSetsRolesItem.USER trips some TS-language-service versions on
+// Orval's self-referential `type X = typeof X[keyof typeof X]` pattern.
+const ROLES_BY_CATEGORY: Record<"user" | "moderator" | "admin", GetMemberProblemSetsRolesItem[]> = {
+    user: ["USER"],
+    moderator: ["MODERATOR"],
+    admin: ["ADMIN"],
 };
 
 export function useProblemSetsRequest(category: ProblemSetCategory) {
-    return useQuery({
+    return useQuery<ProblemSetMetadata[]>({
         queryKey: queryKeys.problemSets.list(category),
-        queryFn: ({ signal }) => problemSetListFn[category](undefined, signal),
+        queryFn: ({ signal }) =>
+            category === "public"
+                ? getPublicProblemSets(undefined, signal)
+                : getMemberProblemSets({ roles: ROLES_BY_CATEGORY[category] }, signal),
     });
+}
+
+export function useMemberProblemSetsSearch(problemKey?: string) {
+    const { isAuthorized } = useAuthContext();
+    const query = useQuery<ProblemSetMetadata[]>({
+        queryKey: queryKeys.problemSets.search(problemKey),
+        enabled: isAuthorized,
+        queryFn: ({ signal }) => {
+            return searchMemberProblemSets({ page: 0, size: 200, problemKey }, signal);
+        },
+    });
+    const data = useMemo<ProblemSetMetadata[]>(
+        () => [...(query.data ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
+        [query.data],
+    );
+    return { data, isLoading: query.isLoading };
 }
 
 export function useProblemSetInviteUserMutation() {
@@ -72,7 +96,7 @@ export function useProblemSetInvitationReplyMutation() {
         mutationFn: ({ shareCode, isAccepted }: { shareCode: string; isAccepted: boolean }) =>
             replyToInvite(shareCode, { response: isAccepted }),
         onSuccess: (_data, { shareCode }) => {
-            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.list("joined") });
+            void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.all });
             void queryClient.invalidateQueries({ queryKey: queryKeys.problemSets.detail(shareCode) });
         },
     });

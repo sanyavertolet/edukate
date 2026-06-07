@@ -1035,6 +1035,47 @@ SELECT setval('submissions_id_seq',   GREATEST((SELECT MAX(id) FROM submissions)
 SELECT setval('check_results_id_seq', GREATEST((SELECT MAX(id) FROM check_results), 1));
 SELECT setval('problem_sets_id_seq',  GREATEST((SELECT MAX(id) FROM problem_sets),  1));
 
+-- ── Supervisor tickets ───────────────────────────────────────────────────────
+-- Seeded for UI state coverage. All tickets assigned to 'moderator' (id=2)
+-- who is ADMIN of PS2 "Classical Mechanics" and PS3 "Introduction to Physics".
+--
+-- PS2 (MECH-PRIV-2026): Tickets 3 & 4 — RESOLVED (one SUCCESS, one MISTAKE)
+-- PS3 (INTRO-PUB-2026): Tickets 1 & 2 — PENDING (awaiting review)
+--
+-- Check results 13–16 are supervisor stubs / resolved verdicts.
+-- Submissions used (by 'user'):
+--   Sub 12 → 6.4.2  ∈ PS3   |  Sub 15 → 10.1.21 ∈ PS3
+--   Sub 11 → 3.2.7  ∈ PS2   |  Sub 14 → 2.4.34  ∈ PS2
+
+INSERT INTO check_results (id, submission_id, status, trust_level, error_type, explanation, created_at)
+VALUES
+    (13, 12, 'PENDING', 0.0, 'NONE', '', '2026-05-10 09:00:00+00'),
+    (14, 15, 'PENDING', 0.0, 'NONE', '', '2026-05-10 10:00:00+00'),
+    (15, 11, 'SUCCESS', 1.0, 'NONE',
+        'Both subtasks solved correctly. Magnetic force and equilibrium angle expressions are exact.',
+        '2026-05-10 11:30:00+00'),
+    (16, 14, 'MISTAKE', 1.0, 'ALGEBRAIC',
+        'The collision is modelled correctly but the final heat loss formula misses the factor '
+        '(m1-m2)/(m1+m2). The kinetic energy after collision was computed using the initial '
+        'combined velocity instead of the post-collision velocity of the surviving mass.',
+        '2026-05-10 12:00:00+00')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO supervisor_tickets (id, submission_id, problem_set_id, supervisor_id, check_result_id, status, created_at)
+VALUES
+    (1, 12, (SELECT id FROM problem_sets WHERE share_code = 'INTRO-PUB-2026'),
+        (SELECT id FROM users WHERE name = 'moderator'), 13, 'PENDING',  '2026-05-10 09:00:00+00'),
+    (2, 15, (SELECT id FROM problem_sets WHERE share_code = 'INTRO-PUB-2026'),
+        (SELECT id FROM users WHERE name = 'moderator'), 14, 'PENDING',  '2026-05-10 10:00:00+00'),
+    (3, 11, (SELECT id FROM problem_sets WHERE share_code = 'MECH-PRIV-2026'),
+        (SELECT id FROM users WHERE name = 'moderator'), 15, 'RESOLVED', '2026-05-08 11:00:00+00'),
+    (4, 14, (SELECT id FROM problem_sets WHERE share_code = 'MECH-PRIV-2026'),
+        (SELECT id FROM users WHERE name = 'moderator'), 16, 'RESOLVED', '2026-05-09 12:00:00+00')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('check_results_id_seq',      GREATEST((SELECT MAX(id) FROM check_results),      1));
+SELECT setval('supervisor_tickets_id_seq', GREATEST((SELECT MAX(id) FROM supervisor_tickets), 1));
+
 -- ── Problem sets ──────────────────────────────────────────────────────────────
 -- Three problem sets covering every interesting membership scenario:
 --

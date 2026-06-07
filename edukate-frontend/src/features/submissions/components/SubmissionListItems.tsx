@@ -1,16 +1,20 @@
 import { Submission, SubmissionStatus } from "@/features/submissions/types";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { ReactNode, useMemo } from "react";
+import { MouseEvent, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Avatar,
+    Badge,
     Box,
-    Button,
+    CircularProgress,
+    IconButton,
     ListItem,
     ListItemAvatar,
     ListItemButton,
     ListItemText,
     Skeleton,
+    Stack,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import { formatDate } from "@/shared/utils/date";
@@ -18,16 +22,34 @@ import InboxOutlinedIcon from "@mui/icons-material/InboxOutlined";
 import DoneIcon from "@mui/icons-material/DoneOutlined";
 import PendingIcon from "@mui/icons-material/PendingOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import SupervisorAccountOutlinedIcon from "@mui/icons-material/SupervisorAccountOutlined";
 import { useNavigate } from "react-router-dom";
+
+export type RowCheckType = "self" | "ai" | "supervisor";
 
 export function SubmissionListItem({
     submission,
     openImages,
     onSelect,
+    onSelfCheck,
+    onSmartCheck,
+    onSupervisorCheck,
+    isAiCheckDisabled,
+    pendingCheckType,
+    isAnyCheckPending,
 }: {
     submission: Submission;
     openImages: (images: string[], index: number) => void;
     onSelect?: (submission: Submission) => void;
+    onSelfCheck: (submission: Submission) => void;
+    onSmartCheck: (submission: Submission) => void;
+    onSupervisorCheck: (submission: Submission) => void;
+    isAiCheckDisabled: boolean;
+    pendingCheckType: RowCheckType | null;
+    isAnyCheckPending: boolean;
 }) {
     const { t, i18n } = useTranslation("submissions");
     const { icon, color } = getStatusVisuals(submission.status);
@@ -35,7 +57,22 @@ export function SubmissionListItem({
     const attachments = useMemo(() => submission.fileUrls, [submission.fileUrls]);
     const navigate = useNavigate();
     return (
-        <ListItem disablePadding secondaryAction={AttachmentButtonList(attachments, openImages)}>
+        <ListItem
+            disablePadding
+            secondaryAction={
+                <RowActions
+                    attachments={attachments}
+                    submission={submission}
+                    openImages={openImages}
+                    onSelfCheck={onSelfCheck}
+                    onSmartCheck={onSmartCheck}
+                    onSupervisorCheck={onSupervisorCheck}
+                    isAiCheckDisabled={isAiCheckDisabled}
+                    pendingCheckType={pendingCheckType}
+                    isAnyCheckPending={isAnyCheckPending}
+                />
+            }
+        >
             <ListItemButton
                 onClick={() => {
                     if (onSelect) {
@@ -57,24 +94,111 @@ export function SubmissionListItem({
     );
 }
 
-export function AttachmentButtonList(attachments: string[] = [], openImages: (images: string[], index: number) => void) {
+function RowActions({
+    attachments,
+    submission,
+    openImages,
+    onSelfCheck,
+    onSmartCheck,
+    onSupervisorCheck,
+    isAiCheckDisabled,
+    pendingCheckType,
+    isAnyCheckPending,
+}: {
+    attachments: string[];
+    submission: Submission;
+    openImages: (images: string[], index: number) => void;
+    onSelfCheck: (submission: Submission) => void;
+    onSmartCheck: (submission: Submission) => void;
+    onSupervisorCheck: (submission: Submission) => void;
+    isAiCheckDisabled: boolean;
+    pendingCheckType: RowCheckType | null;
+    isAnyCheckPending: boolean;
+}) {
+    const { t } = useTranslation("submissions");
+    const showSelf = submission.status !== "SUCCESS";
+    const showSmart = !isAiCheckDisabled;
+
+    const stopAnd = (handler: () => void) => (e: MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+        handler();
+    };
+
+    const iconOrSpinner = (forType: RowCheckType, fallback: ReactNode): ReactNode =>
+        pendingCheckType === forType ? <CircularProgress size={16} /> : fallback;
+
     return (
-        <Box sx={{ display: "flex", gap: 1 }}>
-            {attachments.map((_, i) => (
-                <Button
-                    key={i}
-                    variant="text"
-                    size="small"
-                    aria-label={`Open attachment ${String(i + 1)}`}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        openImages(attachments, i);
-                    }}
-                >
-                    {i + 1}
-                </Button>
-            ))}
-        </Box>
+        <Stack direction="row" spacing={0.5} alignItems="center">
+            {attachments.length > 0 && (
+                <Tooltip title={t("attachments_tooltip", { count: attachments.length })}>
+                    <IconButton
+                        size="small"
+                        aria-label={t("attachments_tooltip", { count: attachments.length })}
+                        onClick={stopAnd(() => {
+                            openImages(attachments, 0);
+                        })}
+                    >
+                        <Badge
+                            badgeContent={attachments.length}
+                            color="primary"
+                            overlap="circular"
+                            invisible={attachments.length <= 1}
+                        >
+                            <AttachFileIcon fontSize="small" />
+                        </Badge>
+                    </IconButton>
+                </Tooltip>
+            )}
+            {showSelf && (
+                <Tooltip title={t("self_check_tooltip")}>
+                    <span>
+                        <IconButton
+                            size="small"
+                            color="success"
+                            disabled={isAnyCheckPending}
+                            aria-label={t("self_check_tooltip")}
+                            onClick={stopAnd(() => {
+                                onSelfCheck(submission);
+                            })}
+                        >
+                            {iconOrSpinner("self", <CheckCircleOutlineIcon fontSize="small" />)}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )}
+            {showSmart && (
+                <Tooltip title={t("smart_check_tooltip")}>
+                    <span>
+                        <IconButton
+                            size="small"
+                            color="primary"
+                            disabled={isAnyCheckPending}
+                            aria-label={t("smart_check_tooltip")}
+                            onClick={stopAnd(() => {
+                                onSmartCheck(submission);
+                            })}
+                        >
+                            {iconOrSpinner("ai", <AutoAwesomeOutlinedIcon fontSize="small" />)}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )}
+            <Tooltip title={t("supervisor_check_tooltip")}>
+                <span>
+                    <IconButton
+                        size="small"
+                        disabled={isAnyCheckPending}
+                        aria-label={t("supervisor_check_tooltip")}
+                        onClick={stopAnd(() => {
+                            onSupervisorCheck(submission);
+                        })}
+                    >
+                        {iconOrSpinner("supervisor", <SupervisorAccountOutlinedIcon fontSize="small" />)}
+                    </IconButton>
+                </span>
+            </Tooltip>
+        </Stack>
     );
 }
 
@@ -117,9 +241,11 @@ export function StubListItem() {
     return (
         <ListItem
             secondaryAction={
-                <Box sx={{ minWidth: 72, display: "flex", gap: 1 }}>
-                    <Skeleton variant="rounded" width={32} height={28} />
-                    <Skeleton variant="rounded" width={32} height={28} />
+                <Box sx={{ minWidth: 160, display: "flex", gap: 1 }}>
+                    <Skeleton variant="circular" width={28} height={28} />
+                    <Skeleton variant="circular" width={28} height={28} />
+                    <Skeleton variant="circular" width={28} height={28} />
+                    <Skeleton variant="circular" width={28} height={28} />
                 </Box>
             }
         >

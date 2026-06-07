@@ -8,8 +8,12 @@ export type {
 
 export type CheckType = "self" | "ai" | "supervisor";
 
-export type CheckRequest = {
-    submissionId: string;
-    checkType: CheckType;
-    problemKey: string;
-};
+export type CheckRequest =
+    | { checkType: "self" | "ai"; submissionId: string; problemKey: string }
+    | {
+          checkType: "supervisor";
+          submissionId: string;
+          problemKey: string;
+          problemSetCode: string;
+          supervisorName: string;
+      };
