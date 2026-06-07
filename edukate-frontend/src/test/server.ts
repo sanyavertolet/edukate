@@ -14,9 +14,6 @@ import { getEdukateAPIMock as notifierMocks } from "@/generated/notifier";
 // were a shareCode. Re-register the literal paths first.
 // Anchored to `RequestHandler[]` so the IDE's TS service sees a concrete type
 // even if it loses Orval's generic chain on `ProblemSetMetadata`.
-const literalRouteHandlers: RequestHandler[] = [
-    getGetMemberProblemSetsMockHandler(),
-    getGetPublicProblemSetsMockHandler(),
-];
+const literalRouteHandlers: RequestHandler[] = [getGetMemberProblemSetsMockHandler(), getGetPublicProblemSetsMockHandler()];
 
 export const server = setupServer(...literalRouteHandlers, ...backendMocks(), ...gatewayMocks(), ...notifierMocks());
