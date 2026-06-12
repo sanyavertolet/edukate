@@ -1,5 +1,6 @@
 package io.github.sanyavertolet.edukate.backend.entities
 
+import io.github.sanyavertolet.edukate.backend.dtos.UpdateProblemSetSettingsRequest
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
@@ -23,6 +24,8 @@ data class ProblemSet(
 
     fun isAdmin(userId: Long): Boolean = UserRole.ADMIN == getUserRole(userId)
 
+    fun isLastAdmin(userId: Long): Boolean = isAdmin(userId) && getAdminIds().size == 1
+
     fun getAdminIds(): List<Long> = userIdRoleMap.filterValues { it == UserRole.ADMIN }.keys.toList()
 
     fun getModeratorIds(): List<Long> = userIdRoleMap.filterValues { it == UserRole.MODERATOR }.keys.toList()
@@ -39,4 +42,11 @@ data class ProblemSet(
     fun withoutUser(userId: Long): ProblemSet = copy(userIdRoleMap = userIdRoleMap - userId)
 
     fun withVisibility(isPublic: Boolean): ProblemSet = copy(isPublic = isPublic)
+
+    fun applyFieldUpdates(request: UpdateProblemSetSettingsRequest): ProblemSet =
+        copy(
+            name = request.name ?: name,
+            description = request.description ?: description,
+            isPublic = request.isPublic ?: isPublic,
+        )
 }

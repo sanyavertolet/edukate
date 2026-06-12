@@ -14,12 +14,13 @@ export const SupervisorTicketList: FC<SupervisorTicketListProps> = ({ problemSet
     const [page, setPage] = useState(0);
     const [selectedTicket, setSelectedTicket] = useState<SupervisorTicketDto | null>(null);
 
-    const { data: tickets, isLoading, error } = useSupervisorTicketsQuery(problemSetShareCode, page, PAGE_SIZE);
+    const { data, isLoading, error } = useSupervisorTicketsQuery(problemSetShareCode, page, PAGE_SIZE);
 
     return (
         <>
             <SupervisorTicketsTable
-                tickets={tickets}
+                tickets={data?.content}
+                totalElements={data?.totalElements ?? 0}
                 isLoading={isLoading}
                 error={error}
                 page={page}

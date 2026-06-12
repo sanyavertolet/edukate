@@ -23,6 +23,7 @@ import { formatDate } from "@/shared/utils/date";
 
 type SupervisorTicketsTableProps = {
     tickets: SupervisorTicketDto[] | undefined;
+    totalElements: number;
     isLoading: boolean;
     error: unknown;
     page: number;
@@ -41,6 +42,7 @@ function statusChip(status: SupervisorTicketStatus, t: (k: string) => string) {
 
 export const SupervisorTicketsTable: FC<SupervisorTicketsTableProps> = ({
     tickets,
+    totalElements,
     isLoading,
     error,
     page,
@@ -132,14 +134,13 @@ export const SupervisorTicketsTable: FC<SupervisorTicketsTableProps> = ({
             </TableContainer>
             <TablePagination
                 component="div"
-                count={-1}
+                count={totalElements}
                 rowsPerPage={size}
                 page={page}
                 onPageChange={(_e, p) => {
                     onPageChange(p);
                 }}
                 rowsPerPageOptions={[size]}
-                slotProps={{ actions: { nextButton: { disabled: !tickets || tickets.length < size } } }}
             />
         </Paper>
     );

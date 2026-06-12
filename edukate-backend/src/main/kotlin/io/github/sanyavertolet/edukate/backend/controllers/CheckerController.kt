@@ -16,6 +16,7 @@ import io.github.sanyavertolet.edukate.backend.services.SubmissionService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.common.checks.CheckResultInfo
 import io.github.sanyavertolet.edukate.common.checks.SupervisorTicketStatus
+import io.github.sanyavertolet.edukate.common.dtos.PageResponse
 import io.github.sanyavertolet.edukate.common.notifications.CheckedNotificationCreateRequest
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest
 import io.github.sanyavertolet.edukate.common.services.Notifier
@@ -310,16 +311,32 @@ class CheckerController(
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
         authentication: Authentication,
-    ): Flux<SupervisorTicketDto> {
+    ): Mono<PageResponse<SupervisorTicketDto>> {
         val callerId = requireNotNull(authentication.id())
         val pageable: Pageable = PageRequest.of(page, size)
-        val tickets =
+        val ticketsFlux =
             if (problemSetCode != null) {
                 supervisorTicketRepository.findBySupervisorIdAndProblemSetCode(callerId, problemSetCode, pageable)
             } else {
                 supervisorTicketRepository.findBySupervisorId(callerId, pageable)
             }
-        return tickets.flatMap { supervisorTicketMapper.toDto(it) }
+        val totalMono =
+            if (problemSetCode != null) {
+                supervisorTicketRepository.countBySupervisorIdAndProblemSetCode(callerId, problemSetCode)
+            } else {
+                supervisorTicketRepository.countBySupervisorId(callerId)
+            }
+        return Mono.zip(ticketsFlux.flatMap { supervisorTicketMapper.toDto(it) }.collectList(), totalMono).map { tuple ->
+            val content = tuple.t1
+            val total = tuple.t2
+            PageResponse(
+                content = content,
+                page = page,
+                size = size,
+                totalElements = total,
+                totalPages = if (size > 0) ((total + size - 1) / size).toInt() else 0,
+            )
+        }
     }
 
     @GetMapping("/by-id/{id}")

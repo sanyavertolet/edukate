@@ -4,7 +4,6 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import com.ninjasquad.springmockk.MockkBean
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
-import io.github.sanyavertolet.edukate.backend.dtos.SupervisorTicketDto
 import io.github.sanyavertolet.edukate.backend.entities.ProblemSet
 import io.github.sanyavertolet.edukate.backend.mappers.SupervisorTicketMapper
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
@@ -282,11 +281,12 @@ class CheckerControllerTest {
     // region GET /api/v1/checker/supervisor/my-tickets
 
     @Test
-    fun `getMySupervisorTickets returns 200 list for authenticated user`() {
+    fun `getMySupervisorTickets returns 200 paged response for authenticated user`() {
         val ticket = BackendFixtures.supervisorTicket(id = 1L, supervisorId = 1L)
         val dto = BackendFixtures.supervisorTicketDto(id = 1L)
 
         every { supervisorTicketRepository.findBySupervisorId(1L, any()) } returns Flux.just(ticket)
+        every { supervisorTicketRepository.countBySupervisorId(1L) } returns Mono.just(1L)
         every { supervisorTicketMapper.toDto(ticket) } returns Mono.just(dto)
 
         authenticatedClient(userId = 1L)
@@ -295,17 +295,27 @@ class CheckerControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList<SupervisorTicketDto>()
-            .hasSize(1)
+            .expectBody()
+            .jsonPath("$.content.length()")
+            .isEqualTo(1)
+            .jsonPath("$.totalElements")
+            .isEqualTo(1)
+            .jsonPath("$.page")
+            .isEqualTo(0)
+            .jsonPath("$.size")
+            .isEqualTo(20)
+            .jsonPath("$.totalPages")
+            .isEqualTo(1)
     }
 
     @Test
-    fun `getMySupervisorTickets returns 200 filtered list when problemSetCode provided`() {
+    fun `getMySupervisorTickets returns 200 filtered paged response when problemSetCode provided`() {
         val ticket = BackendFixtures.supervisorTicket(id = 2L, supervisorId = 1L)
         val dto = BackendFixtures.supervisorTicketDto(id = 2L, problemSetShareCode = "MECH-01")
 
         every { supervisorTicketRepository.findBySupervisorIdAndProblemSetCode(1L, "MECH-01", any()) } returns
             Flux.just(ticket)
+        every { supervisorTicketRepository.countBySupervisorIdAndProblemSetCode(1L, "MECH-01") } returns Mono.just(1L)
         every { supervisorTicketMapper.toDto(ticket) } returns Mono.just(dto)
 
         authenticatedClient(userId = 1L)
@@ -314,13 +324,17 @@ class CheckerControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList<SupervisorTicketDto>()
-            .hasSize(1)
+            .expectBody()
+            .jsonPath("$.content.length()")
+            .isEqualTo(1)
+            .jsonPath("$.totalElements")
+            .isEqualTo(1)
     }
 
     @Test
-    fun `getMySupervisorTickets returns 200 empty list when user has no tickets`() {
+    fun `getMySupervisorTickets returns 200 empty paged response when user has no tickets`() {
         every { supervisorTicketRepository.findBySupervisorId(1L, any()) } returns Flux.empty()
+        every { supervisorTicketRepository.countBySupervisorId(1L) } returns Mono.just(0L)
 
         authenticatedClient(userId = 1L)
             .get()
@@ -328,8 +342,13 @@ class CheckerControllerTest {
             .exchange()
             .expectStatus()
             .isOk
-            .expectBodyList<SupervisorTicketDto>()
-            .hasSize(0)
+            .expectBody()
+            .jsonPath("$.content.length()")
+            .isEqualTo(0)
+            .jsonPath("$.totalElements")
+            .isEqualTo(0)
+            .jsonPath("$.totalPages")
+            .isEqualTo(0)
     }
 
     // endregion

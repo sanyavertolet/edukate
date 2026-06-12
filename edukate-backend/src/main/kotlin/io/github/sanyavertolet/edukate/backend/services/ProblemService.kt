@@ -105,9 +105,6 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
             .flatMap { problemRepository.findRandomUnsolvedProblem(it).map { p -> p.key } }
             .switchIfEmpty(problemRepository.findRandomProblem().map { it.key })
 
-    private fun resolveBookId(slug: String): Mono<Long> =
-        bookService.findBySlug(slug).orNotFound("Book not found: $slug").map { requireNotNull(it.id) }
-
     private fun statusToDbValue(status: Problem.Status?): String? =
         when (status) {
             Problem.Status.SOLVED -> "SUCCESS"
@@ -117,69 +114,29 @@ class ProblemService(private val problemRepository: ProblemRepository, private v
             null -> null
         }
 
-    private fun withFilter(filter: ProblemFilter, userId: Long?, pageRequest: PageRequest): Flux<Problem> {
-        val prefix = filter.prefix?.takeIf { it.isNotBlank() }
-        val notSolved = filter.status == Problem.Status.NOT_SOLVED
-        val bestStatus = statusToDbValue(filter.status)
-        val limit = pageRequest.pageSize
-        val offset = pageRequest.offset
-        if (!filter.bookSlug.isNullOrBlank()) {
-            return resolveBookId(filter.bookSlug).flatMapMany { bookId ->
-                problemRepository.findWithFilter(
-                    bookId,
-                    prefix,
-                    filter.isHard,
-                    filter.hasPictures,
-                    filter.hasResult,
-                    notSolved,
-                    bestStatus,
-                    userId,
-                    limit,
-                    offset,
-                )
-            }
-        }
-        return problemRepository.findWithFilter(
-            null,
-            prefix,
+    private fun withFilter(filter: ProblemFilter, userId: Long?, pageRequest: PageRequest): Flux<Problem> =
+        problemRepository.findWithFilter(
+            filter.bookSlugPrefix?.takeIf { it.isNotBlank() },
+            filter.prefix?.takeIf { it.isNotBlank() },
             filter.isHard,
             filter.hasPictures,
             filter.hasResult,
-            notSolved,
-            bestStatus,
+            filter.status == Problem.Status.NOT_SOLVED,
+            statusToDbValue(filter.status),
             userId,
-            limit,
-            offset,
+            pageRequest.pageSize,
+            pageRequest.offset,
         )
-    }
 
-    private fun countWithFilter(filter: ProblemFilter, userId: Long?): Mono<Long> {
-        val prefix = filter.prefix?.takeIf { it.isNotBlank() }
-        val notSolved = filter.status == Problem.Status.NOT_SOLVED
-        val bestStatus = statusToDbValue(filter.status)
-        if (!filter.bookSlug.isNullOrBlank()) {
-            return resolveBookId(filter.bookSlug).flatMap { bookId ->
-                problemRepository.countWithFilter(
-                    bookId,
-                    prefix,
-                    filter.isHard,
-                    filter.hasPictures,
-                    filter.hasResult,
-                    notSolved,
-                    bestStatus,
-                    userId,
-                )
-            }
-        }
-        return problemRepository.countWithFilter(
-            null,
-            prefix,
+    private fun countWithFilter(filter: ProblemFilter, userId: Long?): Mono<Long> =
+        problemRepository.countWithFilter(
+            filter.bookSlugPrefix?.takeIf { it.isNotBlank() },
+            filter.prefix?.takeIf { it.isNotBlank() },
             filter.isHard,
             filter.hasPictures,
             filter.hasResult,
-            notSolved,
-            bestStatus,
+            filter.status == Problem.Status.NOT_SOLVED,
+            statusToDbValue(filter.status),
             userId,
         )
-    }
 }

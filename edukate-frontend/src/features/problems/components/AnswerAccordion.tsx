@@ -7,16 +7,18 @@ import { Problem } from "@/features/problems/types";
 import { ImageListComponent } from "@/shared/components/images/ImageList";
 import { useTranslation } from "react-i18next";
 
-type AnswerComponentProps = { problem: Problem };
+type AnswerComponentProps = { problem: Problem; fullWidth?: boolean };
 
-export function AnswerAccordionComponent({ problem }: AnswerComponentProps) {
+export function AnswerAccordionComponent({ problem, fullWidth = false }: AnswerComponentProps) {
     const { data: result, isLoading } = useAnswerRequest(problem.bookSlug, problem.code);
     const { isAuthorized } = useAuthContext();
     const { t } = useTranslation("problems");
 
+    const containerSx = fullWidth ? { width: "100%" } : { width: { xs: "100%", sm: "80%" } };
+
     if (isLoading) {
         return (
-            <Box sx={{ width: { xs: "100%", sm: "80%" } }}>
+            <Box sx={containerSx}>
                 <Skeleton variant="rectangular" height={48} sx={{ borderRadius: 1 }} />
             </Box>
         );
@@ -25,7 +27,7 @@ export function AnswerAccordionComponent({ problem }: AnswerComponentProps) {
     if (!result) return null;
 
     return (
-        <Box sx={{ width: { xs: "100%", sm: "80%" } }}>
+        <Box sx={containerSx}>
             <Accordion disabled={!isAuthorized}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="answer-content" id="answer-header">
                     <Typography component="span">{t("show_answer")}</Typography>

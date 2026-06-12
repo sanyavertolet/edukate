@@ -48,19 +48,20 @@ interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSor
     @Query(
         """
         SELECT p.* FROM problems p
-        WHERE (:bookId IS NULL OR p.book_id = :bookId)
+        JOIN books b ON p.book_id = b.id
+        WHERE (:bookSlugPrefix IS NULL OR b.slug LIKE :bookSlugPrefix || '%')
           AND (:prefix IS NULL OR p.code LIKE :prefix || '%')
           AND (:isHard IS NULL OR p.is_hard = :isHard)
           AND (:hasPictures IS NULL OR (jsonb_array_length(p.images) > 0) = :hasPictures)
           AND (:hasResult IS NULL OR (EXISTS (SELECT 1 FROM answers a WHERE a.problem_id = p.id)) = :hasResult)
           AND (:notSolved = false OR NOT EXISTS (SELECT 1 FROM problem_progress pp WHERE pp.problem_id = p.id AND pp.user_id = :userId))
           AND (:bestStatus IS NULL OR EXISTS (SELECT 1 FROM problem_progress pp WHERE pp.problem_id = p.id AND pp.user_id = :userId AND pp.best_status = :bestStatus))
-        ORDER BY string_to_array(p.code, '.')::int[]
+        ORDER BY b.slug, string_to_array(p.code, '.')::int[]
         LIMIT :limit OFFSET :offset
         """
     )
     fun findWithFilter(
-        bookId: Long?,
+        bookSlugPrefix: String?,
         prefix: String?,
         isHard: Boolean?,
         hasPictures: Boolean?,
@@ -75,7 +76,8 @@ interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSor
     @Query(
         """
         SELECT COUNT(*) FROM problems p
-        WHERE (:bookId IS NULL OR p.book_id = :bookId)
+        JOIN books b ON p.book_id = b.id
+        WHERE (:bookSlugPrefix IS NULL OR b.slug LIKE :bookSlugPrefix || '%')
           AND (:prefix IS NULL OR p.code LIKE :prefix || '%')
           AND (:isHard IS NULL OR p.is_hard = :isHard)
           AND (:hasPictures IS NULL OR (jsonb_array_length(p.images) > 0) = :hasPictures)
@@ -85,7 +87,7 @@ interface ProblemRepository : ReactiveCrudRepository<Problem, Long>, ReactiveSor
         """
     )
     fun countWithFilter(
-        bookId: Long?,
+        bookSlugPrefix: String?,
         prefix: String?,
         isHard: Boolean?,
         hasPictures: Boolean?,

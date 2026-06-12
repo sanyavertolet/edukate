@@ -29,11 +29,18 @@ class ProblemSetMapper(
             .findByProblemSetIdOrderByPosition(requireNotNull(problemSet.id))
             .map { it.problemId }
             .collectList()
-            .flatMap { problemIds ->
-                problemService
-                    .findProblemsByIds(problemIds)
-                    .flatMap { problemMapper.toMetadata(it, authentication) }
-                    .collectList()
+            .flatMap { orderedProblemIds ->
+                // PostgreSQL does not preserve the IN-clause order, so we must reorder the
+                // fetched problems back into the position-ordered id list ourselves.
+                // flatMapSequential keeps emission order while still subscribing concurrently
+                // to the toMetadata calls (which fan out to presigned-URL lookups).
+                problemService.findProblemsByIds(orderedProblemIds).collectList().flatMap { problems ->
+                    val byId = problems.associateBy { requireNotNull(it.id) }
+                    val orderedProblems = orderedProblemIds.mapNotNull { byId[it] }
+                    Flux.fromIterable(orderedProblems)
+                        .flatMapSequential { problemMapper.toMetadata(it, authentication) }
+                        .collectList()
+                }
             }
             .flatMap { metadataList ->
                 Mono.zip(adminNames(problemSet), moderatorNames(problemSet)).map { (admins, moderators) ->

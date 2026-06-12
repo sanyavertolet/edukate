@@ -22,11 +22,13 @@ import {
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { UserAvatar } from "@/shared/components/UserAvatar";
 import {
-    useProblemSetChangeUserRoleMutation,
-    useProblemSetExpireInviteMutation,
     useProblemSetInvitedUserListQuery,
+    useProblemSetRemoveMemberMutation,
+    useProblemSetRevokeInvitationMutation,
+    useProblemSetSetMemberRoleMutation,
     useProblemSetUserListQuery,
 } from "@/features/problem-sets/api";
+import { SetMemberRoleRequestRole } from "@/generated/backend";
 import { useAuthContext } from "@/features/auth/context";
 import { UserSearchInput } from "./UserSearchInput";
 import { toast } from "react-toastify";
@@ -55,8 +57,9 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
     const { user } = useAuthContext();
     const { data: members } = useProblemSetUserListQuery(shareCode);
     const { data: invitedUsers, refetch: refetchInvitedUsers } = useProblemSetInvitedUserListQuery(shareCode);
-    const changeRoleMutation = useProblemSetChangeUserRoleMutation();
-    const expireInviteMutation = useProblemSetExpireInviteMutation();
+    const setMemberRoleMutation = useProblemSetSetMemberRoleMutation();
+    const removeMemberMutation = useProblemSetRemoveMemberMutation();
+    const revokeInvitationMutation = useProblemSetRevokeInvitationMutation();
 
     const [menuAnchor, setMenuAnchor] = useState<{ el: HTMLElement; username: string } | null>(null);
     const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
@@ -69,9 +72,9 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
         setMenuAnchor({ el: event.currentTarget, username });
     };
 
-    const handleRoleSelect = (newRole: string) => {
+    const handleRoleSelect = (newRole: SetMemberRoleRequestRole) => {
         if (!menuAnchor) return;
-        changeRoleMutation.mutate({ shareCode, username: menuAnchor.username, role: newRole });
+        setMemberRoleMutation.mutate({ shareCode, username: menuAnchor.username, role: newRole });
         setMenuAnchor(null);
     };
 
@@ -79,9 +82,9 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
         if (!removeConfirmation) return;
         const { username, type } = removeConfirmation;
         if (type === "member") {
-            changeRoleMutation.mutate({ shareCode, username });
+            removeMemberMutation.mutate({ shareCode, username });
         } else {
-            expireInviteMutation.mutate(
+            revokeInvitationMutation.mutate(
                 { shareCode, username },
                 {
                     onSuccess: () => {
@@ -96,6 +99,9 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
         }
         setRemoveDialogOpen(false);
     };
+
+    const isMutating =
+        setMemberRoleMutation.isPending || removeMemberMutation.isPending || revokeInvitationMutation.isPending;
 
     return (
         <>
@@ -228,7 +234,7 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                     {t("role_admin")}
                 </MenuItem>
                 <MenuItem
-                    disabled={currentUserRole === "USER" || changeRoleMutation.isPending}
+                    disabled={currentUserRole === "USER" || setMemberRoleMutation.isPending}
                     onClick={() => {
                         handleRoleSelect("MODERATOR");
                     }}
@@ -236,7 +242,7 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                     {t("role_moderator")}
                 </MenuItem>
                 <MenuItem
-                    disabled={changeRoleMutation.isPending}
+                    disabled={setMemberRoleMutation.isPending}
                     onClick={() => {
                         handleRoleSelect("USER");
                     }}
@@ -275,12 +281,7 @@ export const ProblemSetUserManagement: FC<ProblemSetUserManagementProps> = ({ sh
                     >
                         {t("cancel_button")}
                     </Button>
-                    <Button
-                        onClick={handleConfirmRemove}
-                        color="error"
-                        variant="contained"
-                        disabled={changeRoleMutation.isPending || expireInviteMutation.isPending}
-                    >
+                    <Button onClick={handleConfirmRemove} color="error" variant="contained" disabled={isMutating}>
                         {t("confirm_remove_button")}
                     </Button>
                 </DialogActions>

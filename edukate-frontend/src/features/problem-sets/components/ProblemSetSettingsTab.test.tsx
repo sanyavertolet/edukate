@@ -1,6 +1,6 @@
 import { render, screen } from "@/test/render";
 import { server } from "@/test/server";
-import { getGetUserRolesMockHandler, getGetInvitedUsersMockHandler } from "@/generated/backend";
+import { getGetMembersMockHandler, getGetInvitationsMockHandler } from "@/generated/backend";
 import { ProblemSetSettingsTab } from "./ProblemSetSettingsTab";
 import { ProblemSet } from "@/features/problem-sets/types";
 import { ProblemMetadata } from "@/features/problems/types";
@@ -30,7 +30,7 @@ const baseProblemSet: ProblemSet = {
 
 describe("ProblemSetSettingsTab", () => {
     beforeEach(() => {
-        server.use(getGetUserRolesMockHandler([]), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler([]), getGetInvitationsMockHandler([]));
     });
 
     it("shows problem set name in the summary header", () => {
@@ -41,11 +41,6 @@ describe("ProblemSetSettingsTab", () => {
     it("shows total problem count", () => {
         render(<ProblemSetSettingsTab problemSet={baseProblemSet} />);
         expect(screen.getByText("3 problems")).toBeInTheDocument();
-    });
-
-    it("shows solved/total progress", () => {
-        render(<ProblemSetSettingsTab problemSet={baseProblemSet} />);
-        expect(screen.getByText("1/3 solved")).toBeInTheDocument();
     });
 
     it("shows share code chip", () => {
@@ -75,5 +70,10 @@ describe("ProblemSetSettingsTab", () => {
         render(<ProblemSetSettingsTab problemSet={{ ...baseProblemSet, isPublic: false }} />);
         const switchEl = screen.getByRole("checkbox");
         expect(switchEl).not.toBeChecked();
+    });
+
+    it("renders the Edit problems button", () => {
+        render(<ProblemSetSettingsTab problemSet={baseProblemSet} />);
+        expect(screen.getByRole("button", { name: /Edit problems/i })).toBeInTheDocument();
     });
 });

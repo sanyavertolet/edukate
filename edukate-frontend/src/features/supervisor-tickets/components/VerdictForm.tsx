@@ -36,28 +36,31 @@ type VerdictFormProps = {
 
 export const VerdictForm: FC<VerdictFormProps> = ({ ticketId, problemSetShareCode, page, size, onSubmitSuccess }) => {
     const { t } = useTranslation("supervisor-tickets");
-    const [status, setStatus] = useState<"SUCCESS" | "MISTAKE" | null>(null);
-    const [errorType, setErrorType] = useState<string>(SupervisorVerdictErrorType.NONE);
-    const [explanation, setExplanation] = useState("");
+    // Hydrate from draft synchronously during mount. Lazy init runs ONCE per
+    // mount, so callers must pass `key={ticket.id}` if they reuse the form across tickets.
+    const [status, setStatus] = useState<"SUCCESS" | "MISTAKE" | null>(() => {
+        pruneOldDrafts();
+        return loadDraft(ticketId)?.status ?? null;
+    });
+    const [errorType, setErrorType] = useState<string>(
+        () => loadDraft(ticketId)?.errorType ?? SupervisorVerdictErrorType.NONE,
+    );
+    const [explanation, setExplanation] = useState(() => loadDraft(ticketId)?.explanation ?? "");
     const [glossaryOpen, setGlossaryOpen] = useState(false);
     const verdictMutation = useSubmitVerdictMutation(problemSetShareCode, page, size);
-
-    useEffect(() => {
-        pruneOldDrafts();
-        const draft = loadDraft(ticketId);
-        if (draft) {
-            if (draft.status) setStatus(draft.status);
-            if (draft.errorType) setErrorType(draft.errorType);
-            setExplanation(draft.explanation);
-        }
-    }, [ticketId]);
 
     useEffect(() => {
         const draft: VerdictDraft = { status, errorType, explanation, savedAt: Date.now() };
         saveDraft(ticketId, draft);
     }, [ticketId, status, errorType, explanation]);
 
-    const isValid = status !== null && explanation.trim().length > 0;
+    const isMistake = status === "MISTAKE";
+    const hasValidErrorType = errorType !== "" && errorType !== SupervisorVerdictErrorType.NONE;
+    const isValid = status !== null && explanation.trim().length > 0 && (!isMistake || hasValidErrorType);
+
+    const visibleErrorTypes = isMistake
+        ? ERROR_TYPE_KEYS.filter((k) => k !== SupervisorVerdictErrorType.NONE)
+        : ERROR_TYPE_KEYS;
 
     const handleSubmit = () => {
         if (!isValid) return;
@@ -93,9 +96,12 @@ export const VerdictForm: FC<VerdictFormProps> = ({ ticketId, problemSetShareCod
                     exclusive
                     value={status}
                     onChange={(_e, val: "SUCCESS" | "MISTAKE" | null) => {
-                        if (val !== null) {
-                            setStatus(val);
-                            if (val === "SUCCESS") setErrorType(SupervisorVerdictErrorType.NONE);
+                        if (val === null) return;
+                        setStatus(val);
+                        if (val === "SUCCESS") {
+                            setErrorType(SupervisorVerdictErrorType.NONE);
+                        } else if (errorType === SupervisorVerdictErrorType.NONE) {
+                            setErrorType("");
                         }
                     }}
                     size="small"
@@ -129,12 +135,13 @@ export const VerdictForm: FC<VerdictFormProps> = ({ ticketId, problemSetShareCod
                 </Stack>
                 <FormControl fullWidth size="small" disabled={status === "SUCCESS"}>
                     <Select
+                        displayEmpty
                         value={status === "SUCCESS" ? SupervisorVerdictErrorType.NONE : errorType}
                         onChange={(e) => {
                             setErrorType(e.target.value);
                         }}
                     >
-                        {ERROR_TYPE_KEYS.map((key) => (
+                        {visibleErrorTypes.map((key) => (
                             <MenuItem key={key} value={key}>
                                 {t(`error_type_${key.toLowerCase()}`)}
                             </MenuItem>

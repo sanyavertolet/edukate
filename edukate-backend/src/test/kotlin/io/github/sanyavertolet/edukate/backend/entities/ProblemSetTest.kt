@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.backend.entities
 
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
+import io.github.sanyavertolet.edukate.backend.dtos.UpdateProblemSetSettingsRequest
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -136,6 +137,48 @@ class ProblemSetTest {
     fun `withVisibility changes isPublic to false`() {
         val ps = BackendFixtures.problemSet(isPublic = true)
         assertThat(ps.withVisibility(false).isPublic).isFalse()
+    }
+
+    // endregion
+
+    // region isLastAdmin
+
+    @Test
+    fun `isLastAdmin returns true when user is the only admin`() {
+        val ps = BackendFixtures.problemSet(userIdRoleMap = mapOf(100L to UserRole.ADMIN, 1L to UserRole.USER))
+        assertThat(ps.isLastAdmin(100L)).isTrue()
+    }
+
+    @Test
+    fun `isLastAdmin returns false when another admin exists`() {
+        val ps = BackendFixtures.problemSet(userIdRoleMap = mapOf(100L to UserRole.ADMIN, 101L to UserRole.ADMIN))
+        assertThat(ps.isLastAdmin(100L)).isFalse()
+    }
+
+    @Test
+    fun `isLastAdmin returns false for a non-admin user`() {
+        val ps = BackendFixtures.problemSet(userIdRoleMap = mapOf(100L to UserRole.ADMIN, 1L to UserRole.USER))
+        assertThat(ps.isLastAdmin(1L)).isFalse()
+    }
+
+    // endregion
+
+    // region applyFieldUpdates
+
+    @Test
+    fun `applyFieldUpdates applies only non-null fields`() {
+        val ps = BackendFixtures.problemSet(name = "Old", description = "OldDesc", isPublic = false)
+        val updated = ps.applyFieldUpdates(UpdateProblemSetSettingsRequest(name = "New", isPublic = true))
+        assertThat(updated.name).isEqualTo("New")
+        assertThat(updated.description).isEqualTo("OldDesc")
+        assertThat(updated.isPublic).isTrue()
+    }
+
+    @Test
+    fun `applyFieldUpdates returns a structurally equal copy when all fields are null`() {
+        val ps = BackendFixtures.problemSet(name = "Same", description = "SameDesc", isPublic = true)
+        val updated = ps.applyFieldUpdates(UpdateProblemSetSettingsRequest())
+        assertThat(updated).isEqualTo(ps)
     }
 
     // endregion

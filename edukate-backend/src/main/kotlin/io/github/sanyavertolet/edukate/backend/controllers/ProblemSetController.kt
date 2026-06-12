@@ -1,20 +1,18 @@
 package io.github.sanyavertolet.edukate.backend.controllers
 
-import io.github.sanyavertolet.edukate.backend.dtos.ChangeProblemSetProblemsRequest
+import io.github.sanyavertolet.edukate.backend.dtos.CreateInvitationRequest
 import io.github.sanyavertolet.edukate.backend.dtos.CreateProblemSetRequest
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemSetDto
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemSetMetadata
+import io.github.sanyavertolet.edukate.backend.dtos.SetMemberRoleRequest
+import io.github.sanyavertolet.edukate.backend.dtos.UpdateProblemSetSettingsRequest
 import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole
 import io.github.sanyavertolet.edukate.backend.mappers.ProblemSetMapper
 import io.github.sanyavertolet.edukate.backend.permissions.ProblemSetPermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.services.ProblemSetService
 import io.github.sanyavertolet.edukate.backend.services.UserService
-import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest
-import io.github.sanyavertolet.edukate.common.services.Notifier
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.github.sanyavertolet.edukate.common.utils.id
-import io.github.sanyavertolet.edukate.common.utils.monoId
-import io.github.sanyavertolet.edukate.common.utils.orForbidden
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -29,19 +27,23 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.PositiveOrZero
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -55,9 +57,10 @@ class ProblemSetController(
     private val problemSetService: ProblemSetService,
     private val problemSetMapper: ProblemSetMapper,
     private val userService: UserService,
-    private val notifier: Notifier,
     private val problemSetPermissionEvaluator: ProblemSetPermissionEvaluator,
 ) {
+    // region collection
+
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
@@ -181,19 +184,23 @@ class ProblemSetController(
             problemSetMapper.toMetadata(it, authentication)
         }
 
+    // endregion
+
+    // region item
+
     @GetMapping("/{shareCode}")
     @SecurityRequirements
     @Operation(
         summary = "Get problem set by share code",
         description =
-            "Retrieves a problem set by its share code; returns 403 if the set is private and the caller is not a member",
+            "Retrieves a problem set by its share code. Returns 404 when the set does not exist or is private " +
+                "and the caller is not a member (to avoid leaking existence of private sets).",
     )
     @ApiResponses(
         value =
             [
                 ApiResponse(responseCode = "200", description = "Successfully retrieved problem set"),
-                ApiResponse(responseCode = "403", description = "Problem set is private and caller is not a member"),
-                ApiResponse(responseCode = "404", description = "Problem set not found"),
+                ApiResponse(responseCode = "404", description = "Problem set not found or not visible to caller"),
             ]
     )
     fun getProblemSetByShareCode(
@@ -203,234 +210,241 @@ class ProblemSetController(
         problemSetService
             .findByShareCode(shareCode)
             .filter { problemSetPermissionEvaluator.hasReadPermission(it, authentication?.id()) }
-            .orForbidden("Problem set is private and you are not a member.")
+            .orNotFound("ProblemSet [$shareCode] not found")
             .flatMap { problemSetMapper.toDto(it, authentication) }
 
-    @PostMapping("/{shareCode}/leave")
+    @PatchMapping("/{shareCode}")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Update problem set settings",
+        description =
+            "Partially updates one or more configuration fields (name, description, isPublic, problemKeys). " +
+                "Null fields are left unchanged. Requires moderator access.",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Settings updated"),
+                ApiResponse(responseCode = "400", description = "Validation failed (e.g. empty body)"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "404", description = "Problem set not found"),
+            ]
+    )
+    fun updateSettings(
+        @PathVariable @NotBlank shareCode: String,
+        @RequestBody @Valid request: UpdateProblemSetSettingsRequest,
+        authentication: Authentication,
+    ): Mono<ProblemSetDto> =
+        problemSetService.updateSettings(shareCode, request, authentication).flatMap {
+            problemSetMapper.toDto(it, authentication)
+        }
+
+    // endregion
+
+    // region members
+
+    @GetMapping("/{shareCode}/members")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
+    @Operation(summary = "List members", description = "Lists active members and their roles. Requires moderator access.")
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully retrieved members"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "404", description = "Problem set not found"),
+            ]
+    )
+    fun getMembers(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Flux<UserNameWithRole> =
+        problemSetService.loadForModerator(shareCode, authentication).flatMapMany { problemSetMapper.toUserRoles(it) }
+
+    @PutMapping("/{shareCode}/members/{username}")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Set member role",
+        description = "Assigns a role to an existing member. Requires moderator access and a higher role than the target.",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Role updated"),
+                ApiResponse(responseCode = "400", description = "Validation failed or would leave no admin"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have sufficient permissions"),
+                ApiResponse(responseCode = "404", description = "Problem set or user not found"),
+            ]
+    )
+    fun setMemberRole(
+        @PathVariable @NotBlank shareCode: String,
+        @PathVariable @NotBlank username: String,
+        @RequestBody @Valid request: SetMemberRoleRequest,
+        authentication: Authentication,
+    ): Mono<ProblemSetDto> =
+        userService
+            .findUserByName(username)
+            .orNotFound("User $username not found")
+            .flatMap { user ->
+                problemSetService.setMemberRole(shareCode, requireNotNull(user.id), request.role, authentication)
+            }
+            .flatMap { problemSetMapper.toDto(it, authentication) }
+
+    @DeleteMapping("/{shareCode}/members/{username}")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
+    @Operation(
+        summary = "Remove member",
+        description = "Removes a user from the problem set. Requires moderator access and a higher role than the target.",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Member removed"),
+                ApiResponse(responseCode = "400", description = "Would leave no admin"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have sufficient permissions"),
+                ApiResponse(responseCode = "404", description = "Problem set or user not found"),
+            ]
+    )
+    fun removeMember(
+        @PathVariable @NotBlank shareCode: String,
+        @PathVariable @NotBlank username: String,
+        authentication: Authentication,
+    ): Mono<ProblemSetDto> =
+        userService
+            .findUserByName(username)
+            .orNotFound("User $username not found")
+            .flatMap { user -> problemSetService.removeMember(shareCode, requireNotNull(user.id), authentication) }
+            .flatMap { problemSetMapper.toDto(it, authentication) }
+
+    @DeleteMapping("/{shareCode}/members/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
     @Operation(summary = "Leave problem set", description = "Removes the authenticated user from the problem set")
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Successfully left problem set"),
+                ApiResponse(responseCode = "204", description = "Successfully left problem set"),
+                ApiResponse(responseCode = "400", description = "Caller is not a member or is the last admin"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "404", description = "Problem set not found or user is not a member"),
+                ApiResponse(responseCode = "404", description = "Problem set not found"),
             ]
     )
-    fun leaveProblemSet(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<String> =
-        authentication.monoId().flatMap { problemSetService.removeUser(shareCode, it) }.map { it.shareCode }
+    fun leaveProblemSet(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<Void> =
+        problemSetService.leaveProblemSet(shareCode, authentication).then()
 
-    @PostMapping("/{shareCode}/invite")
+    // endregion
+
+    // region invitations
+
+    @GetMapping("/{shareCode}/invitations")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
-    @Operation(summary = "Invite user to problem set", description = "Sends an invitation to a user to join the problem set")
+    @Operation(summary = "List pending invitations", description = "Lists pending invitees. Requires moderator access.")
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Invitation sent"),
+                ApiResponse(responseCode = "200", description = "Successfully retrieved invitations"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
                 ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
-                ApiResponse(responseCode = "404", description = "Problem set or invitee not found"),
+                ApiResponse(responseCode = "404", description = "Problem set not found"),
             ]
     )
-    fun inviteToProblemSet(
-        @PathVariable @NotBlank shareCode: String,
-        @RequestParam @NotBlank inviteeName: String,
-        authentication: Authentication,
-    ): Mono<String> =
-        userService
-            .findUserByName(inviteeName)
-            .orNotFound("User $inviteeName not found")
-            .zipWhen(
-                { invitee ->
-                    val requesterId = requireNotNull(authentication.id())
-                    problemSetService.inviteUser(shareCode, requesterId, requireNotNull(invitee.id))
-                },
-                { invitee, ps ->
-                    InviteNotificationCreateRequest.from(
-                        targetUserId = requireNotNull(invitee.id),
-                        inviterName = authentication.name,
-                        problemSetName = ps.name,
-                        problemSetShareCode = ps.shareCode,
-                    )
-                },
-            )
-            .flatMap { notifier.notify(it) }
-            .thenReturn("User $inviteeName has been invited to problem set $shareCode")
-
-    @PostMapping("/{shareCode}/expire-invite")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "cookieAuth")
-    @Operation(
-        summary = "Expire invitation",
-        description = "Cancels a pending invitation for a user to join the problem set",
-    )
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(responseCode = "200", description = "Invitation expired"),
-                ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
-                ApiResponse(responseCode = "404", description = "Problem set or invitee not found"),
-            ]
-    )
-    fun expireInvite(
-        @PathVariable @NotBlank shareCode: String,
-        @RequestParam @NotBlank inviteeName: String,
-        authentication: Authentication,
-    ): Mono<String> =
-        userService
-            .findUserByName(inviteeName)
-            .orNotFound("User $inviteeName not found")
-            .flatMap { invitee ->
-                val requesterId = requireNotNull(authentication.id())
-                problemSetService.expireInvite(shareCode, requesterId, requireNotNull(invitee.id))
-            }
-            .thenReturn("Invitation for user $inviteeName has been expired in problem set $shareCode")
-
-    @PostMapping("/{shareCode}/reply-invite")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "cookieAuth")
-    @Operation(
-        summary = "Reply to invitation",
-        description = "Accepts or declines a pending invitation to join the problem set",
-    )
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(responseCode = "200", description = "Invitation reply recorded"),
-                ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "404", description = "Problem set not found or no pending invitation"),
-            ]
-    )
-    fun replyToInvite(
-        @PathVariable @NotBlank shareCode: String,
-        @RequestParam @NotNull response: Boolean,
-        authentication: Authentication,
-    ): Mono<String> =
+    fun getInvitations(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<List<String>> =
         problemSetService
-            .reactToInvite(shareCode, response, authentication)
-            .thenReturn(
-                if (response) "You have accepted invite to problem set $shareCode"
-                else "You have declined invite to problem set $shareCode"
-            )
-
-    @GetMapping("/{shareCode}/users")
-    @SecurityRequirement(name = "cookieAuth")
-    @Operation(
-        summary = "Get user roles",
-        description = "Returns all users and their roles in the problem set; requires moderator access",
-    )
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(responseCode = "200", description = "Successfully retrieved user roles"),
-                ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
-            ]
-    )
-    fun getUserRoles(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Flux<UserNameWithRole> =
-        problemSetService.getProblemSetForModerator(shareCode, authentication).flatMapMany {
-            problemSetMapper.toUserRoles(it)
-        }
-
-    @GetMapping("/{shareCode}/invited-users")
-    @SecurityRequirement(name = "cookieAuth")
-    @Operation(
-        summary = "Get invited users",
-        description = "Returns the list of users with pending invitations to the problem set; requires moderator access",
-    )
-    @ApiResponses(
-        value =
-            [
-                ApiResponse(responseCode = "200", description = "Successfully retrieved invited users"),
-                ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
-            ]
-    )
-    fun getInvitedUsers(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<List<String>> =
-        problemSetService
-            .getProblemSetForModerator(shareCode, authentication)
+            .loadForModerator(shareCode, authentication)
             .flatMapMany { problemSetMapper.toInvitedUserNames(it) }
             .collectList()
 
-    @PostMapping("/{shareCode}/role")
+    @PostMapping("/{shareCode}/invitations")
+    @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
     @Operation(
-        summary = "Change or remove user role",
-        description =
-            "Updates the role of a user within the problem set, or removes the user if role is not provided. " +
-                "Requires moderator access and a higher role than the target user.",
+        summary = "Invite user",
+        description = "Creates a pending invitation and notifies the invitee. Requires moderator access.",
     )
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Role updated or user removed"),
+                ApiResponse(responseCode = "200", description = "Invitation created"),
+                ApiResponse(responseCode = "400", description = "Validation failed or user is already a member/invitee"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Caller does not have sufficient permissions"),
-                ApiResponse(responseCode = "404", description = "Problem set or user not found"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "404", description = "Problem set or invitee not found"),
             ]
     )
-    fun changeUserRole(
+    fun createInvitation(
         @PathVariable @NotBlank shareCode: String,
-        @RequestParam @NotBlank username: String,
-        @RequestParam(required = false) requestedRole: UserRole?,
+        @RequestBody @Valid request: CreateInvitationRequest,
         authentication: Authentication,
-    ): Mono<UserRole> =
+    ): Mono<ProblemSetDto> =
+        userService
+            .findUserByName(request.inviteeName)
+            .orNotFound("User ${request.inviteeName} not found")
+            .flatMap { invitee -> problemSetService.createInvitation(shareCode, requireNotNull(invitee.id), authentication) }
+            .flatMap { problemSetMapper.toDto(it, authentication) }
+
+    @DeleteMapping("/{shareCode}/invitations/{username}")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "cookieAuth")
+    @Operation(summary = "Revoke invitation", description = "Cancels a pending invitation. Requires moderator access.")
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Invitation revoked"),
+                ApiResponse(responseCode = "400", description = "User has no pending invitation"),
+                ApiResponse(responseCode = "401", description = "Unauthorized"),
+                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "404", description = "Problem set or invitee not found"),
+            ]
+    )
+    fun revokeInvitation(
+        @PathVariable @NotBlank shareCode: String,
+        @PathVariable @NotBlank username: String,
+        authentication: Authentication,
+    ): Mono<ProblemSetDto> =
         userService
             .findUserByName(username)
             .orNotFound("User $username not found")
-            .mapNotNull { it.id }
-            .flatMap { userId ->
-                requestedRole?.let { problemSetService.changeUserRole(shareCode, userId, it, authentication) }
-                    ?: problemSetService.removeUserByModerator(shareCode, userId, authentication).then(Mono.empty())
-            }
+            .flatMap { invitee -> problemSetService.revokeInvitation(shareCode, requireNotNull(invitee.id), authentication) }
+            .flatMap { problemSetMapper.toDto(it, authentication) }
 
-    @PostMapping("/{shareCode}/visibility")
+    @PostMapping("/{shareCode}/invitations/me/accept")
+    @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
-    @Operation(
-        summary = "Change visibility",
-        description = "Toggles the public/private visibility of the problem set; requires moderator access",
-    )
+    @Operation(summary = "Accept invitation", description = "Accepts a pending invitation addressed to the caller")
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Visibility updated"),
+                ApiResponse(responseCode = "200", description = "Invitation accepted"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "403", description = "No pending invitation for the caller"),
+                ApiResponse(responseCode = "404", description = "Problem set not found"),
             ]
     )
-    fun changeVisibility(
-        @PathVariable @NotBlank shareCode: String,
-        @RequestParam @NotNull isPublic: Boolean,
-        authentication: Authentication,
-    ): Mono<ProblemSetDto> =
-        problemSetService.changeVisibility(shareCode, isPublic, authentication).flatMap {
-            problemSetMapper.toDto(it, authentication)
-        }
+    fun acceptInvitation(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<ProblemSetDto> =
+        problemSetService.acceptInvitation(shareCode, authentication).flatMap { problemSetMapper.toDto(it, authentication) }
 
-    @PostMapping("/{shareCode}/problems")
+    @PostMapping("/{shareCode}/invitations/me/decline")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "cookieAuth")
-    @Operation(
-        summary = "Change problems",
-        description = "Replaces the problem list of the problem set; requires moderator access",
-    )
+    @Operation(summary = "Decline invitation", description = "Declines a pending invitation addressed to the caller")
     @ApiResponses(
         value =
             [
-                ApiResponse(responseCode = "200", description = "Problems updated"),
-                ApiResponse(responseCode = "400", description = "Validation failed"),
+                ApiResponse(responseCode = "204", description = "Invitation declined"),
                 ApiResponse(responseCode = "401", description = "Unauthorized"),
-                ApiResponse(responseCode = "403", description = "Caller does not have moderator access"),
+                ApiResponse(responseCode = "403", description = "No pending invitation for the caller"),
+                ApiResponse(responseCode = "404", description = "Problem set not found"),
             ]
     )
-    fun changeProblems(
-        @PathVariable @NotBlank shareCode: String,
-        @RequestBody @Valid request: ChangeProblemSetProblemsRequest,
-        authentication: Authentication,
-    ): Mono<ProblemSetDto> =
-        problemSetService.changeProblems(shareCode, request.problemKeys, authentication).flatMap {
-            problemSetMapper.toDto(it, authentication)
-        }
+    fun declineInvitation(@PathVariable @NotBlank shareCode: String, authentication: Authentication): Mono<Void> =
+        problemSetService.declineInvitation(shareCode, authentication).then()
+
+    // endregion
 }

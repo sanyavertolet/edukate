@@ -14,6 +14,15 @@ Object.defineProperty(window, "IntersectionObserver", {
     value: IntersectionObserverStub,
 });
 
+// scrollIntoView is not implemented in jsdom — @dnd-kit's KeyboardSensor calls it
+// on drag-start, so provide a no-op stub. TS thinks the property always exists, so
+// we install via defineProperty instead of a truthy guard.
+Object.defineProperty(Element.prototype, "scrollIntoView", {
+    writable: true,
+    configurable: true,
+    value: () => {},
+});
+
 // jsdom v29 changed localStorage to be file-backed, requiring --localstorage-file.
 // Provide a simple in-memory implementation so ThemeContext.tsx can use it without errors.
 const localStorageMock = (() => {
