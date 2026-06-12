@@ -1,5 +1,5 @@
 import { FC, SyntheticEvent, HTMLAttributes, useState } from "react";
-import { useProblemSetInviteUserMutation } from "@/features/problem-sets/api";
+import { useProblemSetCreateInvitationMutation } from "@/features/problem-sets/api";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useOptionsRequest } from "@/shared/hooks/useOptionsRequest";
 import { toast } from "react-toastify";
@@ -19,12 +19,12 @@ export const UserSearchInput: FC<UserSearchInputProps> = ({ problemSetShareCode,
     const { data: options, isLoading } = useOptionsRequest("/api/v1/users/by-prefix", debouncedInput, 5, {
         problemSetShareCode,
     });
-    const inviteUserMutation = useProblemSetInviteUserMutation();
+    const createInvitationMutation = useProblemSetCreateInvitationMutation();
 
     const handleSelect = (_: SyntheticEvent, value: string | null) => {
         if (!value) return;
-        inviteUserMutation.mutate(
-            { username: value, shareCode: problemSetShareCode },
+        createInvitationMutation.mutate(
+            { inviteeName: value, shareCode: problemSetShareCode },
             {
                 onSuccess: () => {
                     toast.success(t("user_invited_success", { username: value }));

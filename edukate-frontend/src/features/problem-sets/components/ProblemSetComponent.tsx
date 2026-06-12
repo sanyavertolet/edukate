@@ -22,11 +22,6 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
     const { data: problemSet, isLoading, error } = useProblemSetRequest(problemSetCode);
     const [selection, setSelection] = useState<ProblemSetSelection>({ type: "description" });
 
-    const isAdmin = useMemo(
-        () => (user && problemSet && problemSet.admins.some((value) => value === user.name)) || false,
-        [user, problemSet],
-    );
-
     const isModerator = useMemo(
         () =>
             (user && problemSet && (problemSet.admins.includes(user.name) || problemSet.moderators.includes(user.name))) ||
@@ -64,7 +59,6 @@ export function ProblemSetComponent({ problemSetCode }: ProblemSetComponentProps
                             problems={problemSet ? problemSet.problems : []}
                             selection={selection}
                             onSelectionChange={onSelectionChange}
-                            isAdmin={isAdmin}
                             isModerator={isModerator}
                         />
                     </Card>

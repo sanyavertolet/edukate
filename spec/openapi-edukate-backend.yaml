@@ -27,6 +27,123 @@ tags:
 - name: Answers
   description: API for retrieving problem answers
 paths:
+  /api/v1/problem-sets/{shareCode}/members/{username}:
+    put:
+      tags:
+      - Problem Sets
+      summary: Set member role
+      description: Assigns a role to an existing member. Requires moderator access
+        and a higher role than the target.
+      operationId: setMemberRole
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMemberRoleRequest"
+        required: true
+      responses:
+        "400":
+          description: Validation failed or would leave no admin
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have sufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "404":
+          description: Problem set or user not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - Problem Sets
+      summary: Remove member
+      description: Removes a user from the problem set. Requires moderator access
+        and a higher role than the target.
+      operationId: removeMember
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "400":
+          description: Would leave no admin
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Member removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have sufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "404":
+          description: Problem set or user not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security:
+      - cookieAuth: []
   /api/v1/submissions:
     post:
       tags:
@@ -111,14 +228,13 @@ paths:
                 $ref: "#/components/schemas/ProblemSetDto"
       security:
       - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/visibility:
-    post:
+  /api/v1/problem-sets/{shareCode}/invitations:
+    get:
       tags:
       - Problem Sets
-      summary: Change visibility
-      description: Toggles the public/private visibility of the problem set; requires
-        moderator access
-      operationId: changeVisibility
+      summary: List pending invitations
+      description: Lists pending invitees. Requires moderator access.
+      operationId: getInvitations
       parameters:
       - name: shareCode
         in: path
@@ -126,11 +242,6 @@ paths:
         schema:
           type: string
           minLength: 1
-      - name: isPublic
-        in: query
-        required: true
-        schema:
-          type: boolean
       responses:
         "400":
           description: Bad Request
@@ -141,163 +252,46 @@ paths:
                 additionalProperties:
                   type: string
         "200":
-          description: Visibility updated
+          description: Successfully retrieved invitations
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
+                type: array
+                items:
+                  type: string
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
+                type: array
+                items:
+                  type: string
         "403":
           description: Caller does not have moderator access
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
-      security:
-      - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/role:
-    post:
-      tags:
-      - Problem Sets
-      summary: Change or remove user role
-      description: "Updates the role of a user within the problem set, or removes\
-        \ the user if role is not provided. Requires moderator access and a higher\
-        \ role than the target user."
-      operationId: changeUserRole
-      parameters:
-      - name: shareCode
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: username
-        in: query
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: requestedRole
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-          - USER
-          - MODERATOR
-          - ADMIN
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
+                type: array
+                items:
                   type: string
-        "200":
-          description: Role updated or user removed
-          content:
-            application/json:
-              schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
-        "403":
-          description: Caller does not have sufficient permissions
-          content:
-            application/json:
-              schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
         "404":
-          description: Problem set or user not found
+          description: Problem set not found
           content:
             application/json:
               schema:
-                type: string
-                enum:
-                - USER
-                - MODERATOR
-                - ADMIN
-      security:
-      - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/reply-invite:
-    post:
-      tags:
-      - Problem Sets
-      summary: Reply to invitation
-      description: Accepts or declines a pending invitation to join the problem set
-      operationId: replyToInvite
-      parameters:
-      - name: shareCode
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: response
-        in: query
-        required: true
-        schema:
-          type: boolean
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
+                type: array
+                items:
                   type: string
-        "200":
-          description: Invitation reply recorded
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-        "404":
-          description: Problem set not found or no pending invitation
-          content:
-            application/json:
-              schema:
-                type: string
       security:
       - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/problems:
     post:
       tags:
       - Problem Sets
-      summary: Change problems
-      description: Replaces the problem list of the problem set; requires moderator
-        access
-      operationId: changeProblems
+      summary: Invite user
+      description: Creates a pending invitation and notifies the invitee. Requires
+        moderator access.
+      operationId: createInvitation
       parameters:
       - name: shareCode
         in: path
@@ -309,11 +303,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ChangeProblemSetProblemsRequest"
+              $ref: "#/components/schemas/CreateInvitationRequest"
         required: true
       responses:
         "400":
-          description: Validation failed
+          description: Validation failed or user is already a member/invitee
           content:
             application/json:
               schema:
@@ -321,7 +315,7 @@ paths:
                 additionalProperties:
                   type: string
         "200":
-          description: Problems updated
+          description: Invitation created
           content:
             application/json:
               schema:
@@ -338,113 +332,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemSetDto"
-      security:
-      - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/leave:
-    post:
-      tags:
-      - Problem Sets
-      summary: Leave problem set
-      description: Removes the authenticated user from the problem set
-      operationId: leaveProblemSet
-      parameters:
-      - name: shareCode
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: string
-        "200":
-          description: Successfully left problem set
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-        "404":
-          description: Problem set not found or user is not a member
-          content:
-            application/json:
-              schema:
-                type: string
-      security:
-      - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/invite:
-    post:
-      tags:
-      - Problem Sets
-      summary: Invite user to problem set
-      description: Sends an invitation to a user to join the problem set
-      operationId: inviteToProblemSet
-      parameters:
-      - name: shareCode
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      - name: inviteeName
-        in: query
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: string
-        "200":
-          description: Invitation sent
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: string
-        "403":
-          description: Caller does not have moderator access
-          content:
-            application/json:
-              schema:
-                type: string
         "404":
           description: Problem set or invitee not found
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/ProblemSetDto"
       security:
       - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/expire-invite:
+  /api/v1/problem-sets/{shareCode}/invitations/me/decline:
     post:
       tags:
       - Problem Sets
-      summary: Expire invitation
-      description: Cancels a pending invitation for a user to join the problem set
-      operationId: expireInvite
+      summary: Decline invitation
+      description: Declines a pending invitation addressed to the caller
+      operationId: declineInvitation
       parameters:
       - name: shareCode
         in: path
@@ -452,8 +354,35 @@ paths:
         schema:
           type: string
           minLength: 1
-      - name: inviteeName
-        in: query
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "204":
+          description: Invitation declined
+        "401":
+          description: Unauthorized
+        "403":
+          description: No pending invitation for the caller
+        "404":
+          description: Problem set not found
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/invitations/me/accept:
+    post:
+      tags:
+      - Problem Sets
+      summary: Accept invitation
+      description: Accepts a pending invitation addressed to the caller
+      operationId: acceptInvitation
+      parameters:
+      - name: shareCode
+        in: path
         required: true
         schema:
           type: string
@@ -468,29 +397,29 @@ paths:
                 additionalProperties:
                   type: string
         "200":
-          description: Invitation expired
+          description: Invitation accepted
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/ProblemSetDto"
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/ProblemSetDto"
         "403":
-          description: Caller does not have moderator access
+          description: No pending invitation for the caller
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/ProblemSetDto"
         "404":
-          description: Problem set or invitee not found
+          description: Problem set not found
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/ProblemSetDto"
       security:
       - cookieAuth: []
   /api/v1/files/temp:
@@ -740,6 +669,100 @@ paths:
           description: Access denied
         "404":
           description: Submission not found
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}:
+    get:
+      tags:
+      - Problem Sets
+      summary: Get problem set by share code
+      description: Retrieves a problem set by its share code. Returns 404 when the
+        set does not exist or is private and the caller is not a member (to avoid
+        leaking existence of private sets).
+      operationId: getProblemSetByShareCode
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Successfully retrieved problem set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "404":
+          description: Problem set not found or not visible to caller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security: []
+    patch:
+      tags:
+      - Problem Sets
+      summary: Update problem set settings
+      description: "Partially updates one or more configuration fields (name, description,\
+        \ isPublic, problemKeys). Null fields are left unchanged. Requires moderator\
+        \ access."
+      operationId: updateSettings
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProblemSetSettingsRequest"
+        required: true
+      responses:
+        "400":
+          description: Validation failed (e.g. empty body)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "404":
+          description: Problem set not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
       security:
       - cookieAuth: []
   /api/v1/users/whoami:
@@ -1111,7 +1134,7 @@ paths:
           type: integer
           maximum: 100
           minimum: 1
-      - name: bookSlug
+      - name: bookSlugPrefix
         in: query
         required: false
         schema:
@@ -1254,7 +1277,7 @@ paths:
       description: Returns the total number of problems matching the filter
       operationId: count
       parameters:
-      - name: bookSlug
+      - name: bookSlugPrefix
         in: query
         required: false
         schema:
@@ -1362,14 +1385,13 @@ paths:
                 items:
                   type: string
       security: []
-  /api/v1/problem-sets/{shareCode}:
+  /api/v1/problem-sets/{shareCode}/members:
     get:
       tags:
       - Problem Sets
-      summary: Get problem set by share code
-      description: Retrieves a problem set by its share code; returns 403 if the set
-        is private and the caller is not a member
-      operationId: getProblemSetByShareCode
+      summary: List members
+      description: Lists active members and their roles. Requires moderator access.
+      operationId: getMembers
       parameters:
       - name: shareCode
         in: path
@@ -1387,122 +1409,37 @@ paths:
                 additionalProperties:
                   type: string
         "200":
-          description: Successfully retrieved problem set
+          description: Successfully retrieved members
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
         "403":
-          description: Problem set is private and caller is not a member
+          description: Caller does not have moderator access
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserNameWithRole"
         "404":
           description: Problem set not found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProblemSetDto"
-      security: []
-  /api/v1/problem-sets/{shareCode}/users:
-    get:
-      tags:
-      - Problem Sets
-      summary: Get user roles
-      description: Returns all users and their roles in the problem set; requires
-        moderator access
-      operationId: getUserRoles
-      parameters:
-      - name: shareCode
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: string
-        "200":
-          description: Successfully retrieved user roles
-          content:
-            application/json:
-              schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/UserNameWithRole"
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserNameWithRole"
-        "403":
-          description: Caller does not have moderator access
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserNameWithRole"
-      security:
-      - cookieAuth: []
-  /api/v1/problem-sets/{shareCode}/invited-users:
-    get:
-      tags:
-      - Problem Sets
-      summary: Get invited users
-      description: Returns the list of users with pending invitations to the problem
-        set; requires moderator access
-      operationId: getInvitedUsers
-      parameters:
-      - name: shareCode
-        in: path
-        required: true
-        schema:
-          type: string
-          minLength: 1
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: string
-        "200":
-          description: Successfully retrieved invited users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        "403":
-          description: Caller does not have moderator access
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
       security:
       - cookieAuth: []
   /api/v1/problem-sets/search/member:
@@ -1765,17 +1702,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SupervisorTicketDto"
+                $ref: "#/components/schemas/PageResponseSupervisorTicketDto"
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SupervisorTicketDto"
+                $ref: "#/components/schemas/PageResponseSupervisorTicketDto"
       security:
       - cookieAuth: []
   /api/v1/checker/submissions/{submissionId}:
@@ -1980,8 +1913,174 @@ paths:
               schema:
                 $ref: "#/components/schemas/AnswerDto"
       security: []
+  /api/v1/problem-sets/{shareCode}/members/me:
+    delete:
+      tags:
+      - Problem Sets
+      summary: Leave problem set
+      description: Removes the authenticated user from the problem set
+      operationId: leaveProblemSet
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "400":
+          description: Caller is not a member or is the last admin
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "204":
+          description: Successfully left problem set
+        "401":
+          description: Unauthorized
+        "404":
+          description: Problem set not found
+      security:
+      - cookieAuth: []
+  /api/v1/problem-sets/{shareCode}/invitations/{username}:
+    delete:
+      tags:
+      - Problem Sets
+      summary: Revoke invitation
+      description: Cancels a pending invitation. Requires moderator access.
+      operationId: revokeInvitation
+      parameters:
+      - name: shareCode
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+      responses:
+        "400":
+          description: User has no pending invitation
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Invitation revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "403":
+          description: Caller does not have moderator access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+        "404":
+          description: Problem set or invitee not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemSetDto"
+      security:
+      - cookieAuth: []
 components:
   schemas:
+    SetMemberRoleRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+          - USER
+          - MODERATOR
+          - ADMIN
+      required:
+      - role
+    ProblemMetadata:
+      type: object
+      properties:
+        key:
+          type: string
+        code:
+          type: string
+        bookSlug:
+          type: string
+        isHard:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - SOLVED
+          - SOLVING
+          - FAILED
+          - NOT_SOLVED
+        createdAt:
+          type: string
+          format: date-time
+        language:
+          type: string
+          enum:
+          - RU
+          - EN
+      required:
+      - bookSlug
+      - code
+      - createdAt
+      - isHard
+      - key
+      - language
+      - status
+      - tags
+    ProblemSetDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        admins:
+          type: array
+          items:
+            type: string
+        moderators:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+        problems:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProblemMetadata"
+        shareCode:
+          type: string
+      required:
+      - admins
+      - isPublic
+      - moderators
+      - name
+      - problems
+      - shareCode
     CreateSubmissionRequest:
       type: object
       properties:
@@ -2053,85 +2152,15 @@ components:
       - isPublic
       - name
       - problemKeys
-    ProblemMetadata:
+    CreateInvitationRequest:
       type: object
       properties:
-        key:
+        inviteeName:
           type: string
-        code:
-          type: string
-        bookSlug:
-          type: string
-        isHard:
-          type: boolean
-        tags:
-          type: array
-          items:
-            type: string
-        status:
-          type: string
-          enum:
-          - SOLVED
-          - SOLVING
-          - FAILED
-          - NOT_SOLVED
-        createdAt:
-          type: string
-          format: date-time
-        language:
-          type: string
-          enum:
-          - RU
-          - EN
+          maxLength: 50
+          minLength: 0
       required:
-      - bookSlug
-      - code
-      - createdAt
-      - isHard
-      - key
-      - language
-      - status
-      - tags
-    ProblemSetDto:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        admins:
-          type: array
-          items:
-            type: string
-        moderators:
-          type: array
-          items:
-            type: string
-        isPublic:
-          type: boolean
-        problems:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProblemMetadata"
-        shareCode:
-          type: string
-      required:
-      - admins
-      - isPublic
-      - moderators
-      - name
-      - problems
-      - shareCode
-    ChangeProblemSetProblemsRequest:
-      type: object
-      properties:
-        problemKeys:
-          type: array
-          items:
-            type: string
-          minItems: 1
-      required:
-      - problemKeys
+      - inviteeName
     CreateSupervisorTicketRequest:
       type: object
       properties:
@@ -2173,6 +2202,23 @@ components:
       - errorType
       - explanation
       - status
+    UpdateProblemSetSettingsRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          minLength: 1
+        description:
+          type: string
+          maxLength: 255
+          minLength: 0
+        isPublic:
+          type: boolean
+        problemKeys:
+          type: array
+          items:
+            type: string
     UserDto:
       type: object
       properties:
@@ -2343,6 +2389,31 @@ components:
       - key
       - lastModified
       - size
+    PageResponseSupervisorTicketDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/SupervisorTicketDto"
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+      required:
+      - content
+      - page
+      - size
+      - totalElements
+      - totalPages
     SupervisorTicketDto:
       type: object
       properties:

@@ -71,7 +71,7 @@ class ProblemController(private val problemService: ProblemService, private val 
     fun getProblemList(
         @RequestParam(defaultValue = "0") @PositiveOrZero page: Int,
         @RequestParam(defaultValue = "10") @Min(1) size: Int,
-        @RequestParam(required = false) bookSlug: String?,
+        @RequestParam(required = false) bookSlugPrefix: String?,
         @RequestParam(required = false) prefix: String?,
         @RequestParam(required = false) status: Problem.Status?,
         @RequestParam(required = false) isHard: Boolean?,
@@ -81,7 +81,7 @@ class ProblemController(private val problemService: ProblemService, private val 
     ): Flux<ProblemMetadata> =
         problemService
             .getFilteredProblems(
-                ProblemFilter(bookSlug, prefix, status, isHard, hasPictures, hasResult),
+                ProblemFilter(bookSlugPrefix, prefix, status, isHard, hasPictures, hasResult),
                 authentication,
                 PageRequest.of(page, size),
             )
@@ -101,7 +101,7 @@ class ProblemController(private val problemService: ProblemService, private val 
     )
     @Suppress("LongParameterList")
     fun count(
-        @RequestParam(required = false) bookSlug: String?,
+        @RequestParam(required = false) bookSlugPrefix: String?,
         @RequestParam(required = false) prefix: String?,
         @RequestParam(required = false) status: Problem.Status?,
         @RequestParam(required = false) isHard: Boolean?,
@@ -110,7 +110,7 @@ class ProblemController(private val problemService: ProblemService, private val 
         authentication: Authentication?,
     ): Mono<Long> =
         problemService.countFilteredProblems(
-            ProblemFilter(bookSlug, prefix, status, isHard, hasPictures, hasResult),
+            ProblemFilter(bookSlugPrefix, prefix, status, isHard, hasPictures, hasResult),
             authentication,
         )
 

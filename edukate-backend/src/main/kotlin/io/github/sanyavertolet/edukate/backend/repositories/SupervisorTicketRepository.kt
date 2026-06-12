@@ -6,6 +6,7 @@ import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 @Repository
 interface SupervisorTicketRepository : ReactiveCrudRepository<SupervisorTicket, Long> {
@@ -31,4 +32,16 @@ interface SupervisorTicketRepository : ReactiveCrudRepository<SupervisorTicket, 
         problemSetCode: String,
         pageable: Pageable,
     ): Flux<SupervisorTicket>
+
+    @Query("SELECT COUNT(*) FROM supervisor_tickets WHERE supervisor_id = :supervisorId")
+    fun countBySupervisorId(supervisorId: Long): Mono<Long>
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM supervisor_tickets st
+        JOIN problem_sets ps ON ps.id = st.problem_set_id
+        WHERE st.supervisor_id = :supervisorId AND ps.share_code = :problemSetCode
+        """
+    )
+    fun countBySupervisorIdAndProblemSetCode(supervisorId: Long, problemSetCode: String): Mono<Long>
 }

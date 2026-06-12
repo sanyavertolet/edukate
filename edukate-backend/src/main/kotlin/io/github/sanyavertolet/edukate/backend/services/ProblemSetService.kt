@@ -1,19 +1,21 @@
 package io.github.sanyavertolet.edukate.backend.services
 
 import io.github.sanyavertolet.edukate.backend.dtos.CreateProblemSetRequest
+import io.github.sanyavertolet.edukate.backend.dtos.UpdateProblemSetSettingsRequest
 import io.github.sanyavertolet.edukate.backend.entities.ProblemSet
 import io.github.sanyavertolet.edukate.backend.entities.ProblemSetProblem
 import io.github.sanyavertolet.edukate.backend.permissions.ProblemSetPermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemRepository
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemSetProblemRepository
 import io.github.sanyavertolet.edukate.backend.repositories.ProblemSetRepository
+import io.github.sanyavertolet.edukate.common.notifications.InviteNotificationCreateRequest
+import io.github.sanyavertolet.edukate.common.services.Notifier
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.github.sanyavertolet.edukate.common.utils.badRequestIf
 import io.github.sanyavertolet.edukate.common.utils.forbiddenIf
-import io.github.sanyavertolet.edukate.common.utils.id
-import io.github.sanyavertolet.edukate.common.utils.monoId
 import io.github.sanyavertolet.edukate.common.utils.notFoundIf
 import io.github.sanyavertolet.edukate.common.utils.orNotFound
+import io.github.sanyavertolet.edukate.common.utils.requireUserId
 import org.springframework.cache.annotation.CacheConfig
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -35,25 +37,22 @@ class ProblemSetService(
     private val problemRepository: ProblemRepository,
     private val shareCodeGenerator: ShareCodeGenerator,
     private val problemSetPermissionEvaluator: ProblemSetPermissionEvaluator,
+    private val notifier: Notifier,
 ) {
+
+    // region read
+
     @Cacheable(key = "#shareCode") fun findByShareCode(shareCode: String): Mono<ProblemSet> = loadProblemSet(shareCode)
 
     fun findById(id: Long): Mono<ProblemSet> = problemSetRepository.findById(id).orNotFound("ProblemSet [$id] not found")
-
-    fun Mono<ProblemSet>.assertIsModeratorOf(userId: Long): Mono<ProblemSet> =
-        forbiddenIf("User is not a moderator of this problem set") {
-            !problemSetPermissionEvaluator.hasRole(it, userId, UserRole.MODERATOR)
-        }
 
     fun getMemberProblemSets(
         roles: List<UserRole>?,
         pageable: PageRequest,
         authentication: Authentication,
     ): Flux<ProblemSet> {
-        val effectiveRoles = (roles ?: UserRole.entries).map { it.name }.toTypedArray()
-        return authentication.monoId().flatMapMany { userId ->
-            problemSetRepository.findByUserIdAndRoles(userId, effectiveRoles, pageable)
-        }
+        val effectiveRoles = (roles ?: UserRole.entries).map(UserRole::name).toTypedArray()
+        return problemSetRepository.findByUserIdAndRoles(authentication.requireUserId(), effectiveRoles, pageable)
     }
 
     fun getPublicProblemSets(pageable: PageRequest): Flux<ProblemSet> = problemSetRepository.findByIsPublic(true, pageable)
@@ -64,164 +63,197 @@ class ProblemSetService(
         pageable: PageRequest,
         authentication: Authentication,
     ): Flux<ProblemSet> =
-        authentication.monoId().flatMapMany { userId ->
-            problemSetRepository.searchByUserIdAndQuery(userId, query, problemKey, pageable)
-        }
+        problemSetRepository.searchByUserIdAndQuery(authentication.requireUserId(), query, problemKey, pageable)
 
-    fun createProblemSet(request: CreateProblemSetRequest, authentication: Authentication): Mono<ProblemSet> =
-        authentication.monoId().flatMap { userId ->
-            resolveProblemKeys(request.problemKeys).flatMap { problemIds ->
-                Mono.defer {
-                        val problemSet =
-                            ProblemSet(
-                                name = request.name,
-                                description = request.description,
-                                isPublic = request.isPublic,
-                                shareCode = shareCodeGenerator.generateShareCode(),
-                                userIdRoleMap = mapOf(userId to UserRole.ADMIN),
-                            )
-                        problemSetRepository.save(problemSet)
-                    }
-                    .retryWhen(Retry.max(SHARE_CODE_RETRY_LIMIT).filter { it is DuplicateKeyException })
-                    .flatMap { saved ->
-                        val entries =
-                            problemIds.mapIndexed { index, problemId ->
-                                ProblemSetProblem(requireNotNull(saved.id), problemId, index)
-                            }
-                        problemSetProblemRepository.saveAll(entries).then(Mono.just(saved))
-                    }
-            }
-        }
+    @Transactional(readOnly = true)
+    fun loadForModerator(shareCode: String, authentication: Authentication): Mono<ProblemSet> =
+        loadProblemSet(shareCode).assertModerator(authentication)
 
-    @CacheEvict(key = "#shareCode")
-    @Transactional
-    fun removeUser(shareCode: String, userId: Long): Mono<ProblemSet> =
-        mutate(shareCode, { it.withoutUser(userId) }) { mono ->
-            mono
-                .badRequestIf("User is not in problem set") { !it.isUserInProblemSet(userId) }
-                .badRequestIf("Last admin should delete problem set, not leave it") {
-                    it.isAdmin(userId) && it.getAdminIds().size == 1
+    // endregion
+
+    // region create
+
+    fun createProblemSet(request: CreateProblemSetRequest, authentication: Authentication): Mono<ProblemSet> {
+        val ownerId = authentication.requireUserId()
+        return resolveProblemIds(request.problemKeys).flatMap { problemIds ->
+            saveWithUniqueShareCode {
+                    ProblemSet(
+                        name = request.name,
+                        description = request.description.ifBlank { null },
+                        isPublic = request.isPublic,
+                        shareCode = shareCodeGenerator.generateShareCode(),
+                        userIdRoleMap = mapOf(ownerId to UserRole.ADMIN),
+                    )
                 }
-        }
-
-    @CacheEvict(key = "#shareCode")
-    @Transactional
-    fun removeUserByModerator(shareCode: String, targetUserId: Long, authentication: Authentication): Mono<ProblemSet> =
-        mutate(shareCode, { it.withoutUser(targetUserId) }) { mono ->
-            mono
-                .notFoundIf("Target user not found in problem set") { !it.isUserInProblemSet(targetUserId) }
-                .forbiddenIf("Not enough permissions to remove user") {
-                    !problemSetPermissionEvaluator.hasRemovePermission(it, requireNotNull(authentication.id()), targetUserId)
-                }
-        }
-
-    @CacheEvict(key = "#shareCode")
-    @Transactional
-    fun inviteUser(shareCode: String, inviterId: Long, inviteeId: Long): Mono<ProblemSet> =
-        mutate(shareCode, { it.withInvitedUser(inviteeId) }) { mono ->
-            mono
-                .forbiddenIf("Not enough permissions to invite") {
-                    !problemSetPermissionEvaluator.hasInvitePermission(it, inviterId)
-                }
-                .badRequestIf("User is already in problem set") { it.isUserInProblemSet(inviteeId) }
-        }
-
-    @CacheEvict(key = "#shareCode")
-    @Transactional
-    fun expireInvite(shareCode: String, inviterId: Long, inviteeId: Long): Mono<ProblemSet> =
-        mutate(shareCode, { it.withoutInvitedUser(inviteeId) }) { mono ->
-            mono
-                .forbiddenIf("Not enough permissions to expire invite") {
-                    !problemSetPermissionEvaluator.hasInvitePermission(it, inviterId)
-                }
-                .badRequestIf("User is not invited to this problem set") { !it.isUserInvited(inviteeId) }
-        }
-
-    @CacheEvict(key = "#shareCode")
-    @Transactional
-    fun reactToInvite(shareCode: String, accepted: Boolean, authentication: Authentication): Mono<ProblemSet> {
-        val userId = requireNotNull(authentication.id())
-        return mutate(
-            shareCode,
-            { if (accepted) it.withJoinedUser(userId, UserRole.USER) else it.withoutInvitedUser(userId) },
-        ) { mono ->
-            mono.forbiddenIf("You cannot react to the invitation as nobody has invited you yet") {
-                !it.isUserInvited(userId)
-            }
+                .flatMap { saved -> persistProblems(saved, problemIds).thenReturn(saved) }
         }
     }
 
-    @Transactional(readOnly = true)
-    fun getProblemSetForModerator(shareCode: String, authentication: Authentication): Mono<ProblemSet> =
-        loadProblemSet(shareCode).forbiddenIf("You are not allowed to view this problem set") {
-            !problemSetPermissionEvaluator.hasRole(it, UserRole.MODERATOR, authentication)
-        }
+    // endregion
+
+    // region settings
 
     @CacheEvict(key = "#shareCode")
     @Transactional
-    fun changeUserRole(
+    fun updateSettings(
         shareCode: String,
-        userId: Long,
-        requestedRole: UserRole,
+        request: UpdateProblemSetSettingsRequest,
         authentication: Authentication,
-    ): Mono<UserRole> =
-        mutate(shareCode, { it.withUserRole(userId, requestedRole) }) { mono ->
-                mono
-                    .notFoundIf("Target user not found in problem set") { !it.isUserInProblemSet(userId) }
-                    .forbiddenIf("Cannot set $userId role to be $requestedRole") {
-                        !problemSetPermissionEvaluator.hasChangeRolePermission(
-                            it,
-                            requireNotNull(authentication.id()),
-                            userId,
-                            requestedRole,
-                        )
-                    }
-            }
-            .thenReturn(requestedRole)
-
-    @CacheEvict(key = "#shareCode")
-    @Transactional
-    fun changeVisibility(shareCode: String, isPublic: Boolean, authentication: Authentication): Mono<ProblemSet> =
-        mutate(shareCode, { it.withVisibility(isPublic) }) { mono ->
-            mono.forbiddenIf("Cannot change visibility due to lack of permissions") {
-                !problemSetPermissionEvaluator.hasRole(it, UserRole.MODERATOR, authentication)
-            }
+    ): Mono<ProblemSet> =
+        loadProblemSet(shareCode).assertModerator(authentication).flatMap { ps ->
+            val updated = ps.applyFieldUpdates(request)
+            val saveStep = if (updated == ps) Mono.just(ps) else problemSetRepository.save(updated)
+            if (request.problemKeys == null) saveStep
+            else saveStep.flatMap { saved -> replaceProblems(saved, request.problemKeys) }
         }
 
+    // endregion
+
+    // region members
+
     @CacheEvict(key = "#shareCode")
     @Transactional
-    fun changeProblems(shareCode: String, problemKeys: List<String>, authentication: Authentication): Mono<ProblemSet> =
-        loadProblemSet(shareCode)
-            .forbiddenIf("Cannot change problem list due to lack of permissions") {
-                !problemSetPermissionEvaluator.hasRole(it, UserRole.MODERATOR, authentication)
+    fun setMemberRole(
+        shareCode: String,
+        targetUserId: Long,
+        role: UserRole,
+        authentication: Authentication,
+    ): Mono<ProblemSet> {
+        val requesterId = authentication.requireUserId()
+        return loadProblemSet(shareCode)
+            .notFoundIf("Target user not found in problem set") { !it.isUserInProblemSet(targetUserId) }
+            .forbiddenIf("Cannot set $role for user $targetUserId") {
+                !problemSetPermissionEvaluator.hasChangeRolePermission(it, requesterId, targetUserId, role)
             }
-            .flatMap { ps ->
-                resolveProblemKeys(problemKeys).flatMap { problemIds ->
-                    val psId = requireNotNull(ps.id)
-                    problemSetProblemRepository
-                        .deleteByProblemSetId(psId)
-                        .then(
-                            problemSetProblemRepository
-                                .saveAll(problemIds.mapIndexed { index, pid -> ProblemSetProblem(psId, pid, index) })
-                                .then(Mono.just(ps))
-                        )
-                }
+            .badRequestIf("Cannot demote the last admin of a problem set") {
+                it.isLastAdmin(targetUserId) && role != UserRole.ADMIN
             }
+            .flatMap { problemSetRepository.save(it.withUserRole(targetUserId, role)) }
+    }
 
-    private fun resolveProblemKeys(keys: List<String>): Mono<List<Long>> =
+    @CacheEvict(key = "#shareCode")
+    @Transactional
+    fun removeMember(shareCode: String, targetUserId: Long, authentication: Authentication): Mono<ProblemSet> {
+        val requesterId = authentication.requireUserId()
+        return loadProblemSet(shareCode)
+            .notFoundIf("Target user not found in problem set") { !it.isUserInProblemSet(targetUserId) }
+            .forbiddenIf("Not enough permissions to remove user") {
+                !problemSetPermissionEvaluator.hasRemovePermission(it, requesterId, targetUserId)
+            }
+            .badRequestIf("Cannot remove the last admin from a problem set") { it.isLastAdmin(targetUserId) }
+            .flatMap { problemSetRepository.save(it.withoutUser(targetUserId)) }
+    }
+
+    @CacheEvict(key = "#shareCode")
+    @Transactional
+    fun leaveProblemSet(shareCode: String, authentication: Authentication): Mono<ProblemSet> {
+        val userId = authentication.requireUserId()
+        return loadProblemSet(shareCode)
+            .badRequestIf("User is not in problem set") { !it.isUserInProblemSet(userId) }
+            .badRequestIf("Last admin should delete problem set, not leave it") { it.isLastAdmin(userId) }
+            .flatMap { problemSetRepository.save(it.withoutUser(userId)) }
+    }
+
+    // endregion
+
+    // region invitations
+
+    @CacheEvict(key = "#shareCode")
+    @Transactional
+    fun createInvitation(shareCode: String, inviteeId: Long, authentication: Authentication): Mono<ProblemSet> {
+        val inviterId = authentication.requireUserId()
+        return loadProblemSet(shareCode)
+            .forbiddenIf("Not enough permissions to invite") {
+                !problemSetPermissionEvaluator.hasInvitePermission(it, inviterId)
+            }
+            .badRequestIf("User is already in problem set") { it.isUserInProblemSet(inviteeId) }
+            .badRequestIf("User is already invited to this problem set") { it.isUserInvited(inviteeId) }
+            .flatMap { ps -> problemSetRepository.save(ps.withInvitedUser(inviteeId)) }
+            .flatMap { ps -> publishInviteNotification(ps, inviteeId, authentication.name).thenReturn(ps) }
+    }
+
+    @CacheEvict(key = "#shareCode")
+    @Transactional
+    fun revokeInvitation(shareCode: String, inviteeId: Long, authentication: Authentication): Mono<ProblemSet> {
+        val requesterId = authentication.requireUserId()
+        return loadProblemSet(shareCode)
+            .forbiddenIf("Not enough permissions to revoke invite") {
+                !problemSetPermissionEvaluator.hasInvitePermission(it, requesterId)
+            }
+            .badRequestIf("User is not invited to this problem set") { !it.isUserInvited(inviteeId) }
+            .flatMap { problemSetRepository.save(it.withoutInvitedUser(inviteeId)) }
+    }
+
+    @CacheEvict(key = "#shareCode")
+    @Transactional
+    fun acceptInvitation(shareCode: String, authentication: Authentication): Mono<ProblemSet> {
+        val userId = authentication.requireUserId()
+        return loadProblemSet(shareCode)
+            .forbiddenIf("You have no pending invitation to this problem set") { !it.isUserInvited(userId) }
+            .flatMap { problemSetRepository.save(it.withJoinedUser(userId, UserRole.USER)) }
+    }
+
+    @CacheEvict(key = "#shareCode")
+    @Transactional
+    fun declineInvitation(shareCode: String, authentication: Authentication): Mono<ProblemSet> {
+        val userId = authentication.requireUserId()
+        return loadProblemSet(shareCode)
+            .forbiddenIf("You have no pending invitation to this problem set") { !it.isUserInvited(userId) }
+            .flatMap { problemSetRepository.save(it.withoutInvitedUser(userId)) }
+    }
+
+    // endregion
+
+    // region private helpers
+
+    fun Mono<ProblemSet>.assertIsModeratorOf(userId: Long): Mono<ProblemSet> =
+        forbiddenIf("User is not a moderator of this problem set") {
+            !problemSetPermissionEvaluator.hasRole(it, userId, UserRole.MODERATOR)
+        }
+
+    private fun Mono<ProblemSet>.assertModerator(authentication: Authentication): Mono<ProblemSet> =
+        assertIsModeratorOf(authentication.requireUserId())
+
+    private fun loadProblemSet(shareCode: String): Mono<ProblemSet> =
+        problemSetRepository.findByShareCode(shareCode).orNotFound("ProblemSet [$shareCode] not found")
+
+    private fun saveWithUniqueShareCode(factory: () -> ProblemSet): Mono<ProblemSet> =
+        Mono.defer { problemSetRepository.save(factory()) }
+            .retryWhen(Retry.max(SHARE_CODE_RETRY_LIMIT).filter { it is DuplicateKeyException })
+
+    private fun resolveProblemIds(keys: List<String>): Mono<List<Long>> =
         problemRepository.findByKeyIn(keys).collectList().map { problems ->
             val keyToId = problems.associate { it.key to requireNotNull(it.id) }
             keys.map { key -> requireNotNull(keyToId[key]) { "Problem with key $key not found" } }
         }
 
-    private fun loadProblemSet(shareCode: String): Mono<ProblemSet> =
-        problemSetRepository.findByShareCode(shareCode).orNotFound("ProblemSet [$shareCode] not found")
+    private fun persistProblems(problemSet: ProblemSet, problemIds: List<Long>): Mono<Void> {
+        val psId = requireNotNull(problemSet.id)
+        val entries = problemIds.mapIndexed { idx, pid -> ProblemSetProblem(psId, pid, idx) }
+        return problemSetProblemRepository.saveAll(entries).then()
+    }
 
-    private fun mutate(
-        shareCode: String,
-        transform: (ProblemSet) -> ProblemSet,
-        validate: (Mono<ProblemSet>) -> Mono<ProblemSet>,
-    ): Mono<ProblemSet> = validate(loadProblemSet(shareCode)).map { transform(it) }.flatMap { problemSetRepository.save(it) }
+    private fun replaceProblems(problemSet: ProblemSet, problemKeys: List<String>): Mono<ProblemSet> {
+        val psId = requireNotNull(problemSet.id)
+        return resolveProblemIds(problemKeys).flatMap { ids ->
+            problemSetProblemRepository
+                .deleteByProblemSetId(psId)
+                .then(persistProblems(problemSet, ids))
+                .thenReturn(problemSet)
+        }
+    }
+
+    private fun publishInviteNotification(problemSet: ProblemSet, inviteeId: Long, inviterName: String): Mono<String> =
+        notifier.notify(
+            InviteNotificationCreateRequest.from(
+                targetUserId = inviteeId,
+                inviterName = inviterName,
+                problemSetName = problemSet.name,
+                problemSetShareCode = problemSet.shareCode,
+            )
+        )
+
+    // endregion
 
     companion object {
         private const val SHARE_CODE_RETRY_LIMIT = 3L

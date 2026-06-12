@@ -6,4 +6,6 @@ import reactor.kotlin.core.publisher.toMono
 
 fun Authentication?.id(): Long? = this?.let { it.principal as EdukateUserDetails }?.id
 
+fun Authentication.requireUserId(): Long = requireNotNull(id()) { "Authentication has no user id" }
+
 fun Authentication?.monoId() = id().toMono()

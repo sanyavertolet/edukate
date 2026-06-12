@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size
 
 data class CreateProblemSetRequest(
     @field:NotBlank @field:Size(max = 50) val name: String,
-    @field:NotBlank @field:Size(max = 255) val description: String,
-    val isPublic: Boolean,
+    @field:Size(max = 255) val description: String = "",
+    val isPublic: Boolean = false,
     @field:NotEmpty val problemKeys: List<String>,
 )

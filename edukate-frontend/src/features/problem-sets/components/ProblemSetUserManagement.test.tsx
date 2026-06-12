@@ -1,7 +1,7 @@
 import userEvent from "@testing-library/user-event";
 import { render, screen, waitFor } from "@/test/render";
 import { server } from "@/test/server";
-import { getGetUserRolesMockHandler, getGetInvitedUsersMockHandler } from "@/generated/backend";
+import { getGetMembersMockHandler, getGetInvitationsMockHandler } from "@/generated/backend";
 import { ProblemSetUserManagement } from "./ProblemSetUserManagement";
 import { UserNameWithRole } from "@/generated/backend";
 
@@ -13,7 +13,7 @@ const members: UserNameWithRole[] = [
 
 describe("ProblemSetUserManagement", () => {
     it("shows member names after data loads", async () => {
-        server.use(getGetUserRolesMockHandler(members), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler(members), getGetInvitationsMockHandler([]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         expect(await screen.findByText("alice")).toBeInTheDocument();
         expect(screen.getByText("bob")).toBeInTheDocument();
@@ -21,7 +21,7 @@ describe("ProblemSetUserManagement", () => {
     });
 
     it("shows role chips with correct labels", async () => {
-        server.use(getGetUserRolesMockHandler(members), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler(members), getGetInvitationsMockHandler([]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         expect(await screen.findByText("Admin")).toBeInTheDocument();
         expect(screen.getByText("Moderator")).toBeInTheDocument();
@@ -29,19 +29,19 @@ describe("ProblemSetUserManagement", () => {
     });
 
     it("shows Members section header", async () => {
-        server.use(getGetUserRolesMockHandler(members), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler(members), getGetInvitationsMockHandler([]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         expect(await screen.findByText("Members")).toBeInTheDocument();
     });
 
     it("shows 'No members yet' when member list is empty", async () => {
-        server.use(getGetUserRolesMockHandler([]), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler([]), getGetInvitationsMockHandler([]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         expect(await screen.findByText("No members yet")).toBeInTheDocument();
     });
 
     it("shows Pending Invitations section when invites exist", async () => {
-        server.use(getGetUserRolesMockHandler([]), getGetInvitedUsersMockHandler(["dave", "eve"]));
+        server.use(getGetMembersMockHandler([]), getGetInvitationsMockHandler(["dave", "eve"]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         expect(await screen.findByText("Pending Invitations")).toBeInTheDocument();
         expect(screen.getByText("dave")).toBeInTheDocument();
@@ -49,14 +49,14 @@ describe("ProblemSetUserManagement", () => {
     });
 
     it("hides Pending Invitations section when no invites", async () => {
-        server.use(getGetUserRolesMockHandler(members), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler(members), getGetInvitationsMockHandler([]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         await screen.findByText("alice");
         expect(screen.queryByText("Pending Invitations")).not.toBeInTheDocument();
     });
 
     it("opens confirmation dialog when trash icon is clicked for a member", async () => {
-        server.use(getGetUserRolesMockHandler(members), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler(members), getGetInvitationsMockHandler([]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         await screen.findByText("charlie");
 
@@ -68,7 +68,7 @@ describe("ProblemSetUserManagement", () => {
     });
 
     it("opens confirmation dialog when trash icon is clicked for an invited user", async () => {
-        server.use(getGetUserRolesMockHandler([]), getGetInvitedUsersMockHandler(["dave"]));
+        server.use(getGetMembersMockHandler([]), getGetInvitationsMockHandler(["dave"]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         await screen.findByText("dave");
 
@@ -79,7 +79,7 @@ describe("ProblemSetUserManagement", () => {
     });
 
     it("closes confirmation dialog on Cancel click", async () => {
-        server.use(getGetUserRolesMockHandler(members), getGetInvitedUsersMockHandler([]));
+        server.use(getGetMembersMockHandler(members), getGetInvitationsMockHandler([]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         await screen.findByText("charlie");
 
@@ -94,7 +94,7 @@ describe("ProblemSetUserManagement", () => {
     });
 
     it("shows Pending chip for invited users", async () => {
-        server.use(getGetUserRolesMockHandler([]), getGetInvitedUsersMockHandler(["dave"]));
+        server.use(getGetMembersMockHandler([]), getGetInvitationsMockHandler(["dave"]));
         render(<ProblemSetUserManagement shareCode="TEST01" />);
         expect(await screen.findByText("Pending")).toBeInTheDocument();
     });

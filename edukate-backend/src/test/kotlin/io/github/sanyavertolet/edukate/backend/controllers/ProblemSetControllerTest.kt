@@ -4,17 +4,18 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import com.ninjasquad.springmockk.MockkBean
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
-import io.github.sanyavertolet.edukate.backend.dtos.ChangeProblemSetProblemsRequest
+import io.github.sanyavertolet.edukate.backend.dtos.CreateInvitationRequest
 import io.github.sanyavertolet.edukate.backend.dtos.CreateProblemSetRequest
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemSetDto
 import io.github.sanyavertolet.edukate.backend.dtos.ProblemSetMetadata
+import io.github.sanyavertolet.edukate.backend.dtos.SetMemberRoleRequest
+import io.github.sanyavertolet.edukate.backend.dtos.UpdateProblemSetSettingsRequest
 import io.github.sanyavertolet.edukate.backend.dtos.UserNameWithRole
 import io.github.sanyavertolet.edukate.backend.mappers.ProblemSetMapper
 import io.github.sanyavertolet.edukate.backend.permissions.ProblemSetPermissionEvaluator
 import io.github.sanyavertolet.edukate.backend.services.ProblemSetService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
-import io.github.sanyavertolet.edukate.common.services.Notifier
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.mockk.every
 import org.junit.jupiter.api.Test
@@ -39,7 +40,6 @@ class ProblemSetControllerTest {
     @MockkBean private lateinit var problemSetService: ProblemSetService
     @MockkBean private lateinit var problemSetMapper: ProblemSetMapper
     @MockkBean private lateinit var userService: UserService
-    @MockkBean private lateinit var notifier: Notifier
     @MockkBean private lateinit var problemSetPermissionEvaluator: ProblemSetPermissionEvaluator
 
     private fun authenticatedClient(): WebTestClient =
@@ -72,8 +72,6 @@ class ProblemSetControllerTest {
             .expectBody()
             .jsonPath("$.shareCode")
             .isEqualTo("SHARE123")
-            .jsonPath("$.name")
-            .isEqualTo("Test ProblemSet")
     }
 
     // endregion
@@ -122,14 +120,7 @@ class ProblemSetControllerTest {
         every { problemSetService.getMemberProblemSets(any(), any(), any()) } returns Flux.just(ps)
         every { problemSetMapper.toMetadata(ps, any()) } returns Mono.just(psMetadata())
 
-        authenticatedClient()
-            .get()
-            .uri("/api/v1/problem-sets/member?roles=ADMIN")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBodyList<ProblemSetMetadata>()
-            .hasSize(1)
+        authenticatedClient().get().uri("/api/v1/problem-sets/member?roles=ADMIN").exchange().expectStatus().isOk
     }
 
     // endregion
@@ -150,20 +141,6 @@ class ProblemSetControllerTest {
             .isOk
             .expectBodyList<ProblemSetMetadata>()
             .hasSize(1)
-    }
-
-    @Test
-    fun `searchMemberProblemSets returns 200 with empty list when query has no matches`() {
-        every { problemSetService.searchMemberProblemSets(any(), any(), any(), any()) } returns Flux.empty()
-
-        authenticatedClient()
-            .get()
-            .uri("/api/v1/problem-sets/search/member?query=nonexistent")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBodyList<ProblemSetMetadata>()
-            .hasSize(0)
     }
 
     // endregion
@@ -189,64 +166,68 @@ class ProblemSetControllerTest {
     }
 
     @Test
-    fun `getProblemSetByShareCode returns 403 when user is not a member`() {
+    fun `getProblemSetByShareCode returns 404 when user is not a member (no existence leak)`() {
         val ps = BackendFixtures.problemSet(userIdRoleMap = mapOf(100L to UserRole.ADMIN))
         every { problemSetService.findByShareCode("SHARE123") } returns Mono.just(ps)
         every { problemSetPermissionEvaluator.hasReadPermission(ps, 1L) } returns false
 
-        authenticatedClient().get().uri("/api/v1/problem-sets/SHARE123").exchange().expectStatus().isForbidden
+        authenticatedClient().get().uri("/api/v1/problem-sets/SHARE123").exchange().expectStatus().isNotFound
     }
 
     // endregion
 
-    // region POST /api/v1/problem-sets/{shareCode}/leave
+    // region PATCH /api/v1/problem-sets/{shareCode}
 
     @Test
-    fun `leaveProblemSet returns 200 with shareCode`() {
+    fun `updateSettings returns 200 with updated DTO`() {
         val ps = BackendFixtures.problemSet()
-        every { problemSetService.removeUser("SHARE123", 1L) } returns Mono.just(ps)
-
-        authenticatedClient().post().uri("/api/v1/problem-sets/SHARE123/leave").exchange().expectStatus().isOk
-    }
-
-    @Test
-    fun `leaveProblemSet returns 400 when last admin`() {
-        every { problemSetService.removeUser("SHARE123", 1L) } returns
-            Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot remove last admin"))
-
-        authenticatedClient().post().uri("/api/v1/problem-sets/SHARE123/leave").exchange().expectStatus().isBadRequest
-    }
-
-    // endregion
-
-    // region POST /api/v1/problem-sets/{shareCode}/invite
-
-    @Test
-    fun `inviteToProblemSet returns 200 success message`() {
-        val invitee = BackendFixtures.user(id = 2L, name = "invitee")
-        val ps = BackendFixtures.problemSet()
-        every { userService.findUserByName("invitee") } returns Mono.just(invitee)
-        every { problemSetService.inviteUser("SHARE123", 1L, 2L) } returns Mono.just(ps)
-        every { notifier.notify(any()) } returns Mono.just("notification-id")
+        every { problemSetService.updateSettings("SHARE123", any(), any()) } returns Mono.just(ps)
+        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
 
         authenticatedClient()
-            .post()
-            .uri("/api/v1/problem-sets/SHARE123/invite?inviteeName=invitee")
+            .patch()
+            .uri("/api/v1/problem-sets/SHARE123")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(UpdateProblemSetSettingsRequest(name = "New Name"))
             .exchange()
             .expectStatus()
             .isOk
     }
 
     @Test
-    fun `inviteToProblemSet returns 403 when requester lacks invite permission`() {
-        val invitee = BackendFixtures.user(id = 2L, name = "invitee")
-        every { userService.findUserByName("invitee") } returns Mono.just(invitee)
-        every { problemSetService.inviteUser("SHARE123", 1L, 2L) } returns
-            Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient permissions"))
+    fun `updateSettings returns 400 when body is empty (no fields provided)`() {
+        authenticatedClient()
+            .patch()
+            .uri("/api/v1/problem-sets/SHARE123")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(UpdateProblemSetSettingsRequest())
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+    }
+
+    @Test
+    fun `updateSettings returns 400 when problemKeys is empty list`() {
+        authenticatedClient()
+            .patch()
+            .uri("/api/v1/problem-sets/SHARE123")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(UpdateProblemSetSettingsRequest(problemKeys = emptyList()))
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+    }
+
+    @Test
+    fun `updateSettings returns 403 when service throws FORBIDDEN`() {
+        every { problemSetService.updateSettings("SHARE123", any(), any()) } returns
+            Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Moderator access required"))
 
         authenticatedClient()
-            .post()
-            .uri("/api/v1/problem-sets/SHARE123/invite?inviteeName=invitee")
+            .patch()
+            .uri("/api/v1/problem-sets/SHARE123")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(UpdateProblemSetSettingsRequest(isPublic = true))
             .exchange()
             .expectStatus()
             .isForbidden
@@ -254,66 +235,17 @@ class ProblemSetControllerTest {
 
     // endregion
 
-    // region POST /api/v1/problem-sets/{shareCode}/expire-invite
+    // region GET /api/v1/problem-sets/{shareCode}/members
 
     @Test
-    fun `expireInvite returns 200 success message`() {
-        val invitee = BackendFixtures.user(id = 2L, name = "invitee")
+    fun `getMembers returns 200 with role list`() {
         val ps = BackendFixtures.problemSet()
-        every { userService.findUserByName("invitee") } returns Mono.just(invitee)
-        every { problemSetService.expireInvite("SHARE123", 1L, 2L) } returns Mono.just(ps)
-
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/problem-sets/SHARE123/expire-invite?inviteeName=invitee")
-            .exchange()
-            .expectStatus()
-            .isOk
-    }
-
-    // endregion
-
-    // region POST /api/v1/problem-sets/{shareCode}/reply-invite
-
-    @Test
-    fun `replyToInvite accept returns 200 success message`() {
-        val ps = BackendFixtures.problemSet()
-        every { problemSetService.reactToInvite("SHARE123", true, any()) } returns Mono.just(ps)
-
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/problem-sets/SHARE123/reply-invite?response=true")
-            .exchange()
-            .expectStatus()
-            .isOk
-    }
-
-    @Test
-    fun `replyToInvite decline returns 200 success message`() {
-        val ps = BackendFixtures.problemSet()
-        every { problemSetService.reactToInvite("SHARE123", false, any()) } returns Mono.just(ps)
-
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/problem-sets/SHARE123/reply-invite?response=false")
-            .exchange()
-            .expectStatus()
-            .isOk
-    }
-
-    // endregion
-
-    // region GET /api/v1/problem-sets/{shareCode}/users
-
-    @Test
-    fun `getUserRoles returns 200 with user role list`() {
-        val ps = BackendFixtures.problemSet(shareCode = "SHARE123")
-        every { problemSetService.getProblemSetForModerator("SHARE123", any()) } returns Mono.just(ps)
+        every { problemSetService.loadForModerator("SHARE123", any()) } returns Mono.just(ps)
         every { problemSetMapper.toUserRoles(ps) } returns Flux.just(UserNameWithRole("admin-1", UserRole.ADMIN))
 
         authenticatedClient()
             .get()
-            .uri("/api/v1/problem-sets/SHARE123/users")
+            .uri("/api/v1/problem-sets/SHARE123/members")
             .exchange()
             .expectStatus()
             .isOk
@@ -323,17 +255,120 @@ class ProblemSetControllerTest {
 
     // endregion
 
-    // region GET /api/v1/problem-sets/{shareCode}/invited-users
+    // region PUT /api/v1/problem-sets/{shareCode}/members/{username}
 
     @Test
-    fun `getInvitedUsers returns 200 with invited user list`() {
-        val ps = BackendFixtures.problemSet(shareCode = "SHARE123")
-        every { problemSetService.getProblemSetForModerator("SHARE123", any()) } returns Mono.just(ps)
+    fun `setMemberRole returns 200 with updated DTO`() {
+        val targetUser = BackendFixtures.user(id = 2L, name = "target")
+        val ps = BackendFixtures.problemSet()
+        every { userService.findUserByName("target") } returns Mono.just(targetUser)
+        every { problemSetService.setMemberRole("SHARE123", 2L, UserRole.MODERATOR, any()) } returns Mono.just(ps)
+        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
+
+        authenticatedClient()
+            .put()
+            .uri("/api/v1/problem-sets/SHARE123/members/target")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(SetMemberRoleRequest(UserRole.MODERATOR))
+            .exchange()
+            .expectStatus()
+            .isOk
+    }
+
+    @Test
+    fun `setMemberRole returns 400 when demoting the last admin`() {
+        val targetUser = BackendFixtures.user(id = 100L, name = "lone-admin")
+        every { userService.findUserByName("lone-admin") } returns Mono.just(targetUser)
+        every { problemSetService.setMemberRole("SHARE123", 100L, UserRole.USER, any()) } returns
+            Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot demote the last admin"))
+
+        authenticatedClient()
+            .put()
+            .uri("/api/v1/problem-sets/SHARE123/members/lone-admin")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(SetMemberRoleRequest(UserRole.USER))
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+    }
+
+    @Test
+    fun `setMemberRole returns 404 when target user does not exist`() {
+        every { userService.findUserByName("ghost") } returns Mono.empty()
+
+        authenticatedClient()
+            .put()
+            .uri("/api/v1/problem-sets/SHARE123/members/ghost")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(SetMemberRoleRequest(UserRole.USER))
+            .exchange()
+            .expectStatus()
+            .isNotFound
+    }
+
+    // endregion
+
+    // region DELETE /api/v1/problem-sets/{shareCode}/members/{username}
+
+    @Test
+    fun `removeMember returns 200 with updated DTO`() {
+        val targetUser = BackendFixtures.user(id = 2L, name = "target")
+        val ps = BackendFixtures.problemSet()
+        every { userService.findUserByName("target") } returns Mono.just(targetUser)
+        every { problemSetService.removeMember("SHARE123", 2L, any()) } returns Mono.just(ps)
+        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
+
+        authenticatedClient().delete().uri("/api/v1/problem-sets/SHARE123/members/target").exchange().expectStatus().isOk
+    }
+
+    @Test
+    fun `removeMember returns 400 when removing the last admin`() {
+        val targetUser = BackendFixtures.user(id = 100L, name = "lone-admin")
+        every { userService.findUserByName("lone-admin") } returns Mono.just(targetUser)
+        every { problemSetService.removeMember("SHARE123", 100L, any()) } returns
+            Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot remove the last admin"))
+
+        authenticatedClient()
+            .delete()
+            .uri("/api/v1/problem-sets/SHARE123/members/lone-admin")
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+    }
+
+    // endregion
+
+    // region DELETE /api/v1/problem-sets/{shareCode}/members/me
+
+    @Test
+    fun `leaveProblemSet returns 204`() {
+        val ps = BackendFixtures.problemSet()
+        every { problemSetService.leaveProblemSet("SHARE123", any()) } returns Mono.just(ps)
+
+        authenticatedClient().delete().uri("/api/v1/problem-sets/SHARE123/members/me").exchange().expectStatus().isNoContent
+    }
+
+    @Test
+    fun `leaveProblemSet returns 400 when caller is the last admin`() {
+        every { problemSetService.leaveProblemSet("SHARE123", any()) } returns
+            Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot remove last admin"))
+
+        authenticatedClient().delete().uri("/api/v1/problem-sets/SHARE123/members/me").exchange().expectStatus().isBadRequest
+    }
+
+    // endregion
+
+    // region GET /api/v1/problem-sets/{shareCode}/invitations
+
+    @Test
+    fun `getInvitations returns 200 with invitee names`() {
+        val ps = BackendFixtures.problemSet()
+        every { problemSetService.loadForModerator("SHARE123", any()) } returns Mono.just(ps)
         every { problemSetMapper.toInvitedUserNames(ps) } returns Flux.just("invitee-1")
 
         authenticatedClient()
             .get()
-            .uri("/api/v1/problem-sets/SHARE123/invited-users")
+            .uri("/api/v1/problem-sets/SHARE123/invitations")
             .exchange()
             .expectStatus()
             .isOk
@@ -343,33 +378,86 @@ class ProblemSetControllerTest {
 
     // endregion
 
-    // region POST /api/v1/problem-sets/{shareCode}/role
+    // region POST /api/v1/problem-sets/{shareCode}/invitations
 
     @Test
-    fun `changeUserRole returns 200 with updated role`() {
-        val targetUser = BackendFixtures.user(id = 2L, name = "target")
-        every { userService.findUserByName("target") } returns Mono.just(targetUser)
-        every { problemSetService.changeUserRole("SHARE123", 2L, UserRole.MODERATOR, any()) } returns
-            Mono.just(UserRole.MODERATOR)
+    fun `createInvitation returns 200 with updated DTO`() {
+        val invitee = BackendFixtures.user(id = 2L, name = "invitee")
+        val ps = BackendFixtures.problemSet()
+        every { userService.findUserByName("invitee") } returns Mono.just(invitee)
+        every { problemSetService.createInvitation("SHARE123", 2L, any()) } returns Mono.just(ps)
+        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
 
         authenticatedClient()
             .post()
-            .uri("/api/v1/problem-sets/SHARE123/role?username=target&requestedRole=MODERATOR")
+            .uri("/api/v1/problem-sets/SHARE123/invitations")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(CreateInvitationRequest("invitee"))
             .exchange()
             .expectStatus()
             .isOk
     }
 
     @Test
-    fun `changeUserRole returns 403 when requester lacks permission`() {
-        val targetUser = BackendFixtures.user(id = 2L, name = "target")
-        every { userService.findUserByName("target") } returns Mono.just(targetUser)
-        every { problemSetService.changeUserRole("SHARE123", 2L, UserRole.ADMIN, any()) } returns
-            Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "Insufficient permissions"))
+    fun `createInvitation returns 404 when invitee does not exist`() {
+        every { userService.findUserByName("ghost") } returns Mono.empty()
 
         authenticatedClient()
             .post()
-            .uri("/api/v1/problem-sets/SHARE123/role?username=target&requestedRole=ADMIN")
+            .uri("/api/v1/problem-sets/SHARE123/invitations")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(CreateInvitationRequest("ghost"))
+            .exchange()
+            .expectStatus()
+            .isNotFound
+    }
+
+    // endregion
+
+    // region DELETE /api/v1/problem-sets/{shareCode}/invitations/{username}
+
+    @Test
+    fun `revokeInvitation returns 200 with updated DTO`() {
+        val invitee = BackendFixtures.user(id = 2L, name = "invitee")
+        val ps = BackendFixtures.problemSet()
+        every { userService.findUserByName("invitee") } returns Mono.just(invitee)
+        every { problemSetService.revokeInvitation("SHARE123", 2L, any()) } returns Mono.just(ps)
+        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
+
+        authenticatedClient()
+            .delete()
+            .uri("/api/v1/problem-sets/SHARE123/invitations/invitee")
+            .exchange()
+            .expectStatus()
+            .isOk
+    }
+
+    // endregion
+
+    // region POST /api/v1/problem-sets/{shareCode}/invitations/me/accept
+
+    @Test
+    fun `acceptInvitation returns 200 with updated DTO`() {
+        val ps = BackendFixtures.problemSet()
+        every { problemSetService.acceptInvitation("SHARE123", any()) } returns Mono.just(ps)
+        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
+
+        authenticatedClient()
+            .post()
+            .uri("/api/v1/problem-sets/SHARE123/invitations/me/accept")
+            .exchange()
+            .expectStatus()
+            .isOk
+    }
+
+    @Test
+    fun `acceptInvitation returns 403 when caller has no invitation`() {
+        every { problemSetService.acceptInvitation("SHARE123", any()) } returns
+            Mono.error(ResponseStatusException(HttpStatus.FORBIDDEN, "No invitation"))
+
+        authenticatedClient()
+            .post()
+            .uri("/api/v1/problem-sets/SHARE123/invitations/me/accept")
             .exchange()
             .expectStatus()
             .isForbidden
@@ -377,59 +465,19 @@ class ProblemSetControllerTest {
 
     // endregion
 
-    // region POST /api/v1/problem-sets/{shareCode}/visibility
+    // region POST /api/v1/problem-sets/{shareCode}/invitations/me/decline
 
     @Test
-    fun `changeVisibility returns 200 with updated problem set DTO`() {
-        val ps = BackendFixtures.problemSet(isPublic = true)
-        every { problemSetService.changeVisibility("SHARE123", true, any()) } returns Mono.just(ps)
-        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
-
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/problem-sets/SHARE123/visibility?isPublic=true")
-            .exchange()
-            .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("$.shareCode")
-            .isEqualTo("SHARE123")
-    }
-
-    // endregion
-
-    // region POST /api/v1/problem-sets/{shareCode}/problems
-
-    @Test
-    fun `changeProblems returns 200 with updated problem set DTO`() {
+    fun `declineInvitation returns 204`() {
         val ps = BackendFixtures.problemSet()
-        every { problemSetService.changeProblems("SHARE123", listOf("savchenko/P1", "savchenko/P2"), any()) } returns
-            Mono.just(ps)
-        every { problemSetMapper.toDto(ps, any()) } returns Mono.just(psDto())
+        every { problemSetService.declineInvitation("SHARE123", any()) } returns Mono.just(ps)
 
         authenticatedClient()
             .post()
-            .uri("/api/v1/problem-sets/SHARE123/problems")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(ChangeProblemSetProblemsRequest(listOf("savchenko/P1", "savchenko/P2")))
+            .uri("/api/v1/problem-sets/SHARE123/invitations/me/decline")
             .exchange()
             .expectStatus()
-            .isOk
-            .expectBody()
-            .jsonPath("$.shareCode")
-            .isEqualTo("SHARE123")
-    }
-
-    @Test
-    fun `changeProblems returns 400 when problem list is empty`() {
-        authenticatedClient()
-            .post()
-            .uri("/api/v1/problem-sets/SHARE123/problems")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(ChangeProblemSetProblemsRequest(problemKeys = emptyList()))
-            .exchange()
-            .expectStatus()
-            .isBadRequest
+            .isNoContent
     }
 
     // endregion

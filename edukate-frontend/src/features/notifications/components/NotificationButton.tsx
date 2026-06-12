@@ -8,7 +8,7 @@ import { NotificationDrawer } from "./NotificationDrawer";
 import { BaseNotification, CheckedNotification, InviteNotification } from "@/features/notifications/types";
 import { toast } from "react-toastify";
 import { useGetNotificationsRequest, useMarkNotificationsAsReadMutation } from "@/features/notifications/api";
-import { useProblemSetInvitationReplyMutation } from "@/features/problem-sets/api";
+import { useProblemSetAcceptInvitationMutation, useProblemSetDeclineInvitationMutation } from "@/features/problem-sets/api";
 import { useSubmissionQuery } from "@/features/submissions/api";
 import { SubmissionDrawer } from "@/features/submissions/components/SubmissionDrawer";
 import { useTranslation } from "react-i18next";
@@ -36,7 +36,8 @@ export const NotificationButton: FC = () => {
     };
 
     const markAsReadMutation = useMarkNotificationsAsReadMutation();
-    const invitationReplyMutation = useProblemSetInvitationReplyMutation();
+    const acceptInvitationMutation = useProblemSetAcceptInvitationMutation();
+    const declineInvitationMutation = useProblemSetDeclineInvitationMutation();
     const [problemSetInviteInfo, setProblemSetInviteInfo] = useState<ProblemSetInviteInfo>();
     const [drawerSubmissionId, setDrawerSubmissionId] = useState<string | undefined>(undefined);
     const { data: drawerSubmission } = useSubmissionQuery(drawerSubmissionId);
@@ -44,8 +45,9 @@ export const NotificationButton: FC = () => {
     const onInvitationDialogClose = (response: boolean | undefined) => {
         if (response != undefined && problemSetInviteInfo != undefined) {
             const { problemSetName, problemSetShareCode, notificationUuid } = problemSetInviteInfo;
-            invitationReplyMutation.mutate(
-                { shareCode: problemSetShareCode, isAccepted: response },
+            const mutation = response ? acceptInvitationMutation : declineInvitationMutation;
+            mutation.mutate(
+                { shareCode: problemSetShareCode },
                 {
                     onSuccess: () => {
                         markAsReadMutation.mutate([notificationUuid]);

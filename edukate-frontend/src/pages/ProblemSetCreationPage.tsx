@@ -20,7 +20,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { OptionPickerComponent } from "@/shared/components/OptionPicker";
 import { CreateProblemSetRequest } from "@/features/problem-sets/types";
 import { useCreateProblemSetMutation } from "@/features/problem-sets/api";
-import { inviteToProblemSet } from "@/generated/backend";
+import { createInvitation } from "@/generated/backend";
 import { ProblemSetProblemPicker } from "@/features/problem-sets/components/ProblemSetProblemPicker";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -50,7 +50,7 @@ export default function ProblemSetCreationPage() {
                 return;
             }
             void Promise.allSettled(
-                inviteUsernames.map((username) => inviteToProblemSet(shareCode, { inviteeName: username })),
+                inviteUsernames.map((username) => createInvitation(shareCode, { inviteeName: username })),
             ).then((results) => {
                 const failed = inviteUsernames.filter((_, i) => results[i].status === "rejected");
                 if (failed.length > 0) {

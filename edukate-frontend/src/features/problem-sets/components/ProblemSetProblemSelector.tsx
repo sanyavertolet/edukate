@@ -19,7 +19,6 @@ interface ProblemSetProblemSelectorProps {
     problems: ProblemMetadata[];
     selection: ProblemSetSelection;
     onSelectionChange: (selection: ProblemSetSelection) => void;
-    isAdmin: boolean;
     isModerator: boolean;
 }
 
@@ -27,7 +26,6 @@ export function ProblemSetProblemSelector({
     problems,
     selection,
     onSelectionChange,
-    isAdmin,
     isModerator,
 }: ProblemSetProblemSelectorProps) {
     const { t } = useTranslation("problem-sets");
@@ -42,7 +40,7 @@ export function ProblemSetProblemSelector({
                 },
                 isSelected: selection.type === "description",
             },
-            ...(isAdmin
+            ...(isModerator
                 ? [
                       {
                           text: t("settings_tab"),
@@ -72,7 +70,7 @@ export function ProblemSetProblemSelector({
                 isSelected: selection.type === "problem" && problem.code === selection.problem.code,
             })),
         ],
-        [problems, selection, onSelectionChange, isAdmin, isModerator, t],
+        [problems, selection, onSelectionChange, isModerator, t],
     );
     usePageSpecificNavigation(pageSpecificNavigation);
 
@@ -91,7 +89,7 @@ export function ProblemSetProblemSelector({
                         </ListItemIcon>
                         <ListItemText primary={t("description_tab")} />
                     </ListItemButton>
-                    {isAdmin && (
+                    {isModerator && (
                         <ListItemButton
                             selected={selection.type === "settings"}
                             onClick={() => {

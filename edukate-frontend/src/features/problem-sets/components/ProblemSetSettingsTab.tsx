@@ -1,12 +1,19 @@
-import { FC } from "react";
-import { Box, Chip, Divider, FormControlLabel, LinearProgress, Stack, Switch, Tooltip, Typography } from "@mui/material";
+import { FC, useState } from "react";
+import { Box, Chip, Divider, FormControlLabel, IconButton, Stack, Switch, Tooltip, Typography } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { ProblemSet } from "@/features/problem-sets/types";
 import { ProblemSetUserManagement } from "./ProblemSetUserManagement";
-import { useProblemSetChangeVisibilityMutation } from "@/features/problem-sets/api";
+import { ProblemSetProblemsEditorDialog } from "./ProblemSetProblemsEditorDialog";
+import { useProblemSetUpdateSettingsMutation } from "@/features/problem-sets/api";
+import { useAuthContext } from "@/features/auth/context";
+import { InlineEditableText } from "./InlineEditableText";
 import { defaultTooltipSlotProps } from "@/shared/utils/utils";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { useTranslation } from "react-i18next";
+
+const NAME_MAX = 50;
+const DESCRIPTION_MAX = 255;
 
 interface ProblemSetSettingsTabProps {
     problemSet: ProblemSet;
@@ -14,42 +21,70 @@ interface ProblemSetSettingsTabProps {
 
 export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemSet }) => {
     const { t } = useTranslation("problem-sets");
-    const visibilityMutation = useProblemSetChangeVisibilityMutation();
+    const { user } = useAuthContext();
+    const updateSettingsMutation = useProblemSetUpdateSettingsMutation();
+    const copyToClipboard = useCopyToClipboard();
+    const [problemsEditorOpen, setProblemsEditorOpen] = useState(false);
 
     const total = problemSet.problems.length;
-    const solved = problemSet.problems.filter((p) => p.status === "SOLVED").length;
-    const percentage = total > 0 ? (solved / total) * 100 : 0;
+
+    const canEdit = !!user?.name && (problemSet.admins.includes(user.name) || problemSet.moderators.includes(user.name));
 
     const handleVisibilityToggle = () => {
-        visibilityMutation.mutate({ shareCode: problemSet.shareCode, isPublic: !problemSet.isPublic });
+        updateSettingsMutation.mutate({
+            shareCode: problemSet.shareCode,
+            data: { isPublic: !problemSet.isPublic },
+        });
     };
 
-    const copyToClipboard = useCopyToClipboard();
+    const saveName = (name: string) => {
+        if (name === problemSet.name) return;
+        updateSettingsMutation.mutate({ shareCode: problemSet.shareCode, data: { name } });
+    };
+
+    const saveDescription = (description: string) => {
+        if (description === (problemSet.description ?? "")) return;
+        updateSettingsMutation.mutate({ shareCode: problemSet.shareCode, data: { description } });
+    };
 
     return (
         <Box sx={{ p: 3 }}>
             <Stack spacing={2}>
                 {/* Summary Header */}
-                <Box>
-                    <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-                        <Typography variant="h6" color="primary">
-                            {problemSet.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                <InlineEditableText
+                    value={problemSet.name}
+                    onSave={saveName}
+                    disabled={!canEdit}
+                    minLength={1}
+                    maxLength={NAME_MAX}
+                    editTooltip={t("edit_name_tooltip")}
+                    typographyProps={{ variant: "h6", color: "primary" }}
+                    pending={updateSettingsMutation.isPending}
+                    endAdornment={
+                        <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
                             {t("problems_count", { count: total })}
                         </Typography>
-                    </Stack>
-                    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mt: 1 }}>
-                        <LinearProgress
-                            variant="determinate"
-                            value={percentage}
-                            color={percentage === 100 ? "success" : "primary"}
-                            sx={{ flexGrow: 1 }}
-                        />
-                        <Typography variant="caption" color="text.secondary" noWrap>
-                            {t("solved_count", { solved, total })}
-                        </Typography>
-                    </Stack>
+                    }
+                />
+
+                <Divider />
+
+                {/* Description */}
+                <Box>
+                    <Typography variant="overline" color="text.secondary">
+                        {t("description_label")}
+                    </Typography>
+                    <InlineEditableText
+                        value={problemSet.description ?? ""}
+                        onSave={saveDescription}
+                        disabled={!canEdit}
+                        multiline
+                        maxLength={DESCRIPTION_MAX}
+                        editTooltip={t("edit_description_tooltip")}
+                        emptyText={t("no_description")}
+                        typographyProps={{ variant: "body2" }}
+                        pending={updateSettingsMutation.isPending}
+                    />
                 </Box>
 
                 <Divider />
@@ -83,7 +118,7 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                                     size="small"
                                     checked={problemSet.isPublic}
                                     onChange={handleVisibilityToggle}
-                                    disabled={visibilityMutation.isPending}
+                                    disabled={!canEdit || updateSettingsMutation.isPending}
                                 />
                             }
                             label={
@@ -101,6 +136,31 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
 
                 <Divider />
 
+                {/* Problems */}
+                <Box>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Typography variant="overline" color="text.secondary">
+                            {t("problems_label")} ({total})
+                        </Typography>
+                        <Tooltip slotProps={defaultTooltipSlotProps} title={t("edit_problems_tooltip")}>
+                            <span>
+                                <IconButton
+                                    size="small"
+                                    aria-label={t("edit_problems_tooltip")}
+                                    onClick={() => {
+                                        setProblemsEditorOpen(true);
+                                    }}
+                                    disabled={!canEdit}
+                                >
+                                    <EditOutlinedIcon fontSize="inherit" />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                    </Stack>
+                </Box>
+
+                <Divider />
+
                 {/* Users */}
                 <Box>
                     <Typography variant="overline" color="text.secondary">
@@ -109,6 +169,14 @@ export const ProblemSetSettingsTab: FC<ProblemSetSettingsTabProps> = ({ problemS
                     <ProblemSetUserManagement shareCode={problemSet.shareCode} />
                 </Box>
             </Stack>
+
+            <ProblemSetProblemsEditorDialog
+                problemSet={problemSet}
+                open={problemsEditorOpen}
+                onClose={() => {
+                    setProblemsEditorOpen(false);
+                }}
+            />
         </Box>
     );
 };

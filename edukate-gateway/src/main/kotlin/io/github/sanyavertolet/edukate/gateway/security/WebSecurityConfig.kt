@@ -29,7 +29,7 @@ class WebSecurityConfig(
         configuration.allowedHeaders = listOf("Content-Type", "api_key")
         configuration.allowedOriginPatterns = listOf(corsAllowedOriginPattern)
         configuration.maxAge = COOKIE_MAX_AGE
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
         return source
