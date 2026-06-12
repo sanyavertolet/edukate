@@ -10,6 +10,4 @@ data class ProblemFilter(
     val isHard: Boolean? = null,
     val hasPictures: Boolean? = null,
     val hasResult: Boolean? = null,
-) {
-    fun requiresAggregation(): Boolean = status != null || isHard != null || hasPictures != null || hasResult != null
-}
+)
