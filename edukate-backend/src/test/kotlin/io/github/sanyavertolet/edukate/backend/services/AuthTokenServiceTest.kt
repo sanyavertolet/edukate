@@ -41,8 +41,10 @@ class AuthTokenServiceTest {
     // region issueVerificationToken
 
     @Test
-    fun `issueVerificationToken stores token and publishes email`() {
+    fun `issueVerificationToken stores token and publishes email for own email`() {
         val user = BackendFixtures.user(id = 1L, name = "alice", email = "alice@example.com", status = UserStatus.PENDING)
+        // Sign-up path: the verified address is the user's own current email.
+        every { userService.findUserByEmail("alice@example.com") } returns Mono.just(user)
         every { userService.findUserById(1L) } returns Mono.just(user)
         every { authTokenRepository.deleteAllByUserIdAndType(1L, AuthTokenType.EMAIL_VERIFICATION) } returns Mono.empty()
         every { authTokenRepository.save(any()) } answers { Mono.just(firstArg()) }
@@ -52,6 +54,39 @@ class AuthTokenServiceTest {
         verify { authTokenRepository.deleteAllByUserIdAndType(1L, AuthTokenType.EMAIL_VERIFICATION) }
         verify { authTokenRepository.save(match { it.type == AuthTokenType.EMAIL_VERIFICATION && it.userId == 1L }) }
         verify { emailPublisher.publish(any()) }
+    }
+
+    @Test
+    fun `issueVerificationToken issues token when new email is unused`() {
+        val user = BackendFixtures.user(id = 1L, name = "alice", email = "alice@example.com")
+        every { userService.findUserByEmail("new@example.com") } returns Mono.empty()
+        every { userService.findUserById(1L) } returns Mono.just(user)
+        every { authTokenRepository.deleteAllByUserIdAndType(1L, AuthTokenType.EMAIL_VERIFICATION) } returns Mono.empty()
+        every { authTokenRepository.save(any()) } answers { Mono.just(firstArg()) }
+
+        StepVerifier.create(service.issueVerificationToken(1L, "new@example.com")).verifyComplete()
+
+        verify { authTokenRepository.save(match { it.email == "new@example.com" && it.userId == 1L }) }
+        verify { emailPublisher.publish(any()) }
+    }
+
+    @Test
+    fun `issueVerificationToken returns 409 when email belongs to another user`() {
+        val requester = BackendFixtures.user(id = 1L, name = "alice", email = "alice@example.com")
+        val other = BackendFixtures.user(id = 2L, name = "bob", email = "taken@example.com")
+        every { userService.findUserByEmail("taken@example.com") } returns Mono.just(other)
+        every { userService.findUserById(1L) } returns Mono.just(requester)
+
+        StepVerifier.create(service.issueVerificationToken(1L, "taken@example.com"))
+            .expectErrorMatches {
+                it is org.springframework.web.server.ResponseStatusException && it.statusCode.value() == 409
+            }
+            .verify()
+
+        // The token work lives behind the guard's trailing flatMap, so a rejected conflict
+        // never touches the repository or the mailer.
+        verify(exactly = 0) { authTokenRepository.save(any()) }
+        verify(exactly = 0) { emailPublisher.publish(any()) }
     }
 
     // endregion
@@ -87,7 +122,8 @@ class AuthTokenServiceTest {
     fun `consumeVerificationToken activates user and deletes token`() {
         val token = UUID.randomUUID()
         val user = BackendFixtures.user(id = 1L, status = UserStatus.PENDING)
-        val authToken = AuthToken(token, 1L, AuthTokenType.EMAIL_VERIFICATION, Instant.now().plusSeconds(3600))
+        val authToken =
+            AuthToken(token, 1L, AuthTokenType.EMAIL_VERIFICATION, Instant.now().plusSeconds(3600), email = user.email)
 
         every { authTokenRepository.findByTokenAndType(token, AuthTokenType.EMAIL_VERIFICATION) } returns
             Mono.just(authToken)
@@ -117,7 +153,8 @@ class AuthTokenServiceTest {
     @Test
     fun `consumeVerificationToken returns 410 when token expired`() {
         val token = UUID.randomUUID()
-        val expiredToken = AuthToken(token, 1L, AuthTokenType.EMAIL_VERIFICATION, Instant.now().minusSeconds(1))
+        val expiredToken =
+            AuthToken(token, 1L, AuthTokenType.EMAIL_VERIFICATION, Instant.now().minusSeconds(1), email = "x@y.z")
 
         every { authTokenRepository.findByTokenAndType(token, AuthTokenType.EMAIL_VERIFICATION) } returns
             Mono.just(expiredToken)
@@ -138,7 +175,8 @@ class AuthTokenServiceTest {
     fun `consumeResetToken updates password and deletes token`() {
         val token = UUID.randomUUID()
         val user = BackendFixtures.user(id = 1L)
-        val authToken = AuthToken(token, 1L, AuthTokenType.PASSWORD_RESET, Instant.now().plusSeconds(3600))
+        val authToken =
+            AuthToken(token, 1L, AuthTokenType.PASSWORD_RESET, Instant.now().plusSeconds(3600), email = user.email)
 
         every { authTokenRepository.findByTokenAndType(token, AuthTokenType.PASSWORD_RESET) } returns Mono.just(authToken)
         every { authTokenRepository.deleteById(token) } returns Mono.empty()
@@ -155,7 +193,7 @@ class AuthTokenServiceTest {
     @Test
     fun `consumeResetToken returns 410 when token expired`() {
         val token = UUID.randomUUID()
-        val expiredToken = AuthToken(token, 1L, AuthTokenType.PASSWORD_RESET, Instant.now().minusSeconds(1))
+        val expiredToken = AuthToken(token, 1L, AuthTokenType.PASSWORD_RESET, Instant.now().minusSeconds(1), email = "x@y.z")
 
         every { authTokenRepository.findByTokenAndType(token, AuthTokenType.PASSWORD_RESET) } returns Mono.just(expiredToken)
         every { authTokenRepository.deleteById(token) } returns Mono.empty()

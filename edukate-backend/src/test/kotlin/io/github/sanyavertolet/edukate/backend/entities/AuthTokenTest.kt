@@ -15,6 +15,7 @@ class AuthTokenTest {
                 userId = 1L,
                 type = AuthTokenType.EMAIL_VERIFICATION,
                 expiresAt = Instant.now().plusSeconds(3600),
+                email = "user@example.com",
             )
         assertThat(token.isNew()).isTrue()
     }
@@ -28,13 +29,21 @@ class AuthTokenTest {
                 userId = 1L,
                 type = AuthTokenType.PASSWORD_RESET,
                 expiresAt = Instant.now().plusSeconds(3600),
+                email = "user@example.com",
             )
         assertThat(token.id).isEqualTo(uuid)
     }
 
     @Test
     fun `isNew returns true on repeated calls`() {
-        val token = AuthToken(UUID.randomUUID(), 1L, AuthTokenType.EMAIL_VERIFICATION, Instant.now().plusSeconds(100))
+        val token =
+            AuthToken(
+                UUID.randomUUID(),
+                1L,
+                AuthTokenType.EMAIL_VERIFICATION,
+                Instant.now().plusSeconds(100),
+                email = "user@example.com",
+            )
         assertThat(token.isNew()).isTrue()
         assertThat(token.isNew()).isTrue()
     }

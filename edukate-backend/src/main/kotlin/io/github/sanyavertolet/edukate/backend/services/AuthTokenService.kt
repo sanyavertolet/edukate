@@ -7,6 +7,8 @@ import io.github.sanyavertolet.edukate.common.notifications.EmailVerificationMes
 import io.github.sanyavertolet.edukate.common.notifications.PasswordResetMessage
 import io.github.sanyavertolet.edukate.common.services.EmailPublisher
 import io.github.sanyavertolet.edukate.common.users.UserStatus
+import io.github.sanyavertolet.edukate.common.utils.orNotFound
+import io.github.sanyavertolet.edukate.common.utils.throwIf
 import java.time.Duration
 import java.time.Instant
 import java.util.UUID
@@ -29,12 +31,26 @@ class AuthTokenService(
     fun issueVerificationToken(userId: Long, email: String): Mono<Void> {
         val token = UUID.randomUUID()
         val expiresAt = Instant.now().plus(Duration.ofSeconds(verificationTtlSeconds))
-        return userService.findUserById(userId).flatMap { user ->
-            authTokenRepository
-                .deleteAllByUserIdAndType(userId, AuthTokenType.EMAIL_VERIFICATION)
-                .then(authTokenRepository.save(AuthToken(token, userId, AuthTokenType.EMAIL_VERIFICATION, expiresAt)))
-                .flatMap { emailPublisher.publish(EmailVerificationMessage(email, token, user.name)) }
-        }
+        // Reject up front if the address already belongs to a *different* user, so the caller
+        // gets an immediate 409 instead of a verification link that fails (or duplicates an
+        // email) on consume. throwIf passes through when the email is unused (empty) or is the
+        // requester's own — the latter matters because this method issues the sign-up token
+        // too, where the email is the user's current one. The token work hangs off a trailing
+        // flatMap, so it is built only once the guard passes — never on a rejected conflict.
+        return userService
+            .findUserByEmail(email)
+            .throwIf(HttpStatus.CONFLICT, "Email '$email' is already in use") { owner -> owner.id != userId }
+            .then(userService.findUserById(userId))
+            .flatMap { user ->
+                authTokenRepository
+                    .deleteAllByUserIdAndType(userId, AuthTokenType.EMAIL_VERIFICATION)
+                    .then(
+                        authTokenRepository.save(
+                            AuthToken(token, userId, AuthTokenType.EMAIL_VERIFICATION, expiresAt, email)
+                        )
+                    )
+                    .flatMap { emailPublisher.publish(EmailVerificationMessage(email, token, user.name)) }
+            }
     }
 
     fun issuePasswordResetToken(email: String): Mono<Void> {
@@ -47,7 +63,7 @@ class AuthTokenService(
                     .deleteAllByUserIdAndType(requireNotNull(user.id), AuthTokenType.PASSWORD_RESET)
                     .then(
                         authTokenRepository.save(
-                            AuthToken(token, requireNotNull(user.id), AuthTokenType.PASSWORD_RESET, expiresAt)
+                            AuthToken(token, requireNotNull(user.id), AuthTokenType.PASSWORD_RESET, expiresAt, email)
                         )
                     )
                     .flatMap { emailPublisher.publish(PasswordResetMessage(email, token, user.name)) }
@@ -59,7 +75,7 @@ class AuthTokenService(
     fun consumeVerificationToken(token: UUID): Mono<Void> =
         authTokenRepository
             .findByTokenAndType(token, AuthTokenType.EMAIL_VERIFICATION)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Token not found")))
+            .orNotFound("Token not found")
             .flatMap { authToken ->
                 if (authToken.expiresAt.isBefore(Instant.now())) {
                     authTokenRepository
@@ -69,29 +85,32 @@ class AuthTokenService(
                     authTokenRepository
                         .deleteById(token)
                         .then(userService.findUserById(authToken.userId))
-                        .flatMap { user -> userService.saveUser(user.copy(status = UserStatus.ACTIVE)) }
+                        .flatMap { user ->
+                            // Token always carries the email being verified.
+                            // Sign-up: equals the user's current email (no-op).
+                            // Email-change: the new address — overwrites users.email.
+                            userService.saveUser(user.copy(status = UserStatus.ACTIVE, email = authToken.email))
+                        }
                         .then()
                 }
             }
 
     @Transactional
     fun consumeResetToken(token: UUID, encodedPassword: String): Mono<Void> =
-        authTokenRepository
-            .findByTokenAndType(token, AuthTokenType.PASSWORD_RESET)
-            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Token not found")))
-            .flatMap { authToken ->
-                if (authToken.expiresAt.isBefore(Instant.now())) {
-                    authTokenRepository
-                        .deleteById(token)
-                        .then(Mono.error(ResponseStatusException(HttpStatus.GONE, "Token expired")))
-                } else {
-                    authTokenRepository
-                        .deleteById(token)
-                        .then(userService.findUserById(authToken.userId))
-                        .flatMap { user -> userService.saveUser(user.copy(token = encodedPassword)) }
-                        .then()
-                }
+        authTokenRepository.findByTokenAndType(token, AuthTokenType.PASSWORD_RESET).orNotFound("Token not found").flatMap {
+            authToken ->
+            if (authToken.expiresAt.isBefore(Instant.now())) {
+                authTokenRepository
+                    .deleteById(token)
+                    .then(Mono.error(ResponseStatusException(HttpStatus.GONE, "Token expired")))
+            } else {
+                authTokenRepository
+                    .deleteById(token)
+                    .then(userService.findUserById(authToken.userId))
+                    .flatMap { user -> userService.saveUser(user.copy(token = encodedPassword)) }
+                    .then()
             }
+        }
 
     @Scheduled(fixedDelay = 3_600_000)
     fun cleanupExpiredTokens() {

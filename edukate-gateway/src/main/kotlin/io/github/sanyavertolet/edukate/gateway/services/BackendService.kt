@@ -5,6 +5,7 @@ import io.github.sanyavertolet.edukate.gateway.configs.GatewayProperties
 import io.github.sanyavertolet.edukate.gateway.repositories.GatewayUserRepository
 import io.netty.channel.ChannelOption
 import java.time.Duration
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.stereotype.Service
@@ -33,6 +34,24 @@ class BackendService(
 
     fun saveUser(userCredentials: UserCredentials): Mono<UserCredentials> =
         webClient.post().uri("/internal/users").bodyValue(userCredentials).retrieve().bodyToMono<UserCredentials>()
+
+    @CacheEvict(cacheNames = ["user-credentials-by-id"], key = "#userId")
+    fun updateUserName(userId: Long, newName: String): Mono<UserCredentials> =
+        webClient
+            .patch()
+            .uri("/internal/users/by-id/{id}/name", userId)
+            .bodyValue(mapOf("newName" to newName))
+            .retrieve()
+            .bodyToMono<UserCredentials>()
+
+    @CacheEvict(cacheNames = ["user-credentials-by-id"], key = "#userId")
+    fun updateUserPassword(userId: Long, encodedPassword: String): Mono<Void> =
+        webClient
+            .patch()
+            .uri("/internal/users/by-id/{id}/password", userId)
+            .bodyValue(mapOf("encodedPassword" to encodedPassword))
+            .retrieve()
+            .bodyToMono<Void>()
 
     fun requestVerificationEmail(userId: Long, email: String): Mono<Void> =
         webClient

@@ -15,42 +15,43 @@ function makeChangeEvent(files: File[]): ChangeEvent<HTMLInputElement> {
 }
 
 describe("useFileUpload", () => {
-    it("adds files to the list on handleAddFiles", () => {
-        server.use(getGetTempFilesMockHandler([]));
+    it("adds files to the list on handleAddFiles", async () => {
+        // Echo the local name back as the server key so the post-upload rename is a no-op here.
+        server.use(getGetTempFilesMockHandler([]), getUploadTempFileMockHandler("test.txt"));
         const { result } = renderHook(() => useFileUpload({ onTempFileUploaded: vi.fn(), onTempFileDeleted: vi.fn() }), {
             wrapper: createWrapper(),
         });
         const file = new File(["content"], "test.txt", { type: "text/plain" });
-        act(() => {
-            result.current.handleAddFiles(makeChangeEvent([file]));
+        await act(async () => {
+            await result.current.handleAddFiles(makeChangeEvent([file]));
         });
         expect(result.current.fileMetadataList).toHaveLength(1);
         expect(result.current.fileMetadataList[0].key).toBe("test.txt");
     });
 
-    it("sets errorText when file count exceeds maxFiles", () => {
+    it("sets errorText when file count exceeds maxFiles", async () => {
         server.use(getGetTempFilesMockHandler([]));
         const { result } = renderHook(
             () => useFileUpload({ onTempFileUploaded: vi.fn(), onTempFileDeleted: vi.fn(), maxFiles: 1 }),
             { wrapper: createWrapper() },
         );
         const files = [new File(["a"], "a.txt"), new File(["b"], "b.txt")];
-        act(() => {
-            result.current.handleAddFiles(makeChangeEvent(files));
+        await act(async () => {
+            await result.current.handleAddFiles(makeChangeEvent(files));
         });
         expect(result.current.errorText).toMatch(/no more than 1/i);
         expect(result.current.fileMetadataList).toHaveLength(0);
     });
 
-    it("sets errorText when total file size exceeds maxSize", () => {
+    it("sets errorText when total file size exceeds maxSize", async () => {
         server.use(getGetTempFilesMockHandler([]));
         const { result } = renderHook(
             () => useFileUpload({ onTempFileUploaded: vi.fn(), onTempFileDeleted: vi.fn(), maxSize: 5 }),
             { wrapper: createWrapper() },
         );
         const file = new File(["more than five bytes"], "big.txt");
-        act(() => {
-            result.current.handleAddFiles(makeChangeEvent([file]));
+        await act(async () => {
+            await result.current.handleAddFiles(makeChangeEvent([file]));
         });
         expect(result.current.errorText).toMatch(/no more than/i);
         expect(result.current.fileMetadataList).toHaveLength(0);
@@ -63,8 +64,8 @@ describe("useFileUpload", () => {
             wrapper: createWrapper(),
         });
         const file = new File(["content"], "upload.txt", { type: "text/plain" });
-        act(() => {
-            result.current.handleAddFiles(makeChangeEvent([file]));
+        await act(async () => {
+            await result.current.handleAddFiles(makeChangeEvent([file]));
         });
         await waitFor(() => {
             expect(onTempFileUploaded).toHaveBeenCalledWith("server-key-123");
@@ -103,8 +104,8 @@ describe("useFileUpload", () => {
         const newCb = vi.fn();
         rerender({ cb: newCb });
         const file = new File(["content"], "ref.txt", { type: "text/plain" });
-        act(() => {
-            result.current.handleAddFiles(makeChangeEvent([file]));
+        await act(async () => {
+            await result.current.handleAddFiles(makeChangeEvent([file]));
         });
         await waitFor(() => {
             expect(newCb).toHaveBeenCalledWith("key-abc");

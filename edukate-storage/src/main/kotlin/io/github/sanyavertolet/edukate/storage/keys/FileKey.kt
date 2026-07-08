@@ -13,6 +13,7 @@ import io.github.sanyavertolet.edukate.storage.utils.SegmentFileKeyParser
     JsonSubTypes.Type(value = TempFileKey::class, name = "tmp"),
     JsonSubTypes.Type(value = ProblemFileKey::class, name = "problem"),
     JsonSubTypes.Type(value = AnswerFileKey::class, name = "answer"),
+    JsonSubTypes.Type(value = UserAvatarFileKey::class, name = "avatar"),
 )
 @JsonTypeName("base")
 sealed interface FileKey {

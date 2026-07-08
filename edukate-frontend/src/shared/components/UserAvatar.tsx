@@ -4,6 +4,7 @@ import { FC } from "react";
 
 interface UserAvatarProps {
     name: string;
+    avatarUrl?: string;
     size?: "small" | "medium";
     highlighted?: boolean;
 }
@@ -13,7 +14,7 @@ const sizeMap = {
     medium: { width: 32, height: 32, fontSize: 14 },
 };
 
-export const UserAvatar: FC<UserAvatarProps> = ({ name, size = "medium", highlighted = false }) => {
+export const UserAvatar: FC<UserAvatarProps> = ({ name, avatarUrl, size = "medium", highlighted = false }) => {
     const dimensions = sizeMap[size];
     const sx: SxProps<Theme> = {
         ...dimensions,
@@ -25,5 +26,9 @@ export const UserAvatar: FC<UserAvatarProps> = ({ name, size = "medium", highlig
         }),
     };
 
-    return <Avatar sx={sx}>{getFirstLetters(name, 2)}</Avatar>;
+    return (
+        <Avatar src={avatarUrl} alt={name} sx={sx}>
+            {getFirstLetters(name, 2)}
+        </Avatar>
+    );
 };

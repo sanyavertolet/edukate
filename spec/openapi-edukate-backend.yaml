@@ -26,7 +26,61 @@ tags:
   description: API for managing problem sets and user collaborations
 - name: Answers
   description: API for retrieving problem answers
+- name: User Settings
+  description: API for managing the current user's profile and credentials
 paths:
+  /api/v1/users/me/avatar:
+    put:
+      tags:
+      - User Settings
+      summary: Upload or replace the current user's avatar
+      operationId: uploadAvatar
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Avatar uploaded; body is the new public URL
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+      security:
+      - cookieAuth: []
+    delete:
+      tags:
+      - User Settings
+      summary: Remove the current user's avatar
+      operationId: deleteAvatar
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "204":
+          description: Avatar removed
+        "401":
+          description: Unauthorized
+      security:
+      - cookieAuth: []
   /api/v1/problem-sets/{shareCode}/members/{username}:
     put:
       tags:
@@ -142,6 +196,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemSetDto"
+      security:
+      - cookieAuth: []
+  /api/v1/users/me/email-change:
+    post:
+      tags:
+      - User Settings
+      summary: Request an email change — sends a verification link to the new address
+      operationId: requestEmailChange
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailChangeRequest"
+        required: true
+      responses:
+        "400":
+          description: Invalid email
+          content: {}
+        "202":
+          description: Verification email dispatched
+        "401":
+          description: Unauthorized
+        "409":
+          description: Email already in use
       security:
       - cookieAuth: []
   /api/v1/submissions:
@@ -799,6 +877,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserDto"
+      security:
+      - cookieAuth: []
+  /api/v1/users/info:
+    get:
+      tags:
+      - Users
+      summary: Batch lookup of user info (name + avatar URL)
+      description: Returns a map of name → UserInfoDto for each name that resolves
+        to an existing user. Skips unknown names silently. Use for rendering lists
+        of users with avatars.
+      operationId: getUserInfo
+      parameters:
+      - name: names
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+          maxItems: 50
+          minItems: 0
+      responses:
+        "400":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        "200":
+          description: Successfully resolved user info
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/UserInfoDto"
       security:
       - cookieAuth: []
   /api/v1/users/by-prefix:
@@ -2081,6 +2197,15 @@ components:
       - name
       - problems
       - shareCode
+    EmailChangeRequest:
+      type: object
+      properties:
+        newEmail:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - newEmail
     CreateSubmissionRequest:
       type: object
       properties:
@@ -2232,11 +2357,22 @@ components:
             type: string
         status:
           type: string
+        avatarUrl:
+          type: string
       required:
       - email
       - name
       - roles
       - status
+    UserInfoDto:
+      type: object
+      properties:
+        name:
+          type: string
+        avatarUrl:
+          type: string
+      required:
+      - name
     PageResponseSubmissionDto:
       type: object
       properties:

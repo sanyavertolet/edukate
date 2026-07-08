@@ -15,6 +15,7 @@ const ProblemSetPage = lazy(() => import("@/pages/ProblemSetPage"));
 const ProblemSetCreationPage = lazy(() => import("@/pages/ProblemSetCreationPage"));
 const SubmissionPage = lazy(() => import("@/pages/SubmissionPage"));
 const SubmissionListPage = lazy(() => import("@/pages/SubmissionListPage"));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
 
 export const router = createBrowserRouter([
     {
@@ -78,6 +79,14 @@ export const router = createBrowserRouter([
                 element: (
                     <AuthRequired>
                         <SubmissionPage />
+                    </AuthRequired>
+                ),
+            },
+            {
+                path: "/settings",
+                element: (
+                    <AuthRequired>
+                        <SettingsPage />
                     </AuthRequired>
                 ),
             },

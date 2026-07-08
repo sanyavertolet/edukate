@@ -12,6 +12,7 @@ data class AuthToken(
     val userId: Long,
     val type: AuthTokenType,
     val expiresAt: Instant,
+    val email: String,
     val createdAt: Instant = Instant.now(),
 ) : Persistable<UUID> {
     override fun getId(): UUID = token

@@ -104,8 +104,14 @@ export function UserMenu() {
             >
                 {user && (
                     <Box>
-                        <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
-                            <UserAvatar name={user.name} />
+                        <MenuItem
+                            sx={{ py: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}
+                            onClick={() => {
+                                void navigate("/settings");
+                                handleClose();
+                            }}
+                        >
+                            <UserAvatar name={user.name} avatarUrl={user.avatarUrl} />
                             <Box>
                                 <Typography variant="body2" fontWeight="bold">
                                     {user.name}
@@ -116,7 +122,7 @@ export function UserMenu() {
                                     </Typography>
                                 )}
                             </Box>
-                        </Box>
+                        </MenuItem>
                         <Divider />
                     </Box>
                 )}
@@ -131,7 +137,7 @@ export function UserMenu() {
                 onClick={handleOpen}
                 sx={{ minWidth: 0, p: 0.5 }}
             >
-                {user ? <UserAvatar name={user.name} /> : <AccountCircle />}
+                {user ? <UserAvatar name={user.name} avatarUrl={user.avatarUrl} /> : <AccountCircle />}
             </Button>
         </Box>
     );

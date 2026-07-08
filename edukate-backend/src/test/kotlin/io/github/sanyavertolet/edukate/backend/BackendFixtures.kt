@@ -112,7 +112,17 @@ object BackendFixtures {
         token: String = "token",
         roles: Set<UserRole> = setOf(UserRole.USER),
         status: UserStatus = UserStatus.ACTIVE,
-    ) = User(id = id, name = name, email = email, token = token, roles = roles, status = status)
+        avatarUpdatedAt: Instant? = null,
+    ) =
+        User(
+            id = id,
+            name = name,
+            email = email,
+            token = token,
+            roles = roles,
+            status = status,
+            avatarUpdatedAt = avatarUpdatedAt,
+        )
 
     fun mockAuthentication(
         userId: Long = 1L,

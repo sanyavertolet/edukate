@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { usePostTempFileMutation, useDeleteTempFileMutation, useGetTempFiles } from "@/features/files/api";
 import { FileMetadata } from "@/features/files/types";
 import { formatFileSize } from "@/shared/utils/utils";
+import { DEFAULT_MAX_MEGAPIXELS, validateFile } from "@/shared/utils/fileValidation";
 import { nowUtcIso } from "@/shared/utils/date";
 import { useTranslation } from "react-i18next";
 
@@ -10,6 +11,7 @@ type UseFileUploadProps = {
     onTempFileDeleted: (fileKey: string) => void;
     maxFiles?: number;
     maxSize?: number;
+    accept?: string;
 };
 
 export const useFileUpload = ({
@@ -17,6 +19,7 @@ export const useFileUpload = ({
     onTempFileDeleted,
     maxFiles = 5,
     maxSize = 50 * 1024 * 1024,
+    accept = "*",
 }: UseFileUploadProps) => {
     const { t } = useTranslation();
     const [fileMetadataList, setFileMetadataList] = useState<FileMetadata[]>([]);
@@ -70,10 +73,35 @@ export const useFileUpload = ({
         setSelectedFileKey(undefined);
     };
 
-    const handleAddFiles = (event: ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files) return;
+    const handleAddFiles = async (event: ChangeEvent<HTMLInputElement>) => {
+        const input = event.target;
+        if (!input.files) return;
+        const pickedFiles = Array.from(input.files);
 
-        const newFiles: FileMetadata[] = Array.from(event.target.files).map((file) => ({
+        const currentFilesLength = fileMetadataList.length + pickedFiles.length;
+        if (currentFilesLength > maxFiles) {
+            setErrorText(t("max_files_error", { max: maxFiles, current: currentFilesLength }));
+            return;
+        }
+
+        const oldSize = fileMetadataList.reduce((sum, metadata) => sum + metadata.size, 0);
+        const newSize = pickedFiles.reduce((sum, file) => sum + file.size, 0);
+        if (oldSize + newSize > maxSize) {
+            setErrorText(t("max_size_error", { max: formatFileSize(maxSize), current: formatFileSize(oldSize + newSize) }));
+            return;
+        }
+
+        // Per-file guards (type + decode-bomb) shared with every other upload site.
+        for (const file of pickedFiles) {
+            const error = await validateFile(file, { accept, maxMegapixels: DEFAULT_MAX_MEGAPIXELS });
+            if (error) {
+                setErrorText(t(error));
+                input.value = "";
+                return;
+            }
+        }
+
+        const newFiles: FileMetadata[] = pickedFiles.map((file) => ({
             key: file.name,
             authorName: "",
             lastModified: nowUtcIso(),
@@ -82,19 +110,6 @@ export const useFileUpload = ({
             progress: 0,
             _file: file,
         }));
-
-        const currentFilesLength = fileMetadataList.length + event.target.files.length;
-        if (currentFilesLength > maxFiles) {
-            setErrorText(t("max_files_error", { max: maxFiles, current: currentFilesLength }));
-            return;
-        }
-
-        const oldSize = fileMetadataList.reduce((sum, metadata) => sum + metadata.size, 0);
-        const newSize = newFiles.reduce((sum, metadata) => sum + metadata.size, 0);
-        if (oldSize + newSize > maxSize) {
-            setErrorText(t("max_size_error", { max: formatFileSize(maxSize), current: formatFileSize(oldSize + newSize) }));
-            return;
-        }
 
         setFileMetadataList((prev) => [...prev, ...newFiles]);
 
@@ -131,7 +146,7 @@ export const useFileUpload = ({
             );
         }
 
-        event.target.value = "";
+        input.value = "";
     };
 
     const handleRemoveFile = (key: string) => {

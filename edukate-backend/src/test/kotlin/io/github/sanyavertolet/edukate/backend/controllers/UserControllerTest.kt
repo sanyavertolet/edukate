@@ -4,6 +4,8 @@ package io.github.sanyavertolet.edukate.backend.controllers
 
 import com.ninjasquad.springmockk.MockkBean
 import io.github.sanyavertolet.edukate.backend.BackendFixtures
+import io.github.sanyavertolet.edukate.backend.dtos.UserDto
+import io.github.sanyavertolet.edukate.backend.mappers.UserMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemSetService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.github.sanyavertolet.edukate.common.security.NoopWebSecurityConfig
@@ -26,6 +28,7 @@ class UserControllerTest {
 
     @MockkBean private lateinit var userService: UserService
     @Suppress("unused") @MockkBean private lateinit var problemSetService: ProblemSetService
+    @MockkBean private lateinit var userMapper: UserMapper
 
     private fun authenticatedClient(): WebTestClient =
         webTestClient.mutateWith(
@@ -38,6 +41,8 @@ class UserControllerTest {
     fun `whoami returns 200 with user data including email when user found`() {
         val user = BackendFixtures.user(id = 1L, name = "testuser", email = "testuser@example.com")
         every { userService.findUserByName("testuser") } returns Mono.just(user)
+        every { userMapper.toDto(user) } returns
+            UserDto(name = "testuser", email = "testuser@example.com", roles = listOf("USER"), status = "ACTIVE")
 
         authenticatedClient()
             .get()

@@ -9,9 +9,14 @@ import reactor.core.publisher.Mono
 fun <T : Any> Mono<T>.orThrow(status: HttpStatus, message: String): Mono<T> =
     switchIfEmpty(Mono.error(ResponseStatusException(status, message)))
 
-/** Throws [status] error if [condition] is TRUE (i.e. the condition describes the failure case). */
-fun <T : Any> Mono<T>.throwIf(status: HttpStatus, message: String, condition: (T) -> Boolean): Mono<T> =
-    filter { !condition(it) }.orThrow(status, message)
+/**
+ * Throws [status] error if a value is present and [condition] is TRUE (the failure case). An empty source passes through
+ * untouched — absence is not a failure, since the condition never applies to a missing value. Guard emptiness explicitly
+ * with [orThrow] / [orNotFound] when you need it.
+ */
+fun <T : Any> Mono<T>.throwIf(status: HttpStatus, message: String, condition: (T) -> Boolean): Mono<T> = flatMap {
+    if (condition(it)) Mono.error(ResponseStatusException(status, message)) else Mono.just(it)
+}
 
 // --- semantic aliases for common HTTP statuses ---
 
