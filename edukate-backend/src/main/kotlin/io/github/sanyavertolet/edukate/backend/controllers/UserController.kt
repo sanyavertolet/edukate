@@ -1,6 +1,8 @@
 package io.github.sanyavertolet.edukate.backend.controllers
 
 import io.github.sanyavertolet.edukate.backend.dtos.UserDto
+import io.github.sanyavertolet.edukate.backend.dtos.UserInfoDto
+import io.github.sanyavertolet.edukate.backend.mappers.UserMapper
 import io.github.sanyavertolet.edukate.backend.services.ProblemSetService
 import io.github.sanyavertolet.edukate.backend.services.UserService
 import io.swagger.v3.oas.annotations.Operation
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.Size
 import org.springframework.security.core.Authentication
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,7 +28,11 @@ import reactor.kotlin.core.publisher.toMono
 @RequestMapping("/api/v1/users")
 @Tag(name = "Users", description = "API for managing user information")
 @SecurityRequirement(name = "cookieAuth")
-class UserController(private val userService: UserService, private val problemSetService: ProblemSetService) {
+class UserController(
+    private val userService: UserService,
+    private val problemSetService: ProblemSetService,
+    private val userMapper: UserMapper,
+) {
     @GetMapping("/whoami")
     @Operation(
         operationId = "whoami",
@@ -41,7 +48,7 @@ class UserController(private val userService: UserService, private val problemSe
             ]
     )
     fun whoami(authentication: Authentication): Mono<UserDto> =
-        authentication.toMono().flatMap { userService.findUserByName(it.name) }.map { UserDto.of(it) }
+        authentication.toMono().flatMap { userService.findUserByName(it.name) }.map { userMapper.toDto(it) }
 
     @GetMapping("/by-prefix")
     @Operation(
@@ -97,4 +104,29 @@ class UserController(private val userService: UserService, private val problemSe
                     .collectList()
             }
         } ?: userService.getUserNamesByPrefix(prefix, limit, selfIds).collectList()
+
+    @GetMapping("/info")
+    @Operation(
+        summary = "Batch lookup of user info (name + avatar URL)",
+        description =
+            "Returns a map of name → UserInfoDto for each name that resolves to an existing user. " +
+                "Skips unknown names silently. Use for rendering lists of users with avatars.",
+    )
+    @ApiResponses(
+        value =
+            [
+                ApiResponse(responseCode = "200", description = "Successfully resolved user info"),
+                ApiResponse(responseCode = "400", description = "Validation failed"),
+            ]
+    )
+    fun getUserInfo(@RequestParam @Size(max = MAX_BATCH_INFO_NAMES) names: List<String>): Mono<Map<String, UserInfoDto>> =
+        reactor.core.publisher.Flux.fromIterable(names.distinct())
+            .flatMap { name ->
+                userService.findUserByName(name).map { name to userMapper.toInfoDto(it) }.onErrorResume { Mono.empty() }
+            }
+            .collectMap({ it.first }, { it.second })
+
+    companion object {
+        private const val MAX_BATCH_INFO_NAMES = 50
+    }
 }

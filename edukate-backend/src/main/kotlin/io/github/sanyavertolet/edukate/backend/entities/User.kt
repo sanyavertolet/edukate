@@ -3,6 +3,7 @@ package io.github.sanyavertolet.edukate.backend.entities
 import io.github.sanyavertolet.edukate.common.users.UserCredentials
 import io.github.sanyavertolet.edukate.common.users.UserRole
 import io.github.sanyavertolet.edukate.common.users.UserStatus
+import java.time.Instant
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
@@ -14,6 +15,7 @@ data class User(
     val token: String,
     val roles: Set<UserRole>,
     val status: UserStatus,
+    val avatarUpdatedAt: Instant? = null,
 ) {
     fun toCredentials() = UserCredentials(id, name, token, email, roles, status)
 

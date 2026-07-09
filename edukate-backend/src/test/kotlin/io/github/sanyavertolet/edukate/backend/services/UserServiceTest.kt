@@ -10,9 +10,12 @@ import io.github.sanyavertolet.edukate.common.users.UserStatus
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.http.HttpStatus
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -101,6 +104,46 @@ class UserServiceTest {
             .verifyComplete()
 
         verify(exactly = 2) { notifier.notify(any()) }
+    }
+
+    // endregion
+
+    // region setAvatarTimestamp
+
+    @Test
+    fun `setAvatarTimestamp writes the instant onto the user`() {
+        val instant = Instant.ofEpochSecond(1_700_000_000)
+        val user = BackendFixtures.user(id = 42L, avatarUpdatedAt = null)
+        val saved = user.copy(avatarUpdatedAt = instant)
+        every { userRepository.findById(42L) } returns Mono.just(user)
+        every { userRepository.save(any()) } returns Mono.just(saved)
+
+        StepVerifier.create(service.setAvatarTimestamp(42L, instant)).expectNext(saved).verifyComplete()
+
+        verify(exactly = 1) { userRepository.save(match { it.avatarUpdatedAt == instant }) }
+    }
+
+    @Test
+    fun `setAvatarTimestamp clears the instant when given null`() {
+        val user = BackendFixtures.user(id = 42L, avatarUpdatedAt = Instant.ofEpochSecond(1_700_000_000))
+        val cleared = user.copy(avatarUpdatedAt = null)
+        every { userRepository.findById(42L) } returns Mono.just(user)
+        every { userRepository.save(any()) } returns Mono.just(cleared)
+
+        StepVerifier.create(service.setAvatarTimestamp(42L, null)).expectNext(cleared).verifyComplete()
+
+        verify(exactly = 1) { userRepository.save(match { it.avatarUpdatedAt == null }) }
+    }
+
+    @Test
+    fun `setAvatarTimestamp errors NOT_FOUND and never saves when the user is missing`() {
+        every { userRepository.findById(404L) } returns Mono.empty()
+
+        StepVerifier.create(service.setAvatarTimestamp(404L, Instant.ofEpochSecond(1_700_000_000)))
+            .expectErrorMatches { it is ResponseStatusException && it.statusCode == HttpStatus.NOT_FOUND }
+            .verify()
+
+        verify(exactly = 0) { userRepository.save(any()) }
     }
 
     // endregion

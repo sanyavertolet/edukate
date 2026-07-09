@@ -53,19 +53,42 @@ export default defineConfig(({ mode }) => ({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    "vendor-react": ["react", "react-dom", "react-router-dom"],
-                    "vendor-query": ["@tanstack/react-query"],
-                    "vendor-mui": ["@mui/material", "@mui/icons-material", "@emotion/react", "@emotion/styled"],
-                    "vendor-misc": [
-                        "axios",
-                        "react-toastify",
-                        "react-cookie",
-                        "typescript-cookie",
-                        "react-error-boundary",
-                        "yet-another-react-lightbox",
-                    ],
-                    "vendor-particles": ["@tsparticles/react", "@tsparticles/slim"],
+                // Function form (not object form) so that EVERY third-party module — including
+                // transitive deps and sub-path imports — is guaranteed to land in a `vendor-` chunk.
+                // Object form only seeds a chunk with a package's entry module and lets Rollup's
+                // dedup pass leak the rest (e.g. `scheduler`, `katex`) into the app/page chunks.
+                manualChunks(id) {
+                    if (!id.includes("/node_modules/")) {
+                        return undefined;
+                    }
+                    const afterModules = id.split("/node_modules/").pop() ?? "";
+                    const segments = afterModules.split("/");
+                    const pkg = afterModules.startsWith("@") ? `${segments[0]}/${segments[1]}` : segments[0];
+
+                    if (pkg === "react" || pkg === "react-dom" || pkg === "scheduler" || pkg.startsWith("react-router")) {
+                        return "vendor-react";
+                    }
+                    if (pkg.startsWith("@tanstack/")) {
+                        return "vendor-query";
+                    }
+                    if (pkg.startsWith("@mui/") || pkg.startsWith("@emotion/")) {
+                        return "vendor-mui";
+                    }
+                    if (pkg.startsWith("@tsparticles/")) {
+                        return "vendor-particles";
+                    }
+                    if (pkg === "katex") {
+                        return "vendor-katex";
+                    }
+                    if (pkg.startsWith("i18next") || pkg === "react-i18next") {
+                        return "vendor-i18n";
+                    }
+                    if (pkg.startsWith("@dnd-kit/")) {
+                        return "vendor-dnd";
+                    }
+                    // Everything else third-party (axios, fuse.js, react-* utilities, and all
+                    // remaining transitive deps) — catch-all so nothing escapes into app chunks.
+                    return "vendor-misc";
                 },
             },
         },

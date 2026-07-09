@@ -44,6 +44,11 @@ class FileKeyTest {
                 assertThat(k.problemCode).isEqualTo("1.1.1")
                 assertThat(k.fileName).isEqualTo("result.json")
             })
+
+        assertThat(fileKey("users/42/avatar/avatar.jpg"))
+            .isInstanceOf(UserAvatarFileKey::class.java)
+            .extracting({ (it as UserAvatarFileKey).userId }, { it.fileName })
+            .containsExactly(42L, "avatar.jpg")
     }
 
     @Test
@@ -70,6 +75,10 @@ class FileKeyTest {
         assertThat(AnswerFileKey("savchenko", "1.1.1", "res.json").toString())
             .isEqualTo("books/savchenko/answers/1.1.1/res.json")
         assertThat(SubmissionFileKey(1L, 10L, 100L, "ans.zip").toString()).isEqualTo("users/1/submissions/10/100/ans.zip")
+        assertThat(UserAvatarFileKey(42L).toString()).isEqualTo("users/42/avatar/avatar.jpg")
+
+        val avatarKey = UserAvatarFileKey(99L)
+        assertThat(fileKey(avatarKey.toString())).isEqualTo(avatarKey)
 
         val original = SubmissionFileKey(2L, 20L, 200L, "code.py")
         val roundTripped = fileKey(original.toString())
@@ -90,6 +99,7 @@ class FileKeyTest {
         assertThat(ProblemFileKey.bookPrefix("savchenko")).isEqualTo("books/savchenko/problems/")
         assertThat(AnswerFileKey.prefix("savchenko", "1.1.1")).isEqualTo("books/savchenko/answers/1.1.1/")
         assertThat(SubmissionFileKey.prefix(1L, 10L, 100L)).isEqualTo("users/1/submissions/10/100/")
+        assertThat(UserAvatarFileKey.prefix(42L)).isEqualTo("users/42/avatar/")
     }
 
     // Region 5 — FileKey.type() and FileKey.owner()
@@ -104,6 +114,9 @@ class FileKeyTest {
         assertThat(SubmissionFileKey(1L, 10L, 100L, "f").owner()).isEqualTo(1L)
         assertThat(ProblemFileKey("savchenko", "1.1.1", "f").owner()).isNull()
         assertThat(AnswerFileKey("savchenko", "1.1.1", "f").owner()).isNull()
+        assertThat(UserAvatarFileKey(42L).type()).isEqualTo("avatar")
+        assertThat(UserAvatarFileKey(42L).owner()).isEqualTo(42L)
+        assertThat(UserAvatarFileKey(42L).fileName).isEqualTo("avatar.jpg")
     }
 
     // Region 6 — equals and hashCode
@@ -132,8 +145,9 @@ class FileKeyTest {
                 ProblemFileKey("savchenko", "1.1.1", "stmt.pdf"),
                 AnswerFileKey("savchenko", "1.1.1", "res.json"),
                 SubmissionFileKey(1L, 10L, 100L, "ans.zip"),
+                UserAvatarFileKey(42L),
             )
-        val expectedTypes = listOf("tmp", "problem", "answer", "submission")
+        val expectedTypes = listOf("tmp", "problem", "answer", "submission", "avatar")
 
         keys.zip(expectedTypes).forEach { (key, expectedType) ->
             val json = objectMapper.writeValueAsString(key)

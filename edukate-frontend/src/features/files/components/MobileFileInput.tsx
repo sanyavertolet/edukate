@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef } from "react";
+import { ChangeEvent, FC, useEffect, useRef } from "react";
 import { IconButton, List, ListItem, ListItemIcon, ListItemText, Box, Typography, Input, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { defaultTooltipSlotProps, formatFileSize } from "@/shared/utils/utils";
@@ -43,7 +43,7 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
         handleClosePreview,
         handleAddFiles,
         handleRemoveFile,
-    } = useFileUpload({ onTempFileUploaded, onTempFileDeleted, maxFiles, maxSize });
+    } = useFileUpload({ onTempFileUploaded, onTempFileDeleted, maxFiles, maxSize, accept });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const onUploadButtonClick = () => {
@@ -62,7 +62,7 @@ export const MobileFileInput: FC<MobileFileInputProps> = ({
             <Input
                 type="file"
                 style={{ display: "none" }}
-                onChange={handleAddFiles}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => void handleAddFiles(e)}
                 inputRef={fileInputRef}
                 inputProps={{ multiple: true, accept: accept }}
             />

@@ -12,7 +12,32 @@ security:
 tags:
 - name: Authentication
   description: API for user authentication operations
+- name: User Settings
+  description: API for changing the current user's credentials
 paths:
+  /api/v1/users/me/password:
+    post:
+      tags:
+      - User Settings
+      summary: Change current user's password
+      description: Verifies the current password and stores the new one. JWT cookie
+        is NOT reissued.
+      operationId: change-password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+        required: true
+      responses:
+        "204":
+          description: Password updated
+        "400":
+          description: Current password is incorrect
+        "401":
+          description: Unauthorized
+      security:
+      - cookieAuth: []
   /api/v1/auth/sign-up:
     post:
       tags:
@@ -107,6 +132,29 @@ paths:
         "202":
           description: Reset link sent if account exists
       security: []
+  /api/v1/users/me/username:
+    patch:
+      tags:
+      - User Settings
+      summary: Change current user's username
+      description: Renames the current user and re-issues the JWT cookie so the session
+        reflects the new name
+      operationId: change-username
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeUsernameRequest"
+        required: true
+      responses:
+        "204":
+          description: Username updated; cookie reissued
+        "401":
+          description: Unauthorized
+        "409":
+          description: Username already taken
+      security:
+      - cookieAuth: []
   /api/v1/auth/verify-email:
     get:
       tags:
@@ -131,6 +179,19 @@ paths:
       security: []
 components:
   schemas:
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          maxLength: 20
+          minLength: 6
+      required:
+      - currentPassword
+      - newPassword
     SignUpRequest:
       type: object
       properties:
@@ -186,6 +247,15 @@ components:
           minLength: 1
       required:
       - email
+    ChangeUsernameRequest:
+      type: object
+      properties:
+        newUsername:
+          type: string
+          maxLength: 32
+          minLength: 3
+      required:
+      - newUsername
   securitySchemes:
     cookieAuth:
       type: apiKey

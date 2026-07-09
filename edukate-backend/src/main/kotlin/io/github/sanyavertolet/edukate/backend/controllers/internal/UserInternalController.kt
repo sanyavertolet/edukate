@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.security.SecurityRequirements
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -39,4 +40,12 @@ class UserInternalController(private val userService: UserService) {
         @RequestBody body: Map<String, String>,
         @RequestParam(required = false, defaultValue = "ACTIVE") status: UserStatus,
     ): Mono<Long> = userService.notifyAllUsersWithStatus(body["title"], requireNotNull(body["message"]), status)
+
+    @PatchMapping("/by-id/{id}/name")
+    fun updateName(@PathVariable id: Long, @RequestBody body: Map<String, String>): Mono<UserCredentials> =
+        userService.updateName(id, requireNotNull(body["newName"])).map { it.toCredentials() }
+
+    @PatchMapping("/by-id/{id}/password")
+    fun updatePassword(@PathVariable id: Long, @RequestBody body: Map<String, String>): Mono<Void> =
+        userService.updateEncodedPassword(id, requireNotNull(body["encodedPassword"]))
 }

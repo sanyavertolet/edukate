@@ -1,6 +1,7 @@
 package io.github.sanyavertolet.edukate.gateway.services
 
 import io.github.sanyavertolet.edukate.auth.services.JwtTokenService
+import io.github.sanyavertolet.edukate.common.users.EdukateUserDetails
 import io.github.sanyavertolet.edukate.common.users.UserStatus
 import io.github.sanyavertolet.edukate.gateway.dtos.SignInRequest
 import io.github.sanyavertolet.edukate.gateway.dtos.SignUpRequest
@@ -57,4 +58,16 @@ class AuthService(
 
     fun resetPassword(token: String, newPassword: String): Mono<Void> =
         backendService.consumeResetToken(token, checkNotNull(passwordEncoder.encode(newPassword)))
+
+    fun changeUsername(userId: Long, newUsername: String): Mono<String> =
+        backendService.updateUserName(userId, newUsername).map { credentials ->
+            jwtTokenService.generateToken(EdukateUserDetails(credentials))
+        }
+
+    fun changePassword(username: String, currentPassword: String, newPassword: String): Mono<Void> =
+        userDetailsService
+            .findEdukateUserDetailsByUsername(username)
+            .filter { passwordEncoder.matches(currentPassword, it.password) }
+            .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect")))
+            .flatMap { backendService.updateUserPassword(it.id, checkNotNull(passwordEncoder.encode(newPassword))) }
 }

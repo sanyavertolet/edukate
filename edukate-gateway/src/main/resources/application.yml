@@ -57,7 +57,7 @@ spring:
             - id: gateway_route
               uri: no://op
               predicates:
-                - Path=/api/*/auth/*,/swagger/gateway/api-docs/**
+                - Path=/api/*/auth/*,/api/*/users/me/username,/api/*/users/me/password,/swagger/gateway/api-docs/**
             - id: notifier_route
               uri: ${gateway.notifier.url}
               predicates:

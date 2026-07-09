@@ -5,9 +5,11 @@ import io.github.sanyavertolet.edukate.storage.keys.FileKey
 import io.github.sanyavertolet.edukate.storage.keys.ProblemFileKey
 import io.github.sanyavertolet.edukate.storage.keys.SubmissionFileKey
 import io.github.sanyavertolet.edukate.storage.keys.TempFileKey
+import io.github.sanyavertolet.edukate.storage.keys.UserAvatarFileKey
 
 object SegmentFileKeyParser {
     private const val TMP_SEGMENT_COUNT = 4
+    private const val AVATAR_SEGMENT_COUNT = 4
     private const val BOOK_SEGMENT_COUNT = 5
     private const val SUBMISSION_SEGMENT_COUNT = 6
     private const val USER_ID_INDEX = 1
@@ -40,6 +42,10 @@ object SegmentFileKeyParser {
         // users/{userId}/tmp/{fileName}
         if (segments.size == TMP_SEGMENT_COUNT && segments[PATH_TYPE_INDEX] == "tmp") {
             return TempFileKey(segments[USER_ID_INDEX].toLong(), segments[TMP_FILE_NAME_INDEX])
+        }
+        // users/{userId}/avatar/{fileName} — filename is fixed (avatar.jpg), so it's discarded
+        if (segments.size == AVATAR_SEGMENT_COUNT && segments[PATH_TYPE_INDEX] == "avatar") {
+            return UserAvatarFileKey(segments[USER_ID_INDEX].toLong())
         }
         // users/{userId}/submissions/{problemId}/{submissionId}/{fileName}
         if (segments.size == SUBMISSION_SEGMENT_COUNT && segments[PATH_TYPE_INDEX] == "submissions") {

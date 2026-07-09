@@ -5,12 +5,16 @@ import io.github.sanyavertolet.edukate.backend.repositories.UserRepository
 import io.github.sanyavertolet.edukate.common.notifications.SimpleNotificationCreateRequest
 import io.github.sanyavertolet.edukate.common.services.Notifier
 import io.github.sanyavertolet.edukate.common.users.UserStatus
+import io.github.sanyavertolet.edukate.common.utils.orNotFound
+import java.time.Instant
 import java.util.UUID
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.cache.annotation.Caching
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
@@ -51,6 +55,51 @@ class UserService(private val userRepository: UserRepository, private val notifi
             .map { it.name }
 
     fun hasUserPermissionToSubmit(user: User): Mono<Boolean> = (user.status == UserStatus.ACTIVE).toMono()
+
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["users-by-id"], key = "#userId"),
+                CacheEvict(cacheNames = ["users-by-name"], allEntries = true),
+            ]
+    )
+    fun updateName(userId: Long, newName: String): Mono<User> =
+        userRepository
+            .findByName(newName)
+            .flatMap<User> {
+                Mono.error(ResponseStatusException(HttpStatus.CONFLICT, "Username '$newName' is already taken"))
+            }
+            .switchIfEmpty(
+                userRepository.findById(userId).orNotFound("User not found").flatMap {
+                    userRepository.save(it.copy(name = newName))
+                }
+            )
+
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["users-by-id"], key = "#userId"),
+                CacheEvict(cacheNames = ["users-by-name"], allEntries = true),
+            ]
+    )
+    fun updateEncodedPassword(userId: Long, encodedPassword: String): Mono<Void> =
+        userRepository
+            .findById(userId)
+            .orNotFound("User not found")
+            .flatMap { userRepository.save(it.copy(token = encodedPassword)) }
+            .then()
+
+    @Caching(
+        evict =
+            [
+                CacheEvict(cacheNames = ["users-by-id"], key = "#userId"),
+                CacheEvict(cacheNames = ["users-by-name"], allEntries = true),
+            ]
+    )
+    fun setAvatarTimestamp(userId: Long, instant: Instant?): Mono<User> =
+        userRepository.findById(userId).orNotFound("User not found").flatMap {
+            userRepository.save(it.copy(avatarUpdatedAt = instant))
+        }
 
     fun notifyAllUsersWithStatus(title: String?, message: String, status: UserStatus): Mono<Long> =
         userRepository

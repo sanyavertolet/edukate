@@ -62,6 +62,7 @@ export const queryKeys = {
     },
     users: {
         byPrefix: ["/api/v1/users/by-prefix"] as const,
+        infoMap: (sortedNames: readonly string[]) => ["users", "info-map", ...sortedNames] as const,
     },
     auth: {
         whoami: ["auth", "whoami"] as const,
